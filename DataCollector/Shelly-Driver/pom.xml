@@ -13,7 +13,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>true</skipTests>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
@@ -44,24 +43,14 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgument></compilerArgument>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
                 <configuration>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>org.jevis.jeopc.CMDClient</mainClass>
+                            <mainClass>org.jevis.shelly.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -69,7 +58,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.1</version>
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
@@ -80,7 +68,6 @@
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>JEAPI-WS</artifactId>
-            <version>1.24</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -101,7 +88,6 @@
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
-            <version>1.10</version>
         </dependency>
     </dependencies>
 

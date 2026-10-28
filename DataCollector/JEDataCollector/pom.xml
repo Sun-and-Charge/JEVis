@@ -9,7 +9,6 @@
     <name>JEDataCollector</name>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>true</skipTests>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
@@ -45,15 +44,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgument></compilerArgument>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
@@ -62,47 +52,38 @@
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>SQL-Driver</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>XMLParser</artifactId>
-            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>JSONParser</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis.jeopc</groupId>
             <artifactId>OPCUA-Driver</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>loytecxmldl</artifactId>
-            <version>3.4</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>vida</artifactId>
-            <version>3.0.5</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>DWDDriver</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>DWDWDParser</artifactId>
-            <version>3.4</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>EC-Predictor-Driver</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
@@ -127,32 +108,26 @@
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>JEVisServer</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>EMailDataSource</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>ModbusDataSource</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>MSCONSParser</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>RevolutionPiServer</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
             <artifactId>XLSXParser</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -174,30 +149,19 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>8.2.2.jre8</version>
         </dependency>
         <!-- VPN on demand: alert mails and OpenVPN management socket (unix sockets on Java 8) -->
         <dependency>
             <groupId>org.jevis.jenotifier.notifier</groupId>
             <artifactId>Notifier-EP</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-common</artifactId>
-            <version>2.6.2</version>
         </dependency>
         <dependency>
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-native-common</artifactId>
-            <version>2.6.2</version>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>maven_central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2/</url>
-        </repository>
-    </repositories>
 </project>
