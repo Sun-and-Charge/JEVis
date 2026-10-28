@@ -11,8 +11,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <!-- <milo.version>0.4.3</milo.version>-->
-        <milo.version>0.5.3</milo.version>
         <skipTests>true</skipTests>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
@@ -82,7 +80,6 @@
         <dependency>
             <groupId>org.eclipse.milo</groupId>
             <artifactId>sdk-client</artifactId>
-            <version>${milo.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jevis.commons</groupId>

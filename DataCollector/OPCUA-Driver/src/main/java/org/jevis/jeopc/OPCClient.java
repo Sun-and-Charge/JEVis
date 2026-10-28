@@ -241,7 +241,7 @@ public class OPCClient {
     public List<DataValue> getDateValues(HistoryReadResult result) {
         logger.error("result.getStatusCode(): {}", result.getStatusCode());
         HistoryData historyData = (HistoryData) result.getHistoryData().decode(
-                client.getSerializationContext()
+                client.getStaticSerializationContext()
         );
 
         if (result.getStatusCode().isGood()) {
