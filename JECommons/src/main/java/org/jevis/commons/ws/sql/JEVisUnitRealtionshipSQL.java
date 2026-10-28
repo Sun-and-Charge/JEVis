@@ -14,8 +14,7 @@
   You should have received a copy of the GNU General Public License along with
   JEAPI-SQL. If not, see <http://www.gnu.org/licenses/>.
 
-  JEAPI-SQL is part of the OpenJEVis project, further project information are
-  published at <http://www.OpenJEVis.org/>.
+  JEAPI-SQL is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.ws.sql;
 

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2018 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -14,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEConfig. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEConfig is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JEConfig is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig;
 

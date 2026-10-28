@@ -15,8 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   JEWebService. If not, see <http://www.gnu.org/licenses/>.
   <p>
-  JEWebService is part of the OpenJEVis project, further project information
-  are published at <http://www.OpenJEVis.org/>.
+  JEWebService is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.iso.classes;
 
@@ -24,7 +23,7 @@ import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.iso.add.JEVisClasses;
 
 /**
- * @author <gerrit.schutz@envidatec.com>Gerrit Schutz</gerrit.schutz@envidatec.com>
+ * @author <gerrit.schutz@sunandcharge.com>Gerrit Schutz</gerrit.schutz@sunandcharge.com>
  */
 public class ISO50001 {
     private static JEVisClasses jc;

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 20156Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -15,8 +16,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEConfig. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEApplication is part of the OpenJEVis project, further project information
- * are published at <http://www.OpenJEVis.org/>.
+ * JEApplication is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig.application.login;
 
@@ -618,7 +618,7 @@ public class FXLogin extends AnchorPane {
 
         ImageView logo = null;
 
-        String defaultLogo = "/icons/openjevis_longlogo.png";
+        String defaultLogo = "/icons/suc_login_banner.png";
 
         if (this.fxoptions != null) {
             if (this.fxoptions.hasOption(CommonOptions.FXLogin.URL_LOGO.getKey())) {
@@ -781,7 +781,7 @@ public class FXLogin extends AnchorPane {
     private void initSlim() {
 
         //TODO load from URL/RESOURCE
-        ImageView logo = new ImageView(new Image("/icons/openjevislogo_simple2.png"));
+        ImageView logo = new ImageView(new Image("/icons/suc_logo.png"));
         logo.setPreserveRatio(true);
 
         AnchorPane leftSpacer = new AnchorPane();
@@ -1050,7 +1050,8 @@ public class FXLogin extends AnchorPane {
                     url = opt.getValue();
                 }
             } else {
-                url = "http://openjevis.org/account/register";
+                link.setVisible(false);
+                url = "";
             }
         } else {
             link.setVisible(false);
@@ -1079,7 +1080,7 @@ public class FXLogin extends AnchorPane {
         VBox vbox = new VBox();
         setDefaultStyle(vbox, "-fx-background-color: transparent;");
         logger.info(this.app.toString());
-        Label copyLeft = new Label(this.app.getName() + " " + this.app.getVersion());//©Envidatec GmbH 2014-2016");
+        Label copyLeft = new Label(this.app.getName() + " " + this.app.getVersion());
         Label java = new Label("Java: " + System.getProperty("java.vendor") + " " + System.getProperty("java.version"));
         Label javafxlabel = new Label("JavaFX: " + System.getProperties().get("javafx.runtime.version"));
 
@@ -1099,7 +1100,7 @@ public class FXLogin extends AnchorPane {
         loadPreference(true);
 
         //TODO load from URL/RESOURCE
-        ImageView logo = new ImageView(new Image("/icons/openjevislogo_simple2.png"));
+        ImageView logo = new ImageView(new Image("/icons/suc_logo.png"));
         logo.setPreserveRatio(true);
 
         AnchorPane leftSpacer = new AnchorPane();

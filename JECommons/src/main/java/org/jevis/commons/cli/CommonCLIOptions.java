@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JECommons. If not, see <http://www.gnu.org/licenses/>.
  *
- * JECommons is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.cli;
 
@@ -61,7 +60,7 @@ public interface CommonCLIOptions {
             public static Option HOST = OptionBuilder.withArgName("Hostname")
                     .hasArgs(1)
                     .isRequired(false)
-                    .withDescription("Hostname of the DataSource e.g. 'openjevis.org'")
+                    .withDescription("Hostname of the DataSource e.g. 'localhost'")
                     .withLongOpt("dshost")
                     .create("dsh");
 

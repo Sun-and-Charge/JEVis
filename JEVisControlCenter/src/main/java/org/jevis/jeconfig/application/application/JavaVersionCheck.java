@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEApplication. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEApplication is part of the OpenJEVis project, further project information
- * are published at <http://www.OpenJEVis.org/>.
+ * JEApplication is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig.application.application;
 
@@ -26,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 
 /**
- * Simplistic check for the java Version. The Envidatec GUI need minumim JAVA
+ * Simplistic check for the java Version. The JEVis GUI need minumim JAVA
  * 1.7.55
  *
  * @author fs

@@ -15,8 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   JEWebService. If not, see <http://www.gnu.org/licenses/>.
 
-  JEWebService is part of the OpenJEVis project, further project information
-  are published at <http://www.OpenJEVis.org/>.
+  JEWebService is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.ws.sql;
 
@@ -33,7 +32,7 @@ import javax.ws.rs.core.Response;
  */
 public class ErrorBuilder {
 
-    private static final String ERROR_BASE_URL = "http://openjevis.org/projects/openjevis/wiki/";
+    private static final String ERROR_BASE_URL = "https://github.com/Sun-and-Charge/JEVis/wiki/";
     private static final String ERROR_PREFIX = "JEWebServiceError";
 
     /**

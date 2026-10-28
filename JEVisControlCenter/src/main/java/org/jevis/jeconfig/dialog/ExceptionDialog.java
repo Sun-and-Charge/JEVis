@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEApplication. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEApplication is part of the OpenJEVis project, further project information
- * are published at <http://www.OpenJEVis.org/>.
+ * JEApplication is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig.dialog;
 
@@ -67,7 +66,7 @@ public class ExceptionDialog {
     //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
     public static String ICON_WARNING = "1401136217_exclamation-diamond_red.png";
 
-    private static final String MAIL_TO = "info@envidatec.com";
+    private static final String MAIL_TO = "service@sunandcharge.com";
     private static final String MAIL_SUBJECT = "Error Report";
     private Response response = Response.CANCEL;
 

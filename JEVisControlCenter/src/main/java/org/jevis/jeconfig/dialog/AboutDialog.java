@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -15,8 +16,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEApplication. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEApplication is part of the OpenJEVis project, further project information
- * are published at <http://www.OpenJEVis.org/>.
+ * JEApplication is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig.dialog;
 
@@ -27,6 +27,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
@@ -38,13 +39,16 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.jevis.commons.application.ApplicationInfo;
+import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.JEVisDates;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.joda.time.DateTime;
 
+import java.awt.Desktop;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,11 +65,8 @@ public class AboutDialog {
     public static String ICON_TASKBAR = "1400874302_question_blue.png";
 
     /**
-     * Show an simple About Dialog.
+     * Show an simple About Dialog with the license notice of JEVis.
      *
-     * TODO: Add contact information (Tel. Email etc.), GPL info and other legal
-     * informations
-     *     *
      * @param title
      * @param message
      * @param info
@@ -103,10 +104,13 @@ public class AboutDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton cancel = new JFXButton("Close");
+        JFXButton licenses = new JFXButton(I18n.getInstance().getString("menu.help.licenses"));
+        licenses.setOnAction(event -> new LicenseDialog().show());
+
+        JFXButton cancel = new JFXButton(I18n.getInstance().getString("licenses.close"));
         cancel.setDefaultButton(true);
 
-        buttonPanel.getChildren().addAll(cancel);
+        buttonPanel.getChildren().addAll(licenses, cancel);
         buttonPanel.setAlignment(Pos.CENTER_RIGHT);
         buttonPanel.setPadding(new Insets(10, 10, 5, 10));
         buttonPanel.setSpacing(10);
@@ -172,9 +176,26 @@ public class AboutDialog {
                 apiVersion,
                 jarCreationDate);
 
+        Label licenseNotice = new Label(I18n.getInstance().getString("licenses.project.summary"));
+        licenseNotice.setWrapText(true);
+        licenseNotice.setMaxWidth(340);
+        licenseNotice.setPadding(new Insets(0, 10, 0, 10));
+
+        Hyperlink projectLink = new Hyperlink(LicenseDialog.PROJECT_URL);
+        projectLink.setPadding(new Insets(0, 10, 0, 10));
+        projectLink.setOnAction(event -> new Thread(() -> {
+            try {
+                Desktop.getDesktop().browse(new URI(LicenseDialog.PROJECT_URL));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start());
+
         root.getChildren().addAll(
                 header, new Separator(Orientation.HORIZONTAL),
                 grid,
+                licenseNotice,
+                projectLink,
                 buttonPanel
         );
         VBox.setVgrow(buttonPanel, Priority.NEVER);

@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEConfig. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEConfig is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JEConfig is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig.sample.csvexporttable;
 

@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JECommons. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JECommons is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.dataprocessing.function;
 
@@ -37,7 +36,7 @@ import java.util.TreeMap;
 import static org.jevis.commons.constants.NoteConstants.User.USER_VALUE;
 
 /**
- * @author Gerrit Schutz <gerrit.schutz@envidatec.com>
+ * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 public class InputProcessor {
     public static final int LIMIT = 1000000;

@@ -10,17 +10,17 @@
         <dbpassword>CHANGE_ME</dbpassword>
     </jevis>
     <sender>
-        <user>notification@jevis.de</user>
+        <user>notification@example.com</user>
         <password>enterpwhere</password>
         <smtp>smtp.1und1.de</smtp>
-        <from>notification@jevis.de</from>
+        <from>notification@example.com</from>
         <ssl>true</ssl>
         <port>587</port>
         <signatur>With best wishes your JEVis Alpha Server</signatur>
     </sender>
     <alarm>
-        <recipient>florian.simon@envidatec.com</recipient>
-        <bcc>info@envidatec.com</bcc>
+        <recipient>recipient@example.com</recipient>
+        <bcc>bcc@example.com</bcc>
         <subject>Device Waring</subject>
         <datapoint>1176,1180</datapoint>
         <timelimit>24</timelimit>
@@ -31,7 +31,7 @@
     </alarm>
     <!--Overall statusreport for the Server-->
     <alarm>
-        <recipient>florian.simon@envidatec.com</recipient>
+        <recipient>recipient@example.com</recipient>
         <subject>JEVis 3.0 System Status</subject>
         <timelimit>24</timelimit>
         <ignoreold>336</ignoreold>

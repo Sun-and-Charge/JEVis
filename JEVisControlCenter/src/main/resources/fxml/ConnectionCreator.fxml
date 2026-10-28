@@ -27,7 +27,7 @@
               <Label text="Connection String:" GridPane.rowIndex="5"/>
               <Label text="Schema:" GridPane.rowIndex="2"/>
               <Label text="Username:" GridPane.rowIndex="3"/>
-              <JFXTextField fx:id="host" onKeyTyped="#onChanged" promptText="start.my.jevis.de"
+              <JFXTextField fx:id="host" onKeyTyped="#onChanged" promptText="jevis.example.com"
                             GridPane.columnIndex="1"/>
               <JFXTextField fx:id="port" onKeyTyped="#onChanged" promptText="3306" GridPane.columnIndex="1"
                             GridPane.rowIndex="1"/>

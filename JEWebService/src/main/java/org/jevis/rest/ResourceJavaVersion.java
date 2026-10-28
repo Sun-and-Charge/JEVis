@@ -15,8 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   JEWebService. If not, see <http://www.gnu.org/licenses/>.
 
-  JEWebService is part of the OpenJEVis project, further project information
-  are published at <http://www.OpenJEVis.org/>.
+  JEWebService is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.rest;
 
@@ -39,7 +38,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Gerrit Schutz <gerrit.schutz@envidatec.com>
+ * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 @Path("/java")
 public class ResourceJavaVersion {

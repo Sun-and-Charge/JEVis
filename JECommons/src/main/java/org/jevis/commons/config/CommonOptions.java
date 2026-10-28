@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -14,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JECommons. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JECommons is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.config;
 
@@ -40,7 +40,7 @@ public interface CommonOptions {
 //        public final String GROUP = "datasource";
         JEVisOption DataSource = OptionFactory.BuildOption(null, "datasource", "", "JEVis datasource option group");
 
-        JEVisOption HOST = OptionFactory.BuildOption(DataSource, "host", "openjevis.org", "Hostname URL of the data source");
+        JEVisOption HOST = OptionFactory.BuildOption(DataSource, "host", "localhost", "Hostname URL of the data source");
         JEVisOption PORT = OptionFactory.BuildOption(DataSource, "port", "3306", "Port of the data source");
         JEVisOption CLASS = OptionFactory.BuildOption(DataSource, "class", "org.jevis.api.sql.JEVisDataSourceSQL", "Classname of the data source. e.g. 'org.jevis.api.sql.JEVisDataSourceSQL'");
         JEVisOption SCHEMA = OptionFactory.BuildOption(DataSource, "schema", "jevis", "MySQL Schema of the data source");

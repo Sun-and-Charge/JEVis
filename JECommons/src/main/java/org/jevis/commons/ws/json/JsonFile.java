@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEWebService. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEWebService is part of the OpenJEVis project, further project information
- * are published at <http://www.OpenJEVis.org/>.
+ * JEWebService is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.ws.json;
 
@@ -26,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * This Class represents a File as Json
  *
- * @author Florian Simon <gerrit.schutz@envidatec.com>
+ * @author Florian Simon <gerrit.schutz@sunandcharge.com>
  */
 @XmlRootElement(name = "File")
 public class JsonFile {

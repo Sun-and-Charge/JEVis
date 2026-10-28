@@ -8,31 +8,13 @@
     <packaging>jar</packaging>
 
     <name>JEAPI</name>
-    <url>http://openjevis.org</url>
+    <url>https://github.com/Sun-and-Charge/JEVis</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>false</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </snapshots>
-            <id>org.jevis</id>
-            <name>openjevis</name>
-            <url>http://maven.openjevis.org</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
 
     <parent>
         <groupId>org.jevis</groupId>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Config>
 <JEVisConfig
-dbHost="coffee-project.eu"
+dbHost="localhost"
 dbPort="13306"
 dbUser="jevis"
 dbPassword="jevistest"

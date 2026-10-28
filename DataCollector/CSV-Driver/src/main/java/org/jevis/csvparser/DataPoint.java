@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEVis CSV-Driver. If not, see <http://www.gnu.org/licenses/>.
  *
- * JEVis CSV-Driver is part of the OpenJEVis project, further project
- * information are published at <http://www.OpenJEVis.org/>.
+ * JEVis CSV-Driver is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.csvparser;
 

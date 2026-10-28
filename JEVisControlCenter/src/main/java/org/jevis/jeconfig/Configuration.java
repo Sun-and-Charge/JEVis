@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEConfig. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEConfig is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JEConfig is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig;
 
@@ -48,8 +47,8 @@ public class Configuration {
     private JEVisOption options;
     private List<JEVisOption> configuration;
 
-    private String _loginIcon = "/icons/logo_coffee_klein.png";//"/icons/kaust.jpg";//"/icons/openjevislogo_simple2.png";
-    private String _welcomeURL = "http://coffee-project.eu/";//"http://www.kaust.edu.sa/research-technology-park.html";//http://openjevis.org/projects/openjevis/wiki/JEConfig3#JEConfig-Version-3";
+    private String _loginIcon = "/icons/logo_coffee_klein.png";
+    private String _welcomeURL = "https://github.com/Sun-and-Charge/JEVis";
     private String _watermark = "/icons/logo_JEVis_OPEN_Ohne_Schatten_long_v0_10.png";
     //    private final String _defaultServerURL = "user:password@server:3306/jevis";
     private File lastPath = null;
@@ -144,10 +143,10 @@ public class Configuration {
                     _welcomeURL = opt.getValue();
                 }
             } else {
-                _welcomeURL = "http://openjevis.org/";
+                _welcomeURL = "https://github.com/Sun-and-Charge/JEVis";
             }
         } else {
-            _welcomeURL = "http://openjevis.org/";
+            _welcomeURL = "https://github.com/Sun-and-Charge/JEVis";
 
         }
 //        logger.info("Welcome URL: " + _welcomeURL);

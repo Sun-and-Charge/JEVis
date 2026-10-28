@@ -14,8 +14,7 @@
   You should have received a copy of the GNU General Public License along with
   JECommons. If not, see <http://www.gnu.org/licenses/>.
 
-  JECommons is part of the OpenJEVis project, further project information are
-  published at <http://www.OpenJEVis.org/>.
+  JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.iso.add;
 
@@ -25,7 +24,7 @@ import org.jevis.commons.ws.json.JsonSample;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
 /**
- * @author fs & <gerrit.schutz@envidatec.com>Gerrit Schutz</gerrit.schutz@envidatec.com>
+ * @author fs & <gerrit.schutz@sunandcharge.com>Gerrit Schutz</gerrit.schutz@sunandcharge.com>
  */
 public class TargetHelper {
 

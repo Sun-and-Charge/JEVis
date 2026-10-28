@@ -9,7 +9,34 @@
     <version>3.4</version>
     <name>JEVis Core</name>
     <packaging>pom</packaging>
-    <url>http://openjevis.org</url>
+    <description>JEVis - energy and operational data storage, monitoring and analysis</description>
+    <url>https://github.com/Sun-and-Charge/JEVis</url>
+    <inceptionYear>2009</inceptionYear>
+
+    <organization>
+        <name>Sun and Charge Germany GmbH</name>
+        <url>https://github.com/Sun-and-Charge</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0 only</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+            <distribution>repo</distribution>
+            <comments>Based on OpenJEVis, Copyright (C) Envidatec GmbH. See NOTICE.</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/Sun-and-Charge/JEVis</url>
+        <connection>scm:git:https://github.com/Sun-and-Charge/JEVis.git</connection>
+        <developerConnection>scm:git:https://github.com/Sun-and-Charge/JEVis.git</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/Sun-and-Charge/JEVis/issues</url>
+    </issueManagement>
 
     <modules>
         <module>JEAPI</module>

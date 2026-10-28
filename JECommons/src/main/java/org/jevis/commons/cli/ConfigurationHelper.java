@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JECommons. If not, see <http://www.gnu.org/licenses/>.
  *
- * JECommons is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.cli;
 
@@ -100,7 +99,7 @@ public class ConfigurationHelper {
         XMLConfiguration config = new XMLConfiguration(file);
 
         config.setProperty("jevis.datasource.class", "org.jevis.api.sql.JEVisDataSourceSQL");
-        config.setProperty("jevis.datasource.host", "openjevis.org");
+        config.setProperty("jevis.datasource.host", "localhost");
         config.setProperty("jevis.datasource.schema", "jevis");
         config.setProperty("jevis.datasource.port", "13306");
         config.setProperty("jevis.datasource.username", "jevis");

@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2009 - 2016 Envidatec GmbH <info@envidatec.com>
+  Copyright (C) 2026 Sun and Charge Germany GmbH
 
   This file is part of JEAPI-SQL.
 
@@ -14,8 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   JEAPI-SQL. If not, see <http://www.gnu.org/licenses/>.
 
-  JEAPI-SQL is part of the OpenJEVis project, further project information are
-  published at <http://www.OpenJEVis.org/>.
+  JEAPI-SQL is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.commons.ws.sql.tables;
 

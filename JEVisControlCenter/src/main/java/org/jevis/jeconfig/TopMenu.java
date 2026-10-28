@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -14,8 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * JEConfig. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEConfig is part of the OpenJEVis project, further project information are
- * published at <http://www.OpenJEVis.org/>.
+ * JEConfig is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 package org.jevis.jeconfig;
 
@@ -56,6 +56,7 @@ import org.jevis.jeconfig.csv.CSVImportDialog;
 import org.jevis.jeconfig.dialog.AboutDialog;
 import org.jevis.jeconfig.dialog.EnterDataDialog;
 import org.jevis.jeconfig.dialog.HiddenConfig;
+import org.jevis.jeconfig.dialog.LicenseDialog;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
 import org.jevis.jeconfig.plugin.charts.DataSettings;
 import org.jevis.jeconfig.plugin.object.ObjectPlugin;
@@ -352,9 +353,10 @@ public class TopMenu extends MenuBar {
 
         MenuItem showChangelog = new MenuItem(I18n.getInstance().getString("menu.options.patchnotes"));
         MenuItem showHelp = new MenuItem(I18n.getInstance().getString("menu.showToolTips"));
+        MenuItem licenses = new MenuItem(I18n.getInstance().getString("menu.help.licenses"));
         MenuItem about = new MenuItem(I18n.getInstance().getString("menu.about"));
         CheckMenuItem debug = new CheckMenuItem("Debug");
-        help.getItems().addAll(showHelp, showChangelog, about);
+        help.getItems().addAll(showHelp, showChangelog, licenses, about);
         if (JEConfig.getExpert()) {
             help.getItems().add(debug);
         }
@@ -382,6 +384,7 @@ public class TopMenu extends MenuBar {
                     , JEConfig.PROGRAM_INFO, JEConfig.getImage("JEConfig_mac.png"));
 
         });
+        licenses.setOnAction(event -> new LicenseDialog().show());
         showHelp.setOnAction(event -> JEVisHelp.getInstance().toggleHelp());
 
         showChangelog.setOnAction(event -> {
