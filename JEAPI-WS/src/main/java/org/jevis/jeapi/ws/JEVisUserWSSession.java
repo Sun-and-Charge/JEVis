@@ -18,11 +18,12 @@
  */
 package org.jevis.jeapi.ws;
 
-import jersey.repackaged.com.google.common.collect.Lists;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisUser;
 import org.jevis.commons.user.UserRightManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class JEVisUserWSSession implements JEVisUser {
     /**
      * List of classes which can be updated with special rules
      **/
-    private final List<String> executeUpdateExceptions = Lists.newArrayList(new String[]{"Data Notes", "User Data", "Clean Data"});
+    private final List<String> executeUpdateExceptions = new ArrayList<>(Arrays.asList("Data Notes", "User Data", "Clean Data"));
 
     public JEVisUserWSSession(JEVisDataSourceWS ds, JEVisObjectWS obj, String name) throws Exception {
         this.ds = ds;

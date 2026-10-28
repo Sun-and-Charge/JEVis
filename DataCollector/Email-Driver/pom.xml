@@ -17,6 +17,10 @@
         <version>3.0.0</version>
     </parent>
     <dependencies>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

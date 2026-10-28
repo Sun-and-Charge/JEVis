@@ -44,11 +44,6 @@
             <version>0.6.16</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.milo</groupId>
-            <artifactId>stack-client</artifactId>
-            <version>0.6.16</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>2.0.29</version>
@@ -57,11 +52,6 @@
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-artifact</artifactId>
             <version>3.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vividsolutions</groupId>
-            <artifactId>jts</artifactId>
-            <version>1.13</version>
         </dependency>
         <dependency>
             <groupId>io.jenetics</groupId>
@@ -152,11 +142,6 @@
             <artifactId>jollyday</artifactId>
             <version>0.5.10</version>
         </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-codec</artifactId>
-            <version>4.1.111.Final</version>
-        </dependency>
         <!--        <dependency>-->
         <!--            <groupId>org.mustangproject</groupId>-->
         <!--            <artifactId>library</artifactId>-->
@@ -198,15 +183,20 @@
             <version>1.8</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>4.11.0</version>
-            <scope>test</scope>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>24.1.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
