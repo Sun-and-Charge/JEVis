@@ -1,0 +1,27 @@
+JEVis
+https://github.com/Sun-and-Charge/JEVis
+
+Copyright (C) 2026 Sun and Charge Germany GmbH
+Copyright (C) Envidatec GmbH and the OpenJEVis contributors
+
+This project is a fork of OpenJEVis, originally developed by Envidatec GmbH.
+It is maintained and further developed by Sun and Charge Germany GmbH.
+
+JEVis is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation in version 3 (GPL-3.0-only). See the file LICENSE for the full text.
+
+JEVis is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The copyright notices of the original authors in the source files are
+retained as required by the GNU General Public License.
+
+Third-party components
+----------------------
+JEVis uses third-party libraries and resources which are distributed under
+their own licenses. In the JEVis Control Center, Help > Licenses lists all
+libraries (generated from the Maven dependencies during the build) and the
+bundled resources such as icons and fonts. Further notes on licensing are
+collected in docs/LICENSE-AUDIT.md.
