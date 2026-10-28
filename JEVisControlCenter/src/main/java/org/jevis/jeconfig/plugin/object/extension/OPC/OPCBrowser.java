@@ -55,7 +55,6 @@ public class OPCBrowser {
 
     private static final Logger logger = LogManager.getLogger(CSVColumnHeader.class);
 
-    public static String ICON = "Loytec XML-DL Server.png";
     private OPCClient opcClient;
     public final JEVisObject opcServerObj;
     public static final String DEFAULT_OPC_PORT = "4840";

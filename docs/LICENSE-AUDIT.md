@@ -78,8 +78,8 @@ these should be resolved:
    github.com/varren/JavaFX-Resizable-Draggable-Node) and
    `JEVisControlCenter/.../plugin/charts/TableViewContextMenuHelper.java` (StackOverflow, CC BY-SA):
    check the licenses and add attribution.
-8. **Branding.** The login screen still uses the logos `icons/openjevislogo_simple2.png` and
-   `icons/openjevis_longlogo.png`.
+8. **Branding.** Done: the login screen, window icon and About dialog use the Sun and Charge
+   images `icons/suc_login_banner.png`, `icons/suc_logo.png` and `icons/suc_icon.png`.
 9. **Credentials in example configs.** `Notifier/JENotifier/JENotifierConfig.xml` contains database and
    user passwords of an old server. Replace them with placeholders, and change the passwords if that
    server is still in use (they are in the git history).

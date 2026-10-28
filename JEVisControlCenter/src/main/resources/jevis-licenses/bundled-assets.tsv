@@ -1,9 +1,8 @@
 # Third-party resources bundled with the JEVis Control Center which are not Maven dependencies.
 # Format (tab separated): group, artifact, version, name, url, licenses ('|' separated).
 # Maven dependencies are listed automatically in THIRD-PARTY.txt, which is generated during the build.
-Fonticons, Inc.	fontawesome-free	6.1.2	Font Awesome Free (icons/fontawesome-free-6.1.2-desktop)	https://fontawesome.com/license/free	CC BY 4.0 (icons)|SIL OFL 1.1 (fonts)|MIT (code)
-Google	material-design-icons		Material Icons, outlined (icons/MaterialDesignSVG)	https://github.com/google/material-design-icons	Apache License 2.0
-famfamfam	flag-icons		famfamfam flag icons (icons/flags)	http://www.famfamfam.com/lab/icons/flags/	Public Domain
+Fonticons, Inc.	fontawesome-free	6.1.2	Font Awesome Free (icons/svg/hat-wizard.svg)	https://fontawesome.com/license/free	CC BY 4.0 (icons)|SIL OFL 1.1 (fonts)|MIT (code)
+Google	material-design-icons		Material Icons, outlined (icons/MaterialDesignSVG, subset)	https://github.com/google/material-design-icons	Apache License 2.0
 tyPoland	lato		Lato font, by Łukasz Dziedzic (hansolo/font)	https://www.latofonts.com	SIL OFL 1.1
 eu.hansolo	world-css		World map styles, by Gerrit Grunwald (hansolo/world)	https://github.com/HanSolo	Apache License 2.0
 David Koelle	alphanum		Alphanum algorithm (org.jevis.commons.utils.AlphanumComparator)	http://www.davekoelle.com/alphanum.html	MIT License

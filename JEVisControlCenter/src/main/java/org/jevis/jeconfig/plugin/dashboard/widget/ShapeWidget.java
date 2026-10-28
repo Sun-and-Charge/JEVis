@@ -427,7 +427,7 @@ public class ShapeWidget extends Widget implements DataModelWidget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("fontawesome-free-6.1.2-desktop/svgs/solid/address-book.svg", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage("widget/ShapeWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
     public DoubleProperty getDisplayedSampleProperty() {

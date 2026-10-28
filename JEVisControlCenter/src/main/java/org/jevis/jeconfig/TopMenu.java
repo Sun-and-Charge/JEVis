@@ -27,6 +27,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -381,7 +382,7 @@ public class TopMenu extends MenuBar {
             AboutDialog dia = new AboutDialog();
             dia.show(I18n.getInstance().getString("menu.about.title")
                     , I18n.getInstance().getString("menu.about.message")
-                    , JEConfig.PROGRAM_INFO, JEConfig.getImage("JEConfig_mac.png"));
+                    , JEConfig.PROGRAM_INFO, new Image("/icons/suc_icon.png", 128, 128, true, true));
 
         });
         licenses.setOnAction(event -> new LicenseDialog().show());

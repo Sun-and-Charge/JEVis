@@ -21,8 +21,6 @@ package org.jevis.jeconfig;
 
 
 public class Icon {
-    public static final String CREATE_NEW_FOLDER = "/icons/MaterialDesignSVG/outlined/create_new_folder.svg";
-    public static final String POST_ADD = "/icons/MaterialDesignSVG/outlined/post_add.svg";
     public static final String CSS_TOOLBAR = "toolbarSVG";
     public static final String EXCEL = "/icons/MaterialDesignSVG/outlined/Excel.svg";
 
@@ -50,8 +48,6 @@ public class Icon {
     public static final String INFO = "/icons/MaterialDesignSVG/outlined/info.svg";
     public static final String HELP = "/icons/MaterialDesignSVG/outlined/help.svg";
 
-    public static final String ANGLE_RIGHT = "/icons/MaterialDesignSVG/outlined/arrow_forward_ios.svg";
-    public static final String ANGLE_LEFT = "/icons/MaterialDesignSVG/outlined/arrow_back_ios.svg";
     public static final String CALENDAR = "/icons/MaterialDesignSVG/outlined/calendar_month.svg";
     public static final String FOLDER_OPEN = "/icons/MaterialDesignSVG/outlined/folder_open.svg";
     public static final String SETTINGS = "/icons/MaterialDesignSVG/outlined/settings.svg";
@@ -76,7 +72,6 @@ public class Icon {
 
     public static final String TABLE_PLUS = "/icons/MaterialDesignSVG/outlined/format_list_bulleted_add.svg";
 
-    public static final String EXPORT_CSV = "/icons/MaterialDesignSVG/outlined/table_view.svg";
 
     public static final String WIZARD_WAND = "/icons/MaterialDesignSVG/outlined/auto_fix_high.svg";
     public static final String WIZARD_HAT = "/icons/svg/hat-wizard.svg";
@@ -104,20 +99,15 @@ public class Icon {
     public static final String SCREENSHOT = "/icons/MaterialDesignSVG/outlined/screenshot_monitor.svg";
 
     public static final String RAW_ON = "/icons/MaterialDesignSVG/outlined/raw_on.svg";
-    public static final String RAW_OFF = "/icons/MaterialDesignSVG/outlined/raw_off.svg";
 
     public static final String SUM = "/icons/MaterialDesignSVG/outlined/functions.svg";
 
     public static final String Warning = "/icons/MaterialDesignSVG/outlined/warning.svg";
 
 
-    public static final String LIMITS = "/icons/svg/index.svg";
 
 
     //nicht vorhanden
-    public static final String FILE_IMPORT_ICON = "/icons/MaterialDesignSVG/outlined/save.svg";
-    public static final String FILE_EXPORT_ICON = "/icons/MaterialDesignSVG/outlined/save.svg";
-    public static final String ZOOM_ICON = "/icons/MaterialDesignSVG/outlined/save.svg";
 
     public static final String ACCOUNTING = "/icons/MaterialDesignSVG/outlined/account_balance.svg";
     public static final String ERROR = "/icons/MaterialDesignSVG/outlined/error_outline.svg";

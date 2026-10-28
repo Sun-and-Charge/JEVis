@@ -629,7 +629,7 @@ public class JEConfig extends Application {
         AnchorPane.setLeftAnchor(login, 0.0);
         AnchorPane.setBottomAnchor(login, 0.0);
 
-        primaryStage.getIcons().add(getImage("JEVisIconBlue.png"));
+        primaryStage.getIcons().add(getImage("suc_icon.png"));
         primaryStage.setTitle("JEVis Control Center");
 
         primaryStage.setMaximized(true);

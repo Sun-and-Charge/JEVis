@@ -293,7 +293,7 @@ public class ResourceClasses {
                     return Response.ok(ImageIO.read(icon)).build();
                 }
             }
-            File placeholder = new File(Config.getClassDir().getAbsolutePath() + "MissingPlaceholder.png");
+            File placeholder = new File(Config.getClassDir(), "MissingPlaceholder.png");
             return Response.ok(ImageIO.read(placeholder)).build();
 
 
