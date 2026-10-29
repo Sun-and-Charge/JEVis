@@ -205,6 +205,10 @@ public class MeterController {
         return getActiveTab().getMeterPlanTable().getSelectedItem();
     }
 
+    public JEVisDataSource getDataSource() {
+        return ds;
+    }
+
     public MeterTable getActiveTable() {
         return getActiveTab().getMeterPlanTable();
     }

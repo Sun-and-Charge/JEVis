@@ -61,6 +61,7 @@ public class MeterForm extends Dialog {
         tabs = new ArrayList<>();
         try {
             tabs.add(new MeterFormAttributeTab(meterData, ds, I18n.getInstance().getString("plugin.meters.dialog.tab.properties")));
+            tabs.add(new MeterFormQrTab(meterData, ds, I18n.getInstance().getString("plugin.meters.qr.title")));
 
             if (switchMeter) {
                 tabs.add(new MeterFormReadingsTab(meterData, ds, I18n.getInstance().getString("plugin.meters.dialog.tab.readings")));

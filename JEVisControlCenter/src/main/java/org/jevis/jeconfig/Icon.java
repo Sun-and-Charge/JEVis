@@ -70,6 +70,8 @@ public class Icon {
 
     public static final String PRINT = "/icons/MaterialDesignSVG/outlined/print.svg";
 
+    public static final String QR_CODE = "/icons/MaterialDesignSVG/outlined/qr_code.svg";
+
     public static final String TABLE_PLUS = "/icons/MaterialDesignSVG/outlined/format_list_bulleted_add.svg";
 
 

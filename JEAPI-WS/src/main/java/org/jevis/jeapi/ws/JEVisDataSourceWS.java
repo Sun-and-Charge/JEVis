@@ -148,6 +148,13 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         configureObjectMapper();
     }
 
+    /**
+     * @return the base URL of the JEWebService this data source connects to
+     */
+    public String getHost() {
+        return host;
+    }
+
     private void configureObjectMapper() {
         objectMapper.registerModule(new AfterburnerModule());
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

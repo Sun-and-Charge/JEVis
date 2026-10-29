@@ -20,12 +20,15 @@
 package org.jevis.jeconfig.plugin.meters;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.jeconfig.GlobalToolBar;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
@@ -34,10 +37,15 @@ import org.jevis.jeconfig.dialog.LocalNameDialog;
 import org.jevis.jeconfig.plugin.meters.data.MeterData;
 import org.jevis.jeconfig.plugin.meters.event.PrecisionEvent;
 import org.jevis.jeconfig.plugin.meters.export.MetersExport;
+import org.jevis.jeconfig.plugin.meters.qr.MeterLabelPdf;
+import org.jevis.jeconfig.plugin.meters.qr.MeterQrCode;
 import org.jevis.jeconfig.plugin.meters.ui.MeterTable;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class MetersToolbar extends ToolBar {
@@ -48,6 +56,7 @@ public class MetersToolbar extends ToolBar {
 
     private final ToggleButton deleteItem = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, iconSize, iconSize));
     private final ToggleButton exportxlsx = new ToggleButton("", JEConfig.getSVGImage(Icon.EXCEL, this.iconSize, this.iconSize));
+    private final ToggleButton qrLabels = new ToggleButton("", JEConfig.getSVGImage(Icon.QR_CODE, this.iconSize, this.iconSize));
     private final ToggleButton rename = new ToggleButton("", JEConfig.getSVGImage(Icon.TRANSLATE, this.iconSize, this.iconSize));
 
     private final ToggleButton add = new ToggleButton("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, iconSize, iconSize));
@@ -63,11 +72,12 @@ public class MetersToolbar extends ToolBar {
     public MetersToolbar(MeterController meterController) {
         this.meterController = meterController;
 
-        getItems().addAll(add, exportxlsx, rename, deleteItem, switchButton, increasePrecision, decreasePrecision);
+        getItems().addAll(add, exportxlsx, qrLabels, rename, deleteItem, switchButton, increasePrecision, decreasePrecision);
 
 
         add.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.tooltip.add")));
         exportxlsx.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.tooltip.exportxlsx")));
+        qrLabels.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.qr.tooltip")));
         rename.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.tooltip.rename")));
         deleteItem.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.tooltip.delete")));
         switchButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.tooltip.switchmeter")));
@@ -89,6 +99,8 @@ public class MetersToolbar extends ToolBar {
                 logger.error(ioException);
             }
         });
+
+        qrLabels.setOnAction(actionEvent -> exportQrLabels());
 
         switchButton.setOnAction(actionEvent -> {
             logger.debug(meterController.getSelectedItem());
@@ -160,5 +172,46 @@ public class MetersToolbar extends ToolBar {
         Platform.runLater(() -> JEVisHelp.getInstance().addHelpItems(MeterPlugin.class.getSimpleName(), "", JEVisHelp.LAYOUT.VERTICAL_BOT_CENTER, getItems()));
 
 
+    }
+
+    /**
+     * Writes QR code labels of the selected meters, or of all filtered meters if none is selected, to a PDF.
+     */
+    private void exportQrLabels() {
+        MeterTable table = meterController.getActiveTable();
+        List<MeterData> meters = new ArrayList<>(table.getSelectedItems().isEmpty() ? table.getItems() : table.getSelectedItems());
+        if (meters.isEmpty()) {
+            new Alert(Alert.AlertType.INFORMATION, I18n.getInstance().getString("plugin.meters.qr.empty"), ButtonType.OK).showAndWait();
+            return;
+        }
+
+        FileChooser pdfChooser = new FileChooser();
+        pdfChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF", "*.pdf"));
+        pdfChooser.setInitialFileName("QR_Labels.pdf");
+        File file = pdfChooser.showSaveDialog(meterController.getContent().getScene().getWindow());
+        if (file == null) return;
+
+        JEVisDataSource ds = meterController.getDataSource();
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                updateTitle(I18n.getInstance().getString("plugin.meters.qr.generating"));
+                ObjectRelations objectRelations = new ObjectRelations(ds);
+                List<MeterQrCode> codes = new ArrayList<>();
+                for (MeterData meterData : meters) {
+                    codes.add(MeterQrCode.of(meterData, ds, objectRelations));
+                }
+                new MeterLabelPdf().write(codes, file);
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(file);
+                }
+                return null;
+            }
+        };
+        task.setOnFailed(event -> {
+            logger.error("Could not create QR labels", task.getException());
+            new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.meters.qr.error"), ButtonType.OK).showAndWait();
+        });
+        JEConfig.getStatusBar().addTask(MetersToolbar.class.getName(), task, null, true);
     }
 }

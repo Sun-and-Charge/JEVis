@@ -20,21 +20,13 @@
  */
 package org.jevis.jeconfig.application.login;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +35,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.ws.json.JsonLoginResult;
 import org.jevis.commons.ws.json.JsonMfaStatus;
 import org.jevis.jeapi.ws.JEVisDataSourceWS;
+import org.jevis.jeconfig.tool.QrCodes;
 
 import java.util.Collections;
 import java.util.List;
@@ -176,7 +169,7 @@ public class TwoFactorDialogs {
         dialog.setTitle(t("app.login.mfa.title"));
         dialog.setHeaderText((message != null ? message + "\n" : "") + t("app.login.mfa.setup.header"));
 
-        ImageView qr = new ImageView(qrImage(setup.getOtpAuthUri(), 220));
+        ImageView qr = new ImageView(QrCodes.image(setup.getOtpAuthUri(), 220));
         TextField secret = new TextField(formatSecret(setup.getSecret()));
         secret.setEditable(false);
         TextField code = new TextField();
@@ -257,27 +250,5 @@ public class TwoFactorDialogs {
             sb.append(secret.charAt(i));
         }
         return sb.toString();
-    }
-
-    /**
-     * Renders a QR code into a JavaFX image (ZXing core only, no AWT/Swing needed).
-     */
-    static Image qrImage(String text, int size) {
-        try {
-            java.util.Map<EncodeHintType, Object> hints = new java.util.EnumMap<>(EncodeHintType.class);
-            hints.put(EncodeHintType.MARGIN, 2);
-            BitMatrix matrix = new QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, hints);
-            WritableImage image = new WritableImage(matrix.getWidth(), matrix.getHeight());
-            PixelWriter writer = image.getPixelWriter();
-            for (int x = 0; x < matrix.getWidth(); x++) {
-                for (int y = 0; y < matrix.getHeight(); y++) {
-                    writer.setColor(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            return image;
-        } catch (Exception ex) {
-            logger.error("Could not create QR code", ex);
-            return null;
-        }
     }
 }

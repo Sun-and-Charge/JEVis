@@ -224,6 +224,12 @@ public class MeterTable extends TableView<MeterData> implements TableFindScrollb
             });
 
 
+            TableColumn<MeterData, ?> qrColumn = new QrColumn(I18n.getInstance().getString("plugin.meters.qr.column"), SMALL_WIDTH, ds);
+            qrColumn.setVisible(pref.getBoolean("QR", true));
+            qrColumn.visibleProperty().addListener((observable, oldValue, newValue) -> {
+                pref.putBoolean("QR", newValue);
+            });
+
             TableColumn<MeterData, ?> pathColumn = new PathColumnColumn(new ObjectRelations(ds), BIG_WIDTH, I18n.getInstance().getString("plugin.meters.path"));
             boolean isMultiSite = ChartTools.isMultiSite(ds);
             pathColumn.setVisible(pref.getBoolean("Path", isMultiSite));
@@ -238,6 +244,7 @@ public class MeterTable extends TableView<MeterData> implements TableFindScrollb
             });
 
             this.getColumns().add(jumpColumn);
+            this.getColumns().add(qrColumn);
             this.getColumns().add(1, nameColumn);
             this.getColumns().add(2, pathColumn);
 
