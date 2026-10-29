@@ -1,0 +1,225 @@
+/*
+ * "Bridge" theme: a starship console look with black background, rounded colour bars and a condensed font (Antonio,
+ * SIL OFL 1.1). Own design inspired by classic science fiction consoles; it is a fun extra, not a corporate theme.
+ */
+.root {
+    -suc-primary: #000000;
+    -suc-on-primary: #ff9900;
+    -suc-accent: #ff9900;
+    -suc-on-accent: #000000;
+    -suc-background: #000000;
+    -suc-surface: #000000;
+    -suc-surface-alt: #1a1410;
+    -suc-border: #9c6bb8;
+    -suc-text: #ffcc99;
+    -suc-text-muted: #cc99cc;
+    -suc-selection: #cc99cc;
+    -suc-selection-text: #000000;
+    -suc-hover: #33261a;
+    -suc-row-alt: #0d0a08;
+    -suc-icon: #ff9900;
+    -suc-date-accent: #cc6600;
+    -suc-link: #99ccff;
+    -suc-error: #ff4433;
+
+    /* Modena */
+    -fx-base: #2b2118;
+    -fx-background: -suc-background;
+    -fx-control-inner-background: #000000;
+    -fx-control-inner-background-alt: #0d0a08;
+    -fx-accent: #cc99cc;
+    -fx-focus-color: #99ccff;
+    -fx-faint-focus-color: #99ccff22;
+    -fx-selection-bar: #cc99cc;
+    -fx-selection-bar-non-focused: #664c66;
+    -fx-text-color: -suc-text;
+}
+
+/* console font for the application frame only; dashboards and charts keep their own fonts */
+.top-bar,
+.tab-pane.plugin-tab-pane > .tab-header-area,
+.tab-pane > .tab-header-area,
+.dialog-pane,
+.side-pane,
+.tree-view,
+.titled-pane,
+.context-menu,
+.tooltip,
+.button,
+.toggle-button {
+    -fx-font-family: "Antonio";
+    -fx-font-size: 14px;
+}
+
+.suc-heading,
+.dialog-header-title,
+.dialog-pane > .header-panel .label,
+.titled-pane > .title,
+.title {
+    -fx-font-family: "Antonio";
+    -fx-font-weight: bold;
+}
+
+/* rounded console bars */
+.button,
+.toggle-button,
+.menu-button,
+.split-menu-button,
+.combo-box-base,
+.jfx-button {
+    -fx-background-color: #ffcc99;
+    -fx-text-fill: #000000;
+    -fx-background-radius: 20;
+    -fx-background-insets: 0;
+    -fx-padding: 0.35em 1.2em 0.35em 1.2em;
+}
+
+.combo-box-base > .list-cell {
+    -fx-text-fill: #000000;
+}
+
+.button:hover,
+.toggle-button:hover,
+.menu-button:hover,
+.combo-box-base:hover {
+    -fx-background-color: #ff9900;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #cc99cc;
+}
+
+.button:default {
+    -fx-background-color: #ff9900;
+}
+
+.button:disabled,
+.toggle-button:disabled {
+    -fx-opacity: 0.4;
+}
+
+.text-field,
+.text-area,
+.date-picker > .text-field {
+    -fx-background-color: #99ccff, #000000;
+    -fx-background-insets: 0, 0 0 2 0;
+    -fx-background-radius: 0;
+    -fx-text-fill: #ffcc99;
+    -fx-prompt-text-fill: #9c6bb8;
+}
+
+.text-area .content {
+    -fx-background-color: #000000;
+}
+
+/* menu bar: orange bar with black text */
+.menu-bar {
+    -fx-background-color: #ff9900;
+    -fx-background-radius: 0 0 0 18;
+}
+
+.menu-bar > .container > .menu-button > .label {
+    -fx-text-fill: #000000;
+}
+
+.menu-bar > .container > .menu-button:hover,
+.menu-bar > .container > .menu-button:showing {
+    -fx-background-color: #cc99cc;
+    -fx-background-radius: 0;
+}
+
+.context-menu,
+.menu-bar .context-menu {
+    -fx-background-color: #000000;
+    -fx-border-color: #ff9900;
+    -fx-border-width: 2;
+}
+
+.menu-item:focused {
+    -fx-background-color: #ff9900;
+}
+
+.menu-item:focused > .label {
+    -fx-text-fill: #000000;
+}
+
+.top-bar > .tool-bar {
+    -fx-background-color: #cc99cc, #000000;
+    -fx-background-insets: 0, 0 0 4 0;
+}
+
+/* plugin tabs: column of rounded colour blocks */
+.tab-pane.plugin-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #000000;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab {
+    -tab-text-color: #000000;
+    -fx-background-color: #9999cc;
+    -fx-background-insets: 2 0 2 0;
+    -fx-background-radius: 14;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #ffcc99;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #ff9900;
+}
+
+.pluginSVG,
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:selected .pluginSVG {
+    -fx-background-color: #000000;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: #9999cc;
+    -fx-background-radius: 14 14 0 0;
+    -tab-text-color: #000000;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #ff9900;
+    -fx-background-insets: 0;
+}
+
+/* dialog headers: elbow shape */
+.dialog-pane > .header-panel,
+.dialog-header {
+    -fx-background-color: #cc99cc;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0 0 0 30;
+}
+
+.dialog-pane > .header-panel .label,
+.dialog-header .label,
+.dialog-header-title {
+    -fx-text-fill: #000000;
+}
+
+.table-view .column-header-background,
+.tree-table-view .column-header-background {
+    -fx-background-color: #ff9900;
+    -fx-background-insets: 0;
+}
+
+.table-view .column-header-background .label,
+.tree-table-view .column-header-background .label {
+    -fx-text-fill: #000000;
+}
+
+.tooltip {
+    -fx-background-color: #ff9900;
+    -fx-text-fill: #000000;
+    -fx-background-radius: 10;
+}
+
+.scroll-bar > .thumb {
+    -fx-background-color: #9999cc;
+    -fx-background-radius: 8;
+}
+
+.scroll-bar {
+    -fx-background-color: #000000;
+}

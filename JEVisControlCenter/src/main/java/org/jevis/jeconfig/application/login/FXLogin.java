@@ -143,9 +143,9 @@ public class FXLogin extends AnchorPane {
         this.messageBox.setFocusTraversable(false);
 
 
-        loginButton.setStyle("-fx-background-color: #4dadf7");
-        loginButton.setTextFill(javafx.scene.paint.Paint.valueOf("#FFFFFF"));
-        closeButton.setStyle("-fx-background-color: #adb5bd");
+        loginButton.setStyle("-fx-background-color: #ffde00");
+        loginButton.setTextFill(javafx.scene.paint.Paint.valueOf("#1a2a45"));
+        closeButton.setStyle("-fx-background-color: #1a2a45");
         closeButton.setTextFill(javafx.scene.paint.Paint.valueOf("#FFFFFF"));
 
 

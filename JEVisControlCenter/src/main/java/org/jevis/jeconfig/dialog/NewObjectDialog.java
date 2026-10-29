@@ -39,7 +39,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -166,7 +165,6 @@ public class NewObjectDialog {
                                 ImageView icon = ImageConverter.convertToImageView(item.getIcon(), 15, 15);
                                 //Label cName = new Label(item.getName());
                                 Label cName = new Label(I18nWS.getInstance().getClassName(item.getName()));
-                                cName.setTextFill(Color.BLACK);
                                 box.getChildren().setAll(icon, cName);
 
                             } catch (JEVisException ex) {

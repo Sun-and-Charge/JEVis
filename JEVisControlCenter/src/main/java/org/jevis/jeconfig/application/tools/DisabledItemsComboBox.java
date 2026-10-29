@@ -24,7 +24,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
@@ -94,9 +93,10 @@ public class DisabledItemsComboBox<T> extends JFXComboBox<T> {
                         if (item != null) {
 
                             setText(item.toString());
+                            setStyle("");
 
                             if (disabledItems.contains(item)) {
-                                setTextFill(Color.LIGHTGRAY);
+                                setStyle("-fx-text-fill: -suc-text-muted;");
                                 setDisable(true);
                             }
 

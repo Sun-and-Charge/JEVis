@@ -1,7 +1,8 @@
+/* User agent stylesheet: default tooltip, also used before a theme is active (login). Themes override it. */
 .tooltip {
-    -fx-background-color: rgb(235,235,235,1);
-    -fx-text-fill: black;
+    -fx-background-color: #1a2a45;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 3;
     -fx-font-smoothing-type: lcd;
-    /*-fx-font-family: 'sans-serif';*/
     -fx-font-size: 12;
 }

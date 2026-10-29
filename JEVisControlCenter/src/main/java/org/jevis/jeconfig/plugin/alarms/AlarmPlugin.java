@@ -538,7 +538,7 @@ public class AlarmPlugin implements Plugin {
                                     AlarmRow alarmRow = (AlarmRow) getTableRow().getItem();
 
                                     if (alarmRow.isLinkDisabled()) {
-                                        setTextFill(Color.BLACK);
+                                        setStyle("");
                                         setUnderline(false);
                                     } else {
 
@@ -551,7 +551,7 @@ public class AlarmPlugin implements Plugin {
                                             }
                                         });
 
-                                        setTextFill(Color.BLUE);
+                                        setStyle("-fx-text-fill: -suc-link;");
                                         setUnderline(true);
                                     }
 

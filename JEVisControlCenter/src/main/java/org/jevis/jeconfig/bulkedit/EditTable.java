@@ -31,7 +31,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -125,7 +124,6 @@ public class EditTable {
                             try {
                                 ImageView icon = ImageConverter.convertToImageView(item.getIcon(), 15, 15);
                                 Label cName = new Label(item.getName());
-                                cName.setTextFill(Color.BLACK);
                                 box.getChildren().setAll(icon, cName);
 
                             } catch (JEVisException ex) {

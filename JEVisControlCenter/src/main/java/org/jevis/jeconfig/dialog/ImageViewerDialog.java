@@ -34,8 +34,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Window;
 import javafx.stage.*;
 import javafx.util.Callback;
@@ -214,8 +212,7 @@ public class ImageViewerDialog {
         Region spacer = new Region();
         fileName = new Label(file.getFilename());
         fileName.setPadding(new Insets(0, 4, 0, 0));
-        fileName.setTextFill(Color.web("#0076a3"));
-        fileName.setFont(new Font("Cambria", iconSize));
+        fileName.getStyleClass().add("dialog-header-title");
 
         Callback<ListView<JEVisFileWithSample>, ListCell<JEVisFileWithSample>> cellFactory = new Callback<ListView<JEVisFileWithSample>, ListCell<JEVisFileWithSample>>() {
             @Override

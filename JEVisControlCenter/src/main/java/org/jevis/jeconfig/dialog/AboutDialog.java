@@ -33,8 +33,6 @@ import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -120,12 +118,10 @@ public class AboutDialog {
         sep.setMinHeight(10);
 
         Label pInfo = new Label(info.getName() + ":");
-        pInfo.setTextFill(Color.web("#0076a3"));
-        pInfo.setFont(Font.font("Cambria", 25));
+        pInfo.getStyleClass().add("dialog-header-title");
 
         Label pVersion = new Label(info.getVersion());
-        pVersion.setTextFill(Color.web("#0076a3"));
-        pVersion.setFont(Font.font("Cambria", 25));
+        pVersion.getStyleClass().add("dialog-header-title");
 
         Label apiInfo = new Label("JEAPI Version:");
         Label apiVersion = new Label(info.getAPIVersion().getName() + " " + info.getAPIVersion().getVersion());

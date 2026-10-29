@@ -1,9 +1,9 @@
 .spreadsheet-cell-error {
-    -fx-border-color: red;
+    -fx-border-color: -suc-error;
     -fx-border-width: 2;
 }
 
 .spreadsheet-cell-objectId{
-    -fx-background-color:lightgoldenrodyellow;
+    -fx-background-color: -suc-hover;
 }
 

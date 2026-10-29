@@ -679,9 +679,9 @@ public class LoadProfilePlugin implements Plugin {
                             setAlignment(Pos.CENTER);
 
                             if (tableSample.isHoliday()) {
-                                setTextFill(Color.RED);
+                                setStyle("-fx-text-fill: -suc-error;");
                             } else {
-                                setTextFill(Color.BLACK);
+                                setStyle("");
                             }
                         }
                     }

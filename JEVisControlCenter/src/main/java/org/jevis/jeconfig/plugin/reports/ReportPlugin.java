@@ -700,10 +700,10 @@ public class ReportPlugin implements Plugin {
                             setText(null);
                         } else {
                             if (disabledItemList.contains(obj)) {
-                                setTextFill(Color.LIGHTGRAY);
+                                setStyle("-fx-text-fill: -suc-text-muted;");
                                 setDisable(true);
                             } else {
-                                setTextFill(Color.BLACK);
+                                setStyle("");
                                 setDisable(false);
                             }
 

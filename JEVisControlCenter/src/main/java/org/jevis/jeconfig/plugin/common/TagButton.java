@@ -137,10 +137,10 @@ public class TagButton extends Button {
     private void updateButton(List<String> selected) {
         Platform.runLater(() -> {
             if (selected.size() == allTags.size()) {
-                setStyle("-fx-border-color: #51aaa5;");
+                getStyleClass().remove("tag-filter-active");
                 setGraphic(JEConfig.getSVGImage(Icon.FILTER_ALT_OFF, 20, 20));
             } else {
-                setStyle("-fx-border-color: green;");
+                if (!getStyleClass().contains("tag-filter-active")) getStyleClass().add("tag-filter-active");
                 setGraphic(JEConfig.getSVGImage(Icon.FILTER_ALT, 20, 20));
             }
         });

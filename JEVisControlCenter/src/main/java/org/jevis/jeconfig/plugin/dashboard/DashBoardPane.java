@@ -86,6 +86,8 @@ public class DashBoardPane extends Pane {
         super();
         this.defaultBackground = getBackground();
         this.setStyle("-fx-focus-color: transparent;");
+        /* dashboards bring their own colours, see .dashboard-pane in Styles.css */
+        this.getStyleClass().add("dashboard-pane");
 //        setStyle("-fx-background-color: orange;");
         logger.debug("Start DashBoardPane: {}", control.getActiveDashboard());
         this.jeVisDataSource = control.getDataSource();

@@ -1,0 +1,37 @@
+/*
+ * Sun and Charge theme (default): colours of the corporate design
+ * Blueberry #1a2a45, Sun #ffde00, Pure white; highlights #FFC000, #C55A11, #254174.
+ * Only colour variables; the rules are in Styles.css.
+ */
+.root {
+    -suc-primary: #1a2a45;
+    -suc-on-primary: #ffffff;
+    -suc-accent: #ffde00;
+    -suc-on-accent: #1a2a45;
+    -suc-background: #f4f6f9;
+    -suc-surface: #ffffff;
+    -suc-surface-alt: #eef1f6;
+    -suc-border: #d3d9e3;
+    -suc-text: #1f2a3c;
+    -suc-text-muted: #6b768a;
+    -suc-selection: #ffde00;
+    -suc-selection-text: #1a2a45;
+    -suc-hover: #fff6c4;
+    -suc-row-alt: #f7f8fb;
+    -suc-icon: #1a2a45;
+    -suc-date-accent: #1a2a45;
+    -suc-link: #254174;
+    -suc-error: #c55a11;
+
+    /* Modena */
+    -fx-base: #eef1f6;
+    -fx-background: -suc-background;
+    -fx-control-inner-background: -suc-surface;
+    -fx-control-inner-background-alt: derive(-suc-surface-alt, 40%);
+    -fx-accent: #ffde00;
+    -fx-focus-color: #254174;
+    -fx-faint-focus-color: #25417422;
+    -fx-selection-bar: #ffde00;
+    -fx-selection-bar-non-focused: #fff0a0;
+    -fx-text-color: -suc-text;
+}

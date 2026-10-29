@@ -70,7 +70,9 @@ import org.joda.time.DateTime;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
@@ -83,16 +85,28 @@ public class TopMenu extends MenuBar {
     private static final Logger logger = LogManager.getLogger(TopMenu.class);
     private static final String stylesString = "/styles/Styles.css";
     private static final String chartString = "/styles/charts.css";
-    private static final String standardString = "/styles/Standard.css";
-    private static final String darkString = "/styles/Dark.css";
-    private static final String amberString = "/styles/Amber.css";
-    private static final String greenString = "/styles/Green.css";
-    private static final String indigoString = "/styles/Indigo.css";
-    private static final String redString = "/styles/Red.css";
-    private static final String whiteString = "/styles/White.css";
-    private static final List<String> allThemes = Arrays.asList(stylesString, chartString, standardString, darkString, amberString,
-            greenString, indigoString, redString, whiteString);
-    private static String activeTheme;
+    private static final String DEFAULT_THEME = "suncharge";
+    private static final String BRIDGE_THEME = "bridge";
+    /* theme key (also the i18n suffix of menu.view.theme.*) -> stylesheet with the theme's colour variables */
+    private static final Map<String, String> THEMES = new LinkedHashMap<>();
+    private static final Preferences THEME_PREFERENCES = Preferences.userRoot().node("JEVis.JEConfig.Theme");
+    private static final String THEME_PREFERENCE_KEY = "active";
+
+    static {
+        THEMES.put(DEFAULT_THEME, "/styles/SunCharge.css");
+        THEMES.put("sunchargedark", "/styles/SunChargeDark.css");
+        THEMES.put(BRIDGE_THEME, "/styles/Bridge.css");
+    }
+
+    private static final List<String> allThemes = new ArrayList<>();
+
+    static {
+        allThemes.add(stylesString);
+        allThemes.add(chartString);
+        allThemes.addAll(THEMES.values());
+    }
+
+    private static String activeTheme = THEMES.get(selectedThemeKey());
     private final List<MenuItem> items = new ArrayList<>();
     private final SimpleObjectProperty<Plugin> activePlugin = new SimpleObjectProperty<>();
 
@@ -102,6 +116,21 @@ public class TopMenu extends MenuBar {
         updateLayout();
 
         this.activePluginProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(this::updateLayout));
+    }
+
+    /**
+     * The theme stored in the preferences. Users of the removed themes (Standard, Amber, Green, Indigo, Red, White)
+     * get the Sun and Charge theme, users of the old dark theme the Sun and Charge dark theme.
+     * The Bridge theme is only available in expert mode.
+     */
+    private static String selectedThemeKey() {
+        String key = THEME_PREFERENCES.get(THEME_PREFERENCE_KEY, null);
+        if (key != null && THEMES.containsKey(key) && isThemeAvailable(key)) return key;
+        return THEME_PREFERENCES.getBoolean("dark", false) ? "sunchargedark" : DEFAULT_THEME;
+    }
+
+    private static boolean isThemeAvailable(String key) {
+        return !BRIDGE_THEME.equals(key) || JEConfig.getExpert();
     }
 
     public static void applyActiveTheme(Scene scene) {
@@ -401,144 +430,24 @@ public class TopMenu extends MenuBar {
         Menu view = new Menu(I18n.getInstance().getString("menu.view"));
         Menu theme = new Menu(I18n.getInstance().getString("menu.view.theme"));
 
-        final Preferences prefTheme = Preferences.userRoot().node("JEVis.JEConfig.Theme");
-
-        CheckMenuItem standardTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.standard"));
-        CheckMenuItem darkTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.dark"));
-        CheckMenuItem amberTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.amber"));
-        CheckMenuItem greenTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.green"));
-        CheckMenuItem indigoTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.indigo"));
-        CheckMenuItem redTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.red"));
-        CheckMenuItem whiteTheme = new CheckMenuItem(I18n.getInstance().getString("menu.view.theme.white"));
-
-        standardTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-
-                prefTheme.putBoolean("standard", true);
-                applyTheme(standardString);
-
-                darkTheme.setSelected(false);
-                amberTheme.setSelected(false);
-                greenTheme.setSelected(false);
-                indigoTheme.setSelected(false);
-                redTheme.setSelected(false);
-                whiteTheme.setSelected(false);
-            } else {
-                prefTheme.putBoolean("standard", false);
-            }
+        ToggleGroup themeGroup = new ToggleGroup();
+        String selectedTheme = selectedThemeKey();
+        for (String key : THEMES.keySet()) {
+            if (!isThemeAvailable(key)) continue;
+            RadioMenuItem item = new RadioMenuItem(I18n.getInstance().getString("menu.view.theme." + key));
+            item.setToggleGroup(themeGroup);
+            item.setUserData(key);
+            item.setSelected(key.equals(selectedTheme));
+            theme.getItems().add(item);
+        }
+        themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) return;
+            String key = (String) newValue.getUserData();
+            THEME_PREFERENCES.put(THEME_PREFERENCE_KEY, key);
+            applyTheme(THEMES.get(key));
         });
+        applyTheme(THEMES.get(selectedTheme));
 
-        darkTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                prefTheme.putBoolean("dark", true);
-                applyTheme(darkString);
-
-                standardTheme.setSelected(false);
-                amberTheme.setSelected(false);
-                greenTheme.setSelected(false);
-                indigoTheme.setSelected(false);
-                redTheme.setSelected(false);
-                whiteTheme.setSelected(false);
-
-            } else {
-                prefTheme.putBoolean("dark", false);
-            }
-        });
-
-        amberTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                prefTheme.putBoolean("amber", true);
-                applyTheme(amberString);
-
-                darkTheme.setSelected(false);
-                standardTheme.setSelected(false);
-                greenTheme.setSelected(false);
-                indigoTheme.setSelected(false);
-                redTheme.setSelected(false);
-                whiteTheme.setSelected(false);
-
-            } else {
-                prefTheme.putBoolean("amber", false);
-            }
-        });
-
-        greenTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                prefTheme.putBoolean("green", true);
-                applyTheme(greenString);
-
-                darkTheme.setSelected(false);
-                amberTheme.setSelected(false);
-                standardTheme.setSelected(false);
-                indigoTheme.setSelected(false);
-                redTheme.setSelected(false);
-                whiteTheme.setSelected(false);
-
-            } else {
-                prefTheme.putBoolean("green", false);
-            }
-        });
-
-        indigoTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                prefTheme.putBoolean("indigo", true);
-                applyTheme(indigoString);
-
-                darkTheme.setSelected(false);
-                amberTheme.setSelected(false);
-                greenTheme.setSelected(false);
-                standardTheme.setSelected(false);
-                redTheme.setSelected(false);
-                whiteTheme.setSelected(false);
-
-            } else {
-                prefTheme.putBoolean("indigo", false);
-            }
-        });
-
-        redTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                prefTheme.putBoolean("red", true);
-                applyTheme(redString);
-
-                darkTheme.setSelected(false);
-                amberTheme.setSelected(false);
-                greenTheme.setSelected(false);
-                indigoTheme.setSelected(false);
-                standardTheme.setSelected(false);
-                whiteTheme.setSelected(false);
-
-            } else {
-                prefTheme.putBoolean("red", false);
-            }
-        });
-
-        whiteTheme.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                prefTheme.putBoolean("white", true);
-                applyTheme(whiteString);
-
-                darkTheme.setSelected(false);
-                amberTheme.setSelected(false);
-                greenTheme.setSelected(false);
-                indigoTheme.setSelected(false);
-                redTheme.setSelected(false);
-                standardTheme.setSelected(false);
-
-            } else {
-                prefTheme.putBoolean("white", false);
-            }
-        });
-
-        standardTheme.setSelected(prefTheme.getBoolean("standard", true));
-        darkTheme.setSelected(prefTheme.getBoolean("dark", false));
-        amberTheme.setSelected(prefTheme.getBoolean("amber", false));
-        greenTheme.setSelected(prefTheme.getBoolean("green", false));
-        indigoTheme.setSelected(prefTheme.getBoolean("indigo", false));
-        redTheme.setSelected(prefTheme.getBoolean("red", false));
-        whiteTheme.setSelected(prefTheme.getBoolean("white", false));
-
-        theme.getItems().addAll(standardTheme, darkTheme, amberTheme, greenTheme, indigoTheme, redTheme, whiteTheme);
         view.getItems().add(theme);
         return view;
     }

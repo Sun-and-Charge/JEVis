@@ -133,7 +133,7 @@ public class UnitPlugin implements Plugin {
             });
 
             VBox left = new VBox();
-            left.setStyle("-fx-background-color: #E2E2E2;");
+            left.getStyleClass().add("side-pane");
             left.getChildren().addAll(tree);
             VBox.setVgrow(tree, Priority.ALWAYS);
 
