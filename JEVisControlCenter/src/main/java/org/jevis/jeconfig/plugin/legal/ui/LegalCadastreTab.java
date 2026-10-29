@@ -40,6 +40,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.table.SummeryTable;
+import org.jevis.jeconfig.plugin.common.TagButton;
 import org.jevis.jeconfig.plugin.legal.LegalCadastreController;
 import org.jevis.jeconfig.plugin.legal.data.IndexOfLegalProvisions;
 
@@ -72,9 +73,9 @@ public class LegalCadastreTab extends Tab {
         fsearch.setPromptText(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.searchfor"));
 
 
-        org.jevis.jeconfig.plugin.nonconformities.ui.TagButton categoryButton = new org.jevis.jeconfig.plugin.nonconformities.ui.TagButton(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.category"), indexOfLegalProvisions.getCategories(), indexOfLegalProvisions.getCategories());
-        org.jevis.jeconfig.plugin.nonconformities.ui.TagButton scopeButton = new org.jevis.jeconfig.plugin.nonconformities.ui.TagButton(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.scope"), indexOfLegalProvisions.getScopes(), indexOfLegalProvisions.getScopes());
-        org.jevis.jeconfig.plugin.nonconformities.ui.TagButton relevanceButton = new org.jevis.jeconfig.plugin.nonconformities.ui.TagButton(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.relevance"), indexOfLegalProvisions.getRelevanzTags(), indexOfLegalProvisions.getRelevanzTags());
+        TagButton categoryButton = new TagButton(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.category"), indexOfLegalProvisions.getCategories(), indexOfLegalProvisions.getCategories());
+        TagButton scopeButton = new TagButton(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.scope"), indexOfLegalProvisions.getScopes(), indexOfLegalProvisions.getScopes());
+        TagButton relevanceButton = new TagButton(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.relevance"), indexOfLegalProvisions.getRelevanzTags(), indexOfLegalProvisions.getRelevanzTags());
 
 
         indexOfLegalProvisionsTable.setCategories(categoryButton.getSelectedTags());

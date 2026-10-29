@@ -23,10 +23,10 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TabPane;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.plugin.common.AttachmentTab;
 import org.jevis.jeconfig.plugin.legal.data.IndexOfLegalProvisions;
 import org.jevis.jeconfig.plugin.legal.data.ObligationData;
 
-import org.jevis.jeconfig.plugin.legal.ui.tab.AttachmentTab;
 import org.jevis.jeconfig.plugin.legal.ui.tab.GeneralTab;
 import org.jevis.jeconfig.tool.ScreenSize;
 
@@ -43,7 +43,7 @@ public class ObligationForm extends Dialog {
 
     private GeneralTab basicTab = new GeneralTab(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.general"));
 
-    private AttachmentTab attachmentTab = new AttachmentTab(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.attachment"));
+    private AttachmentTab<ObligationData> attachmentTab = new AttachmentTab<>(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.attachment"), ObligationData::getObject);
 
     private IndexOfLegalProvisions indexOfLegalProvisions;
 

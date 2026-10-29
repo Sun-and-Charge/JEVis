@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.controlsfx.control.CheckComboBox;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.plugin.common.DataTab;
 import org.jevis.jeconfig.plugin.nonconformities.NonconformitiesController;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityData;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityPlan;
@@ -48,7 +49,7 @@ import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GeneralTab extends Tab {
+public class GeneralTab extends DataTab<NonconformityData> {
 
     private static final Logger logger = LogManager.getLogger(GeneralTab.class);
     private final JFXDatePicker f_deadlineDate = new JFXDatePicker();

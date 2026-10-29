@@ -27,12 +27,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.plugin.common.DataTab;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityData;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckListTab extends Tab {
+public class CheckListTab extends DataTab<NonconformityData> {
     private JFXCheckBox f_ImmediateActionRequired = new JFXCheckBox();
     private JFXCheckBox f_EffectOnOngoingProcesses = new JFXCheckBox();
     private JFXCheckBox f_RoutinelyAffected = new JFXCheckBox();

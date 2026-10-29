@@ -41,7 +41,6 @@ import org.jevis.jeconfig.application.table.SummeryData;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityData;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityPlan;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformtiesOverviewData;
-import org.jevis.jeconfig.plugin.nonconformities.data.TableFilter;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -76,7 +75,6 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
 
     SortedList<NonconformityData> sortedData;
     private final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
-    private final TableFilter tableFilter = new TableFilter();
     private final NonconformityData sumRow = new NonconformityData();
     private DateFilter dateFilter;
     private boolean showSumRow = false;
@@ -302,10 +300,6 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
 
     public ObservableList<SummeryData> getSummeryData() {
         return summeryData;
-    }
-
-    public TableFilter getTableFilter() {
-        return tableFilter;
     }
 
     public void setTextFilter(String containsText) {

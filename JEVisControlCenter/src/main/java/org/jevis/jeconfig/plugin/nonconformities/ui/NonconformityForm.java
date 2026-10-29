@@ -23,9 +23,9 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TabPane;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.plugin.common.AttachmentTab;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityData;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityPlan;
-import org.jevis.jeconfig.plugin.nonconformities.ui.tab.AttachmentTab;
 import org.jevis.jeconfig.plugin.nonconformities.ui.tab.CheckListTab;
 import org.jevis.jeconfig.plugin.nonconformities.ui.tab.GeneralTab;
 import org.jevis.jeconfig.tool.ScreenSize;
@@ -45,7 +45,7 @@ public class NonconformityForm extends Dialog {
     // private Tab detailTab = new Tab(I18n.getInstance().getString("actionform.editor.tab.deteils"));
     private CheckListTab checkListTab = new CheckListTab(I18n.getInstance().getString("plugin.nonconformities.form.tab.checklist"));
 
-    private AttachmentTab attachmentTab = new AttachmentTab(I18n.getInstance().getString("plugin.nonconformities.form.tab.attachment"));
+    private AttachmentTab<NonconformityData> attachmentTab = new AttachmentTab<>(I18n.getInstance().getString("plugin.nonconformities.form.tab.attachment"), NonconformityData::getObject);
 
     private NonconformityPlan nonconformityPlan;
 

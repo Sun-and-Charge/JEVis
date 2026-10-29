@@ -40,6 +40,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.table.SummeryTable;
+import org.jevis.jeconfig.plugin.common.TagButton;
 import org.jevis.jeconfig.plugin.nonconformities.NonconformitiesController;
 import org.jevis.jeconfig.plugin.nonconformities.data.NonconformityPlan;
 

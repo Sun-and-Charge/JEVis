@@ -51,6 +51,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.table.SummeryData;
 import org.jevis.jeconfig.application.table.SummeryTable;
+import org.jevis.jeconfig.plugin.common.TagButton;
 import org.jevis.jeconfig.plugin.meters.MeterController;
 import org.jevis.jeconfig.plugin.meters.data.JEVisTypeWrapper;
 import org.jevis.jeconfig.plugin.meters.data.MeterList;

@@ -37,6 +37,7 @@ import javafx.scene.layout.Region;
 import org.jevis.api.JEVisException;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.plugin.common.DataTab;
 import org.jevis.jeconfig.plugin.legal.data.IndexOfLegalProvisions;
 import org.jevis.jeconfig.plugin.legal.data.ObligationData;
 import org.joda.time.DateTime;
@@ -45,7 +46,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GeneralTab extends Tab {
+public class GeneralTab extends DataTab<ObligationData> {
     private final JFXDatePicker f_issueDate = new JFXDatePicker();
     private final JFXDatePicker f_activeVersion = new JFXDatePicker();
     private final JFXDatePicker f_dateOfExamination = new JFXDatePicker();

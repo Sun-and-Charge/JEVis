@@ -17,7 +17,7 @@
  * <p>
  * JEVisControlCenter is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
-package org.jevis.jeconfig.plugin.action.data;
+package org.jevis.jeconfig.plugin.common;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

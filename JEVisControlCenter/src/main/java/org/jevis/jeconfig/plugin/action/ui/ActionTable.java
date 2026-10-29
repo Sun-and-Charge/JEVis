@@ -75,7 +75,6 @@ public class ActionTable extends TableView<ActionData> {
     }
 
     private final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
-    private final TableFilter tableFilter = new TableFilter();
     private final Statistics statistic;
     private final boolean showSumRow = false;
     private final ActionPlanData actionPlanData;
@@ -641,10 +640,6 @@ public class ActionTable extends TableView<ActionData> {
             }
         };
 
-    }
-
-    public TableFilter getTableFilter() {
-        return tableFilter;
     }
 
     public void setFilterStatus(ObservableList<String> status) {

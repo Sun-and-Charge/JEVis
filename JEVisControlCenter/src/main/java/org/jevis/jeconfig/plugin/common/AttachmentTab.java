@@ -17,36 +17,32 @@
  * <p>
  * JEVisControlCenter is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
-package org.jevis.jeconfig.plugin.legal.ui.tab;
+package org.jevis.jeconfig.plugin.common;
 
+import org.jevis.api.JEVisObject;
 
-import javafx.scene.Node;
+import java.util.function.Function;
 
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import org.controlsfx.control.NotificationPane;
-import org.jevis.jeconfig.plugin.legal.data.ObligationData;
+/**
+ * Form tab with the file attachments of a data object.
+ */
+public class AttachmentTab<T> extends DataTab<T> {
 
-public abstract class Tab extends javafx.scene.control.Tab {
-    protected NotificationPane notificationPane = new NotificationPane();
+    private final Function<T, JEVisObject> objectOf;
 
-    public Tab(String s) {
-        super(s);
+    public AttachmentTab(String title, Function<T, JEVisObject> objectOf) {
+        super(title);
+        this.objectOf = objectOf;
     }
 
-    public Tab() {
+    @Override
+    public void initTab(T data) {
+        notificationPane.setContent(new AttachmentPane(objectOf.apply(data)));
+        this.setContent(notificationPane);
     }
 
-    public Tab(String s, Node node) {
-        super(s, node);
-    }
+    @Override
+    public void updateView(T data) {
 
-    public abstract void initTab(ObligationData data);
-
-    public abstract void updateView(ObligationData data);
-
-    void add(GridPane pane, int column, int row, int colspan, int rowspan, Priority priority, Node node) {
-        pane.add(node, column, row, colspan, rowspan);
-        GridPane.setHgrow(node, priority);
     }
 }

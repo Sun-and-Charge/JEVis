@@ -50,7 +50,6 @@ import org.jevis.jeconfig.application.table.SummeryData;
 import org.jevis.jeconfig.plugin.dashboard.config2.SankeyDataRow;
 import org.jevis.jeconfig.plugin.legal.data.IndexOfLegalProvisions;
 import org.jevis.jeconfig.plugin.legal.data.ObligationData;
-import org.jevis.jeconfig.plugin.legal.data.TableFilter;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -81,7 +80,6 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
 
     SortedList<ObligationData> sortedData;
     private final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
-    private final TableFilter tableFilter = new TableFilter();
     private final ObligationData sumRow = new ObligationData();
     private DateFilter dateFilter;
     private String relevantFilter;
@@ -328,10 +326,6 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
         }
     }
 
-
-    public TableFilter getTableFilter() {
-        return tableFilter;
-    }
 
     public void setTextFilter(String containsText) {
         this.containsTextFilter = containsText;

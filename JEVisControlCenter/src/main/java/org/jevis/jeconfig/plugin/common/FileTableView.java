@@ -17,7 +17,7 @@
  * <p>
  * JEVisControlCenter is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
-package org.jevis.jeconfig.plugin.action.ui;
+package org.jevis.jeconfig.plugin.common;
 
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -25,7 +25,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.jevis.commons.i18n.I18n;
-import org.jevis.jeconfig.plugin.action.data.FileData;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;

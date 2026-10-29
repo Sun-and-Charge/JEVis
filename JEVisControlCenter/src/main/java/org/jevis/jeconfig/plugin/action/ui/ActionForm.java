@@ -20,12 +20,14 @@
 package org.jevis.jeconfig.plugin.action.ui;
 
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.action.data.ActionData;
 import org.jevis.jeconfig.plugin.action.data.ActionPlanData;
 import org.jevis.jeconfig.plugin.action.ui.tab.*;
+import org.jevis.jeconfig.plugin.common.AttachmentPane;
 import org.jevis.jeconfig.tool.ScreenSize;
 
 public class ActionForm extends Dialog {
@@ -36,7 +38,7 @@ public class ActionForm extends Dialog {
     private DetailsTab detailTab;
     private CapitalTab capitalTab;
     private GeneralTab generalTab;
-    private AttachmentTab attachmentTab;
+    private Tab attachmentTab;
     private CheckListTab checkListTab;
 
     public ActionForm(ActionPlanData actionPlan, ActionData action) {
@@ -58,7 +60,7 @@ public class ActionForm extends Dialog {
         detailTab = new DetailsTab(action);
         capitalTab = new CapitalTab(action);
         generalTab = new GeneralTab(action);
-        attachmentTab = new AttachmentTab(action);
+        attachmentTab = new Tab(I18n.getInstance().getString("actionform.editor.tab.attachment"), new AttachmentPane(action.getObject()));
         checkListTab = new CheckListTab(action);
 
         generalTab.setClosable(false);
