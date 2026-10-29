@@ -53,45 +53,46 @@ public class LastRawValueCell<T> implements Callback<TableColumn<T, LastRawValue
     public TableCell<T, LastRawValuePojo> call(TableColumn<T, LastRawValuePojo> tMeterDataTableColumn) {
 
         TableCell<T, LastRawValuePojo> tableCell = new TableCell<T, LastRawValuePojo>() {
+            /* Cells are reused for different rows, so the controls and the precision listener are created once per
+               cell and always work on the current item. */
+            private final Label label = new Label();
+            private final JFXButton manSampleButton = new JFXButton("", JEConfig.getImage("if_textfield_add_64870.png", 18, 18));
+            private final HBox hBox;
+
+            {
+                manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
+                label.setAlignment(Pos.CENTER_LEFT);
+                VBox textVBox = new VBox(label);
+                textVBox.setAlignment(Pos.CENTER);
+                Region spacer = new Region();
+                hBox = new HBox(8, textVBox, spacer, manSampleButton);
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                precisionEventHandler.addEventListener(precisionEvent -> {
+                    LastRawValuePojo item = getItem();
+                    if (item == null || isEmpty() || !precisionEvent.getSource().equals(item.getMeterData())) return;
+
+                    if (precisionEvent.getType().equals(PrecisionEvent.TYPE.INCREASE)) {
+                        item.setPrecision(item.getPrecision() + 1);
+                    } else if (precisionEvent.getType().equals(PrecisionEvent.TYPE.DECREASE)) {
+                        item.setPrecision(item.getPrecision() - 1);
+                    }
+                    label.setText(getString(item.getValue(), item.getPrecision(), item.getUnitLabel()));
+                });
+            }
+
             @Override
             protected void updateItem(LastRawValuePojo item, boolean empty) {
                 super.updateItem(item, empty);
+                setText(null);
                 if (item == null || empty) {
-                    setText(null);
+                    setGraphic(null);
                 } else {
                     logger.debug(item);
-                    String content = getString(item.getValue(), item.getPrecision(), item.getUnitLabel());
-
-                    JFXButton manSampleButton = new JFXButton("", JEConfig.getImage("if_textfield_add_64870.png", 18, 18));
-                    manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
-
-                    final Label label = new Label(content);
-                    label.setAlignment(Pos.CENTER_LEFT);
-                    VBox textVBox = new VBox(label);
-                    textVBox.setAlignment(Pos.CENTER);
-                    Region spacer = new Region();
-
-                    HBox hBox = new HBox(8, textVBox, spacer, manSampleButton);
-                    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-                    setGraphic(hBox);
-
+                    label.setText(getString(item.getValue(), item.getPrecision(), item.getUnitLabel()));
                     addEventManSampleAction(item.getTargetAttribute(), manSampleButton);
-
-                    precisionEventHandler.addEventListener(event -> {
-                        PrecisionEvent precisionEvent = event;
-                        if (precisionEvent.getSource().equals(item.getMeterData())) {
-                            if (precisionEvent.getType().equals(PrecisionEvent.TYPE.INCREASE)) {
-                                item.setPrecision(item.getPrecision() + 1);
-                            } else if (precisionEvent.getType().equals(PrecisionEvent.TYPE.DECREASE)) {
-                                item.setPrecision(item.getPrecision() - 1);
-                            }
-                        }
-                        label.setText(getString(item.getValue(), item.getPrecision(), item.getUnitLabel()));
-                    });
+                    setGraphic(hBox);
                 }
-
-
             }
         };
 
