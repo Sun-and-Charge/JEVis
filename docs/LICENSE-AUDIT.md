@@ -28,7 +28,7 @@ This document lists what was checked and the issues that still need a decision o
 | `JECommons/.../utils/AlphanumComparator.java`                       | MIT (David Koelle)                   | Header kept, listed in the license dialog   |
 | `JECommons/.../ws/sql/PasswordHash.java`                            | BSD 2-Clause (Taylor Hornby)         | Header kept, listed in the license dialog   |
 | `JEWebService/.../iso/add/NaturalOrderComparator.java`              | zlib (Pierre-Luc Paour, Martin Pool) | Header kept                                 |
-| `DataCollector/DWDHDDParser`, `DataCollector/DWDWDParser` (8 files) | GPLv3 or later (Artur Iablokov)      | Compatible, the combined work is GPLv3-only |
+| `DataCollector/DWDWDParser` (5 files)                               | GPLv3 or later (Artur Iablokov)      | Compatible, the combined work is GPLv3-only |
 
 Bundled JavaScript in `JEWebService/src/main/resources`: Chart.js 2.7.2 (MIT), jQuery 1.12.4 (MIT),
 jQuery UI 1.12.1 (MIT), Font Awesome Free 5.0.8 (icons CC BY 4.0, fonts OFL 1.1, code MIT).

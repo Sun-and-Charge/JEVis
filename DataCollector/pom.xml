@@ -50,7 +50,6 @@
         <module>OPCUA-Driver</module>
         <module>Email-Driver</module>
         <module>DWDDriver</module>
-        <module>DWDHDDParser</module>
         <module>DWDWDParser</module>
         <module>JEVisServer</module>
         <module>RevolutionPiServer</module>
