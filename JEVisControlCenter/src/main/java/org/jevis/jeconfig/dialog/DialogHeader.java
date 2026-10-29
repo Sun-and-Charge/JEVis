@@ -27,8 +27,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 
 /**
@@ -44,8 +42,7 @@ public class DialogHeader {
         header.getStyleClass().add("dialog-header");
 
         Label topTitle = new Label(text);
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage(icon, 64, 64);
 
@@ -69,8 +66,7 @@ public class DialogHeader {
         header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
         Label topTitle = new Label(text);
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         //ImageView imageView = ResourceLoader.getImage(icon, 64, 64);
 
@@ -94,8 +90,7 @@ public class DialogHeader {
         header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
         Label topTitle = new Label(text);
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         //ImageView imageView = ResourceLoader.getImage(icon, 64, 64);
 

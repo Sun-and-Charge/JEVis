@@ -38,8 +38,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -356,8 +354,7 @@ public class CSVImportDialog {
         header.getStyleClass().add("dialog-header");
 
         Label topTitle = new Label(I18n.getInstance().getString("csv.top_title"));
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 18));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage(ICON, 32, 32);
         stage.getIcons().add(imageView.getImage());

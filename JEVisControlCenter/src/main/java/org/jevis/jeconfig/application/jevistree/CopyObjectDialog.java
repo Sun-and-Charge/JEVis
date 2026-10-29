@@ -31,8 +31,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -143,12 +141,11 @@ public class CopyObjectDialog extends Dialog {
         setResizable(true);
 
         BorderPane header = new BorderPane();
-        header.setStyle("-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);");
+        header.getStyleClass().add("dialog-header");
         header.setPadding(new Insets(10, 10, 10, 10));
 
         Label topTitle = new Label(I18n.getInstance().getString("jevistree.dialog.copy.chooseaction"));
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage(ICON, 64, 64);
 

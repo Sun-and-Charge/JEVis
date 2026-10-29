@@ -274,7 +274,7 @@ public class ImageWidget extends Widget {
     private void updateImage() {
         Platform.runLater(() -> {
             if (imageConfig != null) {
-                rootPane.getChildren().setAll(imageView);
+                rootPane.setCenter(imageView);
             }
         });
 

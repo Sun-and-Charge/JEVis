@@ -26,7 +26,6 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tooltip;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,6 +109,7 @@ public class PresetDateBox extends JFXComboBox<AnalysisTimeFrame> {
                     protected void updateItem(AnalysisTimeFrame analysisTimeFrame, boolean empty) {
                         super.updateItem(analysisTimeFrame, empty);
                         setText(null);
+                        setStyle("");
                         setGraphic(null);
 
                         if (analysisTimeFrame != null && !empty) {
@@ -117,77 +117,63 @@ public class PresetDateBox extends JFXComboBox<AnalysisTimeFrame> {
                             switch (analysisTimeFrame.getTimeFrame()) {
                                 case CUSTOM:
                                     text = custom;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case CURRENT:
                                     text = current;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case TODAY:
                                     text = today;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case YESTERDAY:
                                     text = yesterday;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case LAST_7_DAYS:
                                     text = last7Days;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case THIS_WEEK:
                                     text = thisWeek;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case LAST_WEEK:
                                     text = lastWeek;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case LAST_30_DAYS:
                                     text = last30Days;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case THIS_MONTH:
                                     text = thisMonth;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case LAST_MONTH:
                                     text = lastMonth;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case THIS_YEAR:
                                     text = thisYear;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case LAST_YEAR:
                                     text = lastYear;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case THE_YEAR_BEFORE_LAST:
                                     text = theYearBeforeLast;
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case CUSTOM_START_END:
                                     text = analysisTimeFrame.getName();
-                                    setTextFill(Color.BLACK);
                                     setDisable(false);
                                     break;
                                 case PREVIEW:
                                     text = preview;
-                                    setTextFill(Color.LIGHTGRAY);
+                                    setStyle("-fx-text-fill: -suc-text-muted;");
                                     setDisable(true);
                                     break;
                             }

@@ -38,7 +38,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.PopupWindow;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
@@ -122,7 +121,7 @@ public class Statusbar extends ToolBar {
         int optCores = Math.max(Runtime.getRuntime().availableProcessors(), 1);
         HiddenConfig.DASH_THREADS = prefThreads.getInt("count", optCores);
         executor = Executors.newFixedThreadPool(HiddenConfig.DASH_THREADS);
-        hideTaskListPane.setStyle("-fx-background-color: #ffffff;");
+        hideTaskListPane.setStyle("-fx-background-color: -fx-background;");
         stackpane.getChildren().addAll(taskProgressView, hideTaskListPane);
 
         BorderPane anchorPane = new BorderPane(stackpane);//taskProgressView);
@@ -478,7 +477,7 @@ public class Statusbar extends ToolBar {
                                 public void run() {
 //                                    logger.info("still online");
                                     Statusbar.this.onlineInfo.setText(I18n.getInstance().getString("statusbar.tooltips.status.online"));
-                                    Statusbar.this.onlineInfo.setTextFill(Color.BLACK);
+                                    Statusbar.this.onlineInfo.setStyle("");
                                     Statusbar.this.conBox.getChildren().setAll(Statusbar.this.connectIcon);
 
                                     if (Statusbar.this.tt.isShowing()) {
@@ -494,7 +493,7 @@ public class Statusbar extends ToolBar {
                                 public void run() {
 //                                    logger.info("whaa were are offline");
                                     Statusbar.this.onlineInfo.setText(I18n.getInstance().getString("statusbar.tooltips.status.offline"));
-                                    Statusbar.this.onlineInfo.setTextFill(Color.web("#D62748"));//red
+                                    Statusbar.this.onlineInfo.setStyle("-fx-text-fill: -suc-error;");
                                     Statusbar.this.conBox.getChildren().setAll(Statusbar.this.notConnectIcon);
 
 //                                    onlineInfo.setTooltip(tt);

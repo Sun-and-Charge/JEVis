@@ -35,7 +35,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Callback;
 import tech.units.indriya.unit.Units;
@@ -175,7 +174,6 @@ public class UnitChooser {
                             box.setAlignment(Pos.CENTER_LEFT);
 
                             Label name = new Label(item.toString());
-                            name.setTextFill(Color.BLACK);
 
                             box.getChildren().setAll(name);
                             setGraphic(box);
@@ -221,7 +219,6 @@ public class UnitChooser {
                             box.setAlignment(Pos.CENTER_RIGHT);
 
                             Label name = new Label(item);
-                            name.setTextFill(Color.BLACK);
 //                            name.setStyle("-fx-background-color: #4B6A8B;");
 //                            box.setStyle("-fx-background-color: #4B6A8B;");
                             box.getChildren().setAll(name);

@@ -31,8 +31,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -67,12 +65,11 @@ public class RemoveSharePermissonsDialog {
         stage.setResizable(false);
 
         BorderPane header = new BorderPane();
-        header.setStyle("-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);");
+        header.getStyleClass().add("dialog-header");
         header.setPadding(new Insets(10, 10, 10, 10));
 
         Label topTitle = new Label(titleLong);
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
         String ICON_QUESTION = "1400874302_question_blue.png";

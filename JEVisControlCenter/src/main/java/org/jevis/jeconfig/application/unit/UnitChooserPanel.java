@@ -299,10 +299,10 @@ public class UnitChooserPanel {
         if (altSymbolField.getText() != null && !altSymbolField.getText().isEmpty() && baseUnit != null) {
             try {
                 altUnit = baseUnit.alternate(altSymbolField.getText());
-                altSymbolField.setStyle("-fx-text-fill: black;");
+                altSymbolField.setStyle("");
             } catch (Exception ex) {
                 altUnit = null;
-                altSymbolField.setStyle("-fx-text-fill: #F18989;");
+                altSymbolField.setStyle("-fx-text-fill: -suc-error;");
             }
         }
 
@@ -357,12 +357,12 @@ public class UnitChooserPanel {
 //                    }
                 }
             }
-            searchField.setStyle("-fx-text-fill: black;");
+            searchField.setStyle("");
 
         } catch (Exception ex) {
             logger.info("Unkown Unit");
             ex.printStackTrace();
-            searchField.setStyle("-fx-text-fill: red;");
+            searchField.setStyle("-fx-text-fill: -suc-error;");
 
         }
 

@@ -35,7 +35,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
@@ -130,7 +129,6 @@ public class NewNonconformitiesDialog {
 
 
                                 Label cName = new Label(parentName + "/" + item.getName());
-                                cName.setTextFill(Color.BLACK);
                                 box.getChildren().setAll(icon, cName);
 
                                 //TODO: set canWrite

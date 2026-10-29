@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.application.tools.ColorHelper;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config2.JsonNames;
@@ -155,6 +156,7 @@ public class TableWidget extends Widget implements DataModelWidget {
         this.nf.setMaximumFractionDigits(this.config.getDecimals());
         Platform.runLater(() -> {
             table.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
+            table.setStyle("-fx-text-background-color: " + ColorHelper.toRGBCode(this.config.getFontColor()) + ";");
         });
 
 

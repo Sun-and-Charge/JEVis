@@ -247,6 +247,7 @@ public class PluginManager {
     public Node getView() {
 
         this.tabPane.setSide(Side.LEFT);
+        this.tabPane.getStyleClass().add("plugin-tab-pane");
 
 //        this.toolbar.setStyle("-fx-background-color: #CCFF99;");
         this.toolbar.getStyleClass().add("tool-bar");
@@ -276,11 +277,11 @@ public class PluginManager {
                     Timeline flasher = new Timeline(
 
                             new KeyFrame(Duration.seconds(0.5), e -> {
-                                pluginTab.setStyle("-tab-text-color: black;");
+                                pluginTab.setStyle("");
                             }),
 
                             new KeyFrame(Duration.seconds(1.0), e -> {
-                                pluginTab.setStyle("-tab-text-color: red;");
+                                pluginTab.setStyle("-tab-text-color: -suc-error;");
                             })
                     );
                     flasher.setCycleCount(Animation.INDEFINITE);
@@ -291,7 +292,7 @@ public class PluginManager {
                                 flasher.play();
                             } else {
                                 flasher.stop();
-                                pluginTab.setStyle("-tab-text-color: black;");
+                                pluginTab.setStyle("");
                             }
                         });
                     });

@@ -1,8 +1,93 @@
+/*
+ * Base stylesheet of the JEVis Control Center, loaded for every theme.
+ *
+ * All colours come from looked-up colours that each theme defines in its .root block
+ * (SunCharge.css, SunChargeDark.css, Bridge.css):
+ *   -suc-primary / -suc-on-primary       navigation (menu bar, plugin tabs, dialog headers) and its text
+ *   -suc-accent / -suc-on-accent         highlight colour (default button, selected tab, active filter)
+ *   -suc-background                      window background
+ *   -suc-surface / -suc-surface-alt      content and secondary panels (side panes, table headers)
+ *   -suc-border                          lines and frames
+ *   -suc-text / -suc-text-muted          text
+ *   -suc-selection / -suc-selection-text selected rows and cells
+ *   -suc-hover                           hovered rows and cells
+ *   -suc-link / -suc-error               links, focus and errors
+ * Themes also set the matching Modena colours (-fx-base, -fx-accent, ...) so standard controls follow.
+ */
 
-.toolbarSVG{
+.root {
+    -fx-cell-hover-color: -suc-hover;
+    -fx-tree-background: -suc-surface;
+    -fx-table-color-even: -suc-surface;
+    -fx-table-color-odd: -suc-row-alt;
+    -fx-table-color-empty: -suc-surface;
+    -fx-table-color-selected: -suc-selection;
+    -fx-table-color-hover: -suc-hover;
+    -fx-table-color-background: -suc-surface;
+    -fx-table-color-header: -suc-surface-alt;
+    -fx-default-button-background: -suc-accent;
+    -fx-default-button-text-fill: -suc-on-accent;
+    -tab-text-color: -suc-text;
+    -toolbarSVG-background-color: -suc-icon;
+    -pluginSVG-background-color: -suc-on-primary;
+    -ToolBarDatePicker-default-color: -suc-date-accent;
+    -jfx-default-color: -suc-date-accent;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Headings (corporate font)
+---------------------------------------------------------------------------------------------------------------*/
+.suc-heading,
+.dialog-header-title,
+.dialog-pane > .header-panel .label,
+.titled-pane > .title,
+.title {
+    -fx-font-family: "Montserrat";
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Main window
+---------------------------------------------------------------------------------------------------------------*/
+.top-bar {
+    -fx-background-color: -suc-primary;
+}
+
+.menu-bar {
+    -fx-background-color: -suc-primary;
+    -fx-padding: 0 4 0 4;
+}
+
+.menu-bar > .container > .menu-button > .label {
+    -fx-text-fill: -suc-on-primary;
+}
+
+.menu-bar > .container > .menu-button:hover,
+.menu-bar > .container > .menu-button:focused,
+.menu-bar > .container > .menu-button:showing {
+    -fx-background-color: -suc-accent;
+}
+
+.menu-bar > .container > .menu-button:hover > .label,
+.menu-bar > .container > .menu-button:focused > .label,
+.menu-bar > .container > .menu-button:showing > .label {
+    -fx-text-fill: -suc-on-accent;
+}
+
+/* plugin toolbar below the menu bar, closed by a stripe in the accent colour */
+.top-bar > .tool-bar {
+    -fx-background-color: -suc-accent, -suc-surface;
+    -fx-background-insets: 0, 0 0 3 0;
+}
+
+.top-bar .tool-bar .tool-bar {
+    -fx-background-color: transparent;
+}
+
+.toolbarSVG {
     -fx-background-color: -toolbarSVG-background-color;
 }
-.pluginSVG{
+
+.pluginSVG {
     -fx-background-color: -pluginSVG-background-color;
 }
 
@@ -10,312 +95,472 @@
     -jfx-default-color: -ToolBarDatePicker-default-color;
 }
 
-.jfx-tab-pane .tab-header-background {
-    -fx-background-color: linear-gradient(-fx-base, -fx-control-inner-background);
+/* plugin tabs on the left side of the main window */
+.tab-pane.plugin-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: -suc-primary;
 }
 
-.main-split-pane, main-view-pane{
-    -fx-background-color: derive(-fx-base, 70%);
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab {
+    -tab-text-color: -suc-on-primary;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.4em 0.9em 0.4em 0.9em;
 }
 
-#objecttree{
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: derive(-suc-primary, 25%);
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -tab-text-color: -suc-on-accent;
+    -fx-background-color: -suc-accent;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:selected .pluginSVG {
+    -fx-background-color: -suc-on-accent;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .control-buttons-tab > .container > .tab-down-button {
+    -fx-background-color: transparent;
+}
+
+.tab-pane.plugin-tab-pane > .tab-header-area > .control-buttons-tab > .container > .tab-down-button > .arrow {
+    -fx-background-color: -suc-on-primary;
+}
+
+.main-split-pane,
+.main-view-pane {
+    -fx-background-color: -suc-background;
+}
+
+.side-pane,
+.object-plugin-left,
+.children-editor-plugin,
+.generic-attribute-extension,
+.valid-parent-editor {
+    -fx-background-color: -suc-surface-alt;
+}
+
+.object-editor-side-node {
+    -fx-background-color: -suc-surface;
+}
+
+#objecttree {
     -fx-background-color: -fx-tree-background;
 }
 
-.jfx-dialog{
-    /*-fx-background-color: derive(-fx-base, 70%);*/
+/*---------------------------------------------------------------------------------------------------------------
+                                         Tabs
+---------------------------------------------------------------------------------------------------------------*/
+.tab-label {
+    -fx-text-fill: -tab-text-color;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background,
+.jfx-tab-pane .tab-header-background {
+    -fx-background-color: -suc-surface-alt;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: -suc-accent, -suc-surface;
+    -fx-background-insets: 0, 0 0 3 0;
+}
+
+.tab-pane:top > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Dialogs
+---------------------------------------------------------------------------------------------------------------*/
+.dialog-pane > .header-panel,
+.dialog-header {
+    -fx-background-color: -suc-accent, -suc-primary;
+    -fx-background-insets: 0, 0 0 3 0;
+}
+
+.dialog-pane > .header-panel {
+    -fx-padding: 0.9em 1em 1.1em 1em;
+}
+
+.dialog-pane > .header-panel .label {
+    -fx-text-fill: -suc-on-primary;
+    -fx-font-size: 15px;
+}
+
+.dialog-header-title {
+    -fx-text-fill: -suc-on-primary;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.dialog-header .label {
+    -fx-text-fill: -suc-on-primary;
+}
+
+.jfx-dialog {
     -fx-text-color: -fx-text-color;
 }
 
-/* for pdf/image view */
-.pagination { -fx-rotate:180; }
-.pagination .pagination-control { -fx-rotate:180; }
-.pagination .page { -fx-rotate:180; }
-
-/* TreeView and TreeCell */
-
-.tree-view {
-    -fx-skin: "com.sun.javafx.scene.control.skin.TreeViewSkin";
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 0, 1;
-
-    /* There is some oddness if padding is in em values rather than pixels,
-       in particular, the left border of the control doesn't show. */
-    -fx-padding: 1; /* 0.083333em; */
+.jfx-dialog-overlay-pane > StackPane {
+    -fx-effect: null;
 }
 
-.tree-view:focused {
-    -fx-background-color: -fx-focus-color,-fx-box-border,-fx-control-inner-background;
-    -fx-background-insets: 0, 0, 1;
-    -fx-background-radius: 1.4, 0, 0;
-
-    /* There is some oddness if padding is in em values rather than pixels,
-       in particular, the left border of the control doesn't show. */
-    -fx-padding: 1; /* 0.083333em; */
-}
-
-.tree-view .scroll-bar:vertical{
-    -fx-background-insets: 0, 0 0 0 1;
-    -fx-padding: 0.0 0.0 0.0 0.0;
-}
-
-.tree-view .scroll-bar:horizontal{
-    -fx-background-insets: 0, 1 0 0 0;
-    -fx-padding: 0.0 0.0 0.0 0.0;
-}
-
-.tree-view:disabled {
-    -fx-opacity: -fx-disabled-opacity;
-}
-
-.tree-view .corner {
-    -fx-background-color: -fx-box-border, -fx-base;
-    -fx-background-insets: 0, 1 0 0 1;
-}
-
-.tree-cell {
-    -fx-skin: "com.sun.javafx.scene.control.skin.TreeCellSkin";
-    -fx-background-color: -fx-control-inner-background;
-    -fx-padding: 0.25em; /* 3 */
-    -fx-text-fill: -fx-text-inner-color;
-    -fx-indent: 10;
-}
-
-.tree-cell .label {
-    -fx-padding: 0.0em 0.0em 0.0em 0.25em; /* 0 0 0 3 */
-}
-
-.tree-view:focused .tree-cell:focused {
-    -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-control-inner-background;
-    -fx-background-insets: 0, 1, 2;
-}
-
-.tree-view:focused .tree-cell:filled:focused:selected {
-    -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-selection-bar;
-    -fx-background-insets: 0, 1, 2;
-    -fx-background: -fx-accent;
-    -fx-text-fill: -fx-selection-bar-text;
-}
-
-.tree-view:focused .tree-cell:filled:selected, .tree-view:focused .tree-cell:filled:selected:hover {
-    /*-fx-background: -fx-accent;*/
-
-    -fx-background-color: black;
-    -fx-background-color: -fx-selection-bar;
-    -fx-text-fill: -fx-selection-bar-text;
-}
-
-.tree-view:focused .tree-cell:filled:focused:selected:hover {
-    -fx-background: -fx-accent;
-    -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-selection-bar;
-    -fx-background-insets: 0, 1, 2;
-    -fx-text-fill: -fx-selection-bar-text;
-}
-
-.tree-cell:filled:selected:focused:disabled, .tree-cell:filled:selected:disabled {
-    -fx-opacity: -fx-disabled-opacity;
-}
-
-.tree-cell .tree-disclosure-node {
-    /** put a bit of padding around the disclosure node to make the clicking region larger */
-    -fx-padding: 4 2 4 8;
-    -fx-background-color: transparent;
-}
-
-.tree-cell .tree-disclosure-node:disabled {
-    -fx-opacity: -fx-disabled-opacity;
-}
-
-.tree-cell .tree-disclosure-node .arrow {
-    -fx-background-color: -fx-mark-color;
-    -fx-padding: 0.333333em; /* 4 */
-    -fx-shape: "M 0 -4 L 8 0 L 0 4 z";
-}
-
-.tree-cell:expanded .tree-disclosure-node .arrow {
-    -fx-rotate: 90;
-}
-
-.tree-cell:filled:selected .tree-disclosure-node .arrow {
-    -fx-background-color: -fx-selection-bar-text;
-}
-
-.tree-cell:filled:hover {
-    -fx-background-color: -fx-cell-hover-color;
-    -fx-text-fill: -fx-text-inner-color;
-}
-
-.tree-cell:filled:hover .tree-disclosure-node .arrow {
-    -fx-background-color: -fx-mark-color;
-}
-
-.tree-view:focused .tree-cell:filled:focused:hover {
-    -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-cell-hover-color;
-    -fx-background-insets: 0, 1, 2;
-    -fx-text-fill: -fx-text-inner-color;
-}
-
-.tree-cell:filled:selected:hover .tree-disclosure-node .arrow {
-    -fx-background-color: -fx-selection-bar-text;
-}
-
-#watermark{
-    -fx-background-color: null;
-    /*-fx-background-image: url("/org/jevis/jeconfig/image/logo_JEVis_OPEN_Ohne_Schatten_long_v0_10.png");*/
-    /*-fx-background-image: url("/icons/logo_JEVis_OPEN_Ohne_Schatten_long_v0_10.png");*/
-    /*-fx-background-image: url("/icons/logo_coffee_klein.png");*/
-
-    -fx-background-position: right bottom, center;
-    -fx-background-repeat: no-repeat;
-    -fx-background-size: 220 66;
-    -fx-background-insets: 20, 20;
-}
-
-.titled-pane > .title
-{
-    -fx-background-color: -fx-box-border, -fx-inner-border, -fx-body-color;
-    -fx-background-insets: 0, 1, 2;
-    -fx-background-radius: 0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-padding: 0.166667em 0.833333em 0.25em 0.833333em; /* 2 10 3 10 */
-}
-
-.titled-pane > *.content
-{
-    -fx-background-color: transparent;
-    /*    -fx-background-insets: 0, 0 1 1 1;
-        -fx-padding: 0.167em;*/
-}
-
-.tab-label {
-    -fx-text-fill: -tab-text-color ;
-}
-
-.table-view > .virtual-flow > .scroll-bar:vertical,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track-background,
-.table-view > .virtual-flow > .scroll-bar:horizontal,
-.table-view > .virtual-flow > .scroll-bar:horizontal > .track,
-.table-view > .virtual-flow > .scroll-bar:horizontal > .track-background {
-    -fx-background-color: transparent;
-}
-
-.table-view > .virtual-flow > .scroll-bar > .increment-button,
-.table-view > .virtual-flow > .scroll-bar > .decrement-button {
-    -fx-opacity: 0;
-}
-
-.table-row-cell:empty .table-cell {
-    -fx-border-width: 0px;
-}
-
-.titled-pane {
-    -fx-animated: false;
-    -fx-background-radius: 0;
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-    -fx-border-insets: 0;
-    -fx-border-insets: 0 2 0 2;
-    -fx-border-width: 0;
-    -fx-border-color: transparent;
-    -fx-border-insets: 0;
-}
-
-.titled-pane:focused {
-    /*-fx-effect: dropshadow(three-pass-box, #9F9F9F, 15, 0, 0, 0);*/
-    -fx-text-fill: -fx-accent;
-
-    -fx-animated: false;
-    -fx-background-radius: 0;
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-    -fx-border-insets: 0;
-    -fx-border-insets: 0 2 0 2;
-    -fx-border-width: 0;
-    -fx-border-color: transparent;
-    -fx-border-insets: 0;
-}
-
-.titled-pane:focused .content {
-    -fx-padding: 0px;
-    -fx-background-radius: 0;
-    -fx-border-width: 2 0 2 0;
-    -fx-border-insets: 0;
-}
-
-.titled-pane .content {
-    -fx-padding: 0px;
-    -fx-background-radius: 0;
-    -fx-border-width: 2 0 2 0;
-    -fx-border-insets: 0;
-}
-
-.titled-pane > .title  {
-    -fx-background-radius: 0, 0, 0;
-    -fx-font: 14px System;
-    -fx-background-color: transparent;
-}
-
-.titled-pane:focused > .title  {
-    -fx-background-radius: 0, 0, 0;
-    -fx-font: 14px System;
-    -fx-background-color: transparent;
-}
-
-.titled-pane:focused > .title > .arrow-button .arrow {
-    -fx-font: 14px System;
-}
-
-.scroll-pane > .viewport {
-   -fx-background-color: transparent;
-}
-
-.scroll-pane {
-   -fx-background-color: transparent;
-}
-
-.search-box .text-field {
-    -fx-background-insets: 1;
-    -fx-background-radius: 15;
-    -fx-padding: -9 5 -11 0;
-    /*    -fx-border-image-source: url("/org/jevis/jeconfig/image/1394564949_search_48.png");
-        -fx-border-image-slice: 12 12 12 22 fill;
-        -fx-border-image-width: 12 12 12 22;
-        -fx-border-image-repeat: stretch; */
-    -fx-font-size: 13px;
-}
-
-.search-box .text-field:focused {
-    -fx-background-insets: -1.4, 1;
-    -fx-background-radius: 14.4;
-}
-
-.search-box .button {
-    -fx-background-color: null;
-    -fx-background-image: url("/icons/1394564949_search_48.png");
-}
-
-.search-box .button:hover {
-    -fx-background-image: url("/icons/1394564949_search_48.png");
-}
-
-.combo-box-popup .list-cell {
-    -fx-padding: 4 0 4 20 ;
-}
-
-.combo-box-popup .list-cell:section-header {
-    -fx-font: italic 10pt sans-serif ;
-    -fx-padding: 4 0 4 5 ;
-}
-
+/*---------------------------------------------------------------------------------------------------------------
+                                         Buttons and inputs
+---------------------------------------------------------------------------------------------------------------*/
 .button:default {
     -fx-background-color: -fx-default-button-background;
     -fx-text-fill: -fx-default-button-text-fill;
 }
 
-.jfx-dialog-overlay-pane > StackPane{
+.button:default:hover {
+    -fx-background-color: derive(-fx-default-button-background, -8%);
+}
+
+.tag-filter-active {
+    -fx-border-color: -suc-accent;
+    -fx-border-width: 2;
+    -fx-border-radius: 3;
+}
+
+.jfx-check-box {
     -fx-effect: null;
 }
 
-.jfx-check-box{
-    -fx-effect: null;
+.hyperlink {
+    -fx-text-fill: -suc-link;
+}
+
+.tooltip {
+    -fx-background-color: -suc-primary;
+    -fx-text-fill: -suc-on-primary;
+    -fx-background-radius: 3;
+    -fx-font-size: 12px;
+}
+
+.search-box {
+    -fx-background-color: -suc-surface-alt;
+}
+
+.search-box .text-field {
+    -fx-background-color: -suc-surface;
+    -fx-prompt-text-fill: -suc-text-muted;
+    -fx-background-insets: 1;
+    -fx-background-radius: 15;
+    -fx-padding: -9 5 -11 0;
+    -fx-font-size: 13px;
+}
+
+.search-box .text-field:focused {
+    -fx-background-color: -fx-focus-color, -suc-surface;
+    -fx-background-insets: -1.4, 1;
+    -fx-background-radius: 14.4;
+}
+
+.search-box .button,
+.search-box .button:hover {
+    -fx-background-color: null;
+    -fx-background-image: url("/icons/1394564949_search_48.png");
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 4 0 4 20;
+}
+
+.combo-box-popup .list-cell:section-header {
+    -fx-font: italic 10pt sans-serif;
+    -fx-padding: 4 0 4 5;
+}
+
+#attributelabel {
+    -fx-text-fill: -suc-text;
+    -fx-font-size: 14;
+}
+
+/* nonconformity form validation */
+.nonconformityOK {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.nonconformityError {
+    -fx-border-color: -suc-error;
+    -fx-border-width: 2;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Titled panes (object editor)
+---------------------------------------------------------------------------------------------------------------*/
+.titled-pane {
+    -fx-animated: false;
+    -fx-text-fill: -suc-text;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.titled-pane > .title {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.166667em 0.833333em 0.25em 0.833333em;
+    -fx-font-size: 14px;
+}
+
+.titled-pane:focused {
+    -fx-text-fill: -suc-primary;
+}
+
+.titled-pane > .title > .arrow-button .arrow,
+.titled-pane:focused > .title > .arrow-button .arrow {
+    -fx-background-color: -suc-text-muted;
+}
+
+.titled-pane > .content {
+    -fx-background-color: -suc-surface;
+    -fx-border-color: -suc-border;
+    -fx-border-width: 1 0 1 0;
+    -fx-padding: 0;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Tables and tree tables
+---------------------------------------------------------------------------------------------------------------*/
+.table-view,
+.tree-table-view {
+    -fx-background-color: -fx-table-color-background;
+    -fx-border-color: -suc-border;
+    -fx-border-width: 1;
+}
+
+.table-view:focused,
+.tree-table-view:focused {
+    -fx-background-color: -fx-table-color-background;
+}
+
+.table-view .column-header-background,
+.tree-table-view .column-header-background {
+    -fx-background-color: -suc-border, -fx-table-color-header;
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+.table-view .column-header,
+.tree-table-view .column-header,
+.table-view .filler,
+.tree-table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent -suc-border transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.table-view .column-header-background .label,
+.tree-table-view .column-header-background .label {
+    -fx-text-fill: -suc-text;
+    -fx-font-weight: bold;
+}
+
+.table-view .show-hide-columns-button,
+.tree-table-view .show-hide-columns-button {
+    -fx-background-color: -fx-table-color-header;
+    -fx-border-color: -suc-border;
+}
+
+.table-view .show-hide-column-image,
+.tree-table-view .show-hide-column-image {
+    -fx-background-color: -suc-text;
+    -fx-padding: 0.25em;
+    -fx-shape: "M398.902,298.045c0.667,0,1.333,0,2,0c0,0.667,0,1.333,0,2c0.667,0,1.333,0,2,0c0,0.667,0,1.333,0,2c-0.667,0-1.333,0-2,0c0,0.666,0,1.332,0,1.999c-0.667,0-1.333,0-2,0c0-0.667,0-1.333,0-1.999c-0.666,0-1.333,0-1.999,0c0-0.667,0-1.334,0-2c0.666,0,1.333,0,1.999,0C398.902,299.378,398.902,298.711,398.902,298.045z";
+}
+
+.table-row-cell:odd,
+.tree-table-row-cell:odd {
+    -fx-background-color: -fx-table-color-odd;
+}
+
+.table-row-cell:even,
+.tree-table-row-cell:even {
+    -fx-background-color: -fx-table-color-even;
+}
+
+.table-row-cell:empty,
+.tree-table-row-cell:empty {
+    -fx-background-color: -fx-table-color-background;
+}
+
+.table-row-cell:empty .table-cell {
+    -fx-border-width: 0;
+}
+
+.table-row-cell:filled:hover,
+.tree-table-row-cell:filled:hover {
+    -fx-background-color: -fx-table-color-hover;
+}
+
+.table-row-cell:filled:selected,
+.tree-table-row-cell:filled:selected {
+    -fx-background-color: -fx-table-color-selected;
+    -fx-background-insets: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-row-cell:filled:selected .table-cell,
+.tree-table-row-cell:filled:selected .tree-table-cell {
+    -fx-text-fill: -suc-selection-text;
+}
+
+.table-view > .virtual-flow > .scroll-bar:vertical,
+.table-view > .virtual-flow > .scroll-bar:horizontal,
+.tree-table-view > .virtual-flow > .scroll-bar:vertical,
+.tree-table-view > .virtual-flow > .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Trees and lists
+---------------------------------------------------------------------------------------------------------------*/
+.tree-view,
+.list-view {
+    -fx-background-color: -suc-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+}
+
+.tree-cell {
+    -fx-padding: 0.25em;
+    -fx-indent: 10;
+}
+
+.tree-cell .label {
+    -fx-padding: 0 0 0 0.25em;
+}
+
+.tree-cell:filled:hover,
+.list-view .list-cell:filled:hover {
+    -fx-background-color: -fx-cell-hover-color;
+    -fx-text-fill: -suc-text;
+}
+
+.tree-cell:filled:selected,
+.tree-view:focused .tree-cell:filled:selected,
+.list-view .list-cell:filled:selected,
+.list-view:focused .list-cell:filled:selected {
+    -fx-background-color: -suc-selection;
+    -fx-text-fill: -suc-selection-text;
+}
+
+.tree-cell:filled:selected .label,
+.list-view .list-cell:filled:selected .label {
+    -fx-text-fill: -suc-selection-text;
+}
+
+.tree-cell .tree-disclosure-node {
+    -fx-padding: 4 2 4 8;
+    -fx-background-color: transparent;
+}
+
+.tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: -suc-text-muted;
+}
+
+.tree-cell:filled:selected .tree-disclosure-node .arrow {
+    -fx-background-color: -suc-selection-text;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Misc
+---------------------------------------------------------------------------------------------------------------*/
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar > .thumb {
+    -fx-background-color: -suc-border;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar > .thumb:hover {
+    -fx-background-color: -suc-text-muted;
+}
+
+/* PDF/image viewer: page order */
+.pagination,
+.pagination .pagination-control,
+.pagination .page {
+    -fx-rotate: 180;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Dashboards
+   Widgets set their configured colours and fonts in code. Stylesheet rules would win over those, so the theme
+   keeps out of the dashboard: tables stay transparent and use the widget's font colour (-fx-text-background-color,
+   set by TableWidget).
+---------------------------------------------------------------------------------------------------------------*/
+.dashboard-pane .table-view,
+.dashboard-pane .table-view:focused,
+.dashboard-pane .table-view .column-header-background,
+.dashboard-pane .table-view .column-header,
+.dashboard-pane .table-view .filler,
+.dashboard-pane .table-row-cell:odd,
+.dashboard-pane .table-row-cell:even,
+.dashboard-pane .table-row-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.dashboard-pane .table-view .column-header-background .label,
+.dashboard-pane .table-row-cell .table-cell {
+    -fx-text-fill: -fx-text-background-color;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Analyses (charts)
+   Charts always use a light palette, also in the dark themes, so plot area, axes, grid and legend stay readable
+   and look like exported charts. Series colours are set per data set in the analysis and are not touched here.
+---------------------------------------------------------------------------------------------------------------*/
+.chart {
+    -fx-base: #eef1f6;
+    -fx-background: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-text-background-color: #1f2a3c;
+    -fx-text-base-color: #1f2a3c;
+    -fx-background-color: #ffffff;
+}
+
+/* chart widgets in dashboards: the widget's configured background shows through */
+.dashboard-pane .chart {
+    -fx-background-color: transparent;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Calendar (JFoenix date picker)
+   JFoenix draws the day numbers in a fixed dark grey, so the calendar popup stays light in every theme.
+   Header, selected day and picker icon use -suc-date-accent instead of JFoenix's default teal.
+---------------------------------------------------------------------------------------------------------------*/
+.jfx-date-picker {
+    -jfx-default-color: -suc-date-accent;
+}
+
+.date-picker-popup {
+    -fx-background-color: #ffffff;
+}
+
+.date-picker-popup > * > .spinner > .label {
+    -fx-text-fill: #313131;
+}
+
+.date-picker-popup > * > .spinner > .button > .left-arrow,
+.date-picker-popup > * > .spinner > .button > .right-arrow,
+.date-picker-popup .jfx-svg-glyph {
+    -fx-background-color: #313131;
 }

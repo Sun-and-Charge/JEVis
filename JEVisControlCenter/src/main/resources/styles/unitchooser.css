@@ -1,18 +1,18 @@
 #prefixup {
-    -fx-background-color: #4B6A8B;
+    -fx-background-color: -suc-primary;
     -fx-background-radius: 15 0 0 0;
     -fx-background-insets: 0;
-    -fx-text-fill: white;
+    -fx-text-fill: -suc-on-primary;
     -fx-text-alignment: right;
     -fx-padding: 1 1 1 1;
     -fx-background-insets: 0 0 1 0;
 }
 
 #prefixdown {
-    -fx-background-color: #4B6A8B;
+    -fx-background-color: -suc-primary;
     -fx-background-radius: 0 0 0 15;
     -fx-background-insets: 0;
-    -fx-text-fill: white;
+    -fx-text-fill: -suc-on-primary;
     -fx-text-alignment: right;
     -fx-padding: 1 1 1 1;
     -fx-background-insets: 0 0 0 0;
@@ -21,10 +21,10 @@
 }
 
 #prefix {
-    -fx-background-color: #4B6A8B;
+    -fx-background-color: -suc-primary;
     -fx-background-radius: 0 0 0 0;
     -fx-background-insets: 0;
-    -fx-text-fill: white;
+    -fx-text-fill: -suc-on-primary;
     -fx-text-alignment: right;
     /*-fx-font-size: 22;*/
 }

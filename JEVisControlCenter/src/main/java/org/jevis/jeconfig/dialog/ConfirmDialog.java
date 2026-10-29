@@ -37,8 +37,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -88,8 +86,7 @@ public class ConfirmDialog {
         header.setPadding(new Insets(10, 10, 10, 10));
 
         Label topTitle = new Label(titleLong);
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage(ICON_QUESTION, 65, 65);
 

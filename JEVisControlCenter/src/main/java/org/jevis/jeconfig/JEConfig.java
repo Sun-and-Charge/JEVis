@@ -35,6 +35,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.text.Font;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -76,6 +77,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Date;
@@ -434,6 +436,9 @@ public class JEConfig extends Application {
             }
         }
 
+        /* register before the first scene is styled; adding it later restyles every node and logs lookup warnings */
+        StyleManager.getInstance().addUserAgentStylesheet("/styles/ToolTip.css");
+
         final AnchorPane jeconfigRoot = new AnchorPane();
 
         Scene scene = new Scene(jeconfigRoot);
@@ -529,7 +534,7 @@ public class JEConfig extends Application {
 
                 mainBorderPane = new BorderPane();
 
-                topMenuBox.setStyle("-fx-background-color: black;");
+                topMenuBox.getStyleClass().add("top-bar");
                 mainBorderPane.setTop(topMenuBox);
 
                 menu = new TopMenu();
@@ -635,7 +640,6 @@ public class JEConfig extends Application {
         primaryStage.setMaximized(true);
         primaryStage.show();
 
-        StyleManager.getInstance().addUserAgentStylesheet("/styles/ToolTip.css");
 
         jeconfigRoot.getChildren().setAll(login);
 
@@ -718,7 +722,21 @@ public class JEConfig extends Application {
         }
 
         _primaryStage = primaryStage;
+        loadFonts();
         initGUI(primaryStage);
+    }
+
+    /**
+     * Registers the bundled fonts (SIL OFL 1.1, see /fonts) so the stylesheets can use them by family name.
+     */
+    public static void loadFonts() {
+        for (String font : new String[]{"Montserrat-Regular", "Montserrat-SemiBold", "Antonio-Regular", "Antonio-Bold"}) {
+            try (InputStream in = JEConfig.class.getResourceAsStream("/fonts/" + font + ".ttf")) {
+                if (in == null || Font.loadFont(in, 12) == null) logger.warn("Could not load font {}", font);
+            } catch (Exception e) {
+                logger.warn("Could not load font {}", font, e);
+            }
+        }
     }
 
     public TopMenu getMenu() {

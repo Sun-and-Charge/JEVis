@@ -1,0 +1,47 @@
+/*
+ * Sun and Charge dark theme: Blueberry surfaces with Sun accents.
+ * Only colour variables; the rules are in Styles.css.
+ */
+.root {
+    -suc-primary: #0e1829;
+    -suc-on-primary: #ffffff;
+    -suc-accent: #ffde00;
+    -suc-on-accent: #1a2a45;
+    -suc-background: #131f33;
+    -suc-surface: #1a2a45;
+    -suc-surface-alt: #22365a;
+    -suc-border: #33496f;
+    -suc-text: #e9edf4;
+    -suc-text-muted: #9ba7bc;
+    -suc-selection: #254174;
+    -suc-selection-text: #ffffff;
+    -suc-hover: #2a4068;
+    -suc-row-alt: #1e3050;
+    -suc-icon: #e9edf4;
+    -suc-date-accent: #3a64b0;
+    -suc-link: #ffde00;
+    -suc-error: #ff8a4c;
+
+    /* Modena */
+    -fx-base: #22365a;
+    -fx-background: -suc-background;
+    -fx-control-inner-background: -suc-surface;
+    -fx-control-inner-background-alt: derive(-suc-surface, 8%);
+    -fx-accent: #254174;
+    -fx-focus-color: #ffde00;
+    -fx-faint-focus-color: #ffde0022;
+    -fx-selection-bar: #254174;
+    -fx-selection-bar-non-focused: #2a4068;
+    -fx-text-color: -suc-text;
+}
+
+.text-field,
+.text-area,
+.combo-box-base,
+.date-picker > .text-field {
+    -fx-prompt-text-fill: -suc-text-muted;
+}
+
+.tooltip {
+    -fx-background-color: #2f4875;
+}

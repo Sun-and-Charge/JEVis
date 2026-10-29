@@ -38,7 +38,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -268,8 +267,7 @@ public class NewClassDialog {
         header.setPadding(new Insets(10, 10, 10, 10));
 
         Label topTitle = new Label(titleLong);
-        topTitle.setTextFill(Color.web("#0076a3"));
-        topTitle.setFont(Font.font("Cambria", 25));
+        topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage("1402083924_Project.png", 65, 65);
 

@@ -7,3 +7,5 @@ tyPoland	lato		Lato font, by Łukasz Dziedzic (hansolo/font)	https://www.latofon
 eu.hansolo	world-css		World map styles, by Gerrit Grunwald (hansolo/world)	https://github.com/HanSolo	Apache License 2.0
 David Koelle	alphanum		Alphanum algorithm (org.jevis.commons.utils.AlphanumComparator)	http://www.davekoelle.com/alphanum.html	MIT License
 Taylor Hornby	password-hashing		PBKDF2 password hashing (org.jevis.commons.ws.sql.PasswordHash)	https://github.com/defuse/password-hashing	BSD 2-Clause License
+Julieta Ulanovsky et al.	montserrat		Montserrat font (fonts/Montserrat-*.ttf)	https://github.com/JulietaUla/Montserrat	SIL OFL 1.1
+Vernon Adams et al.	antonio		Antonio font (fonts/Antonio-*.ttf)	https://github.com/googlefonts/antonioFont	SIL OFL 1.1
