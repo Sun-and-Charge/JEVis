@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -104,7 +105,11 @@ public class PieChart implements Chart {
 
         if (!chartModel.getChartData().isEmpty()) {
             chartDataRows.clear();
-            this.chartModel.getChartData().forEach(chartData -> chartDataRows.add(new ChartDataRow(ds, chartData)));
+            this.chartModel.getChartData().forEach(chartData -> {
+                ChartDataRow chartDataRow = new ChartDataRow(ds, chartData);
+                chartDataRow.setCustomWorkDay(chartModel.isCustomWorkDay());
+                chartDataRows.add(chartDataRow);
+            });
             unit = UnitManager.getInstance().format(chartDataRows.get(0).getUnit());
             if (unit.equals("")) unit = I18n.getInstance().getString("plugin.graph.chart.valueaxis.nounit");
             period = chartDataRows.get(0).getPeriod();

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -41,7 +42,6 @@ import org.jevis.jeconfig.application.Chart.ChartType;
 import org.jevis.jeconfig.application.Chart.Charts.Chart;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 import org.jevis.jeconfig.application.Chart.data.ValueWithDateTime;
-import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.application.tools.TableViewUtils;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
 import org.jevis.jeconfig.plugin.charts.TableViewContextMenuHelper;
@@ -57,6 +57,7 @@ public class TableHeader extends TableView<TableEntry> {
     private final ChartModel chartModel;
     private final AlphanumComparator alphanumComparator = new AlphanumComparator();
     private TableColumn<TableEntry, String> periodCol;
+    private Label periodLabel;
     private TableColumn<TableEntry, String> dateCol;
     private TableColumn<TableEntry, String> noteCol;
     private TableViewContextMenuHelper contextMenuHelper;
@@ -187,10 +188,10 @@ public class TableHeader extends TableView<TableEntry> {
                 periodCol.setPrefWidth(100);
                 periodCol.setMinWidth(100);
 
-                Label periodLabel = new Label(I18n.getInstance().getString("plugin.graph.table.period"));
+                periodLabel = new Label(I18n.getInstance().getString("plugin.graph.table.period"));
                 periodLabel.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.graph.table.period.tip")));
                 periodCol.setGraphic(periodLabel);
-                JEVisHelp.getInstance().addInfoControl(ChartPlugin.class.getSimpleName(), "", JEVisHelp.LAYOUT.HORIZONTAL_TOP_LEFT, periodLabel);
+                /* the info tooltip is registered by the ChartPlugin, once per chart update, see ChartPlugin#registerPeriodInfo */
 
                 /**
                  * Table Column 3
@@ -449,5 +450,12 @@ public class TableHeader extends TableView<TableEntry> {
 
     public void setXyChartSerieList(List<XYChartSerie> xyChartSerieList) {
         this.xyChartSerieList = xyChartSerieList;
+    }
+
+    /**
+     * @return the label of the period column, or {@code null} if this table has no period column
+     */
+    public Label getPeriodLabel() {
+        return periodLabel;
     }
 }

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -58,6 +59,14 @@ public class SaveAnalysisDialog extends Dialog {
     private Response response = Response.CANCEL;
 
     public SaveAnalysisDialog(JEVisDataSource ds, DataSettings dataSettings, ChartPlugin chartPlugin, ToolBarView toolBarView) {
+        this(ds, dataSettings, chartPlugin, toolBarView, false);
+    }
+
+    /**
+     * @param newAnalysis true if the analysis was just created; the name field then starts empty instead of
+     *                    showing the name of the previously opened analysis, its directory is kept
+     */
+    public SaveAnalysisDialog(JEVisDataSource ds, DataSettings dataSettings, ChartPlugin chartPlugin, ToolBarView toolBarView, boolean newAnalysis) {
         setTitle(I18n.getInstance().getString("plugin.graph.saveanalysis.title"));
         setHeaderText(I18n.getInstance().getString("plugin.graph.saveanalysis.header"));
         setResizable(true);
@@ -135,7 +144,7 @@ public class SaveAnalysisDialog extends Dialog {
             }
         }
 
-        if (dataSettings.getCurrentAnalysis() != null && dataSettings.getCurrentAnalysis().getName() != null && !dataSettings.getCurrentAnalysis().getName().equals(""))
+        if (!newAnalysis && dataSettings.getCurrentAnalysis() != null && dataSettings.getCurrentAnalysis().getName() != null && !dataSettings.getCurrentAnalysis().getName().equals(""))
             name.setText(dataSettings.getCurrentAnalysis().getName());
 
         name.focusedProperty().addListener((ov, t, t1) -> Platform.runLater(() -> {

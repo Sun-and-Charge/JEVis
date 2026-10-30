@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -28,6 +29,7 @@ import de.jollyday.Holiday;
 import javafx.collections.ObservableList;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.tools.Holidays;
@@ -255,7 +257,7 @@ public class DefaultDateAxis extends DefaultNumericAxis {
                         continue;
                     }
 
-                    final double x = position;
+                    final double x = clampHorizontalLabel(position, axisWidth, tickMark);
                     double y = axisHeight - tickLength - tickLabelGap;
                     switch (overlapPolicy) {
                         case DO_NOTHING:
@@ -292,7 +294,7 @@ public class DefaultDateAxis extends DefaultNumericAxis {
                         continue;
                     }
 
-                    final double x = position;
+                    final double x = clampHorizontalLabel(position, axisWidth, tickMark);
                     double y = tickLength + tickLabelGap;
                     if (getSide().equals(Side.CENTER_HOR)) {
                         // additional special offset for horizontal centre axis
@@ -329,6 +331,23 @@ public class DefaultDateAxis extends DefaultNumericAxis {
         }
 
         gc.restore();
+    }
+
+    /**
+     * Keeps a centred, unrotated label of a horizontal axis inside the axis, so the first label does not
+     * start left of the axis and the last one does not end right of it.
+     */
+    private double clampHorizontalLabel(double x, double axisWidth, TickMark tickMark) {
+        if (tickMark.getRotate() != 0.0 || tickMark.getTextAlignment() != TextAlignment.CENTER) {
+            return x;
+        }
+
+        double halfWidth = tickMark.getWidth() * scaleFont / 2.0;
+        if (halfWidth <= 0 || axisWidth < 2 * halfWidth) {
+            return x;
+        }
+
+        return Math.min(Math.max(x, halfWidth), axisWidth - halfWidth);
     }
 
     public static void setSite(JEVisObject site) {

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -33,10 +34,89 @@ import javax.measure.MetricPrefix;
 import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
 import java.util.Currency;
+import java.util.HashMap;
+import java.util.Map;
 
 import static tech.units.indriya.unit.Units.KILOGRAM;
 
 public class ChartUnits {
+
+    /**
+     * Volume units as formatted by the unit manager, value = size in m³
+     */
+    private static final Map<String, Double> VOLUME_IN_CUBIC_METRE = new HashMap<>();
+    /**
+     * Volume flow units, value = size in m³/s
+     */
+    private static final Map<String, Double> VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND = new HashMap<>();
+    /**
+     * Mass flow units, value = size in kg/s
+     */
+    private static final Map<String, Double> MASS_FLOW_IN_KILOGRAM_PER_SECOND = new HashMap<>();
+
+    static {
+        VOLUME_IN_CUBIC_METRE.put("m³", 1d);
+        VOLUME_IN_CUBIC_METRE.put("Nm³", 1d);
+        VOLUME_IN_CUBIC_METRE.put("L", 1d / 1000d);
+        VOLUME_IN_CUBIC_METRE.put("l", 1d / 1000d);
+
+        VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.put("m³/s", 1d);
+        VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.put("m³/min", 1d / 60d);
+        VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.put("m³/h", 1d / 3600d);
+        VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.put("l/s", 1d / 1000d);
+        VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.put("l/min", 1d / 60000d);
+        VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.put("l/h", 1d / 3600000d);
+
+        MASS_FLOW_IN_KILOGRAM_PER_SECOND.put("t/s", 1000d);
+        MASS_FLOW_IN_KILOGRAM_PER_SECOND.put("t/min", 1000d / 60d);
+        MASS_FLOW_IN_KILOGRAM_PER_SECOND.put("t/h", 1000d / 3600d);
+        MASS_FLOW_IN_KILOGRAM_PER_SECOND.put("kg/s", 1d);
+        MASS_FLOW_IN_KILOGRAM_PER_SECOND.put("kg/min", 1d / 60d);
+        MASS_FLOW_IN_KILOGRAM_PER_SECOND.put("kg/h", 1d / 3600d);
+    }
+
+    /**
+     * @return the factor to convert a value in inputUnit into outputUnit, or defaultFactor if one of the units is not part of the given table
+     */
+    private static Double convertRate(Map<String, Double> sizes, String inputUnit, String outputUnit, Double defaultFactor) {
+        Double inputSize = sizes.get(inputUnit);
+        Double outputSize = sizes.get(outputUnit);
+        if (inputSize == null || outputSize == null) {
+            return defaultFactor;
+        }
+        return inputSize / outputSize;
+    }
+
+    /**
+     * Converts between a volume per sample (e.g. m³ per 15 minutes) and a volume flow (e.g. m³/h).
+     *
+     * @param samplePeriod the period of the samples the factor is applied to
+     * @return the conversion factor or null if the units are not volume and volume flow or the period has no fixed length
+     */
+    private static Double volumeFlowFactor(String inputUnit, String outputUnit, Period samplePeriod) {
+        boolean volumeToFlow = VOLUME_IN_CUBIC_METRE.containsKey(inputUnit) && VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.containsKey(outputUnit);
+        boolean flowToVolume = VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.containsKey(inputUnit) && VOLUME_IN_CUBIC_METRE.containsKey(outputUnit);
+        if ((!volumeToFlow && !flowToVolume) || samplePeriod == null) {
+            return null;
+        }
+
+        double seconds;
+        try {
+            /* months and years have no fixed length */
+            seconds = samplePeriod.toStandardSeconds().getSeconds();
+        } catch (Exception e) {
+            return null;
+        }
+        if (seconds <= 0) {
+            return null;
+        }
+
+        if (volumeToFlow) {
+            return VOLUME_IN_CUBIC_METRE.get(inputUnit) / seconds / VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.get(outputUnit);
+        } else {
+            return VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND.get(inputUnit) * seconds / VOLUME_IN_CUBIC_METRE.get(outputUnit);
+        }
+    }
 
     public static JEVisUnit parseUnit(String unit) {
 
@@ -536,244 +616,32 @@ public class ChartUnits {
             case "bar":
                 switch (inputUnit) {
                     case "atm":
-                        factor = 1d / 1.01325;
+                        factor = 1.01325;
                         break;
                 }
                 break;
             case "atm":
                 switch (inputUnit) {
                     case "bar":
-                        factor = 1.01325;
+                        factor = 1d / 1.01325;
                         break;
                 }
                 break;
             case "m³/s":
-                switch (inputUnit) {
-                    case "m³/min":
-                        factor = 1d / 60D;
-                        break;
-                    case "m³/h":
-                        factor = 1d / 3600d;
-                        break;
-                    case "l/s":
-                        factor = 1d / 1000d;
-                        break;
-                    case "l/min":
-                        factor = 1d / 60000d;
-                        break;
-                    case "l/h":
-                        factor = 1d / 3600000;
-                        break;
-                }
-                break;
             case "m³/min":
-                switch (inputUnit) {
-                    case "m³/s":
-                        factor = 60d;
-                        break;
-                    case "m³/h":
-                        factor = 1d / 60d;
-                        break;
-                    case "l/s":
-                        factor = 1000d * 60d;
-                        break;
-                    case "l/min":
-                        factor = 1000d;
-                        break;
-                    case "l/h":
-                        factor = 1000d / 60d;
-                        break;
-                }
-                break;
             case "m³/h":
-                switch (inputUnit) {
-                    case "m³/s":
-                        factor = 60d * 60d;
-                        break;
-                    case "m³/min":
-                        factor = 1d / 60d;
-                        break;
-                    case "l/s":
-                        factor = 1000d / 3600d;
-                        break;
-                    case "l/min":
-                        factor = 1000d / 60d;
-                        break;
-                    case "l/h":
-                        factor = 1000d;
-                        break;
-                }
-                break;
             case "l/s":
-                switch (inputUnit) {
-                    case "m³/s":
-                        factor = 1d / 1000d;
-                        break;
-                    case "m³/min":
-                        factor = 60d / 1000d;
-                        break;
-                    case "m³/h":
-                        factor = 3600d / 10000;
-                        break;
-                    case "l/min":
-                        factor = 60d;
-                        break;
-                    case "l/h":
-                        factor = 3600d;
-                        break;
-                }
-                break;
             case "l/min":
-                switch (inputUnit) {
-                    case "m³/s":
-                        factor = 1d / 60000d;
-                        break;
-                    case "m³/min":
-                        factor = 1d / 1000d;
-                        break;
-                    case "m³/h":
-                        factor = 60d / 1000d;
-                        break;
-                    case "l/s":
-                        factor = 1 / 60d;
-                        break;
-                    case "l/h":
-                        factor = 60d;
-                        break;
-                }
-                break;
             case "l/h":
-                switch (inputUnit) {
-                    case "m³/s":
-                        factor = 1d / 3600000d;
-                        break;
-                    case "m³/min":
-                        factor = 1d / 60000d;
-                        break;
-                    case "m³/h":
-                        factor = 1d / 1000d;
-                        break;
-                    case "l/s":
-                        factor = 3600d;
-                        break;
-                    case "l/min":
-                        factor = 60d;
-                        break;
-                }
+                factor = convertRate(VOLUME_FLOW_IN_CUBIC_METRE_PER_SECOND, inputUnit, outputUnit, factor);
                 break;
             case "t/s":
-                switch (inputUnit) {
-                    case "t/min":
-                        factor = 1d / 60D;
-                        break;
-                    case "t/h":
-                        factor = 1d / 3600d;
-                        break;
-                    case "kg/s":
-                        factor = 1d / 1000d;
-                        break;
-                    case "kg/min":
-                        factor = 1d / 60000d;
-                        break;
-                    case "kg/h":
-                        factor = 1d / 3600000;
-                        break;
-                }
-                break;
             case "t/min":
-                switch (inputUnit) {
-                    case "t/s":
-                        factor = 60d;
-                        break;
-                    case "t/h":
-                        factor = 1d / 60d;
-                        break;
-                    case "kg/s":
-                        factor = 1000d * 60d;
-                        break;
-                    case "kg/min":
-                        factor = 1000d;
-                        break;
-                    case "kg/h":
-                        factor = 1000d / 60d;
-                        break;
-                }
-                break;
             case "t/h":
-                switch (inputUnit) {
-                    case "t/s":
-                        factor = 60d * 60d;
-                        break;
-                    case "t/min":
-                        factor = 1d / 60d;
-                        break;
-                    case "kg/s":
-                        factor = 1000d / 3600d;
-                        break;
-                    case "kg/min":
-                        factor = 1000d / 60d;
-                        break;
-                    case "kg/h":
-                        factor = 1000d;
-                        break;
-                }
-                break;
             case "kg/s":
-                switch (inputUnit) {
-                    case "t/s":
-                        factor = 1d / 1000d;
-                        break;
-                    case "t/min":
-                        factor = 60d / 1000d;
-                        break;
-                    case "t/h":
-                        factor = 3600d / 10000;
-                        break;
-                    case "kg/min":
-                        factor = 60d;
-                        break;
-                    case "kg/h":
-                        factor = 3600d;
-                        break;
-                }
-                break;
             case "kg/min":
-                switch (inputUnit) {
-                    case "t/s":
-                        factor = 1d / 60000d;
-                        break;
-                    case "t/min":
-                        factor = 1d / 1000d;
-                        break;
-                    case "t/h":
-                        factor = 60d / 1000d;
-                        break;
-                    case "kg/s":
-                        factor = 1 / 60d;
-                        break;
-                    case "kg/h":
-                        factor = 60d;
-                        break;
-                }
-                break;
             case "kg/h":
-                switch (inputUnit) {
-                    case "t/s":
-                        factor = 1d / 3600000d;
-                        break;
-                    case "t/min":
-                        factor = 1d / 60000d;
-                        break;
-                    case "t/h":
-                        factor = 1d / 1000d;
-                        break;
-                    case "kg/s":
-                        factor = 3600d;
-                        break;
-                    case "kg/min":
-                        factor = 60d;
-                        break;
-                }
+                factor = convertRate(MASS_FLOW_IN_KILOGRAM_PER_SECOND, inputUnit, outputUnit, factor);
                 break;
             case "va":
                 switch (inputUnit) {
@@ -877,6 +745,12 @@ public class ChartUnits {
                 break;
             default:
                 break;
+        }
+
+        /* volume per sample <-> volume flow, the values belong to the period of the converted samples */
+        Double volumeFlowFactor = volumeFlowFactor(inputUnit, outputUnit, outputPeriod != null ? outputPeriod : inputPeriod);
+        if (volumeFlowFactor != null) {
+            return volumeFlowFactor;
         }
 
         PeriodComparator comparator = new PeriodComparator();

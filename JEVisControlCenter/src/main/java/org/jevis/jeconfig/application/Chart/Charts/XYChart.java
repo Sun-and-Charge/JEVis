@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -202,7 +203,11 @@ public class XYChart implements Chart {
         this.chartName = this.chartModel.getChartName();
 
         if (chartDataRows.isEmpty()) {
-            chartModel.getChartData().forEach(chartData -> chartDataRows.add(new ChartDataRow(ds, chartData)));
+            chartModel.getChartData().forEach(chartData -> {
+                ChartDataRow chartDataRow = new ChartDataRow(ds, chartData);
+                chartDataRow.setCustomWorkDay(chartModel.isCustomWorkDay());
+                chartDataRows.add(chartDataRow);
+            });
         }
 
         for (ChartDataRow chartDataRow : chartDataRows) {

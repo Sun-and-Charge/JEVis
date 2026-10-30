@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,10 +27,10 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.geometry.HPos;
-import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,6 +94,7 @@ public class ToolBarView {
     private MenuButton export;
     private ToggleButton exportImage;
     private MenuItem exportPDF;
+    private MenuItem exportPDFPortrait;
     private ToggleButton printButton;
     private ToggleButton reload;
     private ToggleButton delete;
@@ -110,12 +112,14 @@ public class ToolBarView {
     private Region playIcon;
     private ToggleButton showRawData;
 
+    private ToggleButton linkedZoom;
+
     private MenuButton mathOperation;
-    private MenuItem showSum;
-    private MenuItem showL1L2;
-    private MenuItem calcRegression;
-    private MenuItem polyDegree;
-    private MenuItem regressionType;
+    private CheckMenuItem showSum;
+    private CheckMenuItem showL1L2;
+    private CheckMenuItem calcRegression;
+    private CustomMenuItem polyDegree;
+    private CustomMenuItem regressionType;
     private MenuItem calcFullLoadHours;
     private MenuItem calcSumAboveBelow;
     private MenuItem calcBaseLoad;
@@ -234,18 +238,18 @@ public class ToolBarView {
 
             toolBar.getItems().addAll(analysesComboBox,
                     sep1, presetDateBox, pickerDateStart, pickerDateEnd, customWorkDay,
-                    sep2, reload, zoomOut,
+                    sep2, reload, zoomOut, linkedZoom,
                     sep3, loadNew, save, delete, select2, export, exportImage, printButton,
                     sep4);
 
             if (isRegressionPossible) {
-                Separator regressionSeparator = new Separator(Orientation.HORIZONTAL);
-                regressionSeparator.setHalignment(HPos.RIGHT);
-                mathOperation.getItems().addAll(regressionType, polyDegree, calcRegression, new MenuItem("", regressionSeparator));
+                mathOperation.getItems().addAll(regressionType, polyDegree, calcRegression, new SeparatorMenuItem());
             }
 
             //Math buttons now always on
             mathOperation.getItems().addAll(calcFullLoadHours, calcSumAboveBelow, calcBaseLoad, calcValues);
+
+            mathOperation.getItems().add(new SeparatorMenuItem());
 
             if (!JEConfig.getExpert()) {
                 mathOperation.getItems().addAll(showL1L2, showSum);
@@ -309,9 +313,10 @@ public class ToolBarView {
         exportImage.setTooltip(exportImageTooltip);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(exportImage);
 
-        exportPDF = new MenuItem(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.exportPDF"));
+        exportPDF = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.exportpdf.landscape"));
+        exportPDFPortrait = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.exportpdf.portrait"));
 
-        export.getItems().addAll(exportCSV, exportPDF);
+        export.getItems().addAll(exportCSV, exportPDF, exportPDFPortrait);
 
         printButton = new ToggleButton("", JEConfig.getSVGImage(Icon.PRINT, iconSize, iconSize));
         Tooltip printTooltip = new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.print"));
@@ -388,15 +393,18 @@ public class ToolBarView {
         mathOperation = new MenuButton("", JEConfig.getSVGImage(Icon.SUM, iconSize, iconSize));
         mathOperation.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.mathoperation")));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(mathOperation);
-        showSum = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.showsum"));
+        showSum = new CheckMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.showsum"));
+        showSum.selectedProperty().bindBidirectional(toolBarSettings.showSumProperty());
 
-        showL1L2 = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.showl1l2"));
+        showL1L2 = new CheckMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.showl1l2"));
+        showL1L2.selectedProperty().bindBidirectional(toolBarSettings.showL1L2Property());
 
-        NumberSpinner numberSpinner = new NumberSpinner(new BigDecimal(2), new BigDecimal(1));
-        polyDegree = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.regression.degree"), numberSpinner);
+        NumberSpinner numberSpinner = new NumberSpinner(new BigDecimal(toolBarSettings.getPolyRegressionDegree()), new BigDecimal(1));
+        polyDegree = buildControlMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.regression.degree"), numberSpinner);
         RegressionBox regressionBox = new RegressionBox();
-        regressionType = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.regression.type"), regressionBox);
-        calcRegression = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcregression"));
+        regressionType = buildControlMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.regression.type"), regressionBox);
+        calcRegression = new CheckMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcregression"));
+        calcRegression.selectedProperty().bindBidirectional(toolBarSettings.calculateRegressionProperty());
 
         numberSpinner.setMin(new BigDecimal(1));
         numberSpinner.setMax(new BigDecimal(12));
@@ -406,7 +414,7 @@ public class ToolBarView {
 
         calcFullLoadHours = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcfullloadhours"));
 
-        calcSumAboveBelow = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcsumabovebelow") + "\n" + I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calchoursabovebelow"));
+        calcSumAboveBelow = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcsumabovebelow") + " / " + I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calchoursabovebelow"));
 
         calcBaseLoad = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcbaseloadhours"));
 
@@ -447,12 +455,27 @@ public class ToolBarView {
         zoomOut.setTooltip(zoomOutTooltip);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(zoomOut);
 
+        linkedZoom = new ToggleButton("", JEConfig.getSVGImage(Icon.SWITCH, iconSize, iconSize));
+        Tooltip linkedZoomTooltip = new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.linkedzoom"));
+        linkedZoom.setTooltip(linkedZoomTooltip);
+        linkedZoom.selectedProperty().bindBidirectional(toolBarSettings.linkedZoomProperty());
+        linkedZoom.styleProperty().bind(
+                Bindings
+                        .when(linkedZoom.hoverProperty())
+                        .then(
+                                new SimpleStringProperty("-fx-background-insets: 1 1 1;"))
+                        .otherwise(Bindings
+                                .when(linkedZoom.selectedProperty())
+                                .then("-fx-background-insets: 1 1 1;")
+                                .otherwise(
+                                        new SimpleStringProperty("-fx-background-color: transparent;-fx-background-insets: 0 0 0;"))));
+
         helpButton = JEVisHelp.getInstance().buildHelpButtons(iconSize, iconSize);
         infoButton = JEVisHelp.getInstance().buildInfoButtons(iconSize, iconSize);
 
         List<Node> nodes = Arrays.asList(analysesComboBox,
                 presetDateBox, pickerDateStart, pickerDateEnd, customWorkDay,
-                reload, zoomOut,
+                reload, zoomOut, linkedZoom,
                 loadNew, save, delete, select2, export, mathOperation, showRawData, exportImage, printButton,
                 disableIcons, autoResize, runUpdateButton);
 
@@ -475,9 +498,35 @@ public class ToolBarView {
                         break;
                     }
                 }
-                break;
+                /* linked charts follow the first one, unlinked charts have to be reset one by one */
+                if (toolBarSettings.isLinkedZoom()) {
+                    break;
+                }
             }
         }
+    }
+
+    private void exportPDF(boolean landscape) {
+        if (chartPlugin.getDataSettings().getCurrentAnalysis() != null) {
+            ChartExportPDF exportPDF = new ChartExportPDF(dataModel, chartPlugin.getDataSettings().getCurrentAnalysis().getName(), false, landscape);
+
+            if (exportPDF.getDestinationFile() != null) {
+
+                exportPDF.export(chartPlugin.getvBox());
+            }
+        }
+    }
+
+    /**
+     * Builds a menu item that embeds a control next to its label and keeps the menu open while it is used.
+     */
+    private CustomMenuItem buildControlMenuItem(String text, Node control) {
+        Label label = new Label(text);
+        HBox hBox = new HBox(8, label, control);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        CustomMenuItem menuItem = new CustomMenuItem(hBox);
+        menuItem.setHideOnClick(false);
+        return menuItem;
     }
 
     private void startToolbarIconListener() {
@@ -533,16 +582,9 @@ public class ToolBarView {
             }
         });
 
-        exportPDF.setOnAction(event -> {
-            if (chartPlugin.getDataSettings().getCurrentAnalysis() != null) {
-                ChartExportPDF exportPDF = new ChartExportPDF(dataModel, chartPlugin.getDataSettings().getCurrentAnalysis().getName(), false);
+        exportPDF.setOnAction(event -> exportPDF(true));
 
-                if (exportPDF.getDestinationFile() != null) {
-
-                    exportPDF.export(chartPlugin.getvBox());
-                }
-            }
-        });
+        exportPDFPortrait.setOnAction(event -> exportPDF(false));
 
         printButton.setOnAction(event -> {
             if (chartPlugin.getDataSettings().getCurrentAnalysis() != null) {
@@ -567,20 +609,14 @@ public class ToolBarView {
 
         showRawData.setOnAction(event -> chartPlugin.update());
 
-        showSum.setOnAction(event -> {
-            toolBarSettings.setShowSum(!toolBarSettings.isShowSum());
-            chartPlugin.update();
-        });
+        /* the check menu items are bound to the toolbar settings, they only have to trigger the update */
+        showSum.setOnAction(event -> chartPlugin.update());
 
-        showL1L2.setOnAction(event -> {
-            toolBarSettings.setShowL1L2(!toolBarSettings.isShowL1L2());
-            chartPlugin.update();
-        });
+        showL1L2.setOnAction(event -> chartPlugin.update());
 
-        calcRegression.setOnAction(event -> {
-            toolBarSettings.setCalculateRegression(!toolBarSettings.isCalculateRegression());
-            chartPlugin.update();
-        });
+        calcRegression.setOnAction(event -> chartPlugin.update());
+
+        linkedZoom.setOnAction(event -> chartPlugin.update());
 
         calcFullLoadHours.setOnAction(event -> toolBarFunctions.calcFullLoadHours());
 
@@ -641,6 +677,7 @@ public class ToolBarView {
         exportCSV.setDisable(bool);
         exportImage.setDisable(bool);
         exportPDF.setDisable(bool);
+        exportPDFPortrait.setDisable(bool);
         printButton.setDisable(bool);
         reload.setDisable(bool);
         runUpdateButton.setDisable(bool);
@@ -658,6 +695,7 @@ public class ToolBarView {
         customWorkDay.setDisable(bool);
         disableIcons.setDisable(bool);
         zoomOut.setDisable(bool);
+        linkedZoom.setDisable(bool);
         presetDateBox.setDisable(bool);
         pickerDateStart.setDisable(bool);
         pickerDateEnd.setDisable(bool);

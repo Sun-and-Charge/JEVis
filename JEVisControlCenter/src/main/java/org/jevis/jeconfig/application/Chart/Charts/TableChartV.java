@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -362,11 +363,18 @@ public class TableChartV extends XYChart {
                 nameLabelBox.setAlignment(Pos.CENTER);
                 JFXTextField filterField = new JFXTextField();
                 filterField.setPromptText(I18n.getInstance().getString("plugin.chart.tablev.filter.prompt"));
+                String columnTitle = xyChartSerie.getTableEntryName();
+                String savedFilterText = chartModel.getFilterTexts().get(columnTitle);
+                if (!nameEqualsExistingColumn && chartModel.isFilterEnabled() && savedFilterText != null && !savedFilterText.isEmpty()) {
+                    filterField.setText(savedFilterText);
+                    columnFilter.put(column, savedFilterText);
+                }
                 filterField.textProperty().addListener((observable, oldValue, newValue) -> {
                     if (!newValue.equals(oldValue)) {
                         String s = columnFilter.get(column);
                         if (s != null) columnFilter.remove(column);
                         columnFilter.put(column, newValue);
+                        chartModel.getFilterTexts().put(columnTitle, newValue);
                         refreshTable();
                     }
                 });
@@ -533,11 +541,17 @@ public class TableChartV extends XYChart {
                 nameLabelBox.setAlignment(Pos.CENTER);
                 JFXTextField filterBox = new JFXTextField();
                 filterBox.setPromptText(I18n.getInstance().getString("plugin.chart.tablev.filter.prompt"));
+                String savedFilterText = chartModel.getFilterTexts().get(identifierColumnTitle);
+                if (chartModel.isFilterEnabled() && savedFilterText != null && !savedFilterText.isEmpty()) {
+                    filterBox.setText(savedFilterText);
+                    columnFilter.put(identifierColumn, savedFilterText);
+                }
                 filterBox.textProperty().addListener((observable, oldValue, newValue) -> {
                     if (!newValue.equals(oldValue)) {
                         String s = columnFilter.get(identifierColumn);
                         if (s != null) columnFilter.remove(identifierColumn);
                         columnFilter.put(identifierColumn, newValue);
+                        chartModel.getFilterTexts().put(identifierColumnTitle, newValue);
                         refreshTable();
                     }
                 });
@@ -565,6 +579,10 @@ public class TableChartV extends XYChart {
             tableHeader.setItems(filteredList);
 
             createCalculations(calculations, values);
+
+            if (!columnFilter.isEmpty()) {
+                refreshTable();
+            }
 
             Platform.runLater(() -> {
                 tableHeader.getColumns().clear();

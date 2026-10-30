@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -178,6 +179,16 @@ public class AnalysisHandler {
             chartModelNode.put("coloringEnabled", chartModel.isColoringEnabled());
             chartModelNode.put("showColumnSums", chartModel.isShowColumnSums());
             chartModelNode.put("showRowSums", chartModel.isShowRowSums());
+
+            if (!chartModel.getFilterTexts().isEmpty()) {
+                ObjectNode filterTextsNode = JsonNodeFactory.instance.objectNode();
+                chartModel.getFilterTexts().forEach((columnTitle, filterText) -> {
+                    if (columnTitle != null && filterText != null && !filterText.isEmpty()) {
+                        filterTextsNode.put(columnTitle, filterText);
+                    }
+                });
+                chartModelNode.set("filterTexts", filterTextsNode);
+            }
 
             if (chartModel.getxAxisTitle() != null) {
                 chartModelNode.put("xAxisTitle", chartModel.getxAxisTitle());

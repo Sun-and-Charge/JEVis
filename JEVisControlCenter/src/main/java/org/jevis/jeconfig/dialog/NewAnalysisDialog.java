@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -21,7 +22,6 @@ package org.jevis.jeconfig.dialog;
 
 import javafx.application.Platform;
 import org.jevis.api.JEVisDataSource;
-import org.jevis.jeconfig.Constants;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.NewSelectionDialog;
 import org.jevis.jeconfig.application.Chart.data.DataModel;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
@@ -50,7 +50,9 @@ public class NewAnalysisDialog {
         newSelectionDialog.setOnCloseRequest(event -> {
             if (newSelectionDialog.getResponse() == Response.OK) {
 
-                chartPlugin.handleRequest(Constants.Plugin.Command.SAVE);
+                /* the current analysis still points to the previously opened one, so do not prefill its name */
+                SaveAnalysisDialog saveAnalysisDialog = new SaveAnalysisDialog(ds, chartPlugin.getDataSettings(), chartPlugin, chartPlugin.getToolBarView(), true);
+                saveAnalysisDialog.show();
                 Platform.runLater(() -> chartPlugin.getToolBarView().setDisableToolBarIcons(false));
             }
             JEVisHelp.getInstance().deactivatePluginModule();

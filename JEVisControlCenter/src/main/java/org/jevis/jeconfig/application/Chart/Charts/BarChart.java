@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -89,6 +90,7 @@ public class BarChart implements Chart {
 
         chartModel.getChartData().forEach(chartData -> {
             ChartDataRow chartDataRow = new ChartDataRow(ds, chartData);
+            chartDataRow.setCustomWorkDay(chartModel.isCustomWorkDay());
 
             try {
                 BarChartSerie serie = new BarChartSerie(chartModel, chartDataRow, true);

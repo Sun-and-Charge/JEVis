@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -19,6 +20,7 @@
  */
 package org.jevis.jeconfig.application.Chart.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.hansolo.fx.charts.tools.ColorMapping;
 import javafx.beans.property.*;
 import javafx.geometry.Orientation;
@@ -26,7 +28,9 @@ import org.jevis.jeconfig.application.Chart.ChartType;
 import org.joda.time.LocalTime;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Configuration model for a single chart within an analysis.
@@ -72,6 +76,8 @@ public class ChartModel {
     private final StringProperty yAxisTitle = new SimpleStringProperty(this, "yAxisTitle", null);
 
     private List<ChartData> chartData = new ArrayList<>();
+    private Map<String, String> filterTexts = new HashMap<>();
+    private boolean customWorkDay = true;
 
     public List<ChartData> getChartData() {
         return chartData;
@@ -295,5 +301,29 @@ public class ChartModel {
 
     public SimpleBooleanProperty coloringEnabledProperty() {
         return coloringEnabled;
+    }
+
+    /**
+     * Filter texts of a vertical table chart, keyed by column title.
+     */
+    public Map<String, String> getFilterTexts() {
+        return filterTexts;
+    }
+
+    public void setFilterTexts(Map<String, String> filterTexts) {
+        this.filterTexts = filterTexts != null ? filterTexts : new HashMap<>();
+    }
+
+    /**
+     * Runtime state of the custom workday toolbar toggle, not persisted with the analysis.
+     */
+    @JsonIgnore
+    public boolean isCustomWorkDay() {
+        return customWorkDay;
+    }
+
+    @JsonIgnore
+    public void setCustomWorkDay(boolean customWorkDay) {
+        this.customWorkDay = customWorkDay;
     }
 }

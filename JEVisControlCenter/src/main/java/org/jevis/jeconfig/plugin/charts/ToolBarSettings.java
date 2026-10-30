@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -36,6 +37,7 @@ public class ToolBarSettings {
     private final SimpleBooleanProperty autoResize = new SimpleBooleanProperty(this, "autoResize", true);
     private final SimpleBooleanProperty customWorkday = new SimpleBooleanProperty(this, "customWorkday", true);
     private final SimpleBooleanProperty runUpdate = new SimpleBooleanProperty(this, "runUpdate", false);
+    private final SimpleBooleanProperty linkedZoom = new SimpleBooleanProperty(this, "linkedZoom", true);
 
 
     public boolean isShowRawData() {
@@ -156,5 +158,17 @@ public class ToolBarSettings {
 
     public SimpleBooleanProperty runUpdateProperty() {
         return runUpdate;
+    }
+
+    public boolean isLinkedZoom() {
+        return linkedZoom.get();
+    }
+
+    public void setLinkedZoom(boolean linkedZoom) {
+        this.linkedZoom.set(linkedZoom);
+    }
+
+    public SimpleBooleanProperty linkedZoomProperty() {
+        return linkedZoom;
     }
 }
