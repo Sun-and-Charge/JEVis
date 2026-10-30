@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -62,6 +63,8 @@ public class Widgets {
         FACTORIES.put(ToogleSwitchWidget.WIDGET_ID, ToogleSwitchWidget::new);
         FACTORIES.put(SliderWidget.WIDGET_ID, SliderWidget::new);
         FACTORIES.put(PlusMinusWidget.WIDGET_ID, PlusMinusWidget::new);
+        FACTORIES.put(ReportLinkWidget.WIDGET_ID, ReportLinkWidget::new);
+        FACTORIES.put(AlarmCountWidget.WIDGET_ID, AlarmCountWidget::new);
     }
 
     public static Map<String, WidgetSelection> availableWidgets = new HashMap<String, WidgetSelection>() {
@@ -89,6 +92,8 @@ public class Widgets {
             put(ToogleSwitchWidget.WIDGET_ID, new WidgetSelection(ToogleSwitchWidget.class.getName(), ToogleSwitchWidget.WIDGET_ID, I18n.getInstance().getString("plugin.dashboard.toggleswitch"), TitleWidget.ICON));
             put(SliderWidget.WIDGET_ID, new WidgetSelection(SliderWidget.class.getName(), SliderWidget.WIDGET_ID, I18n.getInstance().getString("plugin.dashboard.slider"), TitleWidget.ICON));
             put(PlusMinusWidget.WIDGET_ID, new WidgetSelection(PlusMinusWidget.class.getName(), PlusMinusWidget.WIDGET_ID, I18n.getInstance().getString("plugin.dashboard.plusminus"), TitleWidget.ICON));
+            put(ReportLinkWidget.WIDGET_ID, new WidgetSelection(ReportLinkWidget.class.getName(), ReportLinkWidget.WIDGET_ID, I18n.getInstance().getString("dashboard.widget.reportlinker"), TitleWidget.ICON));
+            put(AlarmCountWidget.WIDGET_ID, new WidgetSelection(AlarmCountWidget.class.getName(), AlarmCountWidget.WIDGET_ID, I18n.getInstance().getString("dashboard.widget.alarmcount"), TitleWidget.ICON));
         }
     };
 

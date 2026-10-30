@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -27,6 +28,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.image.ImageView;
@@ -50,6 +52,8 @@ import org.jevis.jeconfig.plugin.dashboard.config.GraphAnalysisLinkerNode;
 import org.jevis.jeconfig.plugin.dashboard.config2.Size;
 import org.jevis.jeconfig.plugin.dashboard.config2.WidgetConfigDialog;
 import org.jevis.jeconfig.plugin.dashboard.config2.WidgetPojo;
+import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFactoryBox;
+import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.jevis.jeconfig.tool.Layouts;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -103,11 +107,22 @@ public class LinkerWidget extends Widget {
             });
             lastInterval = interval;
 
-            this.graphAnalysisLinker.applyConfig(AggregationPeriod.NONE, ManipulationMode.NONE, interval);
+            applyLinkInterval();
 
         } catch (Exception ex) {
             logger.error(ex);
         }
+    }
+
+    /**
+     * Passes the interval to the linker: the configured time frame of the link, or the dashboard interval.
+     */
+    private void applyLinkInterval() {
+        if (this.graphAnalysisLinker == null || this.dataModelNode == null) {
+            return;
+        }
+        Interval linkInterval = GraphAnalysisLinker.resolveInterval(control, dataModelNode.getForcedInterval(), lastInterval, this.config.getFixedTimeframe());
+        this.graphAnalysisLinker.applyConfig(AggregationPeriod.NONE, ManipulationMode.NONE, linkInterval);
     }
 
     @Override
@@ -129,6 +144,7 @@ public class LinkerWidget extends Widget {
                 this.anchorPane.setBackground(bgColor);
                 this.setBorder(null);
                 this.graphAnalysisLinker.applyNode(dataModelNode);
+                applyLinkInterval();
                 this.anchorPane.getChildren().setAll(graphAnalysisLinker.getLinkerButton());
                 Layouts.setAnchor(graphAnalysisLinker.getLinkerButton(), 0);
                 this.layout();
@@ -236,10 +252,34 @@ public class LinkerWidget extends Widget {
                 }
 
                 analysisListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-                    dataModelNode.setGraphAnalysisObject(newValue.getID());
+                    if (newValue != null) {
+                        dataModelNode.setGraphAnalysisObject(newValue.getID());
+                    }
                 });
 
-                tab.setContent(analysisListView);
+                /* optional own time frame of the link, off = dashboard interval */
+                TimeFactoryBox timeFrameBox = new TimeFactoryBox(true);
+                timeFrameBox.getItems().addAll(control.getAllTimeFrames().getAll());
+                TimeFrame forcedTimeFrame = GraphAnalysisLinker.findTimeFrame(control, dataModelNode.getForcedInterval());
+                if (forcedTimeFrame != null) {
+                    timeFrameBox.selectValue(forcedTimeFrame);
+                }
+                timeFrameBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+                    if (newValue == null || timeFrameBox.isOffValue()) {
+                        dataModelNode.setForcedInterval("");
+                    } else {
+                        dataModelNode.setForcedInterval(newValue.getID());
+                    }
+                });
+
+                Label timeFrameLabel = new Label(I18n.getInstance().getString("plugin.dashboard.linkerwidget.timeframe"));
+                HBox timeFrameRow = new HBox(8, timeFrameLabel, timeFrameBox);
+                timeFrameRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                timeFrameRow.setPadding(new Insets(8));
+
+                BorderPane content = new BorderPane(analysisListView);
+                content.setTop(timeFrameRow);
+                tab.setContent(content);
 
             } catch (Exception ex) {
                 logger.error("Failed to build linker widget config tab", ex);

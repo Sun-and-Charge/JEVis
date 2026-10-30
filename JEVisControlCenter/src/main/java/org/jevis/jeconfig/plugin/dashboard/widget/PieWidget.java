@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -100,6 +101,7 @@ public class PieWidget extends Widget implements DataModelWidget {
 
         this.sampleHandler.setAutoAggregation(true);
         this.sampleHandler.update(interval);
+        this.legend.setInterval(interval);
 
         showAlertOverview(false, "");
 
@@ -155,7 +157,7 @@ public class PieWidget extends Widget implements DataModelWidget {
 
                 legendItemList.add(this.legend.buildVerticalLegendItem(
                         chartDataRow.getName(), chartDataRow.getColor(), this.config.getFontColor(), this.config.getFontSize(),
-                        chartDataRow.getObject(), hasNoData, I18n.getInstance().getString("plugin.dashboard.alert.nodata"), true));
+                        chartDataRow.getObject(), hasNoData, I18n.getInstance().getString("plugin.dashboard.alert.nodata"), true, chartDataRow));
 
                 if (!hasNoData) {
                     PieChart.Data pieData = new PieChart.Data(textValue, value);

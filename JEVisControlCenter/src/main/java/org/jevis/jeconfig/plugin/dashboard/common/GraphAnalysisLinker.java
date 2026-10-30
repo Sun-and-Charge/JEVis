@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,7 +33,10 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.AnalysisRequest;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
+import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config.GraphAnalysisLinkerNode;
+import org.jevis.jeconfig.plugin.dashboard.timeframe.LastPeriod;
+import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.joda.time.Interval;
 
 public class GraphAnalysisLinker {
@@ -62,9 +66,9 @@ public class GraphAnalysisLinker {
         return button;
     }
 
-    private void openLink() {
+    public void openLink() {
         try {
-            if (targetIsreachable) {
+            if (targetIsreachable && interval != null) {
                 AnalysisRequest analysisRequest = new AnalysisRequest(
                         this.dataSource.getObject(this.node.getGraphAnalysisObject())
                         , aggregationPeriod, manipulationMode
@@ -84,10 +88,52 @@ public class GraphAnalysisLinker {
         }
     }
 
+    /**
+     * @return the time frame with the given ID (dashboard time frames or last periods), or {@code null} if the ID is
+     * empty or unknown
+     */
+    public static TimeFrame findTimeFrame(DashboardControl control, String timeFrameID) {
+        if (timeFrameID == null || timeFrameID.isEmpty()) {
+            return null;
+        }
+        try {
+            for (TimeFrame timeFrame : control.getAllTimeFrames().getAll()) {
+                if (timeFrameID.equals(timeFrame.getID())) {
+                    return timeFrame;
+                }
+            }
+            return new LastPeriod(timeFrameID);
+        } catch (Exception ex) {
+            logger.warn("Unknown time frame '{}'", timeFrameID);
+            return null;
+        }
+    }
+
+    /**
+     * @return the interval of the given time frame relative to the end of the dashboard interval, or the dashboard
+     * interval if no time frame is set
+     */
+    public static Interval resolveInterval(DashboardControl control, String timeFrameID, Interval dashboardInterval, boolean fixed) {
+        TimeFrame timeFrame = findTimeFrame(control, timeFrameID);
+        if (timeFrame == null || dashboardInterval == null) {
+            return dashboardInterval;
+        }
+        try {
+            Interval forced = timeFrame.getInterval(dashboardInterval.getEnd(), fixed);
+            if (forced != null && forced.getEndMillis() > forced.getStartMillis()) {
+                return forced;
+            }
+        } catch (Exception ex) {
+            logger.warn("Could not calculate interval of time frame '{}'", timeFrameID, ex);
+        }
+        return dashboardInterval;
+    }
+
     public void applyNode(GraphAnalysisLinkerNode node) {
         try {
             this.node = node;
-            if (this.node.getGraphAnalysisObject() > 0) {
+            targetIsreachable = false;
+            if (this.node.getGraphAnalysisObject() != null && this.node.getGraphAnalysisObject() > 0) {
                 JEVisObject jeVisObject = this.dataSource.getObject(this.node.getGraphAnalysisObject());
                 if (jeVisObject != null) {
                     Tooltip tooltip = new Tooltip(I18n.getInstance().getString("plugin.dashboard.linker.open") + " " + jeVisObject.getName());

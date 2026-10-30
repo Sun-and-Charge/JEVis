@@ -21,17 +21,23 @@
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,14 +47,21 @@ import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.JEVisFileImp;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.relationship.ObjectRelations;
+import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.AnalysesComboBox;
+import org.jevis.jeconfig.plugin.dashboard.DashBordPlugIn;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
+import org.jevis.jeconfig.plugin.dashboard.config.GraphAnalysisLinkerNode;
 import org.jevis.jeconfig.tool.SvgImages;
 import org.joda.time.DateTime;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImageConfig {
 
@@ -56,6 +69,15 @@ public class ImageConfig {
 
     private final String JSON_IMAGE_ID = "objectID";
     private Long objectID = -1L;
+    private final String JSON_DASHBOARD_LINK = "dashboardLinker";
+    private final String JSON_ANALYSIS_LINK = "analysisLinker";
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * Optional link target opened on click: a dashboard or an analysis (0 = no link)
+     */
+    private DashboardLinkerNode dashboardLink = new DashboardLinkerNode();
+    private GraphAnalysisLinkerNode analysisLink = new GraphAnalysisLinkerNode();
 
     final DashboardControl dashboardControl;
 
@@ -72,12 +94,24 @@ public class ImageConfig {
 
         if (jsonNode != null) {
             objectID = jsonNode.get(JSON_IMAGE_ID).asLong(-1L);
+            try {
+                if (jsonNode.has(JSON_DASHBOARD_LINK)) {
+                    dashboardLink = mapper.treeToValue(jsonNode.get(JSON_DASHBOARD_LINK), DashboardLinkerNode.class);
+                }
+                if (jsonNode.has(JSON_ANALYSIS_LINK)) {
+                    analysisLink = mapper.treeToValue(jsonNode.get(JSON_ANALYSIS_LINK), GraphAnalysisLinkerNode.class);
+                }
+            } catch (Exception ex) {
+                logger.error("Failed to read link of image widget", ex);
+            }
         }
     }
 
 
     private class ImageTab extends Tab implements ConfigTab {
         ImageConfig limit;
+        ComboBox<LinkType> linkTypeBox;
+        ComboBox<JEVisObject> linkTargetBox;
 
         public ImageTab(String text, ImageConfig limit) {
             super(text);
@@ -86,8 +120,118 @@ public class ImageConfig {
 
         @Override
         public void commitChanges() {
-            //TODO;
+            /* the image file is stored directly on upload, only the link is committed here */
+            if (linkTypeBox == null || linkTargetBox == null) {
+                return;
+            }
+            JEVisObject target = linkTargetBox.getValue();
+            LinkType type = linkTypeBox.getValue();
+            dashboardLink.setDashboardObject(type == LinkType.DASHBOARD && target != null ? target.getID() : 0L);
+            analysisLink.setGraphAnalysisObject(type == LinkType.ANALYSIS && target != null ? target.getID() : 0L);
         }
+    }
+
+    public enum LinkType {
+        NONE, DASHBOARD, ANALYSIS
+    }
+
+    /**
+     * @return the configured link type; a dashboard link wins if both are set
+     */
+    public LinkType getLinkType() {
+        if (dashboardLink.getDashboardObject() != null && dashboardLink.getDashboardObject() > 0) {
+            return LinkType.DASHBOARD;
+        }
+        if (analysisLink.getGraphAnalysisObject() != null && analysisLink.getGraphAnalysisObject() > 0) {
+            return LinkType.ANALYSIS;
+        }
+        return LinkType.NONE;
+    }
+
+    public DashboardLinkerNode getDashboardLink() {
+        return dashboardLink;
+    }
+
+    public GraphAnalysisLinkerNode getAnalysisLink() {
+        return analysisLink;
+    }
+
+    private List<JEVisObject> getLinkTargets(LinkType type, ObjectRelations objectRelations) {
+        List<JEVisObject> objects = new ArrayList<>();
+        if (type == null || type == LinkType.NONE) {
+            return objects;
+        }
+        try {
+            String className = type == LinkType.DASHBOARD ? DashBordPlugIn.CLASS_ANALYSIS : AnalysesComboBox.ANALYSIS_CLASS_NAME;
+            JEVisClass jeVisClass = dashboardControl.getDataSource().getJEVisClass(className);
+            objects.addAll(dashboardControl.getDataSource().getObjects(jeVisClass, true));
+            AlphanumComparator ac = new AlphanumComparator();
+            objects.sort((o1, o2) -> ac.compare(objectRelations.getObjectPath(o1) + o1.getName(), objectRelations.getObjectPath(o2) + o2.getName()));
+        } catch (Exception ex) {
+            logger.error("Failed to load link targets of image widget", ex);
+        }
+        return objects;
+    }
+
+    private void addLinkRows(ImageTab tab, GridPane gridPane, int row) {
+        ObjectRelations objectRelations = new ObjectRelations(dashboardControl.getDataSource());
+
+        ComboBox<LinkType> linkTypeBox = new ComboBox<>(FXCollections.observableArrayList(LinkType.values()));
+        Callback<ListView<LinkType>, ListCell<LinkType>> typeCellFactory = param -> new ListCell<LinkType>() {
+            @Override
+            protected void updateItem(LinkType item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else if (item == LinkType.DASHBOARD) {
+                    setText(I18n.getInstance().getString("plugin.dashboard.imagewidget.link.dashboard"));
+                } else if (item == LinkType.ANALYSIS) {
+                    setText(I18n.getInstance().getString("plugin.dashboard.imagewidget.link.analysis"));
+                } else {
+                    setText(I18n.getInstance().getString("plugin.dashboard.imagewidget.link.none"));
+                }
+            }
+        };
+        linkTypeBox.setCellFactory(typeCellFactory);
+        linkTypeBox.setButtonCell(typeCellFactory.call(null));
+
+        ComboBox<JEVisObject> linkTargetBox = new ComboBox<>();
+        linkTargetBox.setPrefWidth(300);
+        Callback<ListView<JEVisObject>, ListCell<JEVisObject>> targetCellFactory = param -> new ListCell<JEVisObject>() {
+            @Override
+            protected void updateItem(JEVisObject item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(objectRelations.getObjectPath(item) + item.getName());
+                }
+            }
+        };
+        linkTargetBox.setCellFactory(targetCellFactory);
+        linkTargetBox.setButtonCell(targetCellFactory.call(null));
+
+        linkTypeBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            linkTargetBox.getItems().setAll(getLinkTargets(newValue, objectRelations));
+            linkTargetBox.setDisable(newValue == null || newValue == LinkType.NONE);
+        });
+
+        LinkType currentType = getLinkType();
+        linkTypeBox.setValue(currentType);
+        linkTargetBox.setDisable(currentType == LinkType.NONE);
+        Long currentTarget = currentType == LinkType.DASHBOARD ? dashboardLink.getDashboardObject() : analysisLink.getGraphAnalysisObject();
+        for (JEVisObject object : linkTargetBox.getItems()) {
+            if (object.getID().equals(currentTarget)) {
+                linkTargetBox.setValue(object);
+                break;
+            }
+        }
+
+        tab.linkTypeBox = linkTypeBox;
+        tab.linkTargetBox = linkTargetBox;
+
+        gridPane.addRow(row, new Label(I18n.getInstance().getString("plugin.dashboard.imagewidget.link")), linkTypeBox);
+        gridPane.addRow(row + 1, new Label(I18n.getInstance().getString("plugin.dashboard.imagewidget.link.target")), linkTargetBox);
     }
 
     public void setObjectID(Long objectID) {
@@ -167,6 +311,7 @@ public class ImageConfig {
 
         gridPane.addRow(0, fileSizeLabel, fileSizeField);
         gridPane.addRow(1, limitTypeLabel, fileButton);
+        addLinkRows(tab, gridPane, 2);
         //gridPane.add(new Separator(Orientation.HORIZONTAL_TOP_LEFT), 0, 2, 2, 1);
         //gridPane.add(editorPane, 0, 3, 2, 1);
 
@@ -241,6 +386,11 @@ public class ImageConfig {
     public ObjectNode toJSON() {
         ObjectNode dataNode = JsonNodeFactory.instance.objectNode();
         dataNode.put(JSON_IMAGE_ID, objectID.toString());
+        if (getLinkType() == LinkType.DASHBOARD) {
+            dataNode.set(JSON_DASHBOARD_LINK, mapper.valueToTree(dashboardLink));
+        } else if (getLinkType() == LinkType.ANALYSIS) {
+            dataNode.set(JSON_ANALYSIS_LINK, mapper.valueToTree(analysisLink));
+        }
 
         return dataNode;
     }

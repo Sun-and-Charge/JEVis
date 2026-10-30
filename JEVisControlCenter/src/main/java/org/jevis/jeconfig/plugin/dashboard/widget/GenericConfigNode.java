@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -62,6 +63,8 @@ public class GenericConfigNode extends Tab implements ConfigTab {
     private final Label fontWeightLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.fontweight"));
     private final Label fontPostureLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.fontposture"));
     private final Label borderSizeLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.bordersize"));
+    private final Label borderColorLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.bordercolor"));
+    private final Label cornerRadiusLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.cornerradius"));
     private final Label alignmentLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.alignment"));
     private final Label precisionLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.precision"));
     private final Label showValueLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.showvalue"));
@@ -78,6 +81,8 @@ public class GenericConfigNode extends Tab implements ConfigTab {
     private final FontPostureBox fontPostureBox = new FontPostureBox();
     private final JFXCheckBox fontUnderlined = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.controls.fontunderlined"));
     private final Spinner<Integer> borderSizeSpinner = new Spinner<Integer>(0, 20, 0);
+    private final ColorPickerAdv borderColorPicker = new ColorPickerAdv();
+    private final Spinner<Integer> cornerRadiusSpinner = new Spinner<Integer>(0, 100, 0);
     private final Spinner<Integer> precisionSpinner = new Spinner<Integer>(0, 20, 2);
     private final ColorPickerAdv bgColorPicker = new ColorPickerAdv();
     private final ColorPickerAdv fColorPicker = new ColorPickerAdv();
@@ -173,6 +178,7 @@ public class GenericConfigNode extends Tab implements ConfigTab {
 
         bgColorPicker.setStyle("-fx-color-label-visible: false ;");
         fColorPicker.setStyle("-fx-color-label-visible: false ;");
+        borderColorPicker.setStyle("-fx-color-label-visible: false ;");
 
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
@@ -198,6 +204,16 @@ public class GenericConfigNode extends Tab implements ConfigTab {
             }
         });
 
+        cornerRadiusSpinner.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.UP) {
+                cornerRadiusSpinner.getValueFactory().setValue(cornerRadiusSpinner.valueProperty().getValue() + 1);
+                event.consume();
+            } else if (event.getCode() == KeyCode.DOWN) {
+                cornerRadiusSpinner.getValueFactory().setValue(cornerRadiusSpinner.valueProperty().getValue() - 1);
+                event.consume();
+            }
+        });
+
         precisionSpinner.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.UP) {
                 precisionSpinner.getValueFactory().setValue(precisionSpinner.valueProperty().getValue() + 1);
@@ -209,9 +225,9 @@ public class GenericConfigNode extends Tab implements ConfigTab {
         });
 
         gridPane.addColumn(0, idLabel, nameLabel, tooltipLabel, bgColorLabel, fColorLabel, yPosLabel, xPosLabel,
-                shadowLabel, showValueLabel, borderSizeLabel, precisionLabel, fontSizeLabel, fontWeightLabel, fontPostureLabel, fontUnderlined, alignmentLabel, timeFrameLabel);
+                shadowLabel, showValueLabel, borderSizeLabel, borderColorLabel, cornerRadiusLabel, precisionLabel, fontSizeLabel, fontWeightLabel, fontPostureLabel, fontUnderlined, alignmentLabel, timeFrameLabel);
         gridPane.addColumn(1, idField, nameField, tooltipField, bgColorPicker, fColorPicker, yPosField, xPosField,
-                showShadowField, showValueField, borderSizeSpinner, precisionSpinner, fontSizeSpinner, fontWeightBox, fontPostureBox, new Region(), alignmentBox, timeFrameBox, fixedTimeFrame);
+                showShadowField, showValueField, borderSizeSpinner, borderColorPicker, cornerRadiusSpinner, precisionSpinner, fontSizeSpinner, fontWeightBox, fontPostureBox, new Region(), alignmentBox, timeFrameBox, fixedTimeFrame);
 
         setContent(gridPane);
 
@@ -252,6 +268,8 @@ public class GenericConfigNode extends Tab implements ConfigTab {
         fontPostureBox.getSelectionModel().select(widget.getConfig().getFontPosture());
         fontUnderlined.selectedProperty().setValue(widget.getConfig().getFontUnderlined());
         borderSizeSpinner.getValueFactory().setValue((int) widget.getConfig().getBorderSize().getTop());
+        borderColorPicker.setValue(widget.getConfig().getBorderColor());
+        cornerRadiusSpinner.getValueFactory().setValue((int) Math.round(widget.getConfig().getCornerRadius()));
         alignmentBox.getSelectionModel().select(widget.getConfig().getTitlePosition());
         precisionSpinner.getValueFactory().setValue(widget.getConfig().getDecimals().intValue());
     }
@@ -300,6 +318,13 @@ public class GenericConfigNode extends Tab implements ConfigTab {
             widget.getConfig().setBorderSize(new BorderWidths(borderSizeSpinner.getValue()));
         } catch (Exception ex) {
             logger.error("Failed to set border size", ex);
+        }
+
+        try {
+            widget.getConfig().setBorderColor(borderColorPicker.getValue());
+            widget.getConfig().setCornerRadius(cornerRadiusSpinner.getValue());
+        } catch (Exception ex) {
+            logger.error("Failed to set border color or corner radius", ex);
         }
 
         try {

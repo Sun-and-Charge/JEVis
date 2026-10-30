@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -21,6 +22,7 @@ package org.jevis.jeconfig.plugin.dashboard.widget;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.AtomicDouble;
+import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
@@ -33,6 +35,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Background;
@@ -80,6 +83,9 @@ public class ValueWidget extends Widget implements DataModelWidget {
     public static String WIDGET_ID = "Value";
     public static String PERCENT_NODE_NAME = "percent";
     public static String LIMIT_NODE_NAME = "limit";
+    public static String DIM_INCOMPLETE_NODE_NAME = "dimIncompletePeriod";
+    /* opacity of the value text while the shown period is not complete yet */
+    private static final double INCOMPLETE_PERIOD_OPACITY = 0.5;
     private final Label label = new Label();
     private final NumberFormat nf = new DecimalFormat("#,##0.##");//NumberFormat.getInstance();
     private final NumberFormat nfPercent = new DecimalFormat("0");
@@ -93,6 +99,9 @@ public class ValueWidget extends Widget implements DataModelWidget {
     private Percent percent;
     private Boolean customWorkday = true;
     private Double percentValue;
+    /* option: show the value with reduced opacity while the shown period is not over */
+    private boolean dimIncompletePeriod = false;
+    private volatile boolean incompletePeriod = false;
 
     public ValueWidget(DashboardControl control, WidgetPojo config) {
         super(control, config);
@@ -138,6 +147,10 @@ public class ValueWidget extends Widget implements DataModelWidget {
             widgetUUID = getConfig().getUuid() + "";
             this.sampleHandler.setAutoAggregation(true);
             this.sampleHandler.update(interval);
+
+            /* the data handler may use a forced interval instead of the dashboard interval */
+            Interval shownInterval = this.sampleHandler.getDuration() != null ? this.sampleHandler.getDuration() : interval;
+            incompletePeriod = shownInterval != null && shownInterval.getEnd().isAfterNow();
 
             if (!this.sampleHandler.getChartDataRows().isEmpty()) {
                 ChartDataRow dataModel = this.sampleHandler.getChartDataRows().get(0);
@@ -273,6 +286,8 @@ public class ValueWidget extends Widget implements DataModelWidget {
             widgetConfigDialog.addTab(percent.getConfigTab());
         }
 
+        widgetConfigDialog.addTab(new DisplayTab());
+
         widgetConfigDialog.requestFirstTabFocus();
 
         Optional<ButtonType> result = widgetConfigDialog.showAndWait();
@@ -374,15 +389,22 @@ public class ValueWidget extends Widget implements DataModelWidget {
                 Font font = Font.font(this.label.getFont().getFamily(), this.getConfig().getFontWeight(), this.getConfig().getFontPosture(), this.config.getFontSize());
                 this.label.setFont(font);
 
+                Color textColor;
                 if (limit != null) {
                     if (percent != null && !percent.isDiff()) {
-                        this.label.setStyle("-fx-text-fill: " + ColorHelper.toRGBCode(limit.getExceedsLimitColor(fontColor, displayedSample.get())) + " !important;");
+                        textColor = limit.getExceedsLimitColor(fontColor, displayedSample.get());
                     } else {
-                        this.label.setStyle("-fx-text-fill: " + ColorHelper.toRGBCode(limit.getExceedsLimitColor(fontColor, percentValue)) + " !important;");
+                        textColor = limit.getExceedsLimitColor(fontColor, percentValue);
                     }
                 } else {
-                    this.label.setStyle("-fx-text-fill: " + ColorHelper.toRGBCode(fontColor) + " !important;");
+                    textColor = fontColor;
                 }
+
+                if (dimIncompletePeriod && incompletePeriod && textColor != null) {
+                    textColor = new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(),
+                            textColor.getOpacity() * INCOMPLETE_PERIOD_OPACITY);
+                }
+                this.label.setStyle("-fx-text-fill: " + ColorHelper.toRGBCode(textColor) + " !important;");
 
 
             } catch (Exception ex) {
@@ -455,6 +477,14 @@ public class ValueWidget extends Widget implements DataModelWidget {
         if (percent == null) {
             logger.error("Percent is null make new: " + config.getUuid());
             this.percent = new Percent(this.control);
+        }
+
+        try {
+            if (this.config.getConfigNode(DIM_INCOMPLETE_NODE_NAME) != null) {
+                this.dimIncompletePeriod = this.config.getConfigNode(DIM_INCOMPLETE_NODE_NAME).asBoolean(false);
+            }
+        } catch (Exception ex) {
+            logger.error("Failed to load {} config node", DIM_INCOMPLETE_NODE_NAME, ex);
         }
 
         this.label.setPadding(new Insets(0, 8, 0, 8));
@@ -554,6 +584,8 @@ public class ValueWidget extends Widget implements DataModelWidget {
             dashBoardNode.set(PERCENT_NODE_NAME, percent.toJSON());
         }
 
+        dashBoardNode.put(DIM_INCOMPLETE_NODE_NAME, dimIncompletePeriod);
+
 
         return dashBoardNode;
     }
@@ -570,5 +602,29 @@ public class ValueWidget extends Widget implements DataModelWidget {
 
     public List<ValueWidget> getDependentWidgets() {
         return dependentWidgets;
+    }
+
+    /**
+     * Display options of the value widget.
+     */
+    private class DisplayTab extends Tab implements ConfigTab {
+        private final JFXCheckBox dimIncompleteBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.dimincomplete"));
+
+        DisplayTab() {
+            super(I18n.getInstance().getString("plugin.dashboard.valuewidget.display.tab"));
+            dimIncompleteBox.setSelected(dimIncompletePeriod);
+
+            GridPane gridPane = new GridPane();
+            gridPane.setPadding(new Insets(10));
+            gridPane.setVgap(8);
+            gridPane.setHgap(8);
+            gridPane.add(dimIncompleteBox, 0, 0);
+            setContent(gridPane);
+        }
+
+        @Override
+        public void commitChanges() {
+            dimIncompletePeriod = dimIncompleteBox.isSelected();
+        }
     }
 }
