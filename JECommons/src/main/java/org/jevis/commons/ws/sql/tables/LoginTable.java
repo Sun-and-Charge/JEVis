@@ -177,7 +177,7 @@ public class LoginTable {
                 "       AND s1.attribute = latest.attribute\n" +
                 "       AND s1.timestamp = latest.max_timestamp\n" +
                 ") s ON o.id = s.object\n" +
-                "where o.type=\"User\" \n" +
+                "where o.type=\"User\" and o.deletets is null\n" +
                 "GROUP BY o.id, o.name\n" +
                 "ORDER BY o.id;";
 

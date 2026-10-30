@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI-SQL.
  * <p>
@@ -24,9 +25,14 @@ import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisException;
 import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.json.JsonRelationship;
+import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.commons.ws.sql.SQLtoJsonFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,6 +63,8 @@ public class ObjectTable {
     public final static String COLUMN_LINK = "link";
     /** Column: soft-delete timestamp. */
     public final static String COLUMN_DELETE = "deletets";
+    /** Column: user object that deleted the object (added by migration V12). */
+    public final static String COLUMN_DELETED_BY = "deletedby";
     /** Column: i18n JSON string. */
     public final static String COLUMN_I18N = "i18n";
     /**
@@ -64,6 +72,7 @@ public class ObjectTable {
      */
     public final static String COLUMN_GROUP = "groupid";
     private static final Logger logger = LogManager.getLogger(ObjectTable.class);
+    private static volatile Boolean hasDeletedByColumn;
     private final SQLDataSource _connection;
 
     /**
@@ -365,215 +374,349 @@ public class ObjectTable {
     }
 
     /**
-     * Recursively collects all descendant objects of {@code parentObj} into
-     * {@code objs}.
-     *
-     * <p><b>Performance:</b> Builds a {@code childrenByParent} lookup map once
-     * from the full set of PARENT-type relationships before recursing, so that
-     * each recursive step is O(1) instead of re-scanning the relationship list.
-     * This eliminates the O(n × depth) query pattern present in naïve
-     * implementations.
-     *
-     * @param objs      the accumulator list; descendants are appended here
-     * @param parentObj the root of the subtree to collect
+     * Relationship lookups for one delete, restore or purge, read fresh from the database (the request cache may be stale).
      */
-    public void getAllChildren(List<JsonObject> objs, JsonObject parentObj) {
-        List<JsonRelationship> allParentRels = _connection.getRelationships(JEVisConstants.ObjectRelationship.PARENT);
+    private static class Tree {
+        final Map<Long, List<Long>> childrenByParent = new HashMap<>();
+        final Map<Long, List<Long>> parentsByChild = new HashMap<>();
+        final Map<Long, List<Long>> deletedChildrenByParent = new HashMap<>();
+        final Set<Long> deletedIds = new HashSet<>();
+    }
 
-        // Build a parent-ID → [child-IDs] map once; O(n) where n = total relationships
-        Map<Long, List<Long>> childrenByParent = new HashMap<>();
-        for (JsonRelationship rel : allParentRels) {
-            childrenByParent.computeIfAbsent(rel.getTo(), k -> new ArrayList<>()).add(rel.getFrom());
+    private Tree loadTree() throws SQLException {
+        Tree tree = new Tree();
+        String relSql = String.format("select %s, %s, %s from %s where %s in (?, ?)", RelationshipTable.COLUMN_START,
+                RelationshipTable.COLUMN_END, RelationshipTable.COLUMN_TYPE, RelationshipTable.TABLE, RelationshipTable.COLUMN_TYPE);
+        try (PreparedStatement ps = _connection.getConnection().prepareStatement(relSql)) {
+            ps.setInt(1, JEVisConstants.ObjectRelationship.PARENT);
+            ps.setInt(2, JEVisConstants.ObjectRelationship.DELETED_PARENT);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                long child = rs.getLong(1);
+                long parent = rs.getLong(2);
+                if (rs.getInt(3) == JEVisConstants.ObjectRelationship.PARENT) {
+                    tree.childrenByParent.computeIfAbsent(parent, k -> new ArrayList<>()).add(child);
+                    tree.parentsByChild.computeIfAbsent(child, k -> new ArrayList<>()).add(parent);
+                } else {
+                    tree.deletedChildrenByParent.computeIfAbsent(parent, k -> new ArrayList<>()).add(child);
+                }
+            }
         }
-
-        collectChildren(objs, parentObj.getId(), childrenByParent);
+        try (PreparedStatement ps = _connection.getConnection().prepareStatement(
+                String.format("select %s from %s where %s is not null", COLUMN_ID, TABLE, COLUMN_DELETE))) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                tree.deletedIds.add(rs.getLong(1));
+            }
+        }
+        return tree;
     }
 
     /**
-     * Internal recursive helper for {@link #getAllChildren}. Uses the
-     * pre-built map for O(1) child lookups per node.
+     * Objects reachable from {@code rootId} along PARENT relationships (and DELETED_PARENT ones if
+     * {@code followDeletedParents}), without the nodes in {@code excluded} and their descendants. With
+     * {@code onlyDeleted} only objects in the recycle bin are followed.
      */
-    private void collectChildren(List<JsonObject> objs, long parentId, Map<Long, List<Long>> childrenByParent) {
-        List<Long> childIds = childrenByParent.get(parentId);
-        if (childIds == null) return;
-        for (long childId : childIds) {
+    private Set<Long> reach(Tree tree, long rootId, boolean followDeletedParents, boolean onlyDeleted, Set<Long> excluded) {
+        Set<Long> visited = new LinkedHashSet<>();
+        Deque<Long> queue = new ArrayDeque<>();
+        visited.add(rootId);
+        queue.add(rootId);
+        while (!queue.isEmpty()) {
+            long node = queue.poll();
+            List<Long> children = new ArrayList<>(tree.childrenByParent.getOrDefault(node, Collections.emptyList()));
+            if (followDeletedParents) {
+                children.addAll(tree.deletedChildrenByParent.getOrDefault(node, Collections.emptyList()));
+            }
+            for (long child : children) {
+                if (excluded.contains(child) || (onlyDeleted && !tree.deletedIds.contains(child))) {
+                    continue;
+                }
+                if (visited.add(child)) {
+                    queue.add(child);
+                }
+            }
+        }
+        return visited;
+    }
+
+    /**
+     * The subtree that a delete or purge of {@code rootId} affects. Children that also hang below a live parent outside the
+     * subtree stay out, they are still visible there.
+     */
+    private Set<Long> subtreeForDelete(Tree tree, long rootId, boolean followDeletedParents) {
+        Set<Long> excluded = new HashSet<>();
+        Set<Long> subtree = reach(tree, rootId, followDeletedParents, false, excluded);
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (long id : subtree) {
+                if (id == rootId || excluded.contains(id)) {
+                    continue;
+                }
+                for (long parent : tree.parentsByChild.getOrDefault(id, Collections.emptyList())) {
+                    if (!subtree.contains(parent) && !tree.deletedIds.contains(parent)) {
+                        excluded.add(id);
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (changed) {
+                subtree = reach(tree, rootId, followDeletedParents, false, excluded);
+            }
+        }
+        return subtree;
+    }
+
+    private static String inClause(Collection<Long> ids) {
+        StringBuilder in = new StringBuilder("(");
+        for (int i = 0; i < ids.size(); i++) {
+            in.append(i == 0 ? "?" : ",?");
+        }
+        return in.append(")").toString();
+    }
+
+    private static int setIds(PreparedStatement ps, int index, Collection<Long> ids) throws SQLException {
+        for (long id : ids) {
+            ps.setLong(index++, id);
+        }
+        return index;
+    }
+
+    private interface SqlWork<T> {
+        T run(Connection con) throws SQLException, JEVisException;
+    }
+
+    /**
+     * Runs the work in one transaction on the connection of this request.
+     */
+    private <T> T inTransaction(SqlWork<T> work) throws JEVisException {
+        try {
+            Connection con = _connection.getConnection();
+            boolean autoCommit = con.getAutoCommit();
+            con.setAutoCommit(false);
             try {
-                JsonObject child = _connection.getObject(childId);
-                if (child != null) {
-                    objs.add(child);
-                    collectChildren(objs, childId, childrenByParent);
+                T result = work.run(con);
+                con.commit();
+                return result;
+            } catch (SQLException | JEVisException | RuntimeException ex) {
+                con.rollback();
+                throw ex;
+            } finally {
+                con.setAutoCommit(autoCommit);
+            }
+        } catch (SQLException ex) {
+            logger.error(ex, ex);
+            throw new JEVisException("Database error: " + ex.getMessage(), 5439, ex);
+        }
+    }
+
+    private boolean hasDeletedByColumn(Connection con) throws SQLException {
+        if (hasDeletedByColumn == null) {
+            try (ResultSet rs = con.getMetaData().getColumns(con.getCatalog(), null, TABLE, COLUMN_DELETED_BY)) {
+                hasDeletedByColumn = rs.next();
+            }
+        }
+        return hasDeletedByColumn;
+    }
+
+    /**
+     * Moves the object and its subtree to the recycle bin: sets {@code deletets} (and {@code deletedby}) and turns the
+     * object's PARENT relationships into DELETED_PARENT, so the bin knows where it came from.
+     *
+     * @param obj       the object to delete
+     * @param deletedBy ID of the user object that deletes it, may be {@code null}
+     * @return the IDs of the objects moved to the bin
+     */
+    public Set<Long> markObjectAsDeleted(JsonObject obj, Long deletedBy) throws JEVisException {
+        return inTransaction(con -> {
+            Set<Long> ids = subtreeForDelete(loadTree(), obj.getId(), false);
+            boolean withUser = hasDeletedByColumn(con);
+            String sql = String.format("update %s set %s=?%s where %s in %s", TABLE, COLUMN_DELETE,
+                    withUser ? ", " + COLUMN_DELETED_BY + "=?" : "", COLUMN_ID, inClause(ids));
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                int index = 1;
+                ps.setTimestamp(index++, new Timestamp(System.currentTimeMillis()));
+                if (withUser) {
+                    if (deletedBy != null) {
+                        ps.setLong(index++, deletedBy);
+                    } else {
+                        ps.setNull(index++, Types.BIGINT);
+                    }
                 }
-            } catch (Exception ex) {
-                logger.trace("Could not load child {}: {}", childId, ex.getMessage());
+                setIds(ps, index, ids);
+                ps.executeUpdate();
             }
-        }
+            try (PreparedStatement ps = con.prepareStatement(String.format("update %s set %s=? where %s=? and %s=?",
+                    RelationshipTable.TABLE, RelationshipTable.COLUMN_TYPE, RelationshipTable.COLUMN_START, RelationshipTable.COLUMN_TYPE))) {
+                ps.setInt(1, JEVisConstants.ObjectRelationship.DELETED_PARENT);
+                ps.setLong(2, obj.getId());
+                ps.setInt(3, JEVisConstants.ObjectRelationship.PARENT);
+                ps.executeUpdate();
+            }
+            return ids;
+        });
     }
 
     /**
-     * Permanently deletes the given object and all its descendants from the
-     * database, including their samples and relationships.
+     * Restores the object and the subtree that was deleted with it.
+     * <p>
+     * Without {@code targetParent} the object goes back below its original parents that are not deleted. With
+     * {@code targetParent} it is placed below that object instead. If {@code requireParent} is set and the object would end
+     * up without a live parent, nothing is changed and an exception is thrown; otherwise only the deletion mark is removed
+     * (older clients set the new parent themselves after the restore).
      *
-     * @param obj the object to delete
-     * @return {@code true} if at least one row was deleted
+     * @return the IDs of the restored objects
      */
-    public boolean deleteObjectFromDB(JsonObject obj) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("deleteObjectFromDB: " + obj);
-        }
-        String sql = String.format("delete from %s where %s IN(", TABLE, COLUMN_ID);
-        List<JsonObject> children = new ArrayList<>();
-        children.add(obj);
-        getAllChildren(children, obj);
-
-        boolean first = true;
-        for (JsonObject ch : children) {
-            logger.trace("JsonObject: " + ch);
-            if (first) {
-                sql += "?";
-                first = false;
-            } else {
-                sql += ",?";
+    public Set<Long> restoreObject(JsonObject obj, Long targetParent, boolean requireParent) throws JEVisException {
+        return inTransaction(con -> {
+            Tree tree = loadTree();
+            if (!tree.deletedIds.contains(obj.getId())) {
+                throw new JEVisException("Object is not in the recycle bin", 409);
             }
-
-        }
-
-        sql += ")";
-
-        try (PreparedStatement ps = _connection.getConnection().prepareStatement(sql)) {
-            int raw = 1;
-            for (JsonObject ch : children) {
-                ps.setLong(raw, ch.getId());
-                raw++;
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("SQL: {}", ps);
-            }
-            int count = ps.executeUpdate();
-            if (count > 0) {
-                List<Long> ids = new ArrayList<>();
-                for (JsonObject o : children) {
-                    ids.add(o.getId());
+            List<Long> oldParents = new ArrayList<>();
+            tree.deletedChildrenByParent.forEach((parent, children) -> {
+                if (children.contains(obj.getId())) {
+                    oldParents.add(parent);
                 }
-                _connection.getRelationshipTable().deleteAll(ids);
-                _connection.getSampleTable().deleteAllSamples(ids);
-                return true;
+            });
+
+            List<Long> newParents = new ArrayList<>();
+            if (targetParent != null) {
+                if (tree.deletedIds.contains(targetParent) || getObject(targetParent) == null) {
+                    throw new JEVisException("Target parent does not exist or is in the recycle bin", 409);
+                }
+                newParents.add(targetParent);
+            } else {
+                for (long parent : oldParents) {
+                    if (!tree.deletedIds.contains(parent) && getObject(parent) != null) {
+                        newParents.add(parent);
+                    }
+                }
+            }
+            boolean hasLiveParent = tree.parentsByChild.getOrDefault(obj.getId(), Collections.emptyList()).stream()
+                    .anyMatch(parent -> !tree.deletedIds.contains(parent));
+            if (requireParent && newParents.isEmpty() && !hasLiveParent) {
+                throw new JEVisException("The original parent no longer exists, choose a target", 409);
             }
 
-        } catch (SQLException ex) {
-            logger.error(ex);
-        }
+            Set<Long> ids = reach(tree, obj.getId(), false, true, Collections.emptySet());
+            boolean withUser = hasDeletedByColumn(con);
+            String sql = String.format("update %s set %s=null%s where %s in %s", TABLE, COLUMN_DELETE,
+                    withUser ? ", " + COLUMN_DELETED_BY + "=null" : "", COLUMN_ID, inClause(ids));
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                setIds(ps, 1, ids);
+                ps.executeUpdate();
+            }
 
-        return false;
+            if (targetParent != null) {
+                // taken out of a deleted folder: it no longer belongs there
+                try (PreparedStatement ps = con.prepareStatement(String.format(
+                        "delete from %s where %s=? and %s=? and %s in (select %s from %s where %s is not null)",
+                        RelationshipTable.TABLE, RelationshipTable.COLUMN_START, RelationshipTable.COLUMN_TYPE,
+                        RelationshipTable.COLUMN_END, COLUMN_ID, TABLE, COLUMN_DELETE))) {
+                    ps.setLong(1, obj.getId());
+                    ps.setInt(2, JEVisConstants.ObjectRelationship.PARENT);
+                    ps.executeUpdate();
+                }
+            }
+            if (!newParents.isEmpty()) {
+                try (PreparedStatement ps = con.prepareStatement(String.format("delete from %s where %s=? and %s=?",
+                        RelationshipTable.TABLE, RelationshipTable.COLUMN_START, RelationshipTable.COLUMN_TYPE))) {
+                    ps.setLong(1, obj.getId());
+                    ps.setInt(2, JEVisConstants.ObjectRelationship.DELETED_PARENT);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(String.format("insert ignore into %s (%s, %s, %s) values (?, ?, ?)",
+                        RelationshipTable.TABLE, RelationshipTable.COLUMN_START, RelationshipTable.COLUMN_END, RelationshipTable.COLUMN_TYPE))) {
+                    for (long parent : newParents) {
+                        ps.setLong(1, obj.getId());
+                        ps.setLong(2, parent);
+                        ps.setInt(3, JEVisConstants.ObjectRelationship.PARENT);
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                }
+            }
+            return ids;
+        });
     }
 
     /**
-     * Soft-deletes the given object and all its descendants by setting their
-     * {@code deletets} column to the current timestamp and converting their
-     * PARENT relationships to DELETED_PARENT.
+     * Permanently deletes the object and its subtree, including children that were moved to the recycle bin on their own,
+     * with their samples, attribute rows, relationships and stored files.
      *
-     * @param obj the object to mark as deleted
-     * @return {@code true} if at least one row was updated
+     * @return the IDs of the deleted objects
      */
-    public boolean markObjectAsDeleted(JsonObject obj) {
-
-        String sql = String.format("update %s set %s=? where %s IN(", TABLE, COLUMN_DELETE, COLUMN_ID);
-
-        List<JsonObject> children = new ArrayList<>();
-        children.add(obj);
-        getAllChildren(children, obj);
-
-        boolean first = true;
-        for (JsonObject ch : children) {
-            if (first) {
-                sql += "?";
-                first = false;
-            } else {
-                sql += ",?";
+    public Set<Long> deleteObjectFromDB(JsonObject obj) throws JEVisException {
+        Set<Long> ids = inTransaction(con -> {
+            Set<Long> subtree = subtreeForDelete(loadTree(), obj.getId(), true);
+            String in = inClause(subtree);
+            String[] tables = {SampleTable.TABLE, AttributeTable.TABLE};
+            for (String table : tables) {
+                try (PreparedStatement ps = con.prepareStatement(String.format("delete from %s where object in %s", table, in))) {
+                    setIds(ps, 1, subtree);
+                    ps.executeUpdate();
+                }
             }
+            try (PreparedStatement ps = con.prepareStatement(String.format("delete from %s where %s in %s or %s in %s",
+                    RelationshipTable.TABLE, RelationshipTable.COLUMN_START, in, RelationshipTable.COLUMN_END, in))) {
+                setIds(ps, setIds(ps, 1, subtree), subtree);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement(String.format("delete from %s where %s in %s", TABLE, COLUMN_ID, in))) {
+                setIds(ps, 1, subtree);
+                ps.executeUpdate();
+            }
+            return subtree;
+        });
 
+        for (long id : ids) {
+            deleteFiles(new File(Config.getFileDir(), String.valueOf(id)));
         }
+        return ids;
+    }
 
-        sql += ")";
-
-        try (PreparedStatement ps = _connection.getConnection().prepareStatement(sql)) {
-
-            Calendar now = new GregorianCalendar();
-            ps.setTimestamp(1, new Timestamp(now.getTimeInMillis()));
-
-            int raw = 2;
-            for (JsonObject ch : children) {
-                ps.setLong(raw, ch.getId());
-                raw++;
-            }
-
-            logger.trace("SQL: {}", ps);
-            int count = ps.executeUpdate();
-            if (count > 0) {
-                /* remove parent relationship and add delete relationship*/
-                _connection.getRelationshipTable().changeType(obj.getId(), JEVisConstants.ObjectRelationship.PARENT, JEVisConstants.ObjectRelationship.DELETED_PARENT);
-
-                return true;
-            }
-
-        } catch (SQLException ex) {
-            logger.error(ex);
+    private static void deleteFiles(File dir) {
+        if (dir == null || !dir.exists()) {
+            return;
         }
-
-        return false;
-
+        try (java.util.stream.Stream<Path> paths = Files.walk(dir.toPath())) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException ex) {
+                    logger.warn("Could not delete {}: {}", path, ex.getMessage());
+                }
+            });
+        } catch (IOException ex) {
+            logger.warn("Could not delete files of {}: {}", dir, ex.getMessage());
+        }
     }
 
     /**
-     * Restores a previously soft-deleted object (and all its descendants) by
-     * clearing their {@code deletets} column.
+     * Objects in the recycle bin whose parent is not deleted (or that have no parent left): the entries shown at the top
+     * level of the bin. Everything else in the bin belongs to their subtrees.
      *
-     * @param obj the object to restore
-     * @return {@code true} if at least one row was updated
+     * @return IDs of the top-level bin objects
      */
-    public boolean restoreObjectAsDeleted(JsonObject obj) {
-
-        String sql = String.format("update %s set %s=? where %s IN(", TABLE, COLUMN_DELETE, COLUMN_ID);
-
-        List<JsonObject> children = new ArrayList<>();
-        children.add(obj);
-        getAllChildren(children, obj);
-
-        boolean first = true;
-        for (JsonObject ch : children) {
-            if (first) {
-                sql += "?";
-                first = false;
-            } else {
-                sql += ",?";
+    public Set<Long> getRecycleBinRoots() throws JEVisException {
+        try {
+            Tree tree = loadTree();
+            Set<Long> roots = new LinkedHashSet<>();
+            for (long id : tree.deletedIds) {
+                boolean deletedParent = tree.parentsByChild.getOrDefault(id, Collections.emptyList()).stream()
+                        .anyMatch(tree.deletedIds::contains);
+                if (!deletedParent) {
+                    roots.add(id);
+                }
             }
-
-        }
-
-        sql += ")";
-
-        try (PreparedStatement ps = _connection.getConnection().prepareStatement(sql)) {
-            ps.setNull(1, Types.TIMESTAMP);
-
-            int raw = 2;
-            for (JsonObject ch : children) {
-                ps.setLong(raw, ch.getId());
-                raw++;
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("SQL: {}", ps);
-            }
-            int count = ps.executeUpdate();
-            if (count > 0) {
-                return true;
-            }
-
+            return roots;
         } catch (SQLException ex) {
-            logger.error(ex);
+            logger.error(ex, ex);
+            throw new JEVisException("Database error: " + ex.getMessage(), 5439, ex);
         }
-
-        return false;
-
     }
 
 }

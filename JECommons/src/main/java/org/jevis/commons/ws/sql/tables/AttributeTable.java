@@ -307,6 +307,7 @@ public class AttributeTable {
 
         try (PreparedStatement psUpdate = ds.getConnection().prepareStatement(sqlUpdate)) {
             psUpdate.setLong(1, objectID);
+            psUpdate.executeUpdate();
 
 
         } catch (SQLException ex) {

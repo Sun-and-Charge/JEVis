@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2013 - 2018 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEWebService.
  * <p>
@@ -34,6 +35,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -169,8 +171,16 @@ public class SQLtoJsonFactory {
         json.setisPublic(rs.getBoolean(ObjectTable.COLUMN_PUBLIC));
         Timestamp deletets = rs.getTimestamp(ObjectTable.COLUMN_DELETE);
         if (deletets != null) {
-            json.setDeleteTS(rs.getString(ObjectTable.COLUMN_DELETE));
-            //json.setDeleteTS(sampleDTF.print(new DateTime(deletets)));
+            DateTime deleted = new DateTime(deletets.getTime());
+            // deleteTS stays day-only, older clients parse it with ISODateTimeFormat.date()
+            json.setDeleteTS(deleteDTF.print(deleted));
+            json.setDeleted(sampleDTF.print(deleted));
+            if (hasColumn(rs, ObjectTable.COLUMN_DELETED_BY)) {
+                long deletedBy = rs.getLong(ObjectTable.COLUMN_DELETED_BY);
+                if (!rs.wasNull()) {
+                    json.setDeletedBy(deletedBy);
+                }
+            }
         }
 
 
@@ -188,6 +198,19 @@ public class SQLtoJsonFactory {
         return json;
     }
 
+
+    /**
+     * Whether the result set has the given column, e.g. {@code deletedby}, which only exists after migration V12.
+     */
+    private static boolean hasColumn(ResultSet rs, String column) throws SQLException {
+        ResultSetMetaData meta = rs.getMetaData();
+        for (int i = 1; i <= meta.getColumnCount(); i++) {
+            if (column.equalsIgnoreCase(meta.getColumnLabel(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Builds a {@link JsonRelationship} from the current row of a

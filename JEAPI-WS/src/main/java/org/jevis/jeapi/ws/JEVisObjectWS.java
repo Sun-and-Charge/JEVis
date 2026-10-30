@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI-WS.
  * <p>
@@ -48,6 +49,7 @@ import java.util.*;
  */
 public class JEVisObjectWS implements JEVisObject {
     public static final DateTimeFormatter sampleDTF = ISODateTimeFormat.date();
+    private static final DateTimeFormatter deletedDTF = ISODateTimeFormat.dateTime();
     private static final Logger logger = LogManager.getLogger(JEVisObjectWS.class);
     private final EventListenerList listeners = new EventListenerList();
     private final JEVisDataSourceWS ds;
@@ -68,10 +70,25 @@ public class JEVisObjectWS implements JEVisObject {
     public JEVisObjectWS(JEVisDataSourceWS ds, JsonObject json) {
         this.ds = ds;
         this.json = json;
+        this.tsObj = parseDeleteTS(json);
+    }
 
-        if (json.getDeleteTS() != null && !json.getDeleteTS().isEmpty()) {
-            tsObj = sampleDTF.parseDateTime(json.getDeleteTS());
+    /**
+     * Deletion time from {@code deleted} (date and time, newer servers) or {@code deleteTS} (day only).
+     */
+    private static DateTime parseDeleteTS(JsonObject json) {
+        try {
+            if (json.getDeleted() != null && !json.getDeleted().isEmpty()) {
+                return deletedDTF.parseDateTime(json.getDeleted());
+            }
+            if (json.getDeleteTS() != null && !json.getDeleteTS().isEmpty()) {
+                return ISODateTimeFormat.dateTimeParser().parseDateTime(json.getDeleteTS().trim().replace(' ', 'T'));
+            }
+        } catch (IllegalArgumentException ex) {
+            logger.warn("Unreadable delete timestamp of object {}: {}", json.getId(), ex.getMessage());
+            return new DateTime(0);
         }
+        return null;
     }
 
 
@@ -83,6 +100,7 @@ public class JEVisObjectWS implements JEVisObject {
      */
     public void update(JsonObject json) {
         this.json = json;
+        this.tsObj = parseDeleteTS(json);
         this.attributeByName = null;
     }
 
@@ -652,10 +670,26 @@ public class JEVisObjectWS implements JEVisObject {
         tsObj = ts;
         if (ts != null) {
             json.setDeleteTS(sampleDTF.print(ts));
+            json.setDeleted(deletedDTF.print(ts));
         } else {
             json.setDeleteTS(null);
+            json.setDeleted(null);
+            json.setDeletedBy(null);
+            json.setDeletedByName(null);
         }
 
+    }
+
+    @Override
+    public String getDeletedBy() {
+        return tsObj != null ? json.getDeletedByName() : null;
+    }
+
+    /**
+     * Sets the user name shown in the recycle bin (local only, the server records the user itself).
+     */
+    void setDeletedBy(String userName) {
+        json.setDeletedByName(userName);
     }
 
     /**

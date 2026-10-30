@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -38,24 +39,24 @@ package org.jevis.jeconfig.application.jevistree;
  * JEConfig is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Fake Root
+ * Virtual root of the recycle bin in the tree. Its children are the deleted objects whose parent is not deleted; the
+ * objects deleted together with them hang below them as usual.
  *
  * @author fs
  */
 public class JEVisRecycleBinObject implements JEVisObject {
 
-    private final List<JEVisObject> children = new ArrayList<>();
-    private final List<JEVisObject> childrenList = new ArrayList<>();
+    private static final Logger logger = LogManager.getLogger(JEVisRecycleBinObject.class);
     final JEVisDataSource ds;
     private String _name = I18n.getInstance().getString("plugin.object.recyclebin.name");
     public static String CLASS_NAME = "Recycle Bin";
@@ -74,16 +75,80 @@ public class JEVisRecycleBinObject implements JEVisObject {
         return null;
     }
 
+    /**
+     * Whether the object is a top-level entry of the recycle bin: it is deleted and none of its parents is.
+     */
+    public static boolean isRecycleBinRoot(JEVisObject object) {
+        try {
+            if (object == null || object.getDeleteTS() == null) {
+                return false;
+            }
+            for (JEVisObject parent : object.getParents()) {
+                if (parent.getDeleteTS() != null) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception ex) {
+            logger.error("Could not check recycle bin state of {}", object, ex);
+            return false;
+        }
+    }
+
+    /**
+     * Text for the tooltip of an object in the bin: when and by whom it was deleted and, for a top-level entry, where it
+     * was before.
+     */
+    public static String describeDeletion(JEVisObject object) {
+        if (object == null || object.getDeleteTS() == null) {
+            return null;
+        }
+        String time = DateTimeFormat.forPattern("dd.MM.yyyy HH:mm").print(object.getDeleteTS());
+        StringBuilder text = new StringBuilder();
+        if (object.getDeletedBy() != null) {
+            text.append(I18n.getInstance().getString("jevistree.recyclebin.info", time, object.getDeletedBy()));
+        } else {
+            text.append(I18n.getInstance().getString("jevistree.recyclebin.info.nouser", time));
+        }
+        try {
+            for (JEVisRelationship rel : object.getRelationships(JEVisConstants.ObjectRelationship.DELETED_PARENT, JEVisConstants.Direction.FORWARD)) {
+                JEVisObject parent = rel.getEndObject();
+                if (parent != null) {
+                    text.append(System.lineSeparator()).append(I18n.getInstance().getString("jevistree.recyclebin.origin", pathOf(parent)));
+                }
+            }
+        } catch (Exception ex) {
+            logger.debug("No original location for {}", object, ex);
+        }
+        return text.toString();
+    }
+
+    private static String pathOf(JEVisObject object) throws JEVisException {
+        Deque<String> names = new ArrayDeque<>();
+        Set<Long> visited = new HashSet<>();
+        JEVisObject current = object;
+        while (current != null && visited.add(current.getID())) {
+            names.addFirst(current.getName());
+            List<JEVisObject> parents = current.getParents();
+            current = parents.isEmpty() ? null : parents.get(0);
+        }
+        return String.join(" / ", names);
+    }
+
     @Override
     public List<JEVisObject> getChildren() throws JEVisException {
-        // System.out.println("RecycleBin.getChilderen: " + Arrays.toString(ds.getDeletedObjects().toArray()));
-        // children = ds.getDeletedObjects();
-        return childrenList;
+        List<JEVisObject> children = new ArrayList<>();
+        for (JEVisObject deleted : ds.getDeletedObjects()) {
+            if (isRecycleBinRoot(deleted)) {
+                children.add(deleted);
+            }
+        }
+        return children;
     }
 
     @Override
     public List<JEVisObject> getChildren(JEVisClass type, boolean inherit) throws JEVisException {
-        return children;
+        return new ArrayList<>();
     }
 
     @Override

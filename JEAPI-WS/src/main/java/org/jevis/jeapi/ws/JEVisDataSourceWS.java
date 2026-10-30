@@ -94,7 +94,6 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     //    private List<JEVisRelationship> objectRelCache = Collections.synchronizedList(new ArrayList<JEVisRelationship>());
     private final ConcurrentHashMap<String, JEVisClass> classCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, JEVisObject> objectCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, JEVisObject> deltedObjectCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, List<JEVisRelationship>> objectRelMapCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Object> objectNullCache = new ConcurrentHashMap<>();
 
@@ -397,15 +396,18 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     public List<JEVisObject> getObjects() {
         logger.debug("getObjects");
         if (!this.objectLoaded) {
-            getObjectsWS(true);
+            getObjectsWS(false);
             this.objectLoaded = true;
         }
 
-        //return this.objectCache.values().stream().filter(jeVisObject -> jeVisObject.getDeleteTS() == null).collect(Collectors.toList());
-        return new ArrayList<>(this.objectCache.values());
-
+        // the cache also holds objects of the recycle bin, see getDeletedObjects()
+        return this.objectCache.values().stream().filter(jeVisObject -> jeVisObject.getDeleteTS() == null).collect(Collectors.toList());
     }
 
+    /**
+     * Returns the objects in the recycle bin. They are loaded from the server on the first call (and after
+     * {@link #reloadDeletedObjects()}) and kept in the same cache as all other objects.
+     */
     @Override
     public List<JEVisObject> getDeletedObjects() throws JEVisException {
         logger.debug("getDeletedObjects");
@@ -414,7 +416,12 @@ public class JEVisDataSourceWS implements JEVisDataSource {
             this.deletedObjectLoaded = true;
         }
 
-        return new ArrayList<>(this.deltedObjectCache.values());
+        return this.objectCache.values().stream().filter(jeVisObject -> jeVisObject.getDeleteTS() != null).collect(Collectors.toList());
+    }
+
+    @Override
+    public void reloadDeletedObjects() {
+        this.deletedObjectLoaded = false;
     }
 
     @Override
@@ -1190,7 +1197,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     @Override
     public boolean deleteObject(long objectID, boolean deleteForever) {
         try {
-            logger.error("Delete: {}, {}", objectID, deleteForever);
+            logger.info("Delete: {}, {}", objectID, deleteForever);
 
             String resource = REQUEST.API_PATH_V1
                     + REQUEST.OBJECTS.PATH
@@ -1201,66 +1208,232 @@ public class JEVisDataSourceWS implements JEVisDataSource {
             }
 
             JEVisObject object = getObject(objectID);
-
-
-            if (object != null) {
-                HttpURLConnection response = getHTTPConnection().getDeleteConnection(resource);
-                if (response.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    response.disconnect();
-
-                    object.getParents().forEach(parent -> {
-                        try {
-                            removeRelationshipFromCache(object.getID(), parent.getID(), JEVisConstants.ObjectRelationship.PARENT);
-                            /* HOTFIX: The code below should do the same as the line above but does not why */
-                            /*
-                            List<JEVisRelationship> toRemove = new ArrayList<>();
-                            objectRelMapCache.get(parent.getID()).forEach(rel -> {
-                                try {
-                                    Long id = rel.getEndID();
-                                    if ((rel.getType() == JEVisConstants.ObjectRelationship.PARENT) && (id.equals(parent.getID()))) {
-                                        if (rel.getStartObject() != null && object.getID().equals(rel.getStartID())) {
-                                            toRemove.add(rel);
-                                        }
-                                    }
-                                } catch (Exception ex) {
-                                    logger.error(ex);
-                                    ex.printStackTrace();
-                                }
-                            });
-                            objectRelMapCache.get(parent.getID()).removeAll(toRemove);
-                            objectRelMapCache.remove(object.getID());
-                            */
-
-                        } catch (Exception ex) {
-                            logger.error(ex, ex);
-                        }
-                        parent.notifyListeners(new JEVisEvent(parent, JEVisEvent.TYPE.OBJECT_CHILD_DELETED, object));
-                    });
-
-                    if (deleteForever) {
-                        object.notifyListeners(new JEVisEvent(object, JEVisEvent.TYPE.OBJECT_DELETE, object));
-                    } else {
-                        object.notifyListeners(new JEVisEvent(object, JEVisEvent.TYPE.OBJECT_DELETE_BIN, object));
-                    }
-                    /* reload should already have the delete ts but it seems to not work */
-
-                    object.setDeleteTS(new DateTime());
-                    reloadObject(object);
-
-
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
+            if (object == null) {
                 return false;
             }
+            List<JEVisObject> parents = object.getParents();
 
+            HttpURLConnection response = getHTTPConnection().getDeleteConnection(resource);
+            if (response.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                logger.error("Delete of {} failed: {}", objectID, response.getResponseCode());
+                response.disconnect();
+                return false;
+            }
+            Set<Long> affected = readIds(response);
+            response.disconnect();
+            if (affected.isEmpty()) {
+                // older server without the list of deleted objects
+                affected.add(objectID);
+                for (JEVisObject child : getChildrenRecursive(object)) {
+                    affected.add(child.getID());
+                }
+            }
+
+            for (JEVisObject parent : parents) {
+                removeRelationshipFromCache(objectID, parent.getID(), JEVisConstants.ObjectRelationship.PARENT);
+            }
+
+            if (deleteForever) {
+                for (long id : affected) {
+                    JEVisObject removed = this.objectCache.remove(id);
+                    List<JEVisRelationship> rels = this.objectRelMapCache.remove(id);
+                    if (rels != null) {
+                        for (JEVisRelationship rel : rels) {
+                            long other = rel.getStartID() == id ? rel.getEndID() : rel.getStartID();
+                            List<JEVisRelationship> otherRels = this.objectRelMapCache.get(other);
+                            if (otherRels != null) {
+                                otherRels.remove(rel);
+                            }
+                        }
+                    }
+                    if (removed != null) {
+                        this.attributeCache.remove(id);
+                    }
+                }
+            } else {
+                // same state as the server: the subtree is in the bin, the object remembers where it was
+                DateTime now = new DateTime();
+                String userName = currentUserName();
+                for (long id : affected) {
+                    JEVisObject deleted = this.objectCache.get(id);
+                    if (deleted != null) {
+                        deleted.setDeleteTS(now);
+                        if (deleted instanceof JEVisObjectWS) {
+                            ((JEVisObjectWS) deleted).setDeletedBy(userName);
+                        }
+                    }
+                }
+                for (JEVisObject parent : parents) {
+                    addRelationshipToCache(objectID, parent.getID(), JEVisConstants.ObjectRelationship.DELETED_PARENT);
+                }
+            }
+
+            for (JEVisObject parent : parents) {
+                parent.notifyListeners(new JEVisEvent(parent, JEVisEvent.TYPE.OBJECT_CHILD_DELETED, object));
+            }
+            if (deleteForever) {
+                object.notifyListeners(new JEVisEvent(object, JEVisEvent.TYPE.OBJECT_DELETE, object));
+            } else {
+                object.notifyListeners(new JEVisEvent(object, JEVisEvent.TYPE.OBJECT_DELETE_BIN, object));
+            }
+            return true;
 
         } catch (Exception ex) {
             logger.catching(ex);
             return false;
         }
+    }
+
+    /**
+     * Restores an object from the recycle bin on the server and updates the caches. Listeners of the object get
+     * {@link JEVisEvent.TYPE#OBJECT_RESTORED}, the new parent gets {@link JEVisEvent.TYPE#OBJECT_NEW_CHILD}.
+     */
+    @Override
+    public JEVisObject restoreObject(JEVisObject object, JEVisObject targetParent) throws JEVisException {
+        String resource = REQUEST.API_PATH_V1 + REQUEST.OBJECTS.PATH + object.getID() + "/restore";
+        if (targetParent != null) {
+            resource += "?parent=" + targetParent.getID();
+        }
+        HTTPConnection.HttpResult result;
+        JsonObject json;
+        try {
+            result = this.con.postJson(resource, "", true);
+            if (result.getCode() != HttpURLConnection.HTTP_OK) {
+                throw new JEVisException(result.getBody() != null && !result.getBody().isEmpty()
+                        ? result.getBody() : "Restore failed [" + result.getCode() + "]", result.getCode());
+            }
+            json = this.objectMapper.readValue(result.getBody(), JsonObject.class);
+        } catch (IOException ex) {
+            throw new JEVisException("Restore failed: " + ex.getMessage(), 500, ex);
+        }
+
+        List<JEVisObject> restored = new ArrayList<>();
+        restored.add(object);
+        for (JEVisObject child : getChildrenRecursive(object)) {
+            if (child.getDeleteTS() != null) {
+                restored.add(child);
+            }
+        }
+        for (JEVisObject obj : restored) {
+            obj.setDeleteTS(null);
+        }
+        if (object instanceof JEVisObjectWS) {
+            ((JEVisObjectWS) object).update(json);
+        }
+
+        List<JEVisRelationship> rels = this.objectRelMapCache.getOrDefault(object.getID(), Collections.emptyList());
+        for (JEVisRelationship rel : new ArrayList<>(rels)) {
+            if (rel.getStartID() != object.getID()) {
+                continue;
+            }
+            boolean oldPlace = rel.getType() == JEVisConstants.ObjectRelationship.DELETED_PARENT;
+            if (targetParent != null && rel.getType() == JEVisConstants.ObjectRelationship.PARENT) {
+                // taken out of a deleted folder
+                JEVisObject parent = this.objectCache.get(rel.getEndID());
+                oldPlace = parent != null && parent.getDeleteTS() != null;
+            }
+            if (oldPlace) {
+                removeRelationshipFromCache(rel.getStartID(), rel.getEndID(), rel.getType());
+            }
+        }
+        JEVisObject newParent = targetParent;
+        if (newParent == null && json.getParent() > 0) {
+            newParent = getObject(json.getParent());
+        }
+        if (newParent != null) {
+            addRelationshipToCache(object.getID(), newParent.getID(), JEVisConstants.ObjectRelationship.PARENT);
+        }
+
+        object.notifyListeners(new JEVisEvent(object, JEVisEvent.TYPE.OBJECT_RESTORED, object));
+        if (newParent != null) {
+            newParent.notifyListeners(new JEVisEvent(newParent, JEVisEvent.TYPE.OBJECT_NEW_CHILD, object));
+        }
+        return object;
+    }
+
+    @Override
+    public int emptyRecycleBin() throws JEVisException {
+        String resource = REQUEST.API_PATH_V1 + REQUEST.OBJECTS.PATH + "deleted";
+        try {
+            HttpURLConnection response = getHTTPConnection().getDeleteConnection(resource);
+            int code = response.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                response.disconnect();
+                throw new JEVisException("Emptying the recycle bin failed [" + code + "]", code);
+            }
+            int count;
+            try (InputStream in = response.getInputStream()) {
+                count = this.objectMapper.readValue(in, Integer.class);
+            }
+            response.disconnect();
+
+            for (JEVisObject deleted : getDeletedObjects()) {
+                this.objectCache.remove(deleted.getID());
+                List<JEVisRelationship> rels = this.objectRelMapCache.remove(deleted.getID());
+                if (rels != null) {
+                    for (JEVisRelationship rel : rels) {
+                        long other = rel.getStartID() == deleted.getID() ? rel.getEndID() : rel.getStartID();
+                        List<JEVisRelationship> otherRels = this.objectRelMapCache.get(other);
+                        if (otherRels != null) {
+                            otherRels.remove(rel);
+                        }
+                    }
+                }
+            }
+            return count;
+        } catch (IOException ex) {
+            throw new JEVisException("Emptying the recycle bin failed: " + ex.getMessage(), 500, ex);
+        }
+    }
+
+    /**
+     * Name of the current user object, as the server shows it for "deleted by".
+     */
+    private String currentUserName() {
+        if (this.user == null) {
+            return null;
+        }
+        JEVisObject userObject = getObject(this.user.getUserID());
+        return userObject != null ? userObject.getName() : this.user.getAccountName();
+    }
+
+    private Set<Long> readIds(HttpURLConnection response) {
+        Set<Long> ids = new LinkedHashSet<>();
+        try (InputStream in = response.getInputStream()) {
+            Long[] values = this.objectMapper.readValue(in, Long[].class);
+            ids.addAll(Arrays.asList(values));
+        } catch (Exception ex) {
+            logger.debug("No list of deleted objects in the response: {}", ex.getMessage());
+        }
+        return ids;
+    }
+
+    private List<JEVisObject> getChildrenRecursive(JEVisObject object) throws JEVisException {
+        List<JEVisObject> result = new ArrayList<>();
+        Set<Long> visited = new HashSet<>();
+        Deque<JEVisObject> queue = new ArrayDeque<>();
+        queue.add(object);
+        visited.add(object.getID());
+        while (!queue.isEmpty()) {
+            for (JEVisObject child : queue.poll().getChildren()) {
+                if (visited.add(child.getID())) {
+                    result.add(child);
+                    queue.add(child);
+                }
+            }
+        }
+        return result;
+    }
+
+    private void addRelationshipToCache(long startID, long endID, int type) {
+        getRelationships();
+        JsonRelationship json = new JsonRelationship();
+        json.setFrom(startID);
+        json.setTo(endID);
+        json.setType(type);
+        JEVisRelationship rel = new JEVisRelationshipWS(this, json);
+        this.objectRelMapCache.computeIfAbsent(startID, k -> new CopyOnWriteArrayList<>()).add(rel);
+        this.objectRelMapCache.computeIfAbsent(endID, k -> new CopyOnWriteArrayList<>()).add(rel);
     }
 
     @Override
@@ -1378,6 +1551,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
 
             this.objectNullCache.clear();
             this.objectRelMapCache.clear();
+            this.deletedObjectLoaded = false;
             this.objectCache.clear();
             this.attributeCache.clear();
 
@@ -1470,6 +1644,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         this.objectRelMapCache.clear();
 //        this.objectRelCache.clear();
         this.objectCache.clear();
+        this.deletedObjectLoaded = false;
         this.attributeCache.clear();
 
         this.allAttributesPreloaded = false;
@@ -1571,10 +1746,17 @@ public class JEVisDataSourceWS implements JEVisDataSource {
 
     }
 
-    private void updateDeletedObject(JsonObject jsonObj) {
-        JEVisObjectWS newObject = new JEVisObjectWS(this, jsonObj);
-        this.deltedObjectCache.put(newObject.getID(), newObject);
-
+    /**
+     * Updates a cached object in place (tree items keep their listeners) or adds it to the cache.
+     */
+    private void mergeObject(JsonObject jsonObj) {
+        JEVisObject cached = this.objectCache.get(jsonObj.getId());
+        if (cached instanceof JEVisObjectWS) {
+            ((JEVisObjectWS) cached).update(jsonObj);
+        } else {
+            this.objectCache.put(jsonObj.getId(), new JEVisObjectWS(this, jsonObj));
+        }
+        this.objectNullCache.remove(jsonObj.getId());
     }
 
     public void getObjectsWS(boolean includeDeleted) {
@@ -1584,7 +1766,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         String resource = HTTPConnection.API_PATH_V1
                 + REQUEST.OBJECTS.PATH
                 + "?" + REQUEST.OBJECTS.OPTIONS.INCLUDE_RELATIONSHIPS + "false"
-                + "?" + REQUEST.OBJECTS.OPTIONS.DELETED + includeDeleted
+                + "&" + REQUEST.OBJECTS.OPTIONS.DELETED + includeDeleted
                 + "&" + REQUEST.OBJECTS.OPTIONS.ONLY_ROOT + "false";
         List<JsonObject> jsonObjects = new ArrayList<>();
         try {
@@ -1620,8 +1802,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         String resource = HTTPConnection.API_PATH_V1
                 + REQUEST.OBJECTS.PATH
                 + "?" + REQUEST.OBJECTS.OPTIONS.INCLUDE_RELATIONSHIPS + "false"
-                + "&" + REQUEST.OBJECTS.OPTIONS.ONLY_ROOT + "false"
-                + "&" + REQUEST.OBJECTS.OPTIONS.DELETED + "true";
+                + "&" + REQUEST.OBJECTS.OPTIONS.ONLY_DELETED + "true";
         List<JsonObject> jsonObjects = new ArrayList<>();
         try {
             InputStream inputStream = this.con.getInputStreamRequest(resource);
@@ -1641,7 +1822,10 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         logger.debug("JsonObject.count: {}", jsonObjects.size());
         jsonObjects.forEach(jsonObject -> {
             try {
-                updateDeletedObject(jsonObject);
+                // older servers ignore onlyDeleted and send all objects
+                if (jsonObject.getDeleteTS() != null) {
+                    mergeObject(jsonObject);
+                }
             } catch (Exception ex) {
                 logger.error("Error while parsing object: {}", ex.getMessage());
             }

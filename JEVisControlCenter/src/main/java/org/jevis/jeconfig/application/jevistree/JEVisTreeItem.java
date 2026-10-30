@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -83,9 +84,17 @@ public class JEVisTreeItem extends TreeItem<JEVisTreeRow> {
                     return -1;
                 }
 
-                /* sort order within the bin is time based*/
-                if (row1.getJEVisObject().getDeleteTS() != null && row2.getJEVisObject().getDeleteTS() != null) {
-                    return row2.getJEVisObject().getDeleteTS().compareTo(row1.getJEVisObject().getDeleteTS());
+                /* the top level of the bin is sorted by deletion time, newest first; inside a deleted folder the
+                 * common rules apply */
+                if (row1.getType() == JEVisTreeRow.TYPE.OBJECT && row2.getType() == JEVisTreeRow.TYPE.OBJECT
+                        && row1.getJEVisObject().getDeleteTS() != null && row2.getJEVisObject().getDeleteTS() != null
+                        && JEVisRecycleBinObject.isRecycleBinRoot(row1.getJEVisObject())
+                        && JEVisRecycleBinObject.isRecycleBinRoot(row2.getJEVisObject())) {
+                    int byTime = row2.getJEVisObject().getDeleteTS().compareTo(row1.getJEVisObject().getDeleteTS());
+                    if (byTime != 0) {
+                        return byTime;
+                    }
+                    return alphanumComparator.compare(row1.getJEVisObject().getName(), row2.getJEVisObject().getName());
                 }
 
                 /* Common rules */

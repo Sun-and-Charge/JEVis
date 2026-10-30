@@ -1234,25 +1234,39 @@ public class SQLDataSource {
     }
 
     /**
-     * Marks the given object (and all its descendants) as deleted without
-     * physically removing them from the database.
+     * Moves the given object and its subtree to the recycle bin, recording the current user as the one who deleted it.
      *
-     * @param objectID the object to mark as deleted
-     * @return {@code true} if the operation succeeded
+     * @param object the object to delete
+     * @return the IDs of the objects moved to the bin
+     * @throws JEVisException if the database update fails
      */
-    public boolean markAsDeletedObject(JsonObject objectID) {
-        return getObjectTable().markObjectAsDeleted(objectID);
+    public Set<Long> markAsDeletedObject(JsonObject object) throws JEVisException {
+        Long deletedBy = this.user != null ? this.user.getUserID() : null;
+        return getObjectTable().markObjectAsDeleted(object, deletedBy);
     }
 
     /**
-     * Permanently removes the given object (and all its descendants) from the
-     * database.
+     * Restores an object from the recycle bin, see {@link ObjectTable#restoreObject(JsonObject, Long, boolean)}.
      *
-     * @param objectID the object to delete
-     * @return {@code true} if the deletion succeeded
+     * @param object        the deleted object
+     * @param targetParent  new parent, or {@code null} for the original place
+     * @param requireParent fail if the object would end up without a live parent
+     * @return the IDs of the restored objects
+     * @throws JEVisException if the object can not be restored
      */
-    public boolean deleteObject(JsonObject objectID) {
-        return getObjectTable().deleteObjectFromDB(objectID);
+    public Set<Long> restoreObject(JsonObject object, Long targetParent, boolean requireParent) throws JEVisException {
+        return getObjectTable().restoreObject(object, targetParent, requireParent);
+    }
+
+    /**
+     * Permanently removes the given object and its subtree from the database.
+     *
+     * @param object the object to delete
+     * @return the IDs of the deleted objects
+     * @throws JEVisException if the deletion fails
+     */
+    public Set<Long> deleteObject(JsonObject object) throws JEVisException {
+        return getObjectTable().deleteObjectFromDB(object);
     }
 
     /**
