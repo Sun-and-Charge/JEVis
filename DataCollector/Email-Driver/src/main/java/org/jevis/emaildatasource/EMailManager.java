@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2013 - 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI.
  * <p>
@@ -76,7 +77,7 @@ public class EMailManager {
      */
     private static List<Message> getMessageList(Folder folder, EMailChannelParameters chanParam) {
 
-        List<Message> messageList = null;
+        List<Message> messageList = new ArrayList<>();
 
         SearchTerm term = chanParam.getSearchTerms();
         try {

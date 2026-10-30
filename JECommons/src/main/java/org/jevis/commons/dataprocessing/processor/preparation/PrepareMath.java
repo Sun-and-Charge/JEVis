@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -122,7 +123,12 @@ public class PrepareMath implements ProcessStep {
                         }
                         endOfInterval = endOfInterval.minusMillis(1);
                         Interval interval = new Interval(start, endOfInterval);
-                        CleanInterval cleanInterval = new CleanInterval(interval, start);
+                        // the result of each filled period is moved by the period offset, as without period filling
+                        DateTime resultDate = start;
+                        if (periodOffset != 0L) {
+                            resultDate = mathDataObject.getNextRunWithOffset(aggregationPeriod, periodOffset, referencePeriodCount, start);
+                        }
+                        CleanInterval cleanInterval = new CleanInterval(interval, resultDate);
                         intervals.add(cleanInterval);
 
                         if (periodHasYear) {
