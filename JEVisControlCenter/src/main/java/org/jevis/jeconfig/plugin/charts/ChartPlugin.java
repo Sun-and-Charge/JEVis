@@ -128,6 +128,7 @@ public class ChartPlugin implements Plugin {
     private final ToolBarView toolBarView;
     private final AnalysisHandler analysisHandler = new AnalysisHandler();
     private final FavoriteAnalysisHandler favoriteAnalysisHandler = new FavoriteAnalysisHandler();
+    private final XYChartAxisAligner axisAligner = new XYChartAxisAligner();
     private final DataModel dataModel;
     private final StringProperty name = new SimpleStringProperty("Graph");
     private final StringProperty id = new SimpleStringProperty("*NO_ID*");
@@ -638,6 +639,7 @@ public class ChartPlugin implements Plugin {
         }
 
         autoSize();
+        alignChartAxes();
 
         if (toolBarView.getToolBarSettings().isCalculateRegression()) {
             Alert infoBox = new Alert(Alert.AlertType.INFORMATION);
@@ -654,6 +656,23 @@ public class ChartPlugin implements Plugin {
 
         JEConfig.getStatusBar().finishProgressJob(ChartPlugin.class.getName(), "");
         JEConfig.getStatusBar().getPopup().hide();
+    }
+
+    /**
+     * Aligns the plot areas of all stacked XY charts by giving their left and right y-axes the same width (#2347).
+     */
+    private void alignChartAxes() {
+        List<de.gsi.chart.Chart> xyCharts = new ArrayList<>();
+        for (Chart chart : allCharts.values()) {
+            if (chart instanceof XYChart && !(chart instanceof TableChart) && !(chart instanceof TableChartH)
+                    && !(chart instanceof TableChartV) && !(chart instanceof BubbleChart)) {
+                de.gsi.chart.Chart fxChart = chart.getChart();
+                if (fxChart != null && !xyCharts.contains(fxChart)) {
+                    xyCharts.add(fxChart);
+                }
+            }
+        }
+        axisAligner.setCharts(xyCharts);
     }
 
     public Map<Chart, List<ChartDataRow>> getDataRowMap() {
@@ -744,6 +763,7 @@ public class ChartPlugin implements Plugin {
             int currentPieFrame = 0;
             int currentTableFrame = 0;
 
+            DayFilter dayFilter = dataModel.createDayFilter();
             for (ChartModel chartModel : dataModel.getChartModels()) {
                 chartModel.setCustomWorkDay(toolBarView.getToolBarSettings().isCustomWorkday());
                 chartModel.getChartData().forEach(chartData -> {
@@ -754,6 +774,7 @@ public class ChartPlugin implements Plugin {
 
                     chartData.setAggregationPeriod(dataSettings.getAggregationPeriod());
                     chartData.setManipulationMode(dataSettings.getManipulationMode());
+                    chartData.setDayFilter(dayFilter);
                 });
 
                 if (chartModel.getChartType().equals(ChartType.LOGICAL)) {
@@ -951,6 +972,7 @@ public class ChartPlugin implements Plugin {
             if (value instanceof XYChart) {
                 XYChart xyChart = (XYChart) value;
                 if (xyChart.getChartType() != ChartType.LOGICAL) {
+                    xyChart.setUserLimitLines(dataModel.getLimitLines());
                     xyChart.createChart(getToolBarView().getToolBarSettings(), getDataSettings());
                 }
             }

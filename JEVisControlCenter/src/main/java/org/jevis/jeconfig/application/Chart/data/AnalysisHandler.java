@@ -204,6 +204,24 @@ public class AnalysisHandler {
         dataHandlerNode.put("horizontalPies", dataModel.getHorizontalPies());
         dataHandlerNode.put("horizontalTables", dataModel.getHorizontalTables());
         dataHandlerNode.put("forcedInterval", dataModel.getForcedInterval());
+        /* day filter (OpenJEVis #1448), read back via the DataModel setters */
+        dataHandlerNode.put("dayFilterWeekdays", dataModel.getDayFilterWeekdays());
+        dataHandlerNode.put("dayFilterHolidays", dataModel.isDayFilterHolidays());
+        dataHandlerNode.put("dayFilterDates", dataModel.getDayFilterDates());
+
+        if (dataModel.getLimitLines() != null && !dataModel.getLimitLines().isEmpty()) {
+            ArrayNode limitLinesNode = JsonNodeFactory.instance.arrayNode();
+            for (UserLimitLine limitLine : dataModel.getLimitLines()) {
+                ObjectNode limitLineNode = JsonNodeFactory.instance.objectNode();
+                limitLineNode.put("value", limitLine.getValue());
+                limitLineNode.put("label", limitLine.getLabel());
+                limitLineNode.put("color", limitLine.getColor());
+                limitLineNode.put("axis", limitLine.getAxis());
+                limitLineNode.put("fill", limitLine.getFill());
+                limitLinesNode.add(limitLineNode);
+            }
+            dataHandlerNode.set("limitLines", limitLinesNode);
+        }
 
         dataHandlerNode.set("chartModels", chartModels);
 
@@ -315,6 +333,11 @@ public class AnalysisHandler {
             chartModel.setOrientation(listSetting.getOrientation());
 
             for (ChartDataRow chartDataRow : oldModel.getSelectedData()) {
+                // rows whose object was deleted or is not readable must not break the whole analysis
+                if (chartDataRow.getObject() == null || chartDataRow.getAttribute() == null) {
+                    logger.warn("Skipping data row {} of analysis, object or attribute not available", chartDataRow.getId());
+                    continue;
+                }
                 if (chartDataRow.getSelectedCharts().contains(listSetting.getId())) {
                     ChartData chartData = new ChartData();
                     chartData.setId(chartDataRow.getObject().getID());

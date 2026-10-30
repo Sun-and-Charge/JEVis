@@ -3,7 +3,7 @@
 Status of the 93 issues that were still open in [OpenJEVis/JEVis](https://github.com/OpenJEVis/JEVis/issues) when this fork
 was created, checked against the code of this fork (October 2026).
 
-fixed: 57, already fixed: 7, obsolete: 3, no change (decided): 2, open – needs decision: 0, open – larger feature: 19, open – unclear: 5.
+fixed: 61, already fixed: 7, obsolete: 3, no change (decided): 2, open – needs decision: 0, open – larger feature: 16, open – unclear: 4.
 
 - **fixed**: changed in this fork (see the commits that mention `OpenJEVis#<number>`).
 - **already fixed** / **obsolete**: no change needed, the reason is given.
@@ -17,7 +17,7 @@ Effort: S = up to half a day, M = up to a day, L = more.
 | Issue | Title | Type | Status | Effort | Note |
 |---|---|---|---|---|---|
 | [#745](https://github.com/OpenJEVis/JEVis/issues/745) | JECC - Charts - Button to disable/enable linked zoom | enh | fixed | S | Toggle button "Zoom aller Diagramme verknüpfen" in the analysis toolbar; off means every chart zooms on its own. |
-| [#1036](https://github.com/OpenJEVis/JEVis/issues/1036) | JECC - Diagramm - Treshold Function (visual) | enh | open – unclear | M | Threshold display "like JEVis 2" is not specified; limit lines L1/L2 exist. Possibly merge with #2233. |
+| [#1036](https://github.com/OpenJEVis/JEVis/issues/1036) | JECC - Diagramm - Treshold Function (visual) | enh | fixed | M | User limit lines can colour the area above or below them (semi-transparent), as threshold display. |
 | [#1056](https://github.com/OpenJEVis/JEVis/issues/1056) | JECC - Diagramme - wenn in einer Spalte mehr als 1 Tabellen-Plugin ist, sollten die Tabellen-Plugins sich eine "Schaltfläche" teilen | enh | fixed | M | The right arrow of the table date picker moved backwards and is fixed. A single shared date control for several tables is not done (open, M). |
 | [#1095](https://github.com/OpenJEVis/JEVis/issues/1095) | JECC - Berechnungs-Editor - es wäre schön, wenn es wie bei anderen Daten-Links eine "Gehe zu" Schaltfläche gibt | enh | fixed | S | Right-click on an input variable or the output in the calculation editor offers "go to target in tree". |
 | [#1194](https://github.com/OpenJEVis/JEVis/issues/1194) | JECC - man sollte für Werte nicht nur die Einheit, sondern auch die Darstellungsform einstellen können | enh | open – larger feature | L | Display format per value needs a new attribute/type property and support in every editor, table and chart. |
@@ -26,7 +26,7 @@ Effort: S = up to half a day, M = up to a day, L = more.
 | [#1370](https://github.com/OpenJEVis/JEVis/issues/1370) | Es sollte eine Möglichkeit geben zu unterscheiden / abzufragen was Daten Objekte repräsentieren | enh | open – larger feature | L | Medium/type for data objects: new optional enum attribute on Data plus API fallback to the parent meter. |
 | [#1437](https://github.com/OpenJEVis/JEVis/issues/1437) | JECC - EMail Receiver as Function | enh | open – larger feature | L | E-mail recipients as users/groups: new target attribute, resolved by the notifier at run time. |
 | [#1440](https://github.com/OpenJEVis/JEVis/issues/1440) | System - Old Data Archive | enh | open – larger feature | L | Archive of old data: server job that exports old samples, verifies and deletes them. |
-| [#1448](https://github.com/OpenJEVis/JEVis/issues/1448) | JECC - Diagramme - Filtermöglichkeit um z.B. Wochenenden oder spezielle Tage aus der Wertedarstellung rauszunehmen [Prio niedrig] | enh | open – larger feature | L | Day filter (weekends/holidays) per analysis, applied when samples are loaded. |
+| [#1448](https://github.com/OpenJEVis/JEVis/issues/1448) | JECC - Diagramme - Filtermöglichkeit um z.B. Wochenenden oder spezielle Tage aus der Wertedarstellung rauszunehmen [Prio niedrig] | enh | fixed | L | Settings tab "Tagesfilter": exclude weekdays, public holidays and single dates from values, sums and averages (up to daily aggregation). |
 | [#1477](https://github.com/OpenJEVis/JEVis/issues/1477) | Ersatzwertbildung und Prognose könnte Kalenderinformationen wie Feiertage berücksichtigen [niedrige Prio] | enh | open – larger feature | M | Holidays in gap filling/forecast: move Holidays to JECommons and treat holidays as their own day class. |
 | [#1558](https://github.com/OpenJEVis/JEVis/issues/1558) | JECC - localize login dialog | enh | fixed | S | Login dialog texts are translated; the language is chosen before the dialog is built and switching it updates the texts. |
 | [#1599](https://github.com/OpenJEVis/JEVis/issues/1599) | JECC - Move Object reloads all Relationships | enh | already fixed | - | Moving objects only changes the affected relationships in the cache; no full reload any more. |
@@ -60,7 +60,7 @@ Effort: S = up to half a day, M = up to a day, L = more.
 | [#2184](https://github.com/OpenJEVis/JEVis/issues/2184) | JEAPI - Login Errors | enh | fixed | S | Login errors distinguish wrong credentials (server messages), unreachable server and SSL problems. |
 | [#2186](https://github.com/OpenJEVis/JEVis/issues/2186) | JECC - AboutDialog - Add "3rd party components" license | enh | already fixed | - | Help > Licenses shows project, library and bundled asset licenses. |
 | [#2217](https://github.com/OpenJEVis/JEVis/issues/2217) | JECC - DashboardPlugin - Undo for changes | enh | fixed | L | Undo/redo in edit mode (buttons, Ctrl+Z, Ctrl+Y) with up to 30 steps; cleared on loading another dashboard and on saving. |
-| [#2233](https://github.com/OpenJEVis/JEVis/issues/2233) | JECC - ChartPlugin - Draw Limit Dialog | enh | open – larger feature | M | Dialog to draw user-defined limit lines in analyses. |
+| [#2233](https://github.com/OpenJEVis/JEVis/issues/2233) | JECC - ChartPlugin - Draw Limit Dialog | enh | fixed | M | Function menu "Eigene Grenzlinien …": horizontal lines with value, label, colour and axis per analysis, saved with the analysis. |
 | [#2234](https://github.com/OpenJEVis/JEVis/issues/2234) | JECC - everywhere where export/screenshot or comparable is possible - send my mail | enh | open – larger feature | L | Send exports by mail: needs SMTP via the server or OS mail integration. |
 | [#2238](https://github.com/OpenJEVis/JEVis/issues/2238) | JECC - Generic usage of user comments + generic sample editor | enh | fixed | M | The sample editor shows the data notes of the object in an extra read-only column (matched by timestamp). |
 | [#2242](https://github.com/OpenJEVis/JEVis/issues/2242) | JECC - ChartPlugin - "on the fly forecast" | enh | open – larger feature | L | On-the-fly forecast in analyses. |
@@ -77,7 +77,7 @@ Effort: S = up to half a day, M = up to a day, L = more.
 | [#2339](https://github.com/OpenJEVis/JEVis/issues/2339) | JECC - DashboardPlugin - direct widgets to different chart types | enh | fixed | M | Context menu "In Analyse öffnen als …" on legend entries of chart and pie widgets (line, area, column, bar, table). |
 | [#2341](https://github.com/OpenJEVis/JEVis/issues/2341) | Data Base - Move User Log into its own Table | enh | open – larger feature | M | User log in its own table (migration, endpoint, cleanup job). |
 | [#2342](https://github.com/OpenJEVis/JEVis/issues/2342) | Data Base - Create extra Tables for Clean & Raw Data | enh | open – larger feature | L | Separate tables or partitioning for clean and raw data; needs benchmarking. |
-| [#2347](https://github.com/OpenJEVis/JEVis/issues/2347) | JECC - ChartPlugin - x-axis ist not aligned between different charts | bug | open – larger feature | M | Align y-axis widths across charts so the x-axes line up. |
+| [#2347](https://github.com/OpenJEVis/JEVis/issues/2347) | JECC - ChartPlugin - x-axis ist not aligned between different charts | bug | fixed | M | Stacked XY charts get equal y-axis widths (left and right), so their x-axes line up; recalculated when axes change. |
 | [#2358](https://github.com/OpenJEVis/JEVis/issues/2358) | JECC - Dashboards - Behavior of analyses' time resolution when opening via analysis link | question | fixed | S | Decided: the aggregation is not part of an analysis; only favorites store it. Analyses no longer save aggregation/manipulation per data row (it was overwritten by the toolbar anyway), and analysis links keep opening without aggregation. |
 | [#2359](https://github.com/OpenJEVis/JEVis/issues/2359) | JECC - Dashboards - Behavior of dashboards' report period when opening via dashboard link | question | no change (decided) | S | Decided: the target dashboard gets the period of the dashboard the link is on. No change. |
 | [#2368](https://github.com/OpenJEVis/JEVis/issues/2368) | JECC - Balancing Node | enh | open – unclear | L | "Balancing node" has no description. |

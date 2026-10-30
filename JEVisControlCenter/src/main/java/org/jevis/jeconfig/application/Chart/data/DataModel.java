@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -21,6 +22,7 @@ package org.jevis.jeconfig.application.Chart.data;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import java.util.List;
  *   <li>{@code chartsPerScreen} — how many charts are visible without scrolling</li>
  *   <li>{@code horizontalPies} / {@code horizontalTables} — columns in pie/table layouts</li>
  *   <li>{@code forcedInterval} — optional ISO-period string that overrides the time axis</li>
+ *   <li>{@code dayFilterWeekdays} / {@code dayFilterHolidays} / {@code dayFilterDates} — day filter, see {@link DayFilter}</li>
  * </ul>
  * This class is serialised to/from JSON by {@link AnalysisHandler} and is also the target of
  * Jackson's {@code readerForUpdating} when loading a saved analysis file.
@@ -51,7 +54,11 @@ public class DataModel {
     private final SimpleIntegerProperty horizontalPies = new SimpleIntegerProperty(this, "horizontalPies", 3);
     private final SimpleIntegerProperty horizontalTables = new SimpleIntegerProperty(this, "horizontalTables", 3);
     private final SimpleStringProperty forcedInterval = new SimpleStringProperty(this, "forcedInterval", "");
+    private final SimpleStringProperty dayFilterWeekdays = new SimpleStringProperty(this, "dayFilterWeekdays", "");
+    private final SimpleBooleanProperty dayFilterHolidays = new SimpleBooleanProperty(this, "dayFilterHolidays", false);
+    private final SimpleStringProperty dayFilterDates = new SimpleStringProperty(this, "dayFilterDates", "");
     private List<ChartModel> chartModels = new ArrayList<>();
+    private List<UserLimitLine> limitLines = new ArrayList<>();
 
     /**
      * @return the ordered list of charts that make up this analysis
@@ -62,6 +69,17 @@ public class DataModel {
 
     public void setChartModels(List<ChartModel> chartModels) {
         this.chartModels = chartModels;
+    }
+
+    /**
+     * @return user defined horizontal limit lines drawn in all XY charts of this analysis
+     */
+    public List<UserLimitLine> getLimitLines() {
+        return limitLines;
+    }
+
+    public void setLimitLines(List<UserLimitLine> limitLines) {
+        this.limitLines = limitLines == null ? new ArrayList<>() : limitLines;
     }
 
     public boolean isAutoSize() {
@@ -125,6 +143,56 @@ public class DataModel {
     }
 
     /**
+     * @return excluded ISO weekdays as comma separated numbers (1 = Monday ... 7 = Sunday)
+     */
+    public String getDayFilterWeekdays() {
+        return dayFilterWeekdays.get();
+    }
+
+    public void setDayFilterWeekdays(String dayFilterWeekdays) {
+        this.dayFilterWeekdays.set(dayFilterWeekdays == null ? "" : dayFilterWeekdays);
+    }
+
+    public SimpleStringProperty dayFilterWeekdaysProperty() {
+        return dayFilterWeekdays;
+    }
+
+    public boolean isDayFilterHolidays() {
+        return dayFilterHolidays.get();
+    }
+
+    public void setDayFilterHolidays(boolean dayFilterHolidays) {
+        this.dayFilterHolidays.set(dayFilterHolidays);
+    }
+
+    public SimpleBooleanProperty dayFilterHolidaysProperty() {
+        return dayFilterHolidays;
+    }
+
+    /**
+     * @return excluded single dates as comma separated ISO dates (yyyy-MM-dd)
+     */
+    public String getDayFilterDates() {
+        return dayFilterDates.get();
+    }
+
+    public void setDayFilterDates(String dayFilterDates) {
+        this.dayFilterDates.set(dayFilterDates == null ? "" : dayFilterDates);
+    }
+
+    public SimpleStringProperty dayFilterDatesProperty() {
+        return dayFilterDates;
+    }
+
+    /**
+     * @return the day filter built from the current day filter settings
+     */
+    @JsonIgnore
+    public DayFilter createDayFilter() {
+        return DayFilter.of(getDayFilterWeekdays(), isDayFilterHolidays(), getDayFilterDates());
+    }
+
+    /**
      * Resets this model to its default state, clearing all chart models and
      * restoring all display settings to their defaults.
      * <p>Should be called before loading a new analysis to avoid stale state.</p>
@@ -135,6 +203,10 @@ public class DataModel {
         horizontalPies.set(3);
         horizontalTables.set(3);
         forcedInterval.set("");
+        dayFilterWeekdays.set("");
+        dayFilterHolidays.set(false);
+        dayFilterDates.set("");
         chartModels.clear();
+        limitLines = new ArrayList<>();
     }
 }

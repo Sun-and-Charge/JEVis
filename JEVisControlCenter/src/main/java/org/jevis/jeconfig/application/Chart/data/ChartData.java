@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -19,6 +20,7 @@
  */
 package org.jevis.jeconfig.application.Chart.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.beans.property.*;
 import javafx.scene.paint.Color;
 import org.apache.logging.log4j.LogManager;
@@ -85,6 +87,8 @@ public class ChartData {
     private final SimpleStringProperty intervalEnd = new SimpleStringProperty(this, "intervalEnd", DateTime.now().toString());
     private final SimpleIntegerProperty decimalDigits = new SimpleIntegerProperty(this, "decimalDigits", -1);
     private final SimpleStringProperty css = new SimpleStringProperty(this, "css", "");
+    /* runtime only, set from the analysis (DataModel) before the charts are created; not serialised */
+    private DayFilter dayFilter = null;
 
     public ChartData() {
     }
@@ -428,6 +432,19 @@ public class ChartData {
     }
 
     /**
+     * @return the day filter of the analysis this series belongs to, or {@code null} if none
+     */
+    @JsonIgnore
+    public DayFilter getDayFilter() {
+        return dayFilter;
+    }
+
+    @JsonIgnore
+    public void setDayFilter(DayFilter dayFilter) {
+        this.dayFilter = dayFilter;
+    }
+
+    /**
      * Creates a deep copy of this {@code ChartData} with all fields duplicated.
      * <p>
      * The cloned instance shares no mutable state with the original and is safe to
@@ -458,6 +475,7 @@ public class ChartData {
         newData.setIntervalEnd(this.getIntervalEnd());
         newData.setDecimalDigits(this.getDecimalDigits());
         newData.setCss(this.getCss());
+        newData.setDayFilter(this.getDayFilter());
 
         return newData;
     }
