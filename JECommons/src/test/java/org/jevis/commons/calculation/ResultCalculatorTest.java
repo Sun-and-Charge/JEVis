@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -45,7 +46,7 @@ public class ResultCalculatorTest {
 
         CalcTemplate template = new CalcTemplate(1L, "x * 2");
         ResultCalculator rc = new ResultCalculator(singleEntry(ts, s), template);
-        List<JEVisSample> results = rc.calculateResult("", 0.0, null);
+        List<JEVisSample> results = rc.calculateResult(0.0, null);
 
         assertEquals(1, results.size());
         try {
@@ -63,7 +64,7 @@ public class ResultCalculatorTest {
 
         CalcTemplate template = new CalcTemplate(1L, "x");
         ResultCalculator rc = new ResultCalculator(singleEntry(ts, s), template);
-        List<JEVisSample> results = rc.calculateResult("", 0.0, 99.0);
+        List<JEVisSample> results = rc.calculateResult(0.0, 99.0);
 
         assertEquals(1, results.size());
         try {
@@ -81,7 +82,7 @@ public class ResultCalculatorTest {
 
         CalcTemplate template = new CalcTemplate(1L, "x + 1");
         ResultCalculator rc = new ResultCalculator(singleEntry(ts, s), template);
-        List<JEVisSample> results = rc.calculateResult("", 0.0, null);
+        List<JEVisSample> results = rc.calculateResult(0.0, null);
 
         assertEquals(1, results.size());
         try {
@@ -107,7 +108,7 @@ public class ResultCalculatorTest {
         CalcTemplate template = new CalcTemplate(1L, "x + y");
         ResultCalculator rc = new ResultCalculator(map, template);
         // allZeroReplacementValue=5.0 -> both are zero -> replacement fires
-        List<JEVisSample> results = rc.calculateResult("", 0.0, 5.0);
+        List<JEVisSample> results = rc.calculateResult(0.0, 5.0);
         assertEquals(1, results.size());
         try {
             assertEquals(5.0, results.get(0).getValueAsDouble(), 0.001);

@@ -56,25 +56,6 @@
       }
     },
     {
-      "type": "DIV0 Handling",
-      "descriptions": {
-        "de": "",
-        "en": "",
-        "ru": "",
-        "uk": "",
-        "th": "",
-        "ar": "المناولة DIV0"
-      },
-      "names": {
-        "de": "Division / 0 Behandlung",
-        "en": "Division by 0 handling",
-        "ru": "Деление на 0 обработок",
-        "uk": "Ділення на 0 лікування",
-        "th": "หารด้วย 0 การรักษา",
-        "ar": "تقسيم / 0 علاج"
-      }
-    },
-    {
       "type": "Static Value",
       "descriptions": {
         "de": "Ist der Divisor 0, wird dieser Wert als Ergebnis der Berechnung geliefert.",

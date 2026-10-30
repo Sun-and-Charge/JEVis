@@ -128,13 +128,7 @@ public class AnalysisHandler {
                     chartDataNode.put("chartType", chartData.getChartType().toString());
                 }
 
-                if (chartData.getAggregationPeriod() != null) {
-                    chartDataNode.put("aggregationPeriod", chartData.getAggregationPeriod().toString());
-                }
-
-                if (chartData.getManipulationMode() != null) {
-                    chartDataNode.put("manipulationMode", chartData.getManipulationMode().toString());
-                }
+                /* aggregation and manipulation are not part of the analysis, they come from the toolbar or a favorite */
 
                 chartDataNode.put("decimalDigits", chartData.getDecimalDigits());
 

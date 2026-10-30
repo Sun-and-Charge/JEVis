@@ -111,7 +111,6 @@ public class CalcJobFactoryTest {
         SampleHandler sampleHandler = mock(SampleHandler.class);
         when(sampleHandler.getLastSample(calcObject, CalcJobFactory.Calculation.EXPRESSION.getName(), "")).thenReturn("in1");
         when(sampleHandler.getLastSample(calcObject, CalcJobFactory.Calculation.REPROCESSING_PERIODS.getName(), 1L)).thenReturn(reprocessingPeriods);
-        when(sampleHandler.getLastSample(calcObject, CalcJobFactory.Calculation.DIV0_HANDLING.getName(), "")).thenReturn("");
         when(sampleHandler.getLastSample(calcObject, CalcJobFactory.Calculation.STATIC_VALUE.getName(), 0.0)).thenReturn(0.0);
 
         JEVisAttribute allZeroValueAtt = mock(JEVisAttribute.class);

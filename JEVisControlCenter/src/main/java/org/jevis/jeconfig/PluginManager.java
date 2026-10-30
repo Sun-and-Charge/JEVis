@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -130,6 +131,28 @@ public class PluginManager {
      *
      * @param user
      */
+    /**
+     * The dashboard module is only useful if the user can see a dashboard or create the first one.
+     */
+    private boolean showDashboardPlugin(JEVisUser user) {
+        try {
+            JEVisClass dashboardClass = this._ds.getJEVisClass(DashBordPlugIn.CLASS_ANALYSIS);
+            if (!this._ds.getObjects(dashboardClass, false).isEmpty()) {
+                return true;
+            }
+            JEVisClass directoryClass = this._ds.getJEVisClass(DashBordPlugIn.CLASS_ANALYSIS_DIR);
+            for (JEVisObject directory : this._ds.getObjects(directoryClass, false)) {
+                if (user.canCreate(directory.getID(), DashBordPlugIn.CLASS_ANALYSIS)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception ex) {
+            logger.error("Could not check dashboard permissions, showing the dashboard module", ex);
+            return true;
+        }
+    }
+
     public void addPluginsByUserSetting(JEVisUser user) {
         List<Plugin> enabledPlugins = new ArrayList<>();
 
@@ -178,7 +201,9 @@ public class PluginManager {
                                 } else if (plugObj.getJEVisClassName().equals(ChartPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new ChartPlugin(this._ds, I18n.getInstance().getString("plugin.graph.title")));
                                 } else if (plugObj.getJEVisClassName().equals(DashBordPlugIn.PLUGIN_NAME)) {
-                                    enabledPlugins.add(new DashBordPlugIn(this._ds, I18n.getInstance().getString("plugin.dashboard.title")));
+                                    if (showDashboardPlugin(user)) {
+                                        enabledPlugins.add(new DashBordPlugIn(this._ds, I18n.getInstance().getString("plugin.dashboard.title")));
+                                    }
                                 } else if (plugObj.getJEVisClassName().equals(ReportPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new ReportPlugin(this._ds, I18n.getInstance().getString("plugin.reports.title")));
                                 } else if (plugObj.getJEVisClassName().equals(AlarmPlugin.PLUGIN_NAME)) {

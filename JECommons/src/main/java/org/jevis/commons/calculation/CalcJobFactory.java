@@ -106,11 +106,9 @@ public class CalcJobFactory {
         }
 
         logger.debug("{} inputs found", calcInputObjects.size());
-        String div0Handling = null;
         Double staticValue = null;
         Double allZeroValue = null;
         try {
-            div0Handling = sampleHandler.getLastSample(jevisObject, Calculation.DIV0_HANDLING.getName(), "");
             staticValue = sampleHandler.getLastSample(jevisObject, Calculation.STATIC_VALUE.getName(), 0.0);
             JEVisAttribute allZeroValueAtt = jevisObject.getAttribute(Calculation.ALL_ZERO_VALUE.getName());
             if (allZeroValueAtt.hasSample())
@@ -125,7 +123,6 @@ public class CalcJobFactory {
         calcJob.setCalcObjID(calcObjID);
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
-        calcJob.setDIV0Handling(div0Handling);
 
         return calcJob;
     }
@@ -158,11 +155,9 @@ public class CalcJobFactory {
         }
 
         logger.debug("{} inputs found", calcInputObjects.size());
-        String div0Handling = null;
         Double staticValue = null;
         Double allZeroValue = null;
         try {
-            div0Handling = sampleHandler.getLastSample(jevisObject, Calculation.DIV0_HANDLING.getName(), "");
             staticValue = sampleHandler.getLastSample(jevisObject, Calculation.STATIC_VALUE.getName(), 0.0);
             JEVisAttribute allZeroValueAtt = jevisObject.getAttribute(Calculation.ALL_ZERO_VALUE.getName());
             if (allZeroValueAtt.hasSample())
@@ -177,7 +172,6 @@ public class CalcJobFactory {
         calcJob.setCalcObjID(calcObjID);
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
-        calcJob.setDIV0Handling(div0Handling);
 
         return calcJob;
     }
@@ -235,11 +229,9 @@ public class CalcJobFactory {
             throw new RuntimeException("Invalid calculation expression: " + expression, e);
         }
 
-        String div0Handling = null;
         Double staticValue = null;
         Double allZeroValue = null;
         try {
-            div0Handling = sampleHandler.getLastSample(jevisObject, Calculation.DIV0_HANDLING.getName(), "");
             staticValue = sampleHandler.getLastSample(jevisObject, Calculation.STATIC_VALUE.getName(), 0.0);
             JEVisAttribute allZeroValueAtt = jevisObject.getAttribute(Calculation.ALL_ZERO_VALUE.getName());
             if (allZeroValueAtt.hasSample())
@@ -254,7 +246,6 @@ public class CalcJobFactory {
         calcJob.setCalcObjID(calcObjID);
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
-        calcJob.setDIV0Handling(div0Handling);
 
         return calcJob;
     }
@@ -682,7 +673,6 @@ public class CalcJobFactory {
         OUTPUT_DATA("Output"),
         IDENTIFIER("Identifier"),
         INPUT_TYPE("Input Data Type"),
-        DIV0_HANDLING("DIV0 Handling"),
         STATIC_VALUE("Static Value"),
         ALL_ZERO_VALUE("All Zero Value"),
         REPROCESSING_PERIODS("Reprocessing Periods");
