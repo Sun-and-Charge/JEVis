@@ -41,12 +41,14 @@ import org.apache.commons.validator.routines.DoubleValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisDataSource;
+import org.jevis.commons.constants.GapFillingType;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
-import org.jevis.jeconfig.application.Chart.Charts.regression.RegressionType;
+import org.jevis.commons.regression.RegressionType;
+import org.jevis.jeconfig.application.Chart.Charts.*;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.dialog.BaseLoadDialog;
 import org.jevis.jeconfig.dialog.ValuesDialog;
@@ -535,6 +537,119 @@ public class ToolBarFunctions {
 
         infoBox.getDialogPane().setContent(vBox);
         infoBox.show();
+    }
+
+    /**
+     * Calculates a forecast for one data row of the analysis from its loaded samples and shows it as a
+     * dashed series (#2242). The forecast is not saved.
+     */
+    protected void calcForecast() {
+        List<ChartDataRow> rows = new ArrayList<>();
+        chartPlugin.getAllCharts().forEach((integer, chart) -> {
+            if (chart instanceof XYChart && !(chart instanceof TableChart) && !(chart instanceof TableChartH)
+                    && !(chart instanceof TableChartV) && !(chart instanceof BubbleChart)) {
+                for (ChartDataRow row : chart.getChartDataRows()) {
+                    if (rows.stream().noneMatch(r -> OnTheFlyForecast.key(r).equals(OnTheFlyForecast.key(row)))) {
+                        rows.add(row);
+                    }
+                }
+            }
+        });
+
+        if (rows.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(JEConfig.getStage());
+            alert.setHeaderText(I18n.getInstance().getString("plugin.graph.forecast.dialog.norow"));
+            alert.showAndWait();
+            return;
+        }
+
+        OnTheFlyForecast current = dataSettings.getOnTheFlyForecast();
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(I18n.getInstance().getString("plugin.graph.toolbar.forecast"));
+        dialog.setHeaderText(I18n.getInstance().getString("plugin.graph.forecast.dialog.header"));
+        dialog.initOwner(JEConfig.getStage());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setResizable(true);
+        TopMenu.applyActiveTheme(dialog.getDialogPane().getScene());
+
+        ComboBox<ChartDataRow> rowBox = new ComboBox<>(FXCollections.observableArrayList(rows));
+        Callback<ListView<ChartDataRow>, ListCell<ChartDataRow>> rowCellFactory = param -> new ListCell<ChartDataRow>() {
+            @Override
+            protected void updateItem(ChartDataRow item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(item == null || empty ? null : item.getName());
+            }
+        };
+        rowBox.setCellFactory(rowCellFactory);
+        rowBox.setButtonCell(rowCellFactory.call(null));
+        rowBox.getSelectionModel().selectFirst();
+
+        ComboBox<GapFillingType> methodBox = new ComboBox<>(FXCollections.observableArrayList(OnTheFlyForecast.METHODS));
+        Callback<ListView<GapFillingType>, ListCell<GapFillingType>> methodCellFactory = param -> new ListCell<GapFillingType>() {
+            @Override
+            protected void updateItem(GapFillingType item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(item == null || empty ? null : OnTheFlyForecast.getMethodName(item));
+            }
+        };
+        methodBox.setCellFactory(methodCellFactory);
+        methodBox.setButtonCell(methodCellFactory.call(null));
+        methodBox.getSelectionModel().select(GapFillingType.AVERAGE);
+
+        Spinner<Integer> horizonSpinner = new Spinner<>(1, 366, 7);
+        horizonSpinner.setEditable(true);
+        horizonSpinner.setPrefWidth(100d);
+
+        if (current != null) {
+            for (ChartDataRow row : rows) {
+                if (current.appliesTo(row, dataSettings.getCurrentAnalysis())) {
+                    rowBox.getSelectionModel().select(row);
+                    methodBox.getSelectionModel().select(current.getMethod());
+                    horizonSpinner.getValueFactory().setValue(current.getHorizonDays());
+                    break;
+                }
+            }
+        }
+
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(6);
+        gridPane.setVgap(6);
+        gridPane.setPadding(new Insets(10));
+        gridPane.add(new Label(I18n.getInstance().getString("plugin.graph.forecast.dialog.row")), 0, 0);
+        gridPane.add(rowBox, 1, 0);
+        gridPane.add(new Label(I18n.getInstance().getString("plugin.graph.forecast.dialog.method")), 0, 1);
+        gridPane.add(methodBox, 1, 1);
+        gridPane.add(new Label(I18n.getInstance().getString("plugin.graph.forecast.dialog.horizon")), 0, 2);
+        gridPane.add(horizonSpinner, 1, 2);
+        dialog.getDialogPane().setContent(gridPane);
+
+        ButtonType removeType = new ButtonType(I18n.getInstance().getString("plugin.graph.forecast.dialog.remove"), ButtonBar.ButtonData.OTHER);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        if (current != null) {
+            dialog.getDialogPane().getButtonTypes().add(removeType);
+        }
+
+        dialog.showAndWait().ifPresent(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                // commit a value typed into the spinner without pressing enter
+                try {
+                    horizonSpinner.getValueFactory().setValue(Integer.parseInt(horizonSpinner.getEditor().getText().trim()));
+                } catch (Exception ignored) {
+                }
+                ChartDataRow row = rowBox.getSelectionModel().getSelectedItem();
+                GapFillingType method = methodBox.getSelectionModel().getSelectedItem();
+                Integer horizon = horizonSpinner.getValue();
+                if (row != null && method != null && horizon != null) {
+                    dataSettings.setOnTheFlyForecast(new OnTheFlyForecast(row, dataSettings.getCurrentAnalysis(), method, horizon));
+                    chartPlugin.update();
+                }
+            } else if (buttonType == removeType) {
+                dataSettings.setOnTheFlyForecast(null);
+                chartPlugin.update();
+            }
+        });
     }
 
     protected void calcSumAboveBelow() {

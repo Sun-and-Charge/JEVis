@@ -62,7 +62,7 @@ import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartElements.*;
 import org.jevis.jeconfig.application.Chart.ChartType;
-import org.jevis.jeconfig.application.Chart.Charts.regression.*;
+import org.jevis.commons.regression.*;
 import org.jevis.jeconfig.application.Chart.data.ChartData;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
@@ -70,6 +70,7 @@ import org.jevis.jeconfig.application.Chart.data.UserLimitLine;
 import org.jevis.jeconfig.application.Chart.data.ValueWithDateTime;
 import org.jevis.jeconfig.application.tools.ColorHelper;
 import org.jevis.jeconfig.plugin.charts.DataSettings;
+import org.jevis.jeconfig.plugin.charts.OnTheFlyForecast;
 import org.jevis.jeconfig.plugin.charts.ToolBarSettings;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -278,7 +279,18 @@ public class XYChart implements Chart {
 
                     xyChartSerieList.add(generateSerie(changedBoth, chartDataRow));
 
-                    if (chartDataRow.hasForecastData() && dataSettings.isForecastEnabled()) {
+                    OnTheFlyForecast onTheFlyForecast = dataSettings.getOnTheFlyForecast();
+                    if (onTheFlyForecast != null && onTheFlyForecast.appliesTo(chartDataRow, dataSettings.getCurrentAnalysis())) {
+                        try {
+                            chartDataRow.setOnTheFlyForecastSamples(onTheFlyForecast.compute(chartDataRow));
+                            XYChartSerie forecast = new XYChartSerie(this.chartModel, chartDataRow, showIcons, true);
+
+                            hexColors.add(ColorHelper.colorToBrighter(chartDataRow.getColor()));
+                            xyChartSerieList.add(forecast);
+                        } catch (Exception e) {
+                            logger.error("Could not create on-the-fly forecast for {}", chartDataRow.getName(), e);
+                        }
+                    } else if (chartDataRow.hasForecastData() && dataSettings.isForecastEnabled()) {
                         try {
                             XYChartSerie forecast = new XYChartSerie(this.chartModel, chartDataRow, showIcons, true);
 

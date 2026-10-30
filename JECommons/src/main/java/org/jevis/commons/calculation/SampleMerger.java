@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -23,7 +24,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.dataprocessing.VirtualSample;
+import org.jevis.commons.datetime.PeriodHelper;
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.*;
@@ -35,9 +38,12 @@ import java.util.*;
  * Supported {@link CalcInputType} modes:
  * <ul>
  *   <li><b>PERIODIC</b> — regular-interval time-series; one sample per timestamp.</li>
- *   <li><b>ASYNC</b>    — event-driven; zero-filled at timestamps where the variable has
- *       no value. {@link #noOfAsyncVariables} tracks how many async inputs exist so that
- *       the completeness check is adjusted accordingly.</li>
+ *   <li><b>ASYNC</b>    — event-driven. If only async inputs exist, results are calculated at
+ *       every timestamp of any input and missing values are zero-filled. Together with periodic
+ *       inputs the async values are assigned to the period of the periodic timestamps
+ *       {@code [t, t + period)} (upstream issue #2310): quantities (kWh, m³, …) are summed per
+ *       period (0 if there is none), other values (power, temperature, price, state) use the last
+ *       value at or before the start of the period; periods before the first value are skipped.</li>
  *   <li><b>STATIC</b>   — single constant applied to every timestamp in the merged map.</li>
  *   <li><b>NON_PERIODIC</b> — step-function: the most-recently-seen value is used at each
  *       timestamp until the next change.</li>
@@ -53,6 +59,17 @@ public class SampleMerger {
     private final List<String> asyncVariables = new ArrayList<>();
     private int noOfAsyncVariables = 0;
     private int noOfAsyncAndPeriodicVariables = 0;
+    private final Map<String, List<Sample>> asyncSamples = new HashMap<>();
+    private final Set<String> asyncQuantities = new HashSet<>();
+    private Period period;
+
+    /**
+     * Sets the period of the periodic inputs. It defines the end of the period of each periodic timestamp
+     * to which async values are assigned. Without a period the next periodic timestamp is used.
+     */
+    public void setPeriod(Period period) {
+        this.period = period;
+    }
 
     private void addPeriodic(List<JEVisSample> jevisSamples, String variable, CalcInputType calcInputType) {
         List<Sample> samples = new ArrayList<>();
@@ -78,6 +95,25 @@ public class SampleMerger {
     }
 
     public void addSamples(List<JEVisSample> jevisSamples, String variable, CalcInputType inputType) {
+        addSamples(jevisSamples, variable, inputType, true);
+    }
+
+    /**
+     * @param quantity only used for async inputs combined with periodic ones: true sums the async values per period,
+     *                 false uses the last value at or before the start of the period
+     */
+    public void addSamples(List<JEVisSample> jevisSamples, String variable, CalcInputType inputType, boolean quantity) {
+        if (inputType == CalcInputType.ASYNC) {
+            List<Sample> samples = new ArrayList<>();
+            for (JEVisSample jevisSample : jevisSamples) {
+                samples.add(new Sample(jevisSample, variable, inputType));
+            }
+            samples.sort(Comparator.comparing(Sample::getDate));
+            asyncSamples.put(variable, samples);
+            if (quantity) {
+                asyncQuantities.add(variable);
+            }
+        }
         switch (inputType) {
             case PERIODIC:
                 noOfAsyncAndPeriodicVariables++;
@@ -99,6 +135,10 @@ public class SampleMerger {
     }
 
     public Map<DateTime, List<Sample>> merge() {
+        if (noOfAsyncVariables > 0 && noOfAsyncAndPeriodicVariables > noOfAsyncVariables) {
+            return mergeAsyncIntoPeriods();
+        }
+
         Map<DateTime, List<Sample>> sampleMap = new TreeMap<>();
 
         insertAllSamples(sampleMap); //value changed for every sample
@@ -176,6 +216,87 @@ public class SampleMerger {
         }
 
         return sampleMap;
+    }
+
+    /**
+     * Periodic and async inputs: the timestamps of the periodic inputs define the result timestamps, the async
+     * values are assigned to the period they fall into.
+     */
+    private Map<DateTime, List<Sample>> mergeAsyncIntoPeriods() {
+        TreeMap<DateTime, List<Sample>> sampleMap = new TreeMap<>();
+        for (List<Sample> samples : allSamples) {
+            for (Sample sample : samples) {
+                if (sample.getCalcInputType() != CalcInputType.ASYNC) {
+                    sampleMap.computeIfAbsent(sample.getDate(), k -> new ArrayList<>()).add(sample);
+                }
+            }
+        }
+
+        insertConstants(sampleMap);
+        insertPeriodicConstants(sampleMap);
+
+        int variableSize = allSamples.size() + constants.size() + periodConstants.size();
+        Set<DateTime> removableKeys = new HashSet<>();
+        DateTime previous = null;
+        for (Map.Entry<DateTime, List<Sample>> entry : sampleMap.entrySet()) {
+            DateTime start = entry.getKey();
+            DateTime end = getPeriodEnd(sampleMap, start, previous);
+            previous = start;
+
+            for (String variable : asyncVariables) {
+                List<Sample> samples = asyncSamples.getOrDefault(variable, Collections.emptyList());
+                Double value;
+                if (asyncQuantities.contains(variable)) {
+                    double sum = 0d;
+                    for (Sample sample : samples) {
+                        if (!sample.getDate().isBefore(end)) {
+                            break;
+                        }
+                        if (!sample.getDate().isBefore(start)) {
+                            sum += sample.getValue().doubleValue();
+                        }
+                    }
+                    value = sum;
+                } else {
+                    value = null;
+                    for (Sample sample : samples) {
+                        if (sample.getDate().isAfter(start)) {
+                            break;
+                        }
+                        value = sample.getValue().doubleValue();
+                    }
+                }
+
+                if (value != null) {
+                    entry.getValue().add(new Sample(new VirtualSample(start, value), variable, CalcInputType.ASYNC));
+                }
+            }
+
+            if (entry.getValue().size() < variableSize) {
+                removableKeys.add(start);
+            }
+        }
+
+        removableKeys.forEach(key -> {
+            logger.debug("not every input data with datetime {}, will delete this datetime from calculation", key);
+            sampleMap.remove(key);
+        });
+
+        return sampleMap;
+    }
+
+    private DateTime getPeriodEnd(TreeMap<DateTime, List<Sample>> sampleMap, DateTime start, DateTime previous) {
+        if (period != null && !period.equals(Period.ZERO)) {
+            return PeriodHelper.addPeriodToDate(start, period);
+        }
+        DateTime next = sampleMap.higherKey(start);
+        if (next != null) {
+            return next;
+        }
+        if (previous != null) {
+            return start.plus(start.getMillis() - previous.getMillis());
+        }
+        return start.plusMillis(1);
     }
 
     private void insertAllSamples(Map<DateTime, List<Sample>> sampleMap) {

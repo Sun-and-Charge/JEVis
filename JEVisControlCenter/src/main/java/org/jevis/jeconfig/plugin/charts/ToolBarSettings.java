@@ -23,7 +23,7 @@ package org.jevis.jeconfig.plugin.charts;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import org.jevis.jeconfig.application.Chart.Charts.regression.RegressionType;
+import org.jevis.commons.regression.RegressionType;
 
 public class ToolBarSettings {
 

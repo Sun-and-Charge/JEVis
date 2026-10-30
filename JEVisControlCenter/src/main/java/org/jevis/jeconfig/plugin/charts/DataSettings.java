@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -34,6 +35,7 @@ public class DataSettings {
     private final SimpleObjectProperty<WorkDays> workDays = new SimpleObjectProperty<>(this, "workDays", new WorkDays(null));
     private ObjectProperty<JEVisObject> currentAnalysis = null;
     private boolean forecastEnabled = true;
+    private OnTheFlyForecast onTheFlyForecast = null;
 
     public DataSettings() {
     }
@@ -113,5 +115,16 @@ public class DataSettings {
 
     public void setForecastEnabled(boolean forecastEnabled) {
         this.forecastEnabled = forecastEnabled;
+    }
+
+    /**
+     * Forecast calculated on the fly for one data row of the current analysis, not saved (#2242).
+     */
+    public OnTheFlyForecast getOnTheFlyForecast() {
+        return onTheFlyForecast;
+    }
+
+    public void setOnTheFlyForecast(OnTheFlyForecast onTheFlyForecast) {
+        this.onTheFlyForecast = onTheFlyForecast;
     }
 }

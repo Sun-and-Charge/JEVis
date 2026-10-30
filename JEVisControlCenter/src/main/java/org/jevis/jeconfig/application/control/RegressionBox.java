@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,7 +27,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 import org.jevis.commons.i18n.I18n;
-import org.jevis.jeconfig.application.Chart.Charts.regression.RegressionType;
+import org.jevis.commons.regression.RegressionType;
 
 public class RegressionBox extends JFXComboBox<RegressionType> {
 

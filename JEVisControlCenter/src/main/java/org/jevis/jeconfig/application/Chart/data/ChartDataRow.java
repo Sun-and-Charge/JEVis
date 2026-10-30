@@ -83,6 +83,7 @@ public class ChartDataRow extends ChartData {
     private JEVisObject dataProcessorObject = null;
     private List<JEVisSample> samples = new ArrayList<>();
     private List<JEVisSample> forecastSamples = new ArrayList<>();
+    private List<JEVisSample> onTheFlyForecastSamples = null;
     private boolean somethingChanged = true;
     private List<Integer> selectedCharts = new ArrayList<>();
     private JEVisObject calculationObject;
@@ -704,6 +705,9 @@ public class ChartDataRow extends ChartData {
     }
 
     public List<JEVisSample> getForecastSamples() {
+        if (onTheFlyForecastSamples != null) {
+            return onTheFlyForecastSamples;
+        }
 
         try {
             List<JEVisSample> samples = new ArrayList<>();
@@ -746,6 +750,18 @@ public class ChartDataRow extends ChartData {
 
     public void setForecastSamples(List<JEVisSample> forecastSamples) {
         this.forecastSamples = forecastSamples;
+    }
+
+    /**
+     * Forecast calculated on the fly in the analysis (#2242); replaces the stored forecast while set.
+     * {@code null} removes it.
+     */
+    public void setOnTheFlyForecastSamples(List<JEVisSample> onTheFlyForecastSamples) {
+        this.onTheFlyForecastSamples = onTheFlyForecastSamples;
+    }
+
+    public boolean isOnTheFlyForecast() {
+        return onTheFlyForecastSamples != null;
     }
 
     public void updateScaleFactor() throws JEVisException {

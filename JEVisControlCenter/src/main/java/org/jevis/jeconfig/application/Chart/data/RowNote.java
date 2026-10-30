@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -395,6 +396,10 @@ public class RowNote {
         }
         if (note.contains(NoteConstants.Forecast.FORECAST) && note.contains(NoteConstants.Forecast.FORECAST_MAX)) {
             formattedNote.append(I18n.getInstance().getString("graph.dialog.note.text.forecast.max"));
+            formattedNote.append(System.getProperty("line.separator"));
+        }
+        if (note.contains(NoteConstants.Forecast.FORECAST) && note.contains(NoteConstants.Forecast.FORECAST_REGRESSION)) {
+            formattedNote.append(I18n.getInstance().getString("graph.dialog.note.text.forecast.regression"));
             formattedNote.append(System.getProperty("line.separator"));
         }
 

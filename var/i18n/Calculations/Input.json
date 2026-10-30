@@ -86,6 +86,75 @@
           }
         }
       }
+    },
+    {
+      "type": "Aggregation Period",
+      "descriptions": {
+        "de": "Aggregiert die Eingangsdaten vor der Berechnung auf diese Periode, z. B. Viertelstundenwerte zu Tageswerten. Mengen (kWh, m³, …) werden summiert, andere Werte gemittelt. Leer oder Keine: ohne Aggregation.",
+        "en": "Aggregates the input data to this period before the calculation, e.g. quarter-hourly values to daily values. Quantities (kWh, m³, …) are summed, other values averaged. Empty or None: no aggregation."
+      },
+      "names": {
+        "de": "Aggregation",
+        "en": "Aggregation"
+      },
+      "enums": {
+        "NONE": {
+          "descriptions": null,
+          "names": {
+            "de": "Keine",
+            "en": "None"
+          }
+        },
+        "QUARTER_HOURLY": {
+          "descriptions": null,
+          "names": {
+            "de": "Viertelstündlich",
+            "en": "Quarter-hourly"
+          }
+        },
+        "HOURLY": {
+          "descriptions": null,
+          "names": {
+            "de": "Stündlich",
+            "en": "Hourly"
+          }
+        },
+        "DAILY": {
+          "descriptions": null,
+          "names": {
+            "de": "Täglich",
+            "en": "Daily"
+          }
+        },
+        "WEEKLY": {
+          "descriptions": null,
+          "names": {
+            "de": "Wöchentlich",
+            "en": "Weekly"
+          }
+        },
+        "MONTHLY": {
+          "descriptions": null,
+          "names": {
+            "de": "Monatlich",
+            "en": "Monthly"
+          }
+        },
+        "QUARTERLY": {
+          "descriptions": null,
+          "names": {
+            "de": "Quartalsweise",
+            "en": "Quarterly"
+          }
+        },
+        "YEARLY": {
+          "descriptions": null,
+          "names": {
+            "de": "Jährlich",
+            "en": "Yearly"
+          }
+        }
+      }
     }
   ]
 }

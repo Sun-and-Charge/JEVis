@@ -127,6 +127,14 @@ public class NewObject {
     }
 
     public static void createDefaultValues(JEVisObject newObject, boolean isCleanData) throws JEVisException {
+        createDefaultValues(newObject, isCleanData, Period.minutes(15));
+    }
+
+    /**
+     * Sets the default values of a new object. Data and Clean Data get the given period (15 minutes if null).
+     */
+    public static void createDefaultValues(JEVisObject newObject, boolean isCleanData, Period period) throws JEVisException {
+        Period p = period != null ? period : Period.minutes(15);
         JEVisClass dataClass = newObject.getDataSource().getJEVisClass("Data");
         JEVisClass cleanDataClass = newObject.getDataSource().getJEVisClass("Clean Data");
         JEVisClass reportClass = newObject.getDataSource().getJEVisClass("Periodic Report");
@@ -136,12 +144,11 @@ public class NewObject {
 
         if (createClass.equals(dataClass) || createClass.equals(cleanDataClass)) {
             JEVisAttribute valueAttribute = newObject.getAttribute(CleanDataObject.AttributeName.VALUE.getAttributeName());
-            valueAttribute.setInputSampleRate(Period.minutes(15));
-            valueAttribute.setDisplaySampleRate(Period.minutes(15));
+            valueAttribute.setInputSampleRate(p);
+            valueAttribute.setDisplaySampleRate(p);
             valueAttribute.commit();
 
             JEVisAttribute periodAttribute = newObject.getAttribute(CleanDataObject.AttributeName.PERIOD.getAttributeName());
-            Period p = Period.minutes(15);
             JEVisSample dataObjectPeriodSample = periodAttribute.buildSample(new DateTime(1990, 1, 1, 0, 0, 0, 0), p.toString());
             dataObjectPeriodSample.commit();
 
@@ -151,8 +158,8 @@ public class NewObject {
                 newCleanObject.commit();
 
                 JEVisAttribute cleanDataValueAttribute = newCleanObject.getAttribute(CleanDataObject.AttributeName.VALUE.getAttributeName());
-                cleanDataValueAttribute.setInputSampleRate(Period.minutes(15));
-                cleanDataValueAttribute.setDisplaySampleRate(Period.minutes(15));
+                cleanDataValueAttribute.setInputSampleRate(p);
+                cleanDataValueAttribute.setDisplaySampleRate(p);
                 cleanDataValueAttribute.commit();
 
                 JEVisAttribute cleanDataPeriodAttribute = newCleanObject.getAttribute(CleanDataObject.AttributeName.PERIOD.getAttributeName());

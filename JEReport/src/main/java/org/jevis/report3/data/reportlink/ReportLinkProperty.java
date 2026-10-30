@@ -297,7 +297,9 @@ public class ReportLinkProperty implements ReportData {
                                     logger.info("variable named {} for interval: {} getting data from object {}:{} of attribute {}",
                                             linkProperty.templateVariableName, interval, dataObject.getName(), dataObject.getID(), attribute.getName());
 
-                                    if (!isCalculation) {
+                                    if (!isCalculation && isStringAttribute(attribute)) {
+                                        linkMap.putAll(ProcessHelper.getAttributeSamples(getStringSamples(attribute, interval.getStart(), interval.getEnd()), attribute, property.getTimeZone()));
+                                    } else if (!isCalculation) {
                                         List<JEVisSample> samples;
                                         if (aggregationPeriod != AggregationPeriod.NONE && mode == PeriodMode.RELATIVE) {
                                             DateTime newStart = intervalCalculator.alignDateToSchedule(aggregationPeriod.toPeriod().toString(), interval.getStart());
@@ -472,5 +474,44 @@ public class ReportLinkProperty implements ReportData {
                 ", isCalculation=" + isCalculation + '\'' +
                 ", templateVariableName=" + templateVariableName +
                 '}';
+    }
+
+    private static boolean isStringAttribute(JEVisAttribute attribute) {
+        try {
+            return attribute.getPrimitiveType() == JEVisConstants.PrimitiveType.STRING;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Text data cannot be aggregated or manipulated (upstream issue #2614): the raw values of the interval are used,
+     * which covers periodic and asynchronous text data. If there is no value in the interval, the last value before it
+     * is still valid (static / non-periodic text data, e.g. a status or a comment).
+     */
+    static List<JEVisSample> getStringSamples(JEVisAttribute attribute, DateTime start, DateTime end) {
+        List<JEVisSample> samples = new ArrayList<>(attribute.getSamples(start, end));
+        if (samples.isEmpty()) {
+            JEVisSample lastBefore = null;
+            DateTime first = attribute.getTimestampOfFirstSample();
+            if (first != null && first.isBefore(start)) {
+                for (Period lookBack : new Period[]{Period.days(31), Period.days(366), null}) {
+                    DateTime from = lookBack != null ? start.minus(lookBack) : first;
+                    boolean reachedFirst = !from.isAfter(first);
+                    List<JEVisSample> before = attribute.getSamples(reachedFirst ? first : from, start.minusMillis(1));
+                    if (!before.isEmpty()) {
+                        lastBefore = before.get(before.size() - 1);
+                        break;
+                    }
+                    if (reachedFirst) {
+                        break;
+                    }
+                }
+            }
+            if (lastBefore != null) {
+                samples.add(lastBefore);
+            }
+        }
+        return samples;
     }
 }

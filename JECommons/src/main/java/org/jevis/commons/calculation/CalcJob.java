@@ -1,6 +1,7 @@
 /**
  * Copyright (C) JEVis contributors
  * Copyright (C) 2026 Sun and Charge Germany GmbH
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -27,6 +28,7 @@ import org.jevis.api.JEVisSample;
 import org.jevis.commons.task.LogTaskManager;
 import org.jevis.commons.task.Task;
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +58,7 @@ public class CalcJob {
     private Double staticValue = 0.0;
     private Double allZeroValue;
     private boolean newSamplesWritten;
+    private Period period;
 
     public CalcJob() {
         newSamplesWritten = false;
@@ -72,12 +75,7 @@ public class CalcJob {
     public boolean execute() {
         newSamplesWritten = false;
         try {
-            SampleMerger sampleMerger = new SampleMerger();
-            calcInputObjects.forEach(calcObject -> {
-                sampleMerger.addSamples(calcObject.getSamples(), calcObject.getIdentifier(), calcObject.getInputType());
-                logger.debug("added {} samples with identifier {} to merger", calcObject.getSamples().size(), calcObject.getIdentifier());
-            });
-            Map<DateTime, List<Sample>> mergedSamples = sampleMerger.merge();
+            Map<DateTime, List<Sample>> mergedSamples = mergeInputs();
             logger.debug("{} mergable calculations found", mergedSamples.size());
             ResultCalculator resultCalc = new ResultCalculator(mergedSamples, new CalcTemplate(calcObjID, expression));
             List<JEVisSample> calculateResult = resultCalc.calculateResult(staticValue, allZeroValue);
@@ -96,17 +94,30 @@ public class CalcJob {
     }
 
     public List<JEVisSample> getResults() {
-        SampleMerger sampleMerger = new SampleMerger();
-        calcInputObjects.forEach(calcObject -> {
-            sampleMerger.addSamples(calcObject.getSamples(), calcObject.getIdentifier(), calcObject.getInputType());
-            logger.debug("added {} samples with identifier {} to merger", calcObject.getSamples().size(), calcObject.getIdentifier());
-        });
-        Map<DateTime, List<Sample>> mergedSamples = sampleMerger.merge();
+        Map<DateTime, List<Sample>> mergedSamples = mergeInputs();
         logger.debug("{} mergable calculations found", mergedSamples.size());
         ResultCalculator resultCalc = new ResultCalculator(mergedSamples, new CalcTemplate(calcObjID, expression));
         List<JEVisSample> calculateResult = resultCalc.calculateResult(staticValue, allZeroValue);
         logger.info("{} results calculated", calculateResult.size());
         return calculateResult;
+    }
+
+    private Map<DateTime, List<Sample>> mergeInputs() {
+        SampleMerger sampleMerger = new SampleMerger();
+        sampleMerger.setPeriod(period);
+        calcInputObjects.forEach(calcObject -> {
+            boolean quantity = calcObject.getInputType() != CalcInputType.ASYNC || calcObject.isQuantity();
+            sampleMerger.addSamples(calcObject.getSamples(), calcObject.getIdentifier(), calcObject.getInputType(), quantity);
+            logger.debug("added {} samples with identifier {} to merger", calcObject.getSamples().size(), calcObject.getIdentifier());
+        });
+        return sampleMerger.merge();
+    }
+
+    /**
+     * Period of the periodic inputs, used to assign async input values to periods.
+     */
+    public void setPeriod(Period period) {
+        this.period = period;
     }
 
     private void saveToOutput(List<JEVisSample> calculateResult) {

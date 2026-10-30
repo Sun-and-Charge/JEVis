@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -137,7 +138,11 @@ public class XYChartSerie {
             this.tableEntry = new TableEntry(getTableEntryName() + " - " + I18n.getInstance().getString("plugin.graph.chart.forecast.title"));
             this.valueDataSet.setName(getTableEntryName() + " - " + I18n.getInstance().getString("plugin.graph.chart.forecast.title"));
             this.tableEntry.setColor(brighter);
-            this.valueDataSet.setStyle("strokeColor=" + brighter + "; fillColor=" + brighter);
+            if (singleRow.isOnTheFlyForecast()) {
+                this.valueDataSet.setStyle("strokeColor=" + brighter + "; fillColor=" + brighter + ";strokeDashPattern=10, 6");
+            } else {
+                this.valueDataSet.setStyle("strokeColor=" + brighter + "; fillColor=" + brighter);
+            }
 
             samples = singleRow.getForecastSamples();
         }

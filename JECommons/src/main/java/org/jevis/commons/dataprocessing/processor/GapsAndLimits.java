@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -33,6 +34,8 @@ import org.jevis.commons.dataprocessing.processor.limits.LimitBreak;
 import org.jevis.commons.dataprocessing.processor.steps.ScalingStep;
 import org.jevis.commons.dataprocessing.processor.workflow.CleanInterval;
 import org.jevis.commons.dataprocessing.processor.workflow.DifferentialRule;
+import org.jevis.commons.datetime.DayClass;
+import org.jevis.commons.datetime.HolidayCalendar;
 import org.jevis.commons.json.JsonGapFillingConfig;
 import org.joda.time.DateTime;
 
@@ -54,6 +57,8 @@ public class GapsAndLimits {
     private final JsonGapFillingConfig c;
     private final List<JEVisSample> sampleCache;
     private final List<DifferentialRule> differentialRules;
+    private HolidayCalendar holidayCalendar;
+    private boolean holidayCalendarLoaded = false;
 
     public GapsAndLimits(List<CleanInterval> intervals, List<JEVisSample> rawSamples, GapsAndLimitsType type,
                          JsonGapFillingConfig c, List<Gap> gapList, List<LimitBreak> limitBreaksList, List<JEVisSample> sampleCache, CleanDataObject cleanDataObject) {
@@ -90,37 +95,11 @@ public class GapsAndLimits {
         firstDate = getFirstDate(lastDate);
         switch (bindToSpecificValue) {
             case WEEKDAY:
-                if (sampleCache != null && !sampleCache.isEmpty()) {
-                    for (JEVisSample sample : sampleCache) {
-                        if (sample.getTimestamp().getDayOfWeek() == lastDate.getDayOfWeek()) {
-                            if ((sample.getTimestamp().getHourOfDay() == lastDate.getHourOfDay()) && (sample.getTimestamp().getMinuteOfHour() == lastDate.getMinuteOfHour())) {
-                                boundListSamples.add(sample);
-                            }
-                        }
-                    }
-                } else if (rawSamples != null) {
-                    Double lastValue = rawSamples.get(0).getValueAsDouble();
-                    for (JEVisSample jeVisSample : rawSamples) {
-                        if (jeVisSample.getTimestamp().equals(firstDate) || (jeVisSample.getTimestamp().isAfter(firstDate) && jeVisSample.getTimestamp().isBefore(lastDate))
-                                || jeVisSample.getTimestamp().equals(lastDate)) {
-                            if (jeVisSample.getTimestamp().getDayOfWeek() == lastDate.getDayOfWeek()) {
-                                if ((jeVisSample.getTimestamp().getHourOfDay() == lastDate.getHourOfDay()) && (jeVisSample.getTimestamp().getMinuteOfHour() == lastDate.getMinuteOfHour())) {
-                                    if (!isDifferentialForDate(jeVisSample.getTimestamp())) {
-                                        boundListSamples.add(jeVisSample);
-                                    } else if (rawSamples.indexOf(jeVisSample) > 0 && lastValue != null && jeVisSample.getValueAsDouble() != null) {
-                                        Double currentValue = jeVisSample.getValueAsDouble() - lastValue;
-                                        currentValue = scaleValue(currentValue, jeVisSample.getTimestamp());
-
-                                        VirtualSample virtualSample = new VirtualSample(jeVisSample.getTimestamp(), currentValue);
-                                        virtualSample.setNote(jeVisSample.getNote());
-
-                                        boundListSamples.add(virtualSample);
-                                    }
-                                }
-                            }
-                        }
-                        lastValue = jeVisSample.getValueAsDouble();
-                    }
+                HolidayCalendar holidays = getHolidayCalendar();
+                collectWeekdaySamples(lastDate, firstDate, holidays, boundListSamples);
+                if (boundListSamples.isEmpty() && DayClass.isHoliday(lastDate, holidays)) {
+                    // no holiday in the reference data, fall back to the plain weekday
+                    collectWeekdaySamples(lastDate, firstDate, null, boundListSamples);
                 }
                 return calcValueWithType(boundListSamples);
             case WEEKOFYEAR:
@@ -222,6 +201,57 @@ public class GapsAndLimits {
                 }
                 return calcValueWithType(boundListSamples);
         }
+    }
+
+    /**
+     * Collects the reference samples of the same weekday class (see {@link DayClass}) and time of day.
+     */
+    private void collectWeekdaySamples(DateTime lastDate, DateTime firstDate, HolidayCalendar holidays,
+                                       List<JEVisSample> boundListSamples) throws JEVisException {
+        if (sampleCache != null && !sampleCache.isEmpty()) {
+            for (JEVisSample sample : sampleCache) {
+                if (DayClass.sameWeekdayClass(sample.getTimestamp(), lastDate, holidays)) {
+                    if ((sample.getTimestamp().getHourOfDay() == lastDate.getHourOfDay()) && (sample.getTimestamp().getMinuteOfHour() == lastDate.getMinuteOfHour())) {
+                        boundListSamples.add(sample);
+                    }
+                }
+            }
+        } else if (rawSamples != null) {
+            Double lastValue = rawSamples.get(0).getValueAsDouble();
+            for (JEVisSample jeVisSample : rawSamples) {
+                if (jeVisSample.getTimestamp().equals(firstDate) || (jeVisSample.getTimestamp().isAfter(firstDate) && jeVisSample.getTimestamp().isBefore(lastDate))
+                        || jeVisSample.getTimestamp().equals(lastDate)) {
+                    if (DayClass.sameWeekdayClass(jeVisSample.getTimestamp(), lastDate, holidays)) {
+                        if ((jeVisSample.getTimestamp().getHourOfDay() == lastDate.getHourOfDay()) && (jeVisSample.getTimestamp().getMinuteOfHour() == lastDate.getMinuteOfHour())) {
+                            if (!isDifferentialForDate(jeVisSample.getTimestamp())) {
+                                boundListSamples.add(jeVisSample);
+                            } else if (rawSamples.indexOf(jeVisSample) > 0 && lastValue != null && jeVisSample.getValueAsDouble() != null) {
+                                Double currentValue = jeVisSample.getValueAsDouble() - lastValue;
+                                currentValue = scaleValue(currentValue, jeVisSample.getTimestamp());
+
+                                VirtualSample virtualSample = new VirtualSample(jeVisSample.getTimestamp(), currentValue);
+                                virtualSample.setNote(jeVisSample.getNote());
+
+                                boundListSamples.add(virtualSample);
+                            }
+                        }
+                    }
+                }
+                lastValue = jeVisSample.getValueAsDouble();
+            }
+        }
+    }
+
+    private HolidayCalendar getHolidayCalendar() {
+        if (!holidayCalendarLoaded) {
+            holidayCalendarLoaded = true;
+            try {
+                holidayCalendar = HolidayCalendar.forObject(cleanDataObject.getCleanObject());
+            } catch (Exception e) {
+                logger.debug("Could not load holidays", e);
+            }
+        }
+        return holidayCalendar;
     }
 
     private boolean isDifferentialForDate(DateTime timestamp) {

@@ -47,6 +47,15 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Data"
+    },
+    {
+      "name": "Medium",
+      "primitiveType": 0,
+      "guiType": "Dynamic Enum",
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Data"
     }
   ]
 }

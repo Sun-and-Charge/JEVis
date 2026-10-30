@@ -201,4 +201,15 @@ public class CalcJobFactoryTest {
         org.mockito.Mockito.verify(inputValueAttribute).getSamples(startCaptor.capture(), any(DateTime.class));
         return startCaptor.getValue();
     }
+
+    @Test
+    public void alignToAggregationStart() {
+        DateTime t = new DateTime(2026, 9, 9, 17, 45, 0);
+        assertEquals(new DateTime(2026, 9, 9, 17, 45, 0), CalcJobFactory.alignToAggregationStart(t, org.jevis.commons.dataprocessing.AggregationPeriod.QUARTER_HOURLY));
+        assertEquals(new DateTime(2026, 9, 9, 17, 0, 0), CalcJobFactory.alignToAggregationStart(t, org.jevis.commons.dataprocessing.AggregationPeriod.HOURLY));
+        assertEquals(new DateTime(2026, 9, 9, 0, 0, 0), CalcJobFactory.alignToAggregationStart(t, org.jevis.commons.dataprocessing.AggregationPeriod.DAILY));
+        assertEquals(new DateTime(2026, 9, 7, 0, 0, 0), CalcJobFactory.alignToAggregationStart(t, org.jevis.commons.dataprocessing.AggregationPeriod.WEEKLY));
+        assertEquals(new DateTime(2026, 7, 1, 0, 0, 0), CalcJobFactory.alignToAggregationStart(t, org.jevis.commons.dataprocessing.AggregationPeriod.QUARTERLY));
+        assertEquals(t, CalcJobFactory.alignToAggregationStart(t, org.jevis.commons.dataprocessing.AggregationPeriod.NONE));
+    }
 }

@@ -64,6 +64,7 @@ public class CalcJobFactory {
     private List<JEVisObject> calcInputObjects = new ArrayList<>();
     private DateTime lastEndTime;
     private boolean lastFetchTruncated;
+    private Period periodicInputPeriod;
 
     public CalcJobFactory() {
         this.calcJob = new CalcJob();
@@ -123,6 +124,7 @@ public class CalcJobFactory {
         calcJob.setCalcObjID(calcObjID);
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
+        calcJob.setPeriod(periodicInputPeriod);
 
         return calcJob;
     }
@@ -198,7 +200,8 @@ public class CalcJobFactory {
         DateTime startTime;
         if (lastEndTime == null) {
             startTime = getStartTimeFromOutputs(ds, outputAttributes, getCalcInputObjects(jevisObject));
-            if (outputAttributes.size() == 1 && !startTime.equals(new DateTime(0))) {
+            /* the last period is always calculated again, e.g. for async values that arrived after it (#2310) */
+            if (!startTime.equals(new DateTime(0))) {
                 JEVisObject object = outputAttributes.get(0).getObject();
                 Period period = CleanDataObject.getPeriodForDate(object, startTime);
                 int reprocessingPeriods = getReprocessingPeriods(sampleHandler, jevisObject);
@@ -378,6 +381,7 @@ public class CalcJobFactory {
 
     private List<CalcInputObject> getInputDataObjects(JEVisObject jevisObject, DateTime startTime, JEVisDataSource ds) {
         lastFetchTruncated = false;
+        periodicInputPeriod = null;
         List<CalcInputObject> calcObjects = new ArrayList<>();
         Interval fromTo = null;
         DateTime endTime = new DateTime(2050, 12, 31, 23, 59, 59, 999);
@@ -400,6 +404,12 @@ public class CalcJobFactory {
                             DateTime latestTimeStamp = latestSample.getTimestamp();
                             if (latestTimeStamp.isBefore(endTime)) {
                                 endTime = latestTimeStamp;
+                            }
+                            if (periodicInputPeriod == null) {
+                                AggregationPeriod inputAggregation = getInputAggregation(child);
+                                periodicInputPeriod = inputAggregation != AggregationPeriod.NONE
+                                        ? AggregationPeriod.getJodaPeriod(inputAggregation)
+                                        : CleanDataObject.getPeriodForDate(valueAttribute.getObject(), latestTimeStamp);
                             }
                         } else {
                             throw new RuntimeException("Cant find valid latest sample for input data with id " + child.getID());
@@ -492,8 +502,22 @@ public class CalcJobFactory {
                 CalcInputType inputType = CalcInputType.valueOf(inputTypeString);
 
                 CalcInputObject calcObject = new CalcInputObject(identifier, inputType, valueAttribute);
-                if (allAsync) {
+                AggregationPeriod inputAggregation = getInputAggregation(child);
+                if (inputAggregation != AggregationPeriod.NONE && (inputType == PERIODIC || inputType == ASYNC)) {
+                    /* aggregation per input (#2033); the last, possibly incomplete period is calculated again in the next run */
+                    calcObject.buildSamplesFromInputType(valueAttribute, inputType, alignToAggregationStart(startTime, inputAggregation), allAsync ? lastAsyncTS : endTime, inputAggregation);
+                } else if (allAsync) {
                     calcObject.buildSamplesFromInputType(valueAttribute, inputType, startTime, lastAsyncTS);
+                } else if (inputType == ASYNC) {
+                    /* async values are assigned to the period of the periodic inputs they fall into (#2310) */
+                    DateTime asyncEnd = endTime;
+                    if (periodicInputPeriod != null && !periodicInputPeriod.equals(Period.ZERO)) {
+                        asyncEnd = PeriodHelper.addPeriodToDate(endTime, periodicInputPeriod).minusMillis(1);
+                    }
+                    calcObject.buildSamplesFromInputType(valueAttribute, inputType, startTime, asyncEnd);
+                    if (!calcObject.isQuantity()) {
+                        calcObject.addLastSampleBefore(startTime);
+                    }
                 } else {
                     calcObject.buildSamplesFromInputType(valueAttribute, inputType, startTime, endTime);
                 }
@@ -623,6 +647,49 @@ public class CalcJobFactory {
      * upstream corrections landing up to N periods in the past get picked up automatically.
      * Defaults to 1 (today's behavior: only the last output period is redone).
      */
+    /**
+     * Start of the aggregation period that contains {@code date}, so that the aggregated value of the period in which
+     * the calculation starts is included (its timestamp is the start of the period).
+     */
+    static DateTime alignToAggregationStart(DateTime date, AggregationPeriod aggregationPeriod) {
+        switch (aggregationPeriod) {
+            case MINUTELY:
+                return date.minuteOfHour().roundFloorCopy();
+            case QUARTER_HOURLY:
+                DateTime hour = date.hourOfDay().roundFloorCopy();
+                return hour.plusMinutes((date.getMinuteOfHour() / 15) * 15);
+            case HOURLY:
+                return date.hourOfDay().roundFloorCopy();
+            case DAILY:
+                return date.withTimeAtStartOfDay();
+            case WEEKLY:
+                return date.withDayOfWeek(1).withTimeAtStartOfDay();
+            case MONTHLY:
+                return date.withDayOfMonth(1).withTimeAtStartOfDay();
+            case QUARTERLY:
+                return date.withDayOfMonth(1).withMonthOfYear(((date.getMonthOfYear() - 1) / 3) * 3 + 1).withTimeAtStartOfDay();
+            case YEARLY:
+                return date.withDayOfYear(1).withTimeAtStartOfDay();
+            default:
+                return date;
+        }
+    }
+
+    private AggregationPeriod getInputAggregation(JEVisObject input) {
+        try {
+            JEVisAttribute attribute = input.getAttribute(Calculation.INPUT_AGGREGATION.getName());
+            if (attribute != null && attribute.hasSample()) {
+                String value = attribute.getLatestSample().getValueAsString();
+                if (value != null && !value.trim().isEmpty()) {
+                    return AggregationPeriod.valueOf(value.trim());
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not read aggregation of input {}:{}", input.getName(), input.getID(), e);
+        }
+        return AggregationPeriod.NONE;
+    }
+
     private int getReprocessingPeriods(SampleHandler sampleHandler, JEVisObject jevisObject) {
         Long reprocessingPeriods = sampleHandler.getLastSample(jevisObject, Calculation.REPROCESSING_PERIODS.getName(), 1L);
         return Math.max(1, reprocessingPeriods.intValue());
@@ -675,7 +742,8 @@ public class CalcJobFactory {
         INPUT_TYPE("Input Data Type"),
         STATIC_VALUE("Static Value"),
         ALL_ZERO_VALUE("All Zero Value"),
-        REPROCESSING_PERIODS("Reprocessing Periods");
+        REPROCESSING_PERIODS("Reprocessing Periods"),
+        INPUT_AGGREGATION("Aggregation Period");
 
         private final String name;
 
