@@ -23,8 +23,13 @@ import org.jevis.commons.ws.sql.Config;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * @author Florian Simon <florian.simon@envidatec.com>
@@ -34,9 +39,19 @@ public class Index {
 
     File indexfile = new File(Config.getWebDir() + "/index.html");
 
+    /**
+     * Serves the start page at the root. The page files are mounted under /web, so a base tag makes the relative
+     * links of index.html resolve there.
+     */
     @GET
-    public Response get() {
-        return Response.ok(indexfile).build();
+    @Produces(MediaType.TEXT_HTML + ";charset=utf-8")
+    public Response get() throws IOException {
+        if (!indexfile.exists()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        String html = new String(Files.readAllBytes(indexfile.toPath()), StandardCharsets.UTF_8);
+        html = html.replaceFirst("(?i)<head>", "<head>\n    <base href=\"/web/\">");
+        return Response.ok(html).build();
     }
 
 
