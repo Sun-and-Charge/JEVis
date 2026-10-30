@@ -86,10 +86,14 @@ public class FXLogin extends AnchorPane {
     private static final Logger logger = LogManager.getLogger(FXLogin.class);
     public static String checkMarkSymbol = "\uD83D\uDDF8";
     private final Stage mainStage;
-    private final JFXButton loginButton = new JFXButton("Login");
-    private final JFXButton closeButton = new JFXButton("Close");
+    private final JFXButton loginButton = new JFXButton();
+    private final JFXButton closeButton = new JFXButton();
     private final JFXTextField userName = new JFXTextField();
-    private final JFXCheckBox storeConfig = new JFXCheckBox("Remember me");
+    private final JFXCheckBox storeConfig = new JFXCheckBox();
+    private final Label userLabel = new Label();
+    private final Label passwordLabel = new Label();
+    private final Label languageLabel = new Label();
+    private Hyperlink registerLink;
     private final JFXPasswordField userPassword = new JFXPasswordField();
     private final GridPane authGrid = new GridPane();
     private final Preferences jevisPref = Preferences.userRoot().node("JEVis");
@@ -108,13 +112,17 @@ public class FXLogin extends AnchorPane {
     private JEVisOption fxoptions;
     private boolean useCSSFile = false;
     private ApplicationInfo app = new ApplicationInfo("FXLogin", "");
-    private Locale selectedLocale = Locale.getDefault();
+    /**
+     * Language of the startup parameters, otherwise set by {@link #applyInitialLocale()}.
+     */
+    private Locale selectedLocale = null;
     private JFXComboBox<Locale> langSelect;
     private boolean hasCredentials = false;
     private String token = null;
     private static final String PREF_USER = "JEVisUser";
     private static final String PREF_REFRESH_TOKEN = "JEVisRefreshToken";
     private static final String PREF_LEGACY_PASSWORD = "JEVisPW";
+    private static final String PREF_LANGUAGE = "JEVisLanguage";
     /**
      * Single-use login code of the JEVis Launcher.
      */
@@ -171,7 +179,10 @@ public class FXLogin extends AnchorPane {
             logger.fatal(ex);
         }
 
-        if (hasLoginCredentials(this.configuration)) {
+        boolean credentials = hasLoginCredentials(this.configuration);
+        applyInitialLocale();
+
+        if (credentials) {
             initSlim();
 
             hasCredentials = true;
@@ -335,11 +346,19 @@ public class FXLogin extends AnchorPane {
             } catch (Exception ex) {
                 I18n.getInstance().selectBundle(getSelectedLocale());
                 logger.trace("{}: {}", I18n.getInstance().getString("app.login.error.message"), ex, ex);
+                String reason;
+                if (hasCause(ex, javax.net.ssl.SSLException.class)) {
+                    reason = I18n.getInstance().getString("app.login.error.ssl");
+                } else if (hasCause(ex, IOException.class)) {
+                    reason = I18n.getInstance().getString("app.login.error.connection");
+                } else {
+                    reason = I18n.getInstance().getString("app.login.error.wronglogin");
+                }
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle(I18n.getInstance().getString("app.login.error.title"));
                     alert.setHeaderText("");
-                    alert.setContentText(ex.getMessage() + ":\n" + I18n.getInstance().getString("app.login.error.wronglogin"));
+                    alert.setContentText(ex.getMessage() != null ? ex.getMessage() + ":\n" + reason : reason);
 
                     alert.showAndWait();
 
@@ -361,6 +380,66 @@ public class FXLogin extends AnchorPane {
     /**
      * Login with the form, including the second factor if the account needs it.
      */
+    /**
+     * @return {@code true} if the exception or one of its causes is of the given type
+     */
+    private static boolean hasCause(Throwable ex, Class<? extends Throwable> type) {
+        Throwable current = ex;
+        while (current != null) {
+            if (type.isInstance(current)) return true;
+            if (current.getCause() == current) break;
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    /**
+     * Selects the language of the startup parameters, the last selected language or the system language before the
+     * form is built.
+     */
+    private void applyInitialLocale() {
+        Locale wanted = this.selectedLocale;
+        if (wanted == null) {
+            String tag = this.jevisPref.get(PREF_LANGUAGE, "");
+            if (!tag.isEmpty()) wanted = Locale.forLanguageTag(tag);
+        }
+        if (wanted == null) wanted = Locale.getDefault();
+        Locale available = findAvailableLocale(wanted);
+        this.selectedLocale = available != null ? available : wanted;
+        I18n.getInstance().selectBundle(this.selectedLocale);
+    }
+
+    /**
+     * @return the available language matching the locale or only its language, {@code null} if there is none
+     */
+    private Locale findAvailableLocale(Locale locale) {
+        List<Locale> available = I18n.getInstance().getAvailableLang();
+        if (available.contains(locale)) return locale;
+        for (Locale lang : available) {
+            if (lang.getLanguage().equals(locale.getLanguage())) return lang;
+        }
+        return null;
+    }
+
+    /**
+     * Sets the texts of the login form in the selected language.
+     */
+    private void applyTexts() {
+        I18n i18n = I18n.getInstance();
+        this.loginButton.setText(i18n.getString("app.login.button.login"));
+        this.closeButton.setText(i18n.getString("app.login.button.close"));
+        this.storeConfig.setText(i18n.getString("app.login.rememberme"));
+        this.userLabel.setText(i18n.getString("app.login.username"));
+        this.passwordLabel.setText(i18n.getString("app.login.password"));
+        this.languageLabel.setText(i18n.getString("app.login.language"));
+        if (this.registerLink != null && this.registerLink.isVisible()) {
+            this.registerLink.setText(i18n.getString("app.login.register"));
+        }
+        if (this.storedRefreshToken != null) {
+            this.userPassword.setPromptText(i18n.getString("app.login.remembered"));
+        }
+    }
+
     private boolean passwordLogin(JEVisDataSourceWS ws) throws Exception {
         JsonLoginResult result = ws.login(this.userName.getText(), this.userPassword.getText());
         switch (result.getStatus()) {
@@ -575,16 +654,19 @@ public class FXLogin extends AnchorPane {
         comboBox.setCellFactory(cellFactory);
         comboBox.setButtonCell(cellFactory.call(null));
 
-        if (I18n.getInstance().getAvailableLang().contains(Locale.getDefault())) {
-            comboBox.getSelectionModel().select(Locale.getDefault());
+        if (I18n.getInstance().getAvailableLang().contains(this.selectedLocale)) {
+            comboBox.getSelectionModel().select(this.selectedLocale);
         }
 
         comboBox.setMinWidth(250);
         comboBox.setMaxWidth(Integer.MAX_VALUE);//workaround
 
         comboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) return;
             this.selectedLocale = newValue;
-            //TODO reload UI
+            I18n.getInstance().selectBundle(newValue);
+            this.jevisPref.put(PREF_LANGUAGE, newValue.toLanguageTag());
+            applyTexts();
         });
 
         return comboBox;
@@ -700,13 +782,11 @@ public class FXLogin extends AnchorPane {
         Region serverConfigBox = new Region();
         this.langSelect = buildLanguageBox();
 
-        Label userL = new Label("Username:");
+        Label userL = this.userLabel;
         userL.setId("fxlogin-form-user-label");
-        Label passwordL = new Label("Password:");
+        Label passwordL = this.passwordLabel;
         passwordL.setId("fxlogin-form-password-label");
-        Label serverL = new Label("Server:");
-        serverL.setId("fxlogin-form-server-label");
-        Label languageL = new Label("Language: ");
+        Label languageL = this.languageLabel;
         languageL.setId("fxlogin-form-language-label");
 
         this.loginButton.setDefaultButton(true);
@@ -774,6 +854,7 @@ public class FXLogin extends AnchorPane {
         this.authGrid.add(buttonBox, 0, row, columns, 1);
 
         this.storeConfig.setId("fxlogin-form-rememberme");
+        applyTexts();
 
         return this.authGrid;
     }
@@ -1035,7 +1116,8 @@ public class FXLogin extends AnchorPane {
     private Node buildLink() {
         Hyperlink link = new Hyperlink();
         link.setId("fxlogin-form-register");
-        link.setText("Register");
+        link.setText(I18n.getInstance().getString("app.login.register"));
+        this.registerLink = link;
 
         final String url;
 

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -30,6 +31,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
@@ -39,6 +41,8 @@ import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.utils.NameFormatter;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.TreeSelectionDialog;
+import org.jevis.jeconfig.application.jevistree.JEVisTree;
+import org.jevis.jeconfig.application.jevistree.TreeHelper;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.dialog.ExceptionDialog2;
 import org.jevis.jeconfig.dialog.Response;
@@ -60,6 +64,7 @@ public class FormulaBox extends HBox {
     JFXTextArea textArea = new JFXTextArea();
     private JEVisObject calcObj;
     private JFXButton outputButton;
+    private JEVisTree tree;
 
     public FormulaBox() {
         super();
@@ -301,6 +306,7 @@ public class FormulaBox extends HBox {
             );
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(getOwnerWindow());
             alert.setTitle(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.title"));
             alert.setHeaderText(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.header"));
             alert.setResizable(true);
@@ -314,6 +320,7 @@ public class FormulaBox extends HBox {
 
         } catch (Exception ex) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(getOwnerWindow());
             alert.setTitle(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.fail"));
             alert.setHeaderText(null);
             alert.setContentText(getErrorMessage(ex));
@@ -323,6 +330,13 @@ public class FormulaBox extends HBox {
             logger.error("Formula evaluation error", ex);
         }
 
+    }
+
+    private Window getOwnerWindow() {
+        if (getScene() != null && getScene().getWindow() != null) {
+            return getScene().getWindow();
+        }
+        return JEConfig.getStage();
     }
 
     private String getErrorMessage(Exception ex) {
@@ -378,6 +392,41 @@ public class FormulaBox extends HBox {
             logger.info("Button text changed: " + oldValue + " new: " + newValue);
         });
         outputButton.setOnAction(event -> setOnOutputAction());
+
+        if (tree != null) {
+            MenuItem gotoItem = new MenuItem(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip"));
+            gotoItem.setOnAction(event -> {
+                try {
+                    JEVisClass outputClass = this.calcObj.getDataSource().getJEVisClass(JC.Output.name);
+                    List<JEVisObject> outputs = this.calcObj.getChildren(outputClass, true);
+                    if (!outputs.isEmpty()) {
+                        openTargetInTree(tree, outputs.get(0).getAttribute(JC.Output.a_Output));
+                    }
+                } catch (Exception ex) {
+                    logger.error("Could not open output in tree", ex);
+                }
+            });
+            outputButton.setContextMenu(new ContextMenu(gotoItem));
+        }
+    }
+
+    public void setTree(JEVisTree tree) {
+        this.tree = tree;
+    }
+
+    /**
+     * Selects the object referenced by the target attribute (input data or output) in the object tree.
+     */
+    static void openTargetInTree(JEVisTree tree, JEVisAttribute targetAttribute) throws JEVisException {
+        if (tree == null || targetAttribute == null || !targetAttribute.hasSample()) return;
+
+        TargetHelper th = new TargetHelper(targetAttribute.getDataSource(), targetAttribute);
+        if (th.isValid() && th.targetObjectAccessible()) {
+            JEVisObject findObj = targetAttribute.getDataSource().getObject(th.getObject().get(0).getID());
+            List<JEVisObject> toOpen = org.jevis.commons.utils.ObjectHelper.getAllParents(findObj);
+            toOpen.add(findObj);
+            TreeHelper.openPath(tree, toOpen, tree.getRoot(), findObj);
+        }
     }
 
     void setOnOutputAction() {

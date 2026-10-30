@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -20,12 +21,14 @@
 package org.jevis.jeconfig.application.jevistree;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
 import org.apache.commons.lang3.StringUtils;
 import org.jevis.api.JEVisObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class Finder {
 
@@ -35,7 +38,8 @@ public class Finder {
     private final int lastIndex = 0;
 
     public Finder(JEVisTree jevisTree) {
-        this.objects = jevisTree.getVisibleObjects();
+        /* own list, the visible objects list of the item loader is shared and rebuilt by the tree */
+        this.objects = FXCollections.observableArrayList();
         this.tree = jevisTree;
     }
 
@@ -106,22 +110,10 @@ public class Finder {
     public boolean findMatch(String text) {
         selected = null;
 
-        List<JEVisObject> result = new ArrayList<>();
-        for (JEVisObject object : tree.getVisibleObjects()) {
+        /* results in the order of the tree, each object once even if name and ID match */
+        Set<JEVisObject> result = new LinkedHashSet<>();
+        collectMatches(tree.getRoot(), text, result);
 
-            if (StringUtils.containsIgnoreCase(object.getName(), text)) {
-//                System.out.println("Found match: " + object);
-                result.add(object);
-            }
-
-            if (StringUtils.containsIgnoreCase(object.getID().toString(), text)) {
-//                System.out.println("Found match ID: " + object);
-                result.add(object);
-            }
-        }
-
-//        System.out.println("Results: " + result.size() + " : " + Arrays.toString(result.toArray()));
-        //TODO: order in the same order as the tree
         objects.clear();
         if (!result.isEmpty()) {
             objects.setAll(result);
@@ -133,6 +125,25 @@ public class Finder {
         }
 
         return false;
+    }
+
+    /**
+     * Depth-first walk over the tree items in display order.
+     */
+    private void collectMatches(TreeItem<JEVisTreeRow> item, String text, Set<JEVisObject> result) {
+        if (item == null) return;
+
+        if (item instanceof JEVisTreeItem && ((JEVisTreeItem) item).isObject() && item.getValue() != null) {
+            JEVisObject object = item.getValue().getJEVisObject();
+            if (object != null && (StringUtils.containsIgnoreCase(object.getName(), text)
+                    || StringUtils.containsIgnoreCase(String.valueOf(object.getID()), text))) {
+                result.add(object);
+            }
+        }
+
+        for (TreeItem<JEVisTreeRow> child : item.getChildren()) {
+            collectMatches(child, text, result);
+        }
     }
 
 }

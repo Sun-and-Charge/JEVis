@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -56,6 +57,9 @@ import org.jevis.jeconfig.tool.template.Template;
 import org.jevis.jeconfig.tool.template.Templates;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -139,6 +143,13 @@ public class NewObjectDialog {
                 options = FXCollections.observableArrayList(
                         parent.getAllowedChildrenClasses()
                 );
+                options.sort(Comparator.comparing(jeVisClass -> {
+                    try {
+                        return I18nWS.getInstance().getClassName(jeVisClass.getName()).toLowerCase();
+                    } catch (Exception e) {
+                        return "";
+                    }
+                }));
 
             } catch (JEVisException ex) {
                 logger.fatal(ex);
@@ -331,7 +342,16 @@ public class NewObjectDialog {
         if (type == Type.NEW) {
             dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.new.title"));
             dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.new.title"));
-            jeVisClassComboBox.getSelectionModel().selectFirst();
+            if (jclass != null && jeVisClassComboBox.getItems().contains(jclass)) {
+                jeVisClassComboBox.getSelectionModel().select(jclass);
+            } else {
+                JEVisClass defaultClass = getDefaultChildClass(parent, jeVisClassComboBox.getItems());
+                if (defaultClass != null) {
+                    jeVisClassComboBox.getSelectionModel().select(defaultClass);
+                } else {
+                    jeVisClassComboBox.getSelectionModel().selectFirst();
+                }
+            }
         } else if (type == Type.RENAME) {
             dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.rename.title"));
             dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.rename.header"));
@@ -379,6 +399,40 @@ public class NewObjectDialog {
 
 
         return response;
+    }
+
+    /**
+     * The usual child class of the parent: fixed defaults for the common directories, otherwise the most common
+     * class of the existing children.
+     *
+     * @return {@code null} if there is no sensible default
+     */
+    private JEVisClass getDefaultChildClass(JEVisObject parent, List<JEVisClass> options) {
+        try {
+            Map<String, String> defaults = new HashMap<>();
+            defaults.put("Data Directory", "Data");
+            defaults.put("Calculation Directory", "Calculation");
+            defaults.put("Data", "Clean Data");
+
+            String defaultName = defaults.get(parent.getJEVisClassName());
+            if (defaultName != null) {
+                for (JEVisClass option : options) {
+                    if (option.getName().equals(defaultName)) return option;
+                }
+            }
+
+            Map<JEVisClass, Integer> count = new HashMap<>();
+            for (JEVisObject child : parent.getChildren()) {
+                JEVisClass childClass = child.getJEVisClass();
+                if (childClass != null && options.contains(childClass)) {
+                    count.merge(childClass, 1, Integer::sum);
+                }
+            }
+            return count.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(null);
+        } catch (Exception e) {
+            logger.warn("Could not determine default class", e);
+            return null;
+        }
     }
 
     public Template getTemplate() {

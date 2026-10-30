@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -735,6 +736,9 @@ public class NodeTreeTable {
                                     buttonText += us.getSelectedObject().getName();
                                     targetDataObject = us.getSelectedObject();
                                 }
+                                if (importDataStructureJFXButton != null) {
+                                    importDataStructureJFXButton.setDisable(targetDataObject == null);
+                                }
                                 button.setText(buttonText);
 
                             } catch (Exception ex) {
@@ -759,14 +763,17 @@ public class NodeTreeTable {
     private JFXButton buildImportDataStructureButton() {
         JFXButton jfxButton = new JFXButton();
         jfxButton.setText(I18n.getInstance().getString("plugin.object.opcua.button.import"));
+        /* enabled once a target is selected */
+        jfxButton.setDisable(targetDataObject == null);
         jfxButton.setOnAction(event -> {
 
 
             Task<Void> task = new Task<Void>() {
                 @Override
-                protected Void call() {
+                protected Void call() throws Exception {
+                    /* failed()/succeeded() are only callbacks, an exception lets the task fail */
                     if (targetDataObject == null) {
-                        failed();
+                        throw new IllegalStateException("No target selected");
                     } else {
                         try {
                             DateTime dateTime = DateTime.now();
@@ -784,6 +791,8 @@ public class NodeTreeTable {
                                     rootDataObject.commit();
                                     createTrendDataTree(mainRootTreeItem, rootTrendObject, dateTime, rootDataObject);
 
+                                } else {
+                                    throw new IllegalStateException("Import objects are not allowed under the selected target");
                                 }
 
                             } else {
@@ -791,10 +800,9 @@ public class NodeTreeTable {
                                 rootTrendObject.commit();
                                 createTrendDataTree(mainRootTreeItem, rootTrendObject, dateTime, null);
                             }
-
-                            succeeded();
                         } catch (Exception e) {
-                            logger.error(e);
+                            logger.error("OPC-UA import failed", e);
+                            throw e;
                         }
                     }
                     return null;

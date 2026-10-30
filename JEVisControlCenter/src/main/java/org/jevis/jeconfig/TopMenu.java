@@ -324,7 +324,7 @@ public class TopMenu extends MenuBar {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle(I18n.getInstance().getString("menu.system.driver.open.title"));
             fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter(I18n.getInstance().getString("menuJEDataProcessor - Gap filling #429.system.driver.open.filter.jevis"), "*.jev"),
+                    new FileChooser.ExtensionFilter(I18n.getInstance().getString("menu.system.driver.open.filter.jevis"), "*.jev"),
                     new FileChooser.ExtensionFilter(I18n.getInstance().getString("menu.system.driver.open.filter.all"), "*.*"));
 
             File selectedFile = fileChooser.showOpenDialog(JEConfig.getStage());
@@ -765,7 +765,10 @@ public class TopMenu extends MenuBar {
                 actionEvent.consume();
             });
 
-            menuEdit.getItems().addAll(new SeparatorMenuItem(), deleteAllCleanAndRaw, setLimits, setSubstitutionSettings, createMultiplierAndDifferential, setUnitsAndPeriods, enableAll, disableAll, resetCalculation, deleteDependencies);
+            Menu recursiveMenu = new Menu(I18n.getInstance().getString("menu.edit.recursive"));
+            recursiveMenu.getItems().addAll(deleteAllCleanAndRaw, setLimits, setSubstitutionSettings, createMultiplierAndDifferential, setUnitsAndPeriods, enableAll, disableAll, resetCalculation, deleteDependencies);
+
+            menuEdit.getItems().addAll(new SeparatorMenuItem(), recursiveMenu);
         }
 
         return menuEdit;

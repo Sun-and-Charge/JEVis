@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -116,7 +117,7 @@ public class CSVTable extends TableView<ImportLine> {
 
         return new Task<Integer>() {
             @Override
-            public Integer call() throws InterruptedException {
+            public Integer call() throws InterruptedException, JEVisException {
                 boolean hadErrors = false;
                 updateMessage(I18n.getInstance().getString("csv.progress.message"));
                 CSVColumnHeader tsColumn = null;
@@ -183,6 +184,10 @@ public class CSVTable extends TableView<ImportLine> {
                 //find values and import them
                 for (CSVColumnHeader header1 : header) {
                     if (header1.getMeaning() == CSVColumnHeader.Meaning.Value || header1.getMeaning() == CSVColumnHeader.Meaning.Text) {
+                        if (header1.getTarget() == null) {
+                            // the dialog checks this before the import, a column without target is skipped
+                            continue;
+                        }
                         List<JEVisSample> _newSamples = new ArrayList<>();
 
                         for (ImportLine line : toImportList) {
@@ -227,14 +232,26 @@ public class CSVTable extends TableView<ImportLine> {
 
 
                 if (hadErrors) {
-                    failed();
-                } else {
-                    succeeded();
+                    // failed()/succeeded() are only callbacks, an exception is what marks the task as failed
+                    throw new JEVisException(importedSize + " " + I18n.getInstance().getString("csv.import.dialog.failed.message")
+                            + (getException() != null ? " " + getException().getMessage() : ""), 34253326);
                 }
                 return importedSize;
             }
         };
 
+    }
+
+    /**
+     * Whether every column marked as value has a target attribute; the import needs one per value column.
+     */
+    public boolean hasTargetsForAllValueColumns() {
+        for (CSVColumnHeader column : header) {
+            if (column.getMeaning() == CSVColumnHeader.Meaning.Value && column.getTarget() == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public JEVisDataSource getDataSource() {

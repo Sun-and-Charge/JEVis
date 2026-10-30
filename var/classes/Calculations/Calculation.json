@@ -63,6 +63,15 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Calculation"
+    },
+    {
+      "name": "Comment",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Calculation"
     }
   ]
 }

@@ -83,6 +83,10 @@ public class TreeSelectionDialog extends Dialog {
     private final JEVisTreeView treeView;
     private final JFXTextField filterTextField = new JFXTextField();
     private List<JEVisClass> classFilter;
+    /**
+     * Classes the caller accepts. The filter box only changes what is shown, the selection is always checked against these.
+     */
+    private final List<JEVisClass> requiredClasses;
     private Response response = Response.CANCEL;
 
     public TreeSelectionDialog(JEVisDataSource ds, List<JEVisClass> classFilter, SelectionMode selectionMode) {
@@ -92,6 +96,7 @@ public class TreeSelectionDialog extends Dialog {
     public TreeSelectionDialog(JEVisDataSource ds, List<JEVisClass> classFilter, SelectionMode selectionMode, List<UserSelection> selection, boolean showAttributes) {
         super();
         this.classFilter = classFilter;
+        this.requiredClasses = new ArrayList<>(classFilter);
 
         setTitle(I18n.getInstance().getString("plugin.graph.treeselectiondialog.title"));
         setHeaderText(I18n.getInstance().getString("plugin.graph.treeselectiondialog.header"));
@@ -199,7 +204,7 @@ public class TreeSelectionDialog extends Dialog {
                 boolean correctChoice = true;
                 List<JEVisObject> incorrectObjects = new ArrayList<>();
                 for (JEVisObject object : treeView.getSelectedObjects()) {
-                    if (!this.classFilter.isEmpty() && !this.classFilter.contains(object.getJEVisClass())) {
+                    if (!this.requiredClasses.isEmpty() && !this.requiredClasses.contains(object.getJEVisClass())) {
                         correctChoice = false;
                         incorrectObjects.add(object);
                     }
@@ -214,7 +219,8 @@ public class TreeSelectionDialog extends Dialog {
                     for (JEVisObject object : incorrectObjects) {
                         stringBuilder.append("\n").append(object.getName());
                     }
-                    Alert selectionShow = new Alert(Alert.AlertType.ERROR, "Error: " + stringBuilder);
+                    Alert selectionShow = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.graph.treeselectiondialog.wrongclass") + stringBuilder);
+                    selectionShow.initOwner(this.getDialogPane().getScene().getWindow());
                     selectionShow.show();
                 }
             } catch (Exception e) {

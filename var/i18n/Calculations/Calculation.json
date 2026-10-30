@@ -122,6 +122,17 @@
         "de": "Wiederverarbeitungsperioden",
         "en": "Reprocessing Periods"
       }
+    },
+    {
+      "type": "Comment",
+      "descriptions": {
+        "de": "Freier Kommentar zur Berechnung, z.B. was berechnet wird und warum",
+        "en": "Free comment on the calculation, e.g. what is calculated and why"
+      },
+      "names": {
+        "de": "Kommentar",
+        "en": "Comment"
+      }
     }
   ]
 }
