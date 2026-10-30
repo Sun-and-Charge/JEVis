@@ -295,6 +295,8 @@ public class JEVisTreeContextMenu extends ContextMenu {
                     } else if (obj.getJEVisClassName().equals("Revolution PI Server")) {
                         getItems().add(new SeparatorMenuItem());
                         getItems().add(buildRevPi());
+                    } else if (obj.getJEVisClassName().equals("Calculation Directory") || obj.getJEVisClassName().equals("Building")) {
+                        getItems().addAll(new SeparatorMenuItem(), buildEnergyBalanceWizard());
                     } else if (JEConfig.getExpert() && obj.getJEVisClassName().equals("Data Directory")) {
                         getItems().addAll(new SeparatorMenuItem(), buildKPIWizard());
                         getItems().add(buildCreateAlarms());
@@ -603,6 +605,16 @@ public class JEVisTreeContextMenu extends ContextMenu {
         MenuItem menu = new MenuItem("KPI Wizard", JEConfig.getSVGImage(Icon.WIZARD_WAND, 20, 20));
         menu.setOnAction(t -> {
                     KPIWizard wizard = new KPIWizard(obj);
+                    wizard.show();
+                }
+        );
+        return menu;
+    }
+
+    private MenuItem buildEnergyBalanceWizard() {
+        MenuItem menu = new MenuItem(I18n.getInstance().getString("plugin.energybalance.menu"), JEConfig.getSVGImage(Icon.BALANCE, 20, 20));
+        menu.setOnAction(t -> {
+                    EnergyBalanceWizard wizard = new EnergyBalanceWizard(obj, tree);
                     wizard.show();
                 }
         );

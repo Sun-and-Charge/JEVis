@@ -77,11 +77,11 @@
     {
       "type": "Type",
       "descriptions": {
-        "de": "Art der erzeugten Prognose Daten, zur Auswahl stehen Berechnungen auf Basis des Durschnittswerts, des Medians, des Minimum oder des Maximums der ausgewählten vergangenen Zeitperiode.",
+        "de": "Art der erzeugten Prognose Daten, zur Auswahl stehen Berechnungen auf Basis des Durschnittswerts, des Medians, des Minimum oder des Maximums der ausgewählten vergangenen Zeitperiode sowie eine lineare Regression (Trendfortschreibung).",
         "ru": "Тип сгенерированных данных прогноза вы можете выбрать из расчетов на основе среднего значения, медианы, минимума или максимума за выбранный прошедший период времени.",
         "uk": "Тип згенерованих прогнозних даних ви можете обрати з розрахунків виходячи із середнього, медіанного, мінімального чи максимуму вибраного минулого періоду часу.",
         "th": "ประเภทของข้อมูลการพยากรณ์ที่สร้างขึ้นคุณสามารถเลือกจากการคำนวณตามค่าเฉลี่ยค่ามัธยฐานค่าต่ำสุดหรือสูงสุดของช่วงเวลาที่ผ่านมาที่เลือก",
-        "en": "Type of generated forecast data, you can choose from calculations based on the average, the median, the minimum or the maximum of the selected past time period.",
+        "en": "Type of generated forecast data, you can choose from calculations based on the average, the median, the minimum or the maximum of the selected past time period, or a linear regression (trend extrapolation).",
         "ar": "نوع بيانات التنبؤ التي تم إنشاؤها ، والخيارات عبارة عن حسابات تستند إلى المتوسط \u200B\u200Bأو المتوسط \u200B\u200Bأو الأدنى أو الأقصى للفترة الزمنية الماضية المحددة."
       },
       "names": {
@@ -123,6 +123,13 @@
             "de": "Durchschnittswert",
             "en": "Average value",
             "ar": "متوسط القيمة"
+          }
+        },
+        "REGRESSION": {
+          "descriptions": null,
+          "names": {
+            "de": "Lineare Regression",
+            "en": "Linear regression"
           }
         }
       }

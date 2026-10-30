@@ -126,6 +126,7 @@ public class ToolBarView {
     private MenuItem calcBaseLoad;
 
     private MenuItem calcValues;
+    private MenuItem calcForecast;
     private ChartPlugin chartPlugin = null;
 
     public ToolBarView(DataModel dataModel, JEVisDataSource ds, ChartPlugin chartPlugin) {
@@ -249,6 +250,9 @@ public class ToolBarView {
 
             //Math buttons now always on
             mathOperation.getItems().addAll(calcFullLoadHours, calcSumAboveBelow, calcBaseLoad, calcValues);
+            if (isRegressionPossible) {
+                mathOperation.getItems().add(calcForecast);
+            }
 
             mathOperation.getItems().add(new SeparatorMenuItem());
 
@@ -422,6 +426,8 @@ public class ToolBarView {
         calcBaseLoad = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcbaseloadhours"));
 
         calcValues = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.calcvalues"));
+
+        calcForecast = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.forecast"));
 
         customWorkDay = new ToggleButton("", JEConfig.getSVGImage(Icon.CALENDAR, iconSize, iconSize));
         Tooltip customWorkDayTooltip = new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.customworkday"));
@@ -636,6 +642,8 @@ public class ToolBarView {
 
         calcValues.setOnAction(event -> toolBarFunctions.calcValues());
 
+        calcForecast.setOnAction(event -> toolBarFunctions.calcForecast());
+
         calcSumAboveBelow.setOnAction(event -> toolBarFunctions.calcSumAboveBelow());
 
         customWorkDay.setOnAction(event -> chartPlugin.update());
@@ -705,6 +713,7 @@ public class ToolBarView {
         calcSumAboveBelow.setDisable(bool);
         calcBaseLoad.setDisable(bool);
         calcValues.setDisable(bool);
+        calcForecast.setDisable(bool);
         customWorkDay.setDisable(bool);
         disableIcons.setDisable(bool);
         zoomOut.setDisable(bool);

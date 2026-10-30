@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -32,6 +33,7 @@ import org.jevis.commons.dataprocessing.VirtualSample;
 import org.jevis.commons.unit.ChartUnits.QuantityUnits;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Period;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,7 @@ public class CalcInputObject {
     private final CalcInputType inputType;
     private List<JEVisSample> samples;
     private DateTimeZone dateTimeZone = DateTimeZone.getDefault();
+    private Boolean quantity;
 
     public CalcInputObject(String identifier, CalcInputType inputType, JEVisAttribute valueAttribute) {
         this.identifier = identifier;
@@ -77,6 +80,52 @@ public class CalcInputObject {
             }
         } catch (Exception e) {
             logger.error("Could not get Site timezone for object {}:{}", valueAttribute.getObject().getName(), valueAttribute.getObject().getID(), e);
+        }
+    }
+
+    /**
+     * @return true if the input has a quantity unit (energy, volume, …) whose values can be summed
+     */
+    public boolean isQuantity() {
+        if (quantity == null) {
+            try {
+                QuantityUnits qu = new QuantityUnits();
+                boolean isQuantity = qu.isQuantityUnit(valueAttribute.getDisplayUnit());
+                quantity = qu.isQuantityIfCleanData(valueAttribute, isQuantity);
+            } catch (Exception e) {
+                logger.error("Could not determine quantity of input {}", identifier, e);
+                quantity = true;
+            }
+        }
+        return quantity;
+    }
+
+    /**
+     * Adds the last sample before {@code startTime} to the samples of an async input, so that a non-quantity value
+     * that is still valid at the start of the calculation range is known (upstream issue #2310).
+     */
+    public void addLastSampleBefore(DateTime startTime) {
+        samples = samples == null ? new ArrayList<>() : new ArrayList<>(samples);
+        try {
+            DateTime first = valueAttribute.getTimestampOfFirstSample();
+            if (first == null || !first.isBefore(startTime)) {
+                return;
+            }
+            DateTime end = startTime.minusMillis(1);
+            for (Period lookBack : new Period[]{Period.days(1), Period.days(31), Period.days(366), null}) {
+                DateTime from = lookBack != null ? startTime.minus(lookBack) : first;
+                boolean reachedFirst = !from.isAfter(first);
+                List<JEVisSample> before = valueAttribute.getSamples(reachedFirst ? first : from, end);
+                if (!before.isEmpty()) {
+                    samples.add(0, before.get(before.size() - 1));
+                    return;
+                }
+                if (reachedFirst) {
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Could not get last sample before {} of input {}", startTime, identifier, e);
         }
     }
 

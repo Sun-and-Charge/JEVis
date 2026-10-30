@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -92,6 +93,7 @@ public class NoteConstants {
         String FORECAST_MEDIAN = "(Median)";
         String FORECAST_MIN = "(Minimum)";
         String FORECAST_MAX = "(Maximum)";
+        String FORECAST_REGRESSION = "(Regression)";
     }
 
     public interface Calc {

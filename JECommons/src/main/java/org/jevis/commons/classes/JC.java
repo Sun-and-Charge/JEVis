@@ -712,6 +712,7 @@ public interface JC {
 
         String a_Value = "Value";
         String a_Period = "Period";
+        String a_Medium = "Medium";
 
         interface CleanData {
             String name = "Clean Data";
@@ -3153,6 +3154,7 @@ public interface JC {
         String a_Identifier = "Identifier";
         String a_InputData = "Input Data";
         String a_InputDataType = "Input Data Type";
+        String a_AggregationPeriod = "Aggregation Period";
     }
 
     interface JENotifierPlugin {

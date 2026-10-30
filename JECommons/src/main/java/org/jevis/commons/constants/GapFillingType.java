@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -28,7 +29,11 @@ public enum GapFillingType {
     MAXIMUM,
     MEDIAN,
     AVERAGE,
-    DELETE;
+    DELETE,
+    /**
+     * Linear regression over the reference samples (forecast only).
+     */
+    REGRESSION;
 
     public static GapFillingType parse(String type) {
         if (type != null) {
@@ -50,6 +55,8 @@ public enum GapFillingType {
                     return AVERAGE;
                 case ("DELETE"):
                     return DELETE;
+                case ("REGRESSION"):
+                    return REGRESSION;
                 case ("NONE"):
                 default:
                     return NONE;

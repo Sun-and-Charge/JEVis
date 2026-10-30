@@ -54,6 +54,96 @@
         "en": "Period",
         "ar": "فترة"
       }
+    },
+    {
+      "type": "Medium",
+      "descriptions": {
+        "de": "Medium der Datenreihe, z. B. für eine Kostenaufteilung nach Medien. Leer: das Medium wird vom übergeordneten Datenobjekt oder vom Zähler (Online ID) übernommen.",
+        "en": "Medium of the data series, e.g. for a cost breakdown by medium. Empty: the medium is taken from the parent data object or from the meter (Online ID)."
+      },
+      "names": {
+        "de": "Medium",
+        "en": "Medium"
+      },
+      "enums": {
+        "ELECTRICITY": {
+          "descriptions": null,
+          "names": {
+            "de": "Strom",
+            "en": "Electricity"
+          }
+        },
+        "HEAT": {
+          "descriptions": null,
+          "names": {
+            "de": "Wärme",
+            "en": "Heat"
+          }
+        },
+        "COLD": {
+          "descriptions": null,
+          "names": {
+            "de": "Kälte",
+            "en": "Cooling"
+          }
+        },
+        "GAS": {
+          "descriptions": null,
+          "names": {
+            "de": "Gas",
+            "en": "Gas"
+          }
+        },
+        "WATER": {
+          "descriptions": null,
+          "names": {
+            "de": "Wasser",
+            "en": "Water"
+          }
+        },
+        "STEAM": {
+          "descriptions": null,
+          "names": {
+            "de": "Dampf",
+            "en": "Steam"
+          }
+        },
+        "COMPRESSED_AIR": {
+          "descriptions": null,
+          "names": {
+            "de": "Druckluft",
+            "en": "Compressed air"
+          }
+        },
+        "AIR": {
+          "descriptions": null,
+          "names": {
+            "de": "Luft",
+            "en": "Air"
+          }
+        },
+        "NITROGEN": {
+          "descriptions": null,
+          "names": {
+            "de": "Stickstoff",
+            "en": "Nitrogen"
+          }
+        },
+        "OIL": {
+          "descriptions": null,
+          "names": {
+            "de": "Öl",
+            "en": "Oil"
+          }
+        },
+        "OTHER": {
+          "descriptions": null,
+          "names": {
+            "de": "Sonstiges",
+            "en": "Other"
+          }
+        }
+      }
     }
   ]
 }
