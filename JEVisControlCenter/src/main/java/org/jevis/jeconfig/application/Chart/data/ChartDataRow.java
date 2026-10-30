@@ -151,6 +151,7 @@ public class ChartDataRow extends ChartData {
             setIntervalEnabled(chartData.isIntervalEnabled());
             setDecimalDigits(chartData.getDecimalDigits());
             setCss(chartData.getCss());
+            setDayFilter(chartData.getDayFilter());
 
             setSelectedStart(chartData.getIntervalStartDateTime());
             setSelectedEnd(chartData.getIntervalEndDateTime());
@@ -401,6 +402,7 @@ public class ChartDataRow extends ChartData {
                             if (!isStringData) {
                                 samples = factorizeSamples(unmodifiedSamples);
                                 applyUserData(samples);
+                                samples = applyDayFilter(samples);
 
                                 if (absolute && !samples.isEmpty()) {
                                     logger.debug("Getting manipulated data");
@@ -410,7 +412,7 @@ public class ChartDataRow extends ChartData {
                                     samples.add(virtualSample);
                                 }
                             } else {
-                                samples = unmodifiedSamples;
+                                samples = applyDayFilter(unmodifiedSamples);
                             }
 
                         } else {
@@ -442,6 +444,9 @@ public class ChartDataRow extends ChartData {
                             }
 
                             samples = calcJob.getResults();
+                            if (!getAbsolute()) {
+                                samples = applyDayFilter(samples);
+                            }
 
                             if (!getAbsolute() && dataProcessorObject != null) {
                                 CleanDataObject cleanDataObject = new CleanDataObject(dataProcessorObject);
@@ -540,6 +545,48 @@ public class ChartDataRow extends ChartData {
 
     public void setSamples(List<JEVisSample> samples) {
         this.samples = samples;
+    }
+
+    @Override
+    public void setDayFilter(DayFilter dayFilter) {
+        if (dayFilter != getDayFilter()) {
+            somethingChanged = true;
+        }
+        super.setDayFilter(dayFilter);
+    }
+
+    /**
+     * @return true if the day filter of the analysis is active and applicable to this row,
+     * i.e. the row is not aggregated to more than one day (see {@link DayFilter#isApplicable})
+     */
+    public boolean isDayFilterApplied() {
+        DayFilter dayFilter = getDayFilter();
+        if (dayFilter == null || !dayFilter.isActive()) return false;
+        Period rawPeriod = null;
+        try {
+            if (aggregationPeriod == AggregationPeriod.NONE) {
+                rawPeriod = getPeriod();
+            }
+        } catch (Exception e) {
+            logger.debug("Could not get period for day filter", e);
+        }
+        return DayFilter.isApplicable(aggregationPeriod, rawPeriod);
+    }
+
+    /**
+     * Removes samples on days excluded by the day filter of the analysis (OpenJEVis issue #1448).
+     */
+    private List<JEVisSample> applyDayFilter(List<JEVisSample> samples) {
+        if (samples == null || samples.isEmpty() || !isDayFilterApplied()) return samples;
+        JEVisObject site = null;
+        if (getDayFilter().isExcludeHolidays()) {
+            try {
+                site = CommonMethods.getFirstParentalObjectOfClass(getObject(), "Building");
+            } catch (Exception e) {
+                logger.debug("Could not get site object for day filter", e);
+            }
+        }
+        return getDayFilter().filter(samples, site);
     }
 
     private Double getManipulatedData(List<JEVisSample> samples) {
@@ -674,6 +721,7 @@ public class ChartDataRow extends ChartData {
                     if (!isStringData) {
                         factorizeSamples(samples);
                     }
+                    samples = applyDayFilter(samples);
 
                 } catch (Exception ex) {
                     logger.error(ex);
@@ -1033,6 +1081,8 @@ public class ChartDataRow extends ChartData {
         newModel.setSomethingChanged(false);
         newModel.setCss(this.getCss());
         newModel.setDecimalDigits(this.getDecimalDigits());
+        newModel.setDayFilter(this.getDayFilter());
+        newModel.setSomethingChanged(false);
 
         return newModel;
     }

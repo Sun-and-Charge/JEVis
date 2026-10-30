@@ -117,6 +117,7 @@ public class ToolBarView {
     private MenuButton mathOperation;
     private CheckMenuItem showSum;
     private CheckMenuItem showL1L2;
+    private MenuItem userLimitLines;
     private CheckMenuItem calcRegression;
     private CustomMenuItem polyDegree;
     private CustomMenuItem regressionType;
@@ -252,11 +253,11 @@ public class ToolBarView {
             mathOperation.getItems().add(new SeparatorMenuItem());
 
             if (!JEConfig.getExpert()) {
-                mathOperation.getItems().addAll(showL1L2, showSum);
+                mathOperation.getItems().addAll(showL1L2, userLimitLines, showSum);
                 toolBar.getItems().addAll(mathOperation, disableIcons, autoResize, runUpdateButton);
             } else {
 
-                mathOperation.getItems().addAll(showL1L2, showSum);
+                mathOperation.getItems().addAll(showL1L2, userLimitLines, showSum);
                 toolBar.getItems().addAll(showRawData, mathOperation, disableIcons, autoResize, runUpdateButton);
             }
 
@@ -398,6 +399,8 @@ public class ToolBarView {
 
         showL1L2 = new CheckMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.showl1l2"));
         showL1L2.selectedProperty().bindBidirectional(toolBarSettings.showL1L2Property());
+
+        userLimitLines = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.userlimits"));
 
         NumberSpinner numberSpinner = new NumberSpinner(new BigDecimal(toolBarSettings.getPolyRegressionDegree()), new BigDecimal(1));
         polyDegree = buildControlMenuItem(I18n.getInstance().getString("plugin.graph.toolbar.regression.degree"), numberSpinner);
@@ -614,6 +617,15 @@ public class ToolBarView {
 
         showL1L2.setOnAction(event -> chartPlugin.update());
 
+        userLimitLines.setOnAction(event -> {
+            UserLimitLinesDialog userLimitLinesDialog = new UserLimitLinesDialog();
+            userLimitLinesDialog.show(dataModel.getLimitLines()).ifPresent(newLimitLines -> {
+                dataModel.setLimitLines(newLimitLines);
+                changed = true;
+                chartPlugin.update();
+            });
+        });
+
         calcRegression.setOnAction(event -> chartPlugin.update());
 
         linkedZoom.setOnAction(event -> chartPlugin.update());
@@ -687,6 +699,7 @@ public class ToolBarView {
         showRawData.setDisable(bool);
         showSum.setDisable(bool);
         showL1L2.setDisable(bool);
+        userLimitLines.setDisable(bool);
         calcRegression.setDisable(bool);
         calcFullLoadHours.setDisable(bool);
         calcSumAboveBelow.setDisable(bool);

@@ -23,6 +23,7 @@ package org.jevis.jeconfig.application.Chart.Charts;
 import com.ibm.icu.text.DecimalFormat;
 import com.ibm.icu.text.NumberFormat;
 import de.gsi.chart.axes.spi.format.DefaultTimeFormatter;
+import de.gsi.chart.renderer.ErrorStyle;
 import de.gsi.chart.renderer.LineStyle;
 import de.gsi.chart.renderer.Renderer;
 import de.gsi.chart.renderer.spi.ErrorDataSetRenderer;
@@ -65,6 +66,7 @@ import org.jevis.jeconfig.application.Chart.Charts.regression.*;
 import org.jevis.jeconfig.application.Chart.data.ChartData;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
+import org.jevis.jeconfig.application.Chart.data.UserLimitLine;
 import org.jevis.jeconfig.application.Chart.data.ValueWithDateTime;
 import org.jevis.jeconfig.application.tools.ColorHelper;
 import org.jevis.jeconfig.plugin.charts.DataSettings;
@@ -131,6 +133,7 @@ public class XYChart implements Chart {
     private DateTimeFormatter dtfOutLegend = DateTimeFormat.forPattern("EE. dd.MM.yyyy HH:mm");
     private XYChartSerie y1SumSerie;
     private XYChartSerie y2SumSerie;
+    private List<UserLimitLine> userLimitLines = new ArrayList<>();
 
     public XYChart(JEVisDataSource ds, ChartModel chartModel) {
         this.ds = ds;
@@ -1136,9 +1139,16 @@ public class XYChart implements Chart {
             tableData.add(y2SumSerie.getTableEntry());
         }
 
+        List<UserLimitLineIndicator> limitIndicators = new ArrayList<>();
+        addUserLimitLines(allRenderer, limitIndicators);
+
         de.gsi.chart.Chart localChart = chart;
         if (localChart != null) {
-            Platform.runLater(() -> localChart.getRenderers().addAll(allRenderer));
+            Platform.runLater(() -> {
+                localChart.getRenderers().addAll(allRenderer);
+                localChart.getPlugins().removeIf(plugin -> plugin instanceof UserLimitLineIndicator);
+                localChart.getPlugins().addAll(limitIndicators);
+            });
         }
         Platform.runLater(() -> tableData.sort((o1, o2) -> ac.compare(o1.getName(), o2.getName())));
     }
@@ -1315,6 +1325,94 @@ public class XYChart implements Chart {
             logger.error("Could not create data sets for l1/l2.", e);
         }
         return list;
+    }
+
+    /**
+     * Adds the user defined limit lines of the analysis (#2233 / #1036): a dashed line data set per limit
+     * (so that the y-axis auto ranging includes the limit value) and a {@link UserLimitLineIndicator}
+     * plugin for the label and the optional area fill.
+     */
+    private void addUserLimitLines(List<Renderer> allRenderer, List<UserLimitLineIndicator> indicators) {
+        if (userLimitLines == null || userLimitLines.isEmpty()) {
+            return;
+        }
+
+        double minX = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        for (XYChartSerie serie : xyChartSerieList) {
+            try {
+                if (serie.getSingleRow() != null && serie.getSingleRow().isIntervalEnabled()) {
+                    continue;
+                }
+                DoubleDataSet valueDataSet = serie.getValueDataSet();
+                if (valueDataSet == null) {
+                    continue;
+                }
+                for (int i = 0; i < valueDataSet.getDataCount(); i++) {
+                    double x = valueDataSet.getX(i);
+                    if (!Double.isNaN(x)) {
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                    }
+                }
+            } catch (Exception e) {
+                logger.debug("Could not determine x range of serie for limit lines", e);
+            }
+        }
+        boolean hasXRange = minX <= maxX;
+
+        ErrorDataSetRenderer limitRendererY1 = createLimitLineRenderer(y1Axis);
+        ErrorDataSetRenderer limitRendererY2 = createLimitLineRenderer(y2Axis);
+
+        for (UserLimitLine limitLine : userLimitLines) {
+            if (limitLine == null || Double.isNaN(limitLine.getValue()) || Double.isInfinite(limitLine.getValue())) {
+                continue;
+            }
+            /* a right axis limit falls back to the left axis if the chart has no second y-axis */
+            boolean rightAxis = limitLine.getAxis() == 1 && hasSecondYAxis;
+
+            if (hasXRange) {
+                String name = limitLine.getLabel() != null && !limitLine.getLabel().isEmpty() ? limitLine.getLabel() : "limit";
+                DoubleDataSet limitDataSet = new DoubleDataSet(name);
+                limitDataSet.add(minX, limitLine.getValue());
+                limitDataSet.add(maxX, limitLine.getValue());
+                String color = limitLine.getFxColor().toString();
+                limitDataSet.setStyle("strokeColor=" + color + "; fillColor=" + color + "; strokeWidth=1.5; strokeDashPattern=10, 6");
+                if (rightAxis) {
+                    limitRendererY2.getDatasets().add(limitDataSet);
+                } else {
+                    limitRendererY1.getDatasets().add(limitDataSet);
+                }
+            }
+
+            indicators.add(new UserLimitLineIndicator(rightAxis ? y2Axis : y1Axis, limitLine));
+        }
+
+        if (!limitRendererY1.getDatasets().isEmpty()) {
+            allRenderer.add(limitRendererY1);
+        }
+        if (!limitRendererY2.getDatasets().isEmpty()) {
+            allRenderer.add(limitRendererY2);
+        }
+    }
+
+    private ErrorDataSetRenderer createLimitLineRenderer(CustomNumericAxis yAxis) {
+        ErrorDataSetRenderer renderer = new ErrorDataSetRenderer();
+        renderer.setPolyLineStyle(LineStyle.NORMAL);
+        renderer.setErrorType(ErrorStyle.NONE);
+        renderer.setDrawMarker(false);
+        renderer.setDrawBars(false);
+        renderer.setMarkerSize(0);
+        renderer.getAxes().add(yAxis);
+        return renderer;
+    }
+
+    public List<UserLimitLine> getUserLimitLines() {
+        return userLimitLines;
+    }
+
+    public void setUserLimitLines(List<UserLimitLine> userLimitLines) {
+        this.userLimitLines = userLimitLines == null ? new ArrayList<>() : new ArrayList<>(userLimitLines);
     }
 
     public void initializeChart() {

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -31,6 +32,7 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.ChartTab;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.CommonSettingTab;
+import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.DayFilterTab;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 import org.jevis.jeconfig.application.Chart.data.DataModel;
 import org.jevis.jeconfig.dialog.Response;
@@ -69,6 +71,7 @@ public class NewSelectionDialog extends Dialog {
         }
 
         CommonSettingTab commonSettingTab = new CommonSettingTab(this.dataModel);
+        DayFilterTab dayFilterTab = new DayFilterTab(this.dataModel);
 
         for (ChartModel chartModel : this.dataModel.getChartModels()) {
             ChartTab chartTab = new ChartTab(ds, chartModel);
@@ -91,13 +94,14 @@ public class NewSelectionDialog extends Dialog {
                 ChartTab newChartTab = new ChartTab(ds, chartModel);
                 newChartTab.setOnClosed(event -> this.dataModel.getChartModels().remove(chartModel));
 
-                tabPane.getTabs().add(tabPane.getTabs().size() - 2, newChartTab);
-                tabPane.getSelectionModel().select(tabPane.getTabs().size() - 3);
+                tabPane.getTabs().add(tabPane.getTabs().indexOf(addTab), newChartTab);
+                tabPane.getSelectionModel().select(newChartTab);
             }
         });
 
         tabPane.getTabs().add(addTab);
         tabPane.getTabs().add(commonSettingTab);
+        tabPane.getTabs().add(dayFilterTab);
 
         ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
