@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2013 - 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI.
  * <p>
@@ -347,6 +348,13 @@ public interface JEVisObject extends JEVisComponent, JEVisCommittable, Comparabl
     DateTime getDeleteTS();
 
     void setDeleteTS(DateTime ts) throws JEVisException;
+
+    /**
+     * Name of the user who moved this object to the recycle bin, or {@code null} if unknown or not deleted.
+     */
+    default String getDeletedBy() {
+        return null;
+    }
 
     String toString();
 }

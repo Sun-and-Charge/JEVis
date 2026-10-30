@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -23,6 +24,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.image.Image;
@@ -82,6 +84,7 @@ public class JEVisNameTreeTableCell extends TreeTableCell<JEVisTreeRow, JEVisTre
         super.updateItem(item, empty);
         setText(null);
         setGraphic(null);
+        setTooltip(null);
         if (!empty && item != null
                 && getTreeTableRow() != null
                 && getTreeTableRow().getTreeItem() != null
@@ -93,6 +96,10 @@ public class JEVisNameTreeTableCell extends TreeTableCell<JEVisTreeRow, JEVisTre
 
                 if (item.getType() == JEVisTreeRow.TYPE.OBJECT) {
                     nameLabel.setText(jeVisObject.getName());
+                    String deletion = JEVisRecycleBinObject.describeDeletion(jeVisObject);
+                    if (deletion != null) {
+                        setTooltip(new Tooltip(deletion));
+                    }
                     try {
                         JEVisTree jevisTree = (JEVisTree) this.getTreeTableView();
                         if (!jeVisObject.getJEVisClassName().equals("Link")) {

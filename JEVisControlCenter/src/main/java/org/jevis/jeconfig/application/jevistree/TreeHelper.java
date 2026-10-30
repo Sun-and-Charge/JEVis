@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -176,6 +177,103 @@ public class TreeHelper {
                 logger.error("Could not get JEVis data source. ", e);
             }
 
+        }
+    }
+
+    /**
+     * Restores the selected objects from the recycle bin, to their original place or to a target the user picks.
+     */
+    public static void EventRestore(JEVisTree tree, boolean chooseTarget) {
+        List<JEVisObject> objects = new ArrayList<>();
+        ObservableList<TreeItem<JEVisTreeRow>> selected = tree.getSelectionModel().getSelectedItems();
+        for (TreeItem<JEVisTreeRow> item : selected) {
+            JEVisObject object = item.getValue().getJEVisObject();
+            if (object.getDeleteTS() != null) {
+                objects.add(object);
+            }
+        }
+        if (objects.isEmpty()) {
+            return;
+        }
+
+        JEVisObject target = null;
+        if (chooseTarget) {
+            org.jevis.jeconfig.application.Chart.ChartPluginElements.TreeSelectionDialog dialog =
+                    new org.jevis.jeconfig.application.Chart.ChartPluginElements.TreeSelectionDialog(tree.getJEVisDataSource(),
+                            new ArrayList<>(), SelectionMode.SINGLE, new ArrayList<>(), false);
+            dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.restore.target.title"));
+            dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.restore.target.title"));
+            TopMenu.applyActiveTheme(dialog.getDialogPane().getScene());
+            dialog.showAndWait();
+            if (dialog.getResponse() != org.jevis.jeconfig.dialog.Response.OK || dialog.getTreeView().getSelectedObjects().isEmpty()) {
+                return;
+            }
+            target = dialog.getTreeView().getSelectedObjects().get(0);
+        }
+
+        final JEVisObject finalTarget = target;
+        Task<Void> restore = new Task<Void>() {
+            @Override
+            protected Void call() {
+                updateTitle(I18n.getInstance().getString("jevistree.menu.restore"));
+                for (JEVisObject object : objects) {
+                    try {
+                        object.getDataSource().restoreObject(object, finalTarget);
+                    } catch (Exception ex) {
+                        logger.error("Could not restore {}", object, ex);
+                        Platform.runLater(() -> {
+                            Alert alert = new Alert(AlertType.WARNING);
+                            alert.setTitle(I18n.getInstance().getString("jevistree.dialog.restore.error.title"));
+                            alert.setHeaderText(object.getName());
+                            alert.setContentText(I18n.getInstance().getString("jevistree.dialog.restore.error.message"));
+                            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
+                            alert.showAndWait();
+                        });
+                    }
+                }
+                return null;
+            }
+        };
+        JEConfig.getStatusBar().addTask(TreeHelper.class.getName(), restore, null, true);
+    }
+
+    /**
+     * Permanently deletes everything in the recycle bin after a confirmation. Only for Sys Admins.
+     */
+    public static void EventEmptyRecycleBin(JEVisTree tree) {
+        try {
+            JEVisDataSource ds = tree.getJEVisDataSource();
+            int count = ds.getDeletedObjects().size();
+            if (count == 0) {
+                return;
+            }
+            Alert alert = new Alert(AlertType.CONFIRMATION);
+            alert.setTitle(I18n.getInstance().getString("jevistree.dialog.emptybin.title"));
+            alert.setHeaderText(null);
+            alert.setContentText(I18n.getInstance().getString("jevistree.dialog.emptybin.message", count));
+            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
+            if (!alert.showAndWait().filter(ButtonType.OK::equals).isPresent()) {
+                return;
+            }
+
+            Task<Void> empty = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    updateTitle(I18n.getInstance().getString("jevistree.menu.emptybin"));
+                    try {
+                        ds.emptyRecycleBin();
+                    } catch (Exception ex) {
+                        logger.error("Could not empty the recycle bin", ex);
+                        CommonDialogs.showError(I18n.getInstance().getString("jevistree.dialog.delete.error.title"),
+                                I18n.getInstance().getString("jevistree.dialog.delete.error.message"), null, ex);
+                    }
+                    Platform.runLater(tree::refreshRecycleBin);
+                    return null;
+                }
+            };
+            JEConfig.getStatusBar().addTask(TreeHelper.class.getName(), empty, null, true);
+        } catch (Exception ex) {
+            logger.error("Could not empty the recycle bin", ex);
         }
     }
 
@@ -1385,6 +1483,12 @@ public class TreeHelper {
 
         for (JEVisObject obj : moveObj) {
             try {
+                if (obj.getDeleteTS() != null) {
+                    // out of the recycle bin: the server restores the object and its subtree in one step
+                    obj.getDataSource().restoreObject(obj, targetObj);
+                    continue;
+                }
+
                 // remove other parent relationships
                 try {
                     //From Child to Parent
@@ -1400,28 +1504,6 @@ public class TreeHelper {
 
                 } catch (Exception ex) {
                     logger.error("Error while deleting old parentship", ex, ex);
-                }
-
-                try {
-                    if (obj.getDeleteTS() != null) {
-                        obj.setDeleteTS(null);
-                        obj.commit();
-
-                        /* the server will also set die children delete_ts to null.
-                         *   We could reload the but simply set this info is faster
-                         */
-                        List<JEVisObject> children = org.jevis.commons.utils.CommonMethods.getChildrenRecursive(obj);
-                        children.forEach(jeVisObject -> {
-                            try {
-                                jeVisObject.setDeleteTS(null);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        });
-
-                    }
-                } catch (Exception ex) {
-                    logger.error("Error while restoring object", ex, ex);
                 }
 
                 try {

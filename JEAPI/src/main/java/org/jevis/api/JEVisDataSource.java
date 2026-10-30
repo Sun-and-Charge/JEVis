@@ -125,6 +125,12 @@ public interface JEVisDataSource {
     List<JEVisObject> getDeletedObjects() throws JEVisException;
 
     /**
+     * Loads the objects in the recycle bin again on the next {@link #getDeletedObjects()}.
+     */
+    default void reloadDeletedObjects() {
+    }
+
+    /**
      * Get a JEVisClass by its name
      *
      * @param name Name of the JEVisClass
@@ -266,6 +272,27 @@ public interface JEVisDataSource {
      * @return
      */
     boolean deleteObject(long objectID, boolean deleteForever) throws JEVisException;
+
+    /**
+     * Restores an object from the recycle bin together with the objects deleted with it.
+     *
+     * @param object       the deleted object
+     * @param targetParent new parent, or {@code null} to put it back where it was deleted
+     * @return the restored object
+     * @throws JEVisException if the object can not be restored, e.g. because its original parent no longer exists
+     */
+    default JEVisObject restoreObject(JEVisObject object, JEVisObject targetParent) throws JEVisException {
+        throw new UnsupportedOperationException("restoreObject");
+    }
+
+    /**
+     * Permanently deletes all objects in the recycle bin. Only allowed for Sys Admins.
+     *
+     * @return the number of deleted objects
+     */
+    default int emptyRecycleBin() throws JEVisException {
+        throw new UnsupportedOperationException("emptyRecycleBin");
+    }
 
     /**
      * Delete an JEVisClass

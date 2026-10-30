@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -89,7 +90,10 @@ public class JEVisTree extends TreeTableView {
             recycleBinObject = new JEVisRecycleBinObject(this.ds);
             rootObjects.add(recycleBinObject);
 
-            this.itemLoader = new JEVisItemLoader(this, this.ds.getObjects(), rootObjects, recycleBinObject);
+            /* live objects plus the objects in the recycle bin, which getObjects() leaves out */
+            List<JEVisObject> objects = new ArrayList<>(this.ds.getObjects());
+            objects.addAll(this.ds.getDeletedObjects());
+            this.itemLoader = new JEVisItemLoader(this, objects, rootObjects, recycleBinObject);
             this.itemLoader.filterTree(this.cellFilter);
             setShowRoot(false);
 
@@ -105,6 +109,13 @@ public class JEVisTree extends TreeTableView {
 
     public JEVisObject getRecycleBinObject() {
         return recycleBinObject;
+    }
+
+    /**
+     * Rebuilds the recycle bin from the current state of the data source, e.g. after it was emptied.
+     */
+    public void refreshRecycleBin() {
+        this.itemLoader.refreshRecycleBin();
     }
 
     /**

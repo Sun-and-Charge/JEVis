@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -246,17 +247,23 @@ public class JEVisTreeContextMenu extends ContextMenu {
         tree.setOnMouseClicked(event -> {
             try {
                 obj = getObject();
-                if (obj.getDeleteTS() != null) {
-                    getItems().setAll(
+                if (obj instanceof JEVisRecycleBinObject) {
+                    getItems().setAll(buildEmptyRecycleBin());
+                } else if (obj.getDeleteTS() != null) {
+                    /* objects in the recycle bin: restore or delete, nothing that changes them */
+                    if (JEVisRecycleBinObject.isRecycleBinRoot(obj)) {
+                        getItems().setAll(buildRestore(false), buildRestore(true));
+                    } else {
+                        getItems().setAll(buildRestore(true));
+                    }
+                    getItems().addAll(
                             buildDelete(true),
-                            //buildCopy(), // need additional checks
                             buildCut(),
                             new SeparatorMenuItem(),
                             buildCopyFormat(),
                             buildParsedFormat(),
                             new SeparatorMenuItem(),
-                            buildExport(),
-                            buildImport());
+                            buildExport());
                 } else {
                     getItems().setAll(
                             buildNew2(),
@@ -795,6 +802,24 @@ public class JEVisTreeContextMenu extends ContextMenu {
                 TreeHelper.EventReload(obj, ((JEVisTreeItem) tree.getSelectionModel().getSelectedItem()));
             }
         });
+        return menu;
+    }
+
+    private MenuItem buildRestore(boolean chooseTarget) {
+        MenuItem menu = new MenuItem(I18n.getInstance().getString(chooseTarget ? "jevistree.menu.restoreto" : "jevistree.menu.restore"),
+                JEConfig.getSVGImage(Icon.GO_TO_SOURCE, 20, 20));
+        menu.setOnAction(event -> TreeHelper.EventRestore(tree, chooseTarget));
+        return menu;
+    }
+
+    private MenuItem buildEmptyRecycleBin() {
+        MenuItem menu = new MenuItem(I18n.getInstance().getString("jevistree.menu.emptybin"), JEConfig.getSVGImage(Icon.DELETE, 20, 20));
+        try {
+            menu.setDisable(!tree.getJEVisDataSource().getCurrentUser().isSysAdmin());
+        } catch (Exception ex) {
+            menu.setDisable(true);
+        }
+        menu.setOnAction(event -> TreeHelper.EventEmptyRecycleBin(tree));
         return menu;
     }
 

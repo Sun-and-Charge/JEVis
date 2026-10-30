@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI-WS.
  * <p>
@@ -70,6 +71,8 @@ public interface REQUEST {
             String INCLUDE_CHILDREN = "includeChildren=";
             /** Query param to include soft-deleted objects ({@code deleted=}). */
             String DELETED = "deleted=";
+            /** Query param to return only the objects in the recycle bin ({@code onlyDeleted=}). */
+            String ONLY_DELETED = "onlyDeleted=";
             /** Query param to restore a soft-deleted object ({@code restore=}). */
             String RESTORE = "restore=";
             /** Query param to permanently delete an object ({@code deleteForever=}). */

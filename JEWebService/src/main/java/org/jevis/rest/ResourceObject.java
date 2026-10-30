@@ -37,8 +37,11 @@ import javax.security.sasl.AuthenticationException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +55,8 @@ import java.util.stream.Collectors;
  *   <li>{@code POST /objects} — create a new object (or move an existing one)</li>
  *   <li>{@code POST /objects/{id}} — update an existing object</li>
  *   <li>{@code DELETE /objects/{id}} — delete or mark-as-deleted an object</li>
+ *   <li>{@code POST /objects/{id}/restore} — restore an object from the recycle bin</li>
+ *   <li>{@code DELETE /objects/deleted} — empty the recycle bin (Sys Admin)</li>
  * </ul>
  *
  * @author Florian Simon<florian.simon@openjevis.org>
@@ -77,6 +82,8 @@ public class ResourceObject {
      * @param detailed        reserved (currently unused)
      * @param rel             if {@code true}, embed relationships in each returned object
      * @param deletedObjects  if {@code true}, include soft-deleted objects; otherwise only live objects
+     * @param onlyDeleted     if {@code true}, return only the objects in the recycle bin, with their relationships
+     *                        (including DELETED_PARENT) and the name of the user who deleted them
      * @param parent          filter by parent object ID (0 = not used)
      * @param child           filter to return only the given child ID (0 = not used)
      * @return 200 OK with JSON array of {@link org.jevis.commons.ws.json.JsonObject},
@@ -96,11 +103,20 @@ public class ResourceObject {
             @DefaultValue("false") @QueryParam("detail") boolean detailed,
             @DefaultValue("true") @QueryParam("rel") boolean rel,
             @DefaultValue("false") @QueryParam("deleted") boolean deletedObjects,
+            @DefaultValue("false") @QueryParam("onlyDeleted") boolean onlyDeleted,
             @QueryParam("parent") long parent,
             @QueryParam("child") long child) {
 
         try {
             this.ds = new SQLDataSource(httpHeaders, request, url);
+
+            if (onlyDeleted) {
+                this.ds.preload(SQLDataSource.PRELOAD.ALL_REL);
+                this.returnList = this.ds.getUserManager().filterList(this.ds.getObjectTable().getAllDeletedObjects());
+                this.ds.addRelationshipsToObjects(this.returnList, this.ds.getUserManager().filterReadRelationships(this.ds.getRelationships()));
+                addDeletedByNames(this.returnList);
+                return Response.ok(this.returnList).build();
+            }
 
             if (!deletedObjects) this.ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             this.ds.preload(SQLDataSource.PRELOAD.ALL_REL);
@@ -195,7 +211,8 @@ public class ResourceObject {
      * @param deleteForever if {@code true}, permanently removes the object;
      *                      otherwise marks it as deleted (recoverable)
      * @param id            the JEVis object ID to delete
-     * @return 200 OK on success, 401 UNAUTHORIZED, or 500 on error
+     * @return 200 OK with the IDs of the deleted objects, 401 UNAUTHORIZED, 403 FORBIDDEN without delete permission, 404 NOT FOUND,
+     *         or 500 on error
      */
     @DELETE
     @Logged
@@ -212,31 +229,28 @@ public class ResourceObject {
 
 
             JsonObject obj = this.ds.getObject(id);
-            if (this.ds.getUserManager().canDelete(obj)) {
-
-                if (deleteForever) {
-                    ds.logUserAction(SQLDataSource.LOG_EVENT.DELETE_OBJECT, String.format("%s:%s", id, obj.getName()));
-                    logger.error("Delete forever: " + id);
-                    this.ds.deleteObject(obj);
-                } else {
-                    ds.logUserAction(SQLDataSource.LOG_EVENT.MARK_AS_DELETE_OBJECT, String.format("%s:%s", id, obj.getName()));
-                    logger.debug("Mark as delete: " + id);
-                    this.ds.markAsDeletedObject(obj);
-                }
-
+            if (obj == null) {
+                return Response.status(Response.Status.NOT_FOUND).build();
             }
+            this.ds.getUserManager().canDelete(obj);
 
-            try {
-                CachedAccessControl.getInstance(ds, true).checkForChanges(obj, CachedAccessControl.Change.DELETE);
-            } catch (Exception ex) {
-                logger.error(ex, ex);
+            Set<Long> affected;
+            if (deleteForever) {
+                ds.logUserAction(SQLDataSource.LOG_EVENT.DELETE_OBJECT, String.format("%s:%s", id, obj.getName()));
+                logger.info("Delete forever: {}", id);
+                affected = this.ds.deleteObject(obj);
+            } else {
+                ds.logUserAction(SQLDataSource.LOG_EVENT.MARK_AS_DELETE_OBJECT, String.format("%s:%s", id, obj.getName()));
+                logger.debug("Mark as delete: {}", id);
+                affected = this.ds.markAsDeletedObject(obj);
             }
+            invalidateAccessControl();
 
-            return Response.status(Response.Status.OK).build();
+            // the IDs of all deleted objects, so clients can update their caches
+            return Response.ok(affected, MediaType.APPLICATION_JSON).build();
 
         } catch (JEVisException jex) {
-            logger.catching(jex);
-            return Response.serverError().build();
+            return errorResponse(jex);
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } finally {
@@ -279,6 +293,9 @@ public class ResourceObject {
                 }
 
                 JsonObject parentObj = this.ds.getObject(json.getParent());
+                if (parentObj != null && parentObj.getDeleteTS() != null) {
+                    return Response.status(Response.Status.CONFLICT).entity("Parent is in the recycle bin").build();
+                }
                 boolean canCreate = this.ds.getUserManager().canCreateWOE(parentObj, json.getJevisClass());
 
                 if (parentObj != null && canCreate) {
@@ -372,14 +389,16 @@ public class ResourceObject {
 
             JsonObject json = OBJECT_MAPPER.readValue(object, JsonObject.class);
             JsonObject existingObj = this.ds.getObject(id);
-            if (existingObj != null && this.ds.getUserManager().canWrite(json)) {
+            if (existingObj != null && this.ds.getUserManager().canWrite(existingObj)) {
                 String jsonstring = null;
                 if (json.getI18n() != null && !json.getI18n().isEmpty()) {
                     jsonstring = OBJECT_MAPPER.writeValueAsString(json.getI18n());
                 }
 
                 if (existingObj.getDeleteTS() != null && json.getDeleteTS() == null) {
-                    ds.getObjectTable().restoreObjectAsDeleted(json);
+                    // older clients restore by clearing deleteTS and setting the new parent themselves
+                    ds.restoreObject(existingObj, null, false);
+                    invalidateAccessControl();
                 }
 
                 try {
@@ -454,20 +473,150 @@ public class ResourceObject {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Missing id path parameter").build();
             }
             JsonObject existingObj = this.ds.getObject(id, includeChildren);
-            if (existingObj != null || this.ds.getUserManager().canRead(existingObj)) {
+            if (existingObj != null && this.ds.getUserManager().canRead(existingObj)) {
                 return Response.ok(existingObj).build();
             } else {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
         } catch (JEVisException jex) {
-            logger.catching(jex);
-            return Response.serverError().build();
+            return errorResponse(jex);
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } finally {
             Config.CloseDS(this.ds);
         }
+    }
+
+    /**
+     * Restores an object from the recycle bin together with the objects deleted with it.
+     *
+     * @param id     the deleted object
+     * @param parent new parent; without it the object goes back to its original place
+     * @return 200 OK with the restored object, 403 FORBIDDEN, 404 NOT FOUND, 409 CONFLICT if the object is not in the
+     * bin or has no place to go back to (the original parent was deleted and no target is given)
+     */
+    @POST
+    @Logged
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/restore")
+    public Response restoreObject(
+            @Context HttpHeaders httpHeaders,
+            @Context Request request,
+            @Context UriInfo url,
+            @PathParam("id") long id,
+            @QueryParam("parent") Long parent) {
+
+        try {
+            this.ds = new SQLDataSource(httpHeaders, request, url);
+
+            JsonObject obj = this.ds.getObject(id);
+            if (obj == null) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            this.ds.getUserManager().canDelete(obj);
+            if (parent != null) {
+                JsonObject target = this.ds.getObject(parent);
+                if (target == null) {
+                    return Response.status(Response.Status.NOT_FOUND).entity("Parent not found").build();
+                }
+                this.ds.getUserManager().canCreate(target, obj.getJevisClass());
+            }
+
+            this.ds.restoreObject(obj, parent, true);
+            ds.logUserAction(SQLDataSource.LOG_EVENT.UPDATE_OBJECT, String.format("restore %s:%s", id, obj.getName()));
+            invalidateAccessControl();
+
+            return Response.ok(this.ds.getObjectTable().getObject(id)).build();
+
+        } catch (JEVisException jex) {
+            return errorResponse(jex);
+        } catch (AuthenticationException ex) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
+        } finally {
+            Config.CloseDS(this.ds);
+        }
+    }
+
+    /**
+     * Empties the recycle bin: permanently deletes every object in it. Only for Sys Admins.
+     *
+     * @return 200 OK with the number of deleted objects, 403 FORBIDDEN for other users
+     */
+    @DELETE
+    @Logged
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/deleted")
+    public Response emptyRecycleBin(
+            @Context HttpHeaders httpHeaders,
+            @Context Request request,
+            @Context UriInfo url) {
+
+        try {
+            this.ds = new SQLDataSource(httpHeaders, request, url);
+            if (!this.ds.getUserManager().isSysAdmin()) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+
+            int count = 0;
+            for (long root : this.ds.getObjectTable().getRecycleBinRoots()) {
+                JsonObject obj = this.ds.getObjectTable().getObject(root);
+                if (obj != null && obj.getDeleteTS() != null) {
+                    count += this.ds.deleteObject(obj).size();
+                }
+            }
+            ds.logUserAction(SQLDataSource.LOG_EVENT.DELETE_OBJECT, String.format("empty recycle bin: %s objects", count));
+            invalidateAccessControl();
+
+            return Response.ok(count).build();
+
+        } catch (JEVisException jex) {
+            return errorResponse(jex);
+        } catch (AuthenticationException ex) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
+        } finally {
+            Config.CloseDS(this.ds);
+        }
+    }
+
+    /**
+     * Fills in the name of the user who deleted each object. The name is shown in the recycle bin even if the user object
+     * itself is not readable for the caller.
+     */
+    private void addDeletedByNames(List<JsonObject> objects) throws JEVisException {
+        Map<Long, String> names = new HashMap<>();
+        for (JsonObject object : objects) {
+            Long userId = object.getDeletedBy();
+            if (userId != null) {
+                if (!names.containsKey(userId)) {
+                    JsonObject user = this.ds.getObjectTable().getObject(userId);
+                    names.put(userId, user != null ? user.getName() : null);
+                }
+                object.setDeletedByName(names.get(userId));
+            }
+        }
+    }
+
+    /**
+     * Users and groups may have been deleted or restored with the subtree, so permissions are reloaded.
+     */
+    private void invalidateAccessControl() {
+        try {
+            CachedAccessControl.getInstance(ds, true).invalidate();
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
+    }
+
+    private Response errorResponse(JEVisException ex) {
+        if (ex.getCode() == 3021) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        if (ex.getCode() == 409) {
+            return Response.status(Response.Status.CONFLICT).entity(ex.getMessage()).build();
+        }
+        logger.catching(ex);
+        return Response.serverError().build();
     }
 
     /**

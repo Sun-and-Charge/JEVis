@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -27,8 +28,8 @@ import javafx.scene.control.TreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
-import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisObject;
+import org.jevis.jeconfig.application.jevistree.JEVisRecycleBinObject;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeItem;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeRow;
@@ -168,15 +169,6 @@ public class JEVisItemLoader {
                     } catch (Exception aex) {
                         logger.error("Error while loading type {}", attribute.getName(), aex);
                     }
-                }
-
-                try {
-                    if (!object.getRelationships(JEVisConstants.ObjectRelationship.DELETED_PARENT, JEVisConstants.Direction.FORWARD).isEmpty()) {
-                        //System.out.println("Is Delete Root child: " + object);
-                        recycleBinObject.getChildren().add(object);
-                    }
-                } catch (Exception e) {
-                    logger.error("Error while building Object: {}", object, e, e);
                 }
 
             } catch (Exception ex) {
@@ -374,7 +366,13 @@ public class JEVisItemLoader {
             JEVisTreeItem item = this.itemObjectLinker.get(object);
             ObservableList<JEVisTreeItem> newChildrenList = FXCollections.observableArrayList();
 
+            boolean isBin = object == this.recycleBinObject;
+            boolean inBin = object.getDeleteTS() != null;
             for (JEVisObject objChild : object.getChildren()) {
+                /** a deleted folder in the bin only shows what was deleted with it, live objects only live children **/
+                if (!isBin && inBin != (objChild.getDeleteTS() != null)) {
+                    continue;
+                }
                 /** add object children **/
                 if (this.itemObjectLinker.containsKey(objChild)) {
                     JEVisTreeItem itemChild = this.itemObjectLinker.get(objChild);
@@ -407,6 +405,59 @@ public class JEVisItemLoader {
     }
 
 
+    private void removeFromParentItem(TreeItem<JEVisTreeRow> item) {
+        if (item != null && item.getParent() != null) {
+            item.getParent().getChildren().remove(item);
+        }
+    }
+
+    /**
+     * Drops the items of a permanently deleted object and everything below it.
+     */
+    private void forgetItems(TreeItem<JEVisTreeRow> item) {
+        if (item == null) {
+            return;
+        }
+        for (TreeItem<JEVisTreeRow> child : new ArrayList<>(item.getChildren())) {
+            forgetItems(child);
+        }
+        JEVisTreeRow row = item.getValue();
+        if (row != null && row.getType() == JEVisTreeRow.TYPE.OBJECT) {
+            this.itemObjectLinker.remove(row.getJEVisObject());
+        } else if (row != null && row.getType() == JEVisTreeRow.TYPE.ATTRIBUTE) {
+            this.itemAttributeLinker.remove(attributeKey(row.getJEVisAttribute()));
+        }
+    }
+
+    /**
+     * Rebuilds the top level of the recycle bin from the current delete state of the objects.
+     */
+    public void refreshRecycleBin() {
+        JEVisTreeItem binItem = this.itemObjectLinker.get(this.recycleBinObject);
+        if (binItem == null) {
+            return;
+        }
+        try {
+            for (JEVisObject deleted : this.recycleBinObject.getChildren()) {
+                JEVisTreeItem item = this.itemObjectLinker.get(deleted);
+                if (item == null) {
+                    buildItems(deleted);
+                    update(deleted);
+                } else if (!item.isFiltered() && !item.isParentForFilter()) {
+                    item.setFiltered(true);
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Error while loading the recycle bin", ex);
+        }
+        update(this.recycleBinObject);
+        binItem.getChildren().forEach(child -> {
+            if (child.getValue() != null && child.getValue().getType() == JEVisTreeRow.TYPE.OBJECT) {
+                update(child.getValue().getJEVisObject());
+            }
+        });
+    }
+
     /**
      * Add the EventListeners to the JEVisObject to handle delete,updateData, new and so on
      *
@@ -433,36 +484,33 @@ public class JEVisItemLoader {
 
                     switch (event.getType()) {
                         case OBJECT_DELETE:
-                            JEVisTreeItem treeParent = (JEVisTreeItem) treeItem.getParent();
-                            JEVisObject parenObject = treeParent.getValue().getJEVisObject();
-
-                            try {
-                                parenObject.getParents().remove(detectedObject);
-                                treeParent.getChildren().remove(treeItem);
-                                update(object);
-
-                            } catch (Exception ex) {
-                                logger.error(ex, ex);
-                            }
-
-                            treeParent.setExpanded(false);
-                            treeParent.setExpanded(true);
-
-
-                            jeVisTree.getSelectionModel().clearSelection();
-
+                            /** deleted permanently **/
+                            Platform.runLater(() -> {
+                                removeFromParentItem(treeItem);
+                                forgetItems(treeItem);
+                                refreshRecycleBin();
+                                jeVisTree.getSelectionModel().clearSelection();
+                            });
                             break;
 
                         case OBJECT_DELETE_BIN:
-                            /** nothing to do, we listen to the parent OBJECT_CHILD_DELETED event **/
-
-                            try {
-                                treeItemBin.getChildren().remove(treeItem);
-                            } catch (Exception ex) {
-                                logger.error(ex, ex);
-                            }
-
+                            /** the parent's OBJECT_CHILD_DELETED moves the item, this covers objects without parent **/
+                            Platform.runLater(() -> {
+                                if (treeItem != null && treeItem.getParent() != treeItemBin) {
+                                    removeFromParentItem(treeItem);
+                                }
+                                refreshRecycleBin();
+                            });
                             break;
+
+                        case OBJECT_RESTORED:
+                            /** the new parent gets OBJECT_NEW_CHILD and shows the object again **/
+                            Platform.runLater(() -> {
+                                removeFromParentItem(treeItem);
+                                refreshRecycleBin();
+                            });
+                            break;
+
                         case OBJECT_NEW_CHILD:
                             logger.debug("New Child Event: {}", event);
                             JEVisObject newObject = (JEVisObject) event.getObject();
@@ -486,39 +534,22 @@ public class JEVisItemLoader {
                                     //jeVisTree.getSelectionModel().select(itemObjectLinker.get(newObject));
                                 });
                             }
-                            jeVisTree.getSelectionModel().clearSelection();
+                            Platform.runLater(() -> jeVisTree.getSelectionModel().clearSelection());
 
                             break;
                         case OBJECT_CHILD_DELETED:
-                            JEVisTreeItem treeParent3 = (JEVisTreeItem) treeItem.getParent();
-                            JEVisObject parenObject3 = treeParent3.getValue().getJEVisObject();
-
+                            /** child moved away or deleted; the delete timestamp is already set when this fires **/
                             Platform.runLater(() -> {
                                 try {
-                                    parenObject3.getParents().remove(detectedObject);
-                                    treeParent3.getChildren().remove(treeItem);
-                                } catch (Exception e) {
-                                    logger.error(e, e);
-                                }
-                            });
-
-                            Platform.runLater(() -> {
-                                try {
-                                    /* move object will also delete the child but does not need to go into the bin*/
-                                    if (treeItem.getValue().getJEVisObject().getDeleteTS() != null) {
-                                        treeItemBin.getChildren().add(treeItem);
+                                    JEVisTreeItem parentItem = treeItem != null ? (JEVisTreeItem) treeItem.getParent() : null;
+                                    removeFromParentItem(treeItem);
+                                    if (detectedObject.getDeleteTS() != null) {
+                                        refreshRecycleBin();
                                     }
-                                } catch (Exception ex) {
-                                    logger.error(ex, ex);
-                                }
-                            });
-
-
-                            Platform.runLater(() -> {
-                                try {
-                                    treeParent3.setExpanded(false);
-                                    treeParent3.setExpanded(true);
-
+                                    if (parentItem != null) {
+                                        parentItem.setExpanded(false);
+                                        parentItem.setExpanded(true);
+                                    }
                                     jeVisTree.getSelectionModel().clearSelection();
                                 } catch (Exception ex) {
                                     logger.error(ex, ex);

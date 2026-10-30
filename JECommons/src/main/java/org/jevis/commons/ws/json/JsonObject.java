@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2013 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEWebService.
  * <p>
@@ -42,6 +43,9 @@ public class JsonObject {
     private boolean isPublic = false;
     private List<JsonI18n> i18n;
     private String deleteTS = null;
+    private String deleted = null;
+    private Long deletedBy = null;
+    private String deletedByName = null;
 
     public JsonObject() {
     }
@@ -209,6 +213,36 @@ public class JsonObject {
 
     public void setDeleteTS(String ts) {
         this.deleteTS = ts;
+    }
+
+    /**
+     * Deletion time as ISO date-time; {@link #getDeleteTS()} only holds the day for older clients.
+     */
+    public String getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(String deleted) {
+        this.deleted = deleted;
+    }
+
+    /**
+     * ID of the user object that moved this object to the recycle bin.
+     */
+    public Long getDeletedBy() {
+        return deletedBy;
+    }
+
+    public void setDeletedBy(Long deletedBy) {
+        this.deletedBy = deletedBy;
+    }
+
+    public String getDeletedByName() {
+        return deletedByName;
+    }
+
+    public void setDeletedByName(String deletedByName) {
+        this.deletedByName = deletedByName;
     }
 
     @Override
