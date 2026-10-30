@@ -1371,13 +1371,13 @@ public class XYChart implements Chart {
             /* a right axis limit falls back to the left axis if the chart has no second y-axis */
             boolean rightAxis = limitLine.getAxis() == 1 && hasSecondYAxis;
 
+            /* an invisible data set keeps the limit value inside the y-axis auto range; the line itself is drawn by
+             * the indicator, stroking it through the renderer could block the render thread */
             if (hasXRange) {
-                String name = limitLine.getLabel() != null && !limitLine.getLabel().isEmpty() ? limitLine.getLabel() : "limit";
-                DoubleDataSet limitDataSet = new DoubleDataSet(name);
+                DoubleDataSet limitDataSet = new DoubleDataSet("limit");
                 limitDataSet.add(minX, limitLine.getValue());
                 limitDataSet.add(maxX, limitLine.getValue());
-                String color = limitLine.getFxColor().toString();
-                limitDataSet.setStyle("strokeColor=" + color + "; fillColor=" + color + "; strokeWidth=1.5; strokeDashPattern=10, 6");
+                limitDataSet.setStyle("strokeColor=transparent; fillColor=transparent; strokeWidth=0");
                 if (rightAxis) {
                     limitRendererY2.getDatasets().add(limitDataSet);
                 } else {

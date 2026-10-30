@@ -27,6 +27,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import org.jevis.jeconfig.application.Chart.data.UserLimitLine;
 
@@ -34,9 +35,10 @@ import org.jevis.jeconfig.application.Chart.data.UserLimitLine;
  * Chart plugin that draws the label of a {@link UserLimitLine} and optionally fills the area
  * above or below the line semi-transparently (upstream issues #2233 / #1036).
  * <p>
- * The dashed line itself is drawn as a data set by the chart renderer, so that the y-axis
- * auto ranging includes the limit value. This plugin only adds the overlay nodes and is
- * mouse transparent so that zooming and the data point table keep working.
+ * The dashed line, the label and the fill are overlay nodes clipped to the plot area. A data set in
+ * the chart renderer was not used: for some chart types its coordinates ended up far outside the
+ * canvas and stroking the dashed line blocked the render thread. The overlay is mouse transparent
+ * so that zooming and the data point table keep working.
  */
 public class UserLimitLineIndicator extends ChartPlugin {
 
@@ -46,6 +48,7 @@ public class UserLimitLineIndicator extends ChartPlugin {
     private final Axis axis;
     private final UserLimitLine limitLine;
     private final Rectangle area = new Rectangle();
+    private final Line line = new Line();
     private final Label label = new Label();
     private final ChangeListener<Number> axisBoundsListener = (obs, oldValue, newValue) -> layoutChildren();
 
@@ -55,6 +58,11 @@ public class UserLimitLineIndicator extends ChartPlugin {
         this.limitLine = limitLine;
 
         Color color = limitLine.getFxColor();
+
+        line.setMouseTransparent(true);
+        line.setStroke(color);
+        line.setStrokeWidth(1.5);
+        line.getStrokeDashArray().setAll(10d, 6d);
 
         area.setMouseTransparent(true);
         area.setStroke(null);
@@ -94,10 +102,21 @@ public class UserLimitLineIndicator extends ChartPlugin {
         final double maxY = plotAreaBounds.getMaxY();
 
         final double yPos = minY + axis.getDisplayPosition(limitLine.getValue());
-        if (Double.isNaN(yPos) || maxX <= minX || maxY <= minY) {
+        if (Double.isNaN(yPos) || Double.isInfinite(yPos) || maxX <= minX || maxY <= minY) {
             removeNode(area);
+            removeNode(line);
             removeNode(label);
             return;
+        }
+
+        if (yPos >= minY && yPos <= maxY) {
+            line.setStartX(minX);
+            line.setEndX(maxX);
+            line.setStartY(yPos);
+            line.setEndY(yPos);
+            addNode(line);
+        } else {
+            removeNode(line);
         }
 
         /* fill area above or below the line, clipped to the plot area */
