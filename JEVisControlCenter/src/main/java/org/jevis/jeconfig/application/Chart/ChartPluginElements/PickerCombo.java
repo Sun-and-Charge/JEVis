@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -181,6 +182,11 @@ public class PickerCombo {
     }
 
     private void setMinMax(JEVisAttribute att) {
+        // data rows whose object was deleted or is not readable have no attribute
+        if (att == null) {
+            return;
+        }
+
         DateTime timeStampOfFirstSample = att.getTimestampOfFirstSample();
         DateTime timeStampOfLastSample = att.getTimestampOfLastSample();
 

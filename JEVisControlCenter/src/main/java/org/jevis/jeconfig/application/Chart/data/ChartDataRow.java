@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -847,6 +848,10 @@ public class ChartDataRow extends ChartData {
     private void getObjects() {
         try {
             JEVisObject object = dataSource.getObject(getId());
+            if (object == null) {
+                // row without a selected object, or the object was deleted
+                return;
+            }
             if (object.getJEVisClassName().equals("Clean Data")) {
                 dataProcessorObject = object;
                 this.object = CommonMethods.getFirstParentalDataObject(object);
@@ -866,6 +871,9 @@ public class ChartDataRow extends ChartData {
 
     public JEVisAttribute getAttribute() {
         if (attribute == null || somethingChanged) {
+            if (getObject() == null) {
+                return null;
+            }
             try {
 
                 String jevisClassName = getObject().getJEVisClassName();

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -242,20 +243,24 @@ public class TreeSelectionDialog extends Dialog {
     public static TreeSelectionDialog createSelectionDialog(final Cell<JEVisObject> cell) {
         try {
             JEVisObject item = cell.getItem();
-            UserSelection userSelection = new UserSelection(UserSelection.SelectionType.Object, item);
+            // a new data row has no object yet: no preselection, data source of the Control Center
+            JEVisDataSource ds = item != null ? item.getDataSource() : JEConfig.getDataSource();
+            List<UserSelection> selection = item != null
+                    ? Collections.singletonList(new UserSelection(UserSelection.SelectionType.Object, item))
+                    : Collections.emptyList();
 
             List<JEVisClass> classes = new ArrayList<>();
             for (String className : allData) {
                 JEVisClass jeVisClass = null;
 
-                jeVisClass = item.getDataSource().getJEVisClass(className);
+                jeVisClass = ds.getJEVisClass(className);
 
                 classes.add(jeVisClass);
                 classes.addAll(jeVisClass.getHeirs());
 
             }
 
-            TreeSelectionDialog treeSelectionDialog = new TreeSelectionDialog(item.getDataSource(), classes, SelectionMode.SINGLE, Collections.singletonList(userSelection), false);
+            TreeSelectionDialog treeSelectionDialog = new TreeSelectionDialog(ds, classes, SelectionMode.SINGLE, selection, false);
 
             // Use onAction here rather than onKeyReleased (with check for Enter),
             // as otherwise we encounter RT-34685
