@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  *
  * This file is part of JECommons.
  *
@@ -18,8 +19,6 @@
  */
 package org.jevis.commons.driver;
 
-import java.util.Map;
-import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.driver.inputHandler.GenericConverter;
 
@@ -29,14 +28,8 @@ import org.jevis.commons.driver.inputHandler.GenericConverter;
  */
 public class ConverterFactory {
 
-    public static void initializeConverter(JEVisDataSource _client) {
-    }
-
     public static Converter getConverter(JEVisObject _dataSourceJEVis) {
         return new GenericConverter();
-    }
-
-    public static void setConverterClasses(Map<String, Class> converterClasses) {
     }
 
 }

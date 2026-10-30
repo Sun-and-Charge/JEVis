@@ -28,8 +28,6 @@ import org.jevis.api.JEVisObject;
  * <ul>
  *   <li>{@link JEDataCollector} – the top-level service object; holds global settings such as
  *       maximum thread count and timeout.</li>
- *   <li>{@link DataSourceDriverDirectory}, {@link ParserDriverDirectory}, etc. – container objects
- *       that hold {@link Driver} child objects, each describing one loadable driver JAR.</li>
  *   <li>{@link DataSource} – base type for all data-source objects (e.g. "FTP Server",
  *       "HTTP Server"); defines common scheduling attributes like {@code Cycle Time} and
  *       {@code Last Run}.</li>
@@ -43,26 +41,6 @@ import org.jevis.api.JEVisObject;
  * @author bf
  */
 public interface DataCollectorTypes {
-
-    interface DataSourceDriverDirectory {
-
-        String NAME = "Data Source Driver Directory";
-    }
-
-    interface ParserDriverDirectory {
-
-        String NAME = "Parser Driver Directory";
-    }
-
-    interface ConverterDriverDirectory {
-
-        String NAME = "Converter Driver Directory";
-    }
-
-    interface ImporterDriverDirectory {
-
-        String NAME = "Importer Driver Directory";
-    }
 
     interface ChannelDirectory {
 
@@ -113,35 +91,6 @@ public interface DataCollectorTypes {
         String MAX_NUMBER_THREADS = "Max Number Threads";
         String DATA_SOURCE_TIMEOUT = "Data Source Timeout";
         String ENABLE = "Enable";
-    }
-
-    interface Driver {
-
-        String NAME = "Driver";
-        String SOURCE_FILE = "Source File";
-        String MAIN_CLASS = "Main Class";
-        String JEVIS_CLASS = "JEVis Class";
-        String ENABLED = "Enabled";
-
-        interface DataSourceDriver extends Driver {
-
-            String NAME = "Data Source Driver";
-        }
-
-        interface ParserDriver extends Driver {
-
-            String NAME = "Parser Driver";
-        }
-
-        interface ConverterDriver extends Driver {
-
-            String NAME = "Converter Driver";
-        }
-
-        interface ImporterDriver extends Driver {
-
-            String NAME = "Importer Driver";
-        }
     }
 
     interface Parser {

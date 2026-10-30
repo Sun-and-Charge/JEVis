@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -43,7 +44,6 @@ public class JEVisCommandLine {
     private static String USER = "jevis-user";
     private static String PASSWORD = "jevis-pass";
     private static String CONFIG = "jevis-config";
-    private static String DRIVER_FOLDER = "driver-folder";
     private static String HELP = "help";
     private static String DEBUG = "debug";
     private static String SINGLE = "single";
@@ -73,7 +73,6 @@ public class JEVisCommandLine {
         _options.addOption("jc", CONFIG, true, "Path to the JEVis Config File");
         _options.addOption("h", HELP, false, "Show the help list");
         _options.addOption("d", DEBUG, true, "Sets the debug level (INFO, WARN, ALL)");
-        _options.addOption("df", DRIVER_FOLDER, true, "Sets the root folder for the driver structure");
         _options.addOption("si", SINGLE, true, "set a single equipment to start");
         _options.addOption("de", DAEMON, false, "Start in service(daemon) mode");
         _options.addOption("dec", DAEMONCYLCE, false, "service(daemon) mode sleep time between run cycles in milliseconds. Default is 3600000ms");
@@ -129,10 +128,6 @@ public class JEVisCommandLine {
         return _cmd.getOptionValue(CONFIG);
     }
 
-    public String getDriverFolder() {
-        return _cmd.getOptionValue(DRIVER_FOLDER);
-    }
-
     public boolean isService() {
         return _cmd.hasOption(DAEMON);
     }
@@ -173,7 +168,4 @@ public class JEVisCommandLine {
         }
     }
 
-    public boolean isDevDriverForced() {
-        return _cmd.hasOption("dev");
-    }
 }

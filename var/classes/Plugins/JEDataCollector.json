@@ -4,21 +4,6 @@
   "unique": false,
   "relationships": [
     {
-      "start": "Converter Driver Directory",
-      "end": "JEDataCollector",
-      "type": 3
-    },
-    {
-      "start": "Data Source Driver Directory",
-      "end": "JEDataCollector",
-      "type": 3
-    },
-    {
-      "start": "Importer Driver Directory",
-      "end": "JEDataCollector",
-      "type": 3
-    },
-    {
       "start": "JEDataCollector",
       "end": "Service",
       "type": 0
@@ -26,11 +11,6 @@
     {
       "start": "JEDataCollector",
       "end": "Service Directory",
-      "type": 3
-    },
-    {
-      "start": "Parser Driver Directory",
-      "end": "JEDataCollector",
       "type": 3
     },
     {
