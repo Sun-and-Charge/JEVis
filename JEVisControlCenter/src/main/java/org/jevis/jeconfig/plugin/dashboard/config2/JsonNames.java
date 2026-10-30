@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -61,6 +62,8 @@ public interface JsonNames {
         String Y_POS = "yPos";
         String SHOW_SHADOW = "shadow";
         String BORDER_SIZE = "borderSize";
+        String BORDER_COLOR = "borderColor";
+        String CORNER_RADIUS = "cornerRadius";
         String DATA_HANDLER_NODE = "dataHandler";
         String LAYER = "layer";
         String DECIMALS = "decimals";

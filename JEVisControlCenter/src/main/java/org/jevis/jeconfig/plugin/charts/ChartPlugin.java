@@ -1273,13 +1273,20 @@ public class ChartPlugin implements Plugin {
                     ChartModel chartModel = new ChartModel();
                     chartModel.setChartName(jeVisObject.getLocalName(I18n.getInstance().getLocale().getLanguage()));
                     chartModel.setChartId(0);
-                    chartModel.setChartType(ChartType.AREA);
+                    chartModel.setChartType(analysisRequest.getChartType() != null ? analysisRequest.getChartType() : ChartType.AREA);
                     chartModel.getChartData().add(chartData);
 
                     AnalysisTimeFrame analysisTimeFrame = new AnalysisTimeFrame(ds, this, TimeFrame.CUSTOM);
                     analysisTimeFrame.setStart(analysisRequest.getStartDate());
                     analysisTimeFrame.setEnd(analysisRequest.getEndDate());
                     dataSettings.setAnalysisTimeFrame(analysisTimeFrame);
+                    /* the analysis applies its global aggregation/manipulation to every row, so take the requested ones */
+                    if (analysisRequest.getAggregationPeriod() != null) {
+                        dataSettings.setAggregationPeriod(analysisRequest.getAggregationPeriod());
+                    }
+                    if (analysisRequest.getManipulationMode() != null) {
+                        dataSettings.setManipulationMode(analysisRequest.getManipulationMode());
+                    }
 
                     dataModel.getChartModels().add(chartModel);
 

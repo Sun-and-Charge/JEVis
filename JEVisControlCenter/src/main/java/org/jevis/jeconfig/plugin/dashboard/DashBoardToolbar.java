@@ -94,6 +94,10 @@ public class DashBoardToolbar extends ToolBar {
     //private final ToggleButton moveButton = new ToggleButton("", JEConfig.getImage("move.png", this.iconSize, this.iconSize));
     private final Menu newWidgetMenuItem = new Menu("New");
     private final Button copyButton = new Button("", JEConfig.getSVGImage(Icon.COPY, this.iconSize, this.iconSize));
+    private static final String ICON_UNDO = "/icons/MaterialDesignSVG/outlined/undo.svg";
+    private static final String ICON_REDO = "/icons/MaterialDesignSVG/outlined/redo.svg";
+    private final Button undoButton = new Button("", JEConfig.getSVGImage(ICON_UNDO, this.iconSize, this.iconSize));
+    private final Button redoButton = new Button("", JEConfig.getSVGImage(ICON_REDO, this.iconSize, this.iconSize));
     private final ToggleButton helpButton = JEVisHelp.getInstance().buildHelpButtons(iconSize, iconSize);
     private final ToggleButton infoButton = JEVisHelp.getInstance().buildInfoButtons(iconSize, iconSize);
     private final Separator separatorEditMode = new Separator();
@@ -229,6 +233,15 @@ public class DashBoardToolbar extends ToolBar {
             dashboardControl.redrawDashboardPane();
         });
 
+
+        undoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.undo")));
+        redoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.redo")));
+        GlobalToolBar.changeBackgroundOnHoverUsingBinding(undoButton);
+        GlobalToolBar.changeBackgroundOnHoverUsingBinding(redoButton);
+        undoButton.disableProperty().bind(dashboardControl.canUndoProperty.not().or(dashboardControl.editableProperty.not()));
+        redoButton.disableProperty().bind(dashboardControl.canRedoProperty.not().or(dashboardControl.editableProperty.not()));
+        undoButton.setOnAction(event -> dashboardControl.undo());
+        redoButton.setOnAction(event -> dashboardControl.redo());
 
         copyButton.setTooltip(new Tooltip(I18n.getInstance().getString("dashboard.navigator.copy")));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(copyButton);
@@ -426,7 +439,7 @@ public class DashBoardToolbar extends ToolBar {
                     , sep1, zoomOut, zoomIn, listZoomLevel, reloadButton
                     , sep4, loadDialogButton, save, deleteDashboard
                     , sep5, exportPNG, exportPDF
-                    , sep6, runUpdateButton, unlockButton, navigator, widgetSelector, newWidget, copyButton, deleteWidget
+                    , sep6, runUpdateButton, unlockButton, navigator, widgetSelector, newWidget, copyButton, deleteWidget, undoButton, redoButton
                     , separatorEditMode, showGridButton, snapGridButton, sidebarEditor
                     , JEVisHelp.getInstance().buildSpacerNode(), helpButton, infoButton
             );
@@ -536,6 +549,8 @@ public class DashBoardToolbar extends ToolBar {
             //Hide
             widgetSelector.setVisible(dashboardControl.editableProperty.get());
             copyButton.setVisible(dashboardControl.editableProperty.get());
+            undoButton.setVisible(dashboardControl.editableProperty.get());
+            redoButton.setVisible(dashboardControl.editableProperty.get());
             deleteWidget.setVisible(dashboardControl.editableProperty.get());
             navigator.setVisible(dashboardControl.editableProperty.get());
             snapGridButton.setVisible(dashboardControl.editableProperty.get());

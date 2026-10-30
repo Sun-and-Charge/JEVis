@@ -23,7 +23,9 @@ package org.jevis.jeconfig.plugin.dashboard.config2;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextField;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -55,6 +57,8 @@ import org.jevis.jeconfig.plugin.dashboard.widget.Widget;
 import org.jevis.jeconfig.tool.Layouts;
 import org.jevis.jeconfig.tool.ScreenSize;
 
+import java.util.TreeSet;
+
 
 public class WidgetNavigator {
     private static final Logger logger = LogManager.getLogger(WidgetNavigator.class);
@@ -66,6 +70,12 @@ public class WidgetNavigator {
 
     private final DashboardControl control;
     private TableView<Widget> table;
+    private WidgetColumnFactory widgetColumnFactory;
+    /* placeholder entry of the type filter for "all types" */
+    private static final String ALL_TYPES = "";
+    private final JFXTextField nameFilterField = new JFXTextField();
+    private final JFXComboBox<String> typeFilterBox = new JFXComboBox<>();
+    private final ListChangeListener<Widget> widgetListListener = c -> Platform.runLater(this::updateTypeFilterItems);
 
     public WidgetNavigator(DashboardControl control) {
         this.control = control;
@@ -119,6 +129,7 @@ public class WidgetNavigator {
         });
         stage.setOnHiding(event -> {
             this.control.enableHighlightGlow(false);
+            this.control.getWidgetList().removeListener(widgetListListener);
         });
 
 
@@ -341,7 +352,9 @@ public class WidgetNavigator {
                 control.addWidget(newWidget);
                 newWidget.setEditable(true);
                 control.setSelectedWidget(newWidget);
-                table.getSelectionModel().clearAndSelect(table.getItems().size() - 1);
+                clearFilter();
+                table.getSelectionModel().clearSelection();
+                table.getSelectionModel().select(newWidget);
                 table.scrollTo(newWidget);
                 this.control.requestViewUpdate(newWidget);
             } catch (Exception ex) {
@@ -357,14 +370,95 @@ public class WidgetNavigator {
             control.addWidget(newWidget);
             newWidget.setEditable(true);
             control.setSelectedWidget(newWidget);
-            table.getSelectionModel().clearAndSelect(table.getItems().size() - 1);
+            clearFilter();
+            table.getSelectionModel().clearSelection();
+            table.getSelectionModel().select(newWidget);
             table.scrollTo(newWidget);
             this.control.requestViewUpdate(newWidget);
         });
         Separator sep1 = new Separator();
-        toolBar.getItems().addAll(highlightButton, delete, sep1, widgetSelector, copyButton);
+        Separator sep2 = new Separator();
+        buildFilterControls();
+        toolBar.getItems().addAll(highlightButton, delete, sep1, widgetSelector, copyButton, sep2, nameFilterField, typeFilterBox);
 
         return toolBar;
+    }
+
+    private void buildFilterControls() {
+        nameFilterField.setPromptText(I18n.getInstance().getString("dashboard.navigator.filter.name"));
+        nameFilterField.setPrefWidth(180);
+
+        Callback<ListView<String>, ListCell<String>> factory = new Callback<ListView<String>, ListCell<String>>() {
+            @Override
+            public ListCell<String> call(ListView<String> param) {
+                return new ListCell<String>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item == null || empty) {
+                            setText(null);
+                        } else if (ALL_TYPES.equals(item)) {
+                            setText(I18n.getInstance().getString("dashboard.navigator.filter.alltypes"));
+                        } else {
+                            setText(item);
+                        }
+                    }
+                };
+            }
+        };
+        typeFilterBox.setCellFactory(factory);
+        typeFilterBox.setButtonCell(factory.call(null));
+        typeFilterBox.setPrefWidth(160);
+        updateTypeFilterItems();
+        typeFilterBox.getSelectionModel().select(ALL_TYPES);
+
+        control.getWidgetList().addListener(widgetListListener);
+
+        nameFilterField.textProperty().addListener((observable, oldValue, newValue) -> applyFilter());
+        typeFilterBox.valueProperty().addListener((observable, oldValue, newValue) -> applyFilter());
+    }
+
+    /**
+     * Fill the type filter with the widget types present in the dashboard, keeping the current selection.
+     */
+    private void updateTypeFilterItems() {
+        TreeSet<String> types = new TreeSet<>();
+        for (Widget widget : control.getWidgetList()) {
+            if (widget != null && widget.getConfig() != null && widget.getConfig().getType() != null
+                    && !widget.getConfig().getType().isEmpty()) {
+                types.add(widget.getConfig().getType());
+            }
+        }
+        String selected = typeFilterBox.getValue();
+        if (selected != null && !ALL_TYPES.equals(selected)) {
+            /* keep the selected type even if no widget of it is left, otherwise the filter would change silently */
+            types.add(selected);
+        }
+
+        ObservableList<String> items = FXCollections.observableArrayList();
+        items.add(ALL_TYPES);
+        items.addAll(types);
+        if (!items.equals(typeFilterBox.getItems())) {
+            typeFilterBox.getItems().setAll(items);
+            typeFilterBox.getSelectionModel().select(selected == null ? ALL_TYPES : selected);
+        }
+    }
+
+    private void applyFilter() {
+        if (widgetColumnFactory == null) {
+            return;
+        }
+        String type = typeFilterBox.getValue();
+        if (type == null || ALL_TYPES.equals(type)) {
+            type = null;
+        }
+        widgetColumnFactory.setFilter(nameFilterField.getText(), type);
+    }
+
+    private void clearFilter() {
+        nameFilterField.setText("");
+        typeFilterBox.getSelectionModel().select(ALL_TYPES);
+        applyFilter();
     }
 
     private Control buildTable() {
@@ -375,7 +469,7 @@ public class WidgetNavigator {
 
 //        List<Widget> widgetList = this.control.getWidgets();
 //        System.out.println("Widgets: " + widgetList.size());
-        WidgetColumnFactory widgetColumnFactory = new WidgetColumnFactory(this.control);
+        widgetColumnFactory = new WidgetColumnFactory(this.control);
         table = widgetColumnFactory.buildTable(this.control.getWidgetList());
 
 //        table.getItems().addListener((ListChangeListener<Widget>) (c -> {

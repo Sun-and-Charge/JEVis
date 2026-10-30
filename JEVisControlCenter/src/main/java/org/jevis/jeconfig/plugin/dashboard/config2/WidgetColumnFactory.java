@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,6 +27,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -51,8 +53,9 @@ public class WidgetColumnFactory {
     final protected DashboardControl control;
     protected TableView<Widget> table;
     private final Double numberColumDefaultSize = 70d;
-    //    private ObservableList<Widget> fullList;
-//    private FilteredList<Widget> filteredData;
+    /* the dashboard's widget list, the order of this list is the drawing order */
+    private ObservableList<Widget> sourceList;
+    private FilteredList<Widget> filteredData;
     private final ChangeListener<Boolean> focusListener = new ChangeListener<Boolean>() {
         @Override
         public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -113,28 +116,66 @@ public class WidgetColumnFactory {
         });
 
         this.table.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            this.table.getItems().forEach(widget -> {
+            /* all widgets, so widgets hidden by the filter lose their highlight too */
+            this.sourceList.forEach(widget -> {
                 this.control.highlightWidgetInView(widget, this.table.getSelectionModel().getSelectedItems().contains(widget));
             });
         });
-//        this.filteredData = new FilteredList<Widget>(list);
-        this.table.setItems(list);
+        this.sourceList = list;
+        this.filteredData = new FilteredList<Widget>(list, widget -> true);
+        this.table.setItems(this.filteredData);
 
         return this.table;
     }
 
+    /**
+     * Filter the table by widget title and widget type.
+     *
+     * @param nameFilter part of the title (case-insensitive), null or empty for all
+     * @param typeFilter widget type id, null for all types
+     */
+    public void setFilter(String nameFilter, String typeFilter) {
+        final String name = nameFilter == null ? "" : nameFilter.trim().toLowerCase();
+        this.filteredData.setPredicate(widget -> {
+            if (widget == null || widget.getConfig() == null) {
+                return name.isEmpty() && typeFilter == null;
+            }
+            if (typeFilter != null && !typeFilter.equals(widget.getConfig().getType())) {
+                return false;
+            }
+            if (!name.isEmpty()) {
+                String title = widget.getConfig().getTitle();
+                return title != null && title.toLowerCase().contains(name);
+            }
+            return true;
+        });
+    }
+
+    /**
+     * Moves the widget in the dashboard list. While a filter is active the widget swaps
+     * its place with the next visible widget, so the move is always visible in the table.
+     */
     private void moveWidget(Widget widget, int offset) {
-        int oldIndex = table.getItems().indexOf(widget);
-        int newIndex = oldIndex + offset;
-
-        if (newIndex < 0) {
-            newIndex = 0;
+        int visibleIndex = this.filteredData.indexOf(widget);
+        if (visibleIndex < 0) {
+            return;
         }
-        if (newIndex > table.getItems().size() - 1) {
-            newIndex = table.getItems().size() - 1;
+        int newVisibleIndex = visibleIndex + offset;
+
+        if (newVisibleIndex < 0) {
+            newVisibleIndex = 0;
+        }
+        if (newVisibleIndex > this.filteredData.size() - 1) {
+            newVisibleIndex = this.filteredData.size() - 1;
+        }
+        if (newVisibleIndex == visibleIndex) {
+            return;
         }
 
-        Collections.swap(table.getItems(), oldIndex, newIndex);
+        int oldIndex = this.filteredData.getSourceIndex(visibleIndex);
+        int newIndex = this.filteredData.getSourceIndex(newVisibleIndex);
+
+        Collections.swap(this.sourceList, oldIndex, newIndex);
     }
 
     public TableColumn<Widget, Widget> buildOrderColoumn() {

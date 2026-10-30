@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -23,6 +24,7 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
+import org.jevis.jeconfig.application.Chart.ChartType;
 import org.joda.time.DateTime;
 
 public class AnalysisRequest {
@@ -33,6 +35,10 @@ public class AnalysisRequest {
     private JEVisAttribute attribute;
     private DateTime startDate;
     private DateTime endDate;
+    /**
+     * Optional chart type for data object requests; null means the analysis default (area).
+     */
+    private ChartType chartType;
 
     public AnalysisRequest(JEVisObject object, AggregationPeriod aggregationPeriod, ManipulationMode manipulationMode, DateTime startDate, DateTime endDate) {
         this.manipulationMode = manipulationMode;
@@ -88,5 +94,13 @@ public class AnalysisRequest {
 
     public void setAttribute(JEVisAttribute attribute) {
         this.attribute = attribute;
+    }
+
+    public ChartType getChartType() {
+        return chartType;
+    }
+
+    public void setChartType(ChartType chartType) {
+        this.chartType = chartType;
     }
 }

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -19,6 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * @deprecated Legacy V1 dashboard graph analysis linker node format. This class exists solely for
  * backward-compatibility when reading old dashboard JSON files.
@@ -26,10 +30,18 @@ package org.jevis.jeconfig.plugin.dashboard.config;
  * {@code config2} package instead.
  */
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GraphAnalysisLinkerNode {
 
 
     private Long graphAnalysisObject = 0L;
+
+    /**
+     * ID of a time frame (see TimeFrame.getID()) the analysis is opened with instead of the dashboard interval,
+     * empty to use the dashboard interval.
+     */
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private String forcedInterval = "";
 
     public Long getGraphAnalysisObject() {
         return this.graphAnalysisObject;
@@ -37,6 +49,14 @@ public class GraphAnalysisLinkerNode {
 
     public void setGraphAnalysisObject(Long graphAnalysisObject) {
         this.graphAnalysisObject = graphAnalysisObject;
+    }
+
+    public String getForcedInterval() {
+        return this.forcedInterval;
+    }
+
+    public void setForcedInterval(String forcedInterval) {
+        this.forcedInterval = forcedInterval == null ? "" : forcedInterval;
     }
 
 }

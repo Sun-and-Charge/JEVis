@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -22,6 +23,7 @@ package org.jevis.jeconfig.plugin.dashboard.widget;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -38,6 +40,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,6 +93,8 @@ public abstract class Widget extends Region {
     public Size previewSize = new Size(28, 28);
     protected DataModelDataHandler sampleHandler;
     double widthCache;
+    /* the node set by setGraphic(), needed to round its corners with a clip */
+    private Node graphicNode;
     double heightCache;
 
     public Widget(DashboardControl control, WidgetPojo config) {
@@ -481,16 +486,52 @@ public abstract class Widget extends Region {
     }
 
     private void setBackgroundColor(Color color) {
-        Background bgColor = new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY));
+        Background bgColor = new Background(new BackgroundFill(color, getCornerRadii(), Insets.EMPTY));
         this.contentRoot.setBackground(bgColor);
+    }
+
+    private CornerRadii getCornerRadii() {
+        double radius = this.config != null ? this.config.getCornerRadius() : 0d;
+        return radius > 0 ? new CornerRadii(radius) : CornerRadii.EMPTY;
+    }
+
+    /**
+     * Rounds the corners of the widget content. Most widgets paint their own (rectangular) background,
+     * so the content node is clipped to the rounded shape inside the border.
+     */
+    private void updateGraphicClip() {
+        if (this.graphicNode == null) {
+            return;
+        }
+        double radius = this.config != null ? this.config.getCornerRadius() : 0d;
+        if (radius <= 0) {
+            this.graphicNode.setClip(null);
+            return;
+        }
+
+        double borderWidth = 0d;
+        if (this.config.getBorderSize() != null) {
+            borderWidth = Math.max(0d, this.config.getBorderSize().getTop());
+        }
+        /* the content is already laid out inside the border (AnchorPane insets), so the clip follows its own bounds */
+        final Node node = this.graphicNode;
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(Bindings.createDoubleBinding(() -> node.getLayoutBounds().getWidth(), node.layoutBoundsProperty()));
+        clip.heightProperty().bind(Bindings.createDoubleBinding(() -> node.getLayoutBounds().getHeight(), node.layoutBoundsProperty()));
+        double innerRadius = Math.max(0d, radius - borderWidth);
+        clip.setArcWidth(innerRadius * 2);
+        clip.setArcHeight(innerRadius * 2);
+        this.graphicNode.setClip(clip);
     }
 
     public abstract ImageView getImagePreview();
 
 
     private void setBorder(BorderWidths newValue) {
-        this.contentRoot.setBorder(new Border(new BorderStroke(Color.BLACK,
-                BorderStrokeStyle.SOLID, CornerRadii.EMPTY, newValue)));
+        Color borderColor = this.config != null && this.config.getBorderColor() != null ? this.config.getBorderColor() : Color.BLACK;
+        this.contentRoot.setBorder(new Border(new BorderStroke(borderColor,
+                BorderStrokeStyle.SOLID, getCornerRadii(), newValue)));
+        updateGraphicClip();
     }
 
     public void showProgressIndicator(boolean show) {
@@ -513,6 +554,11 @@ public abstract class Widget extends Region {
     public void setGraphic(Node node) {
         this.contentRoot.getChildren().clear();
         this.contentRoot.getChildren().add(node);
+        if (this.graphicNode != null && this.graphicNode != node) {
+            this.graphicNode.setClip(null);
+        }
+        this.graphicNode = node;
+        updateGraphicClip();
         AnchorPane.setBottomAnchor(node, 0.0);
         AnchorPane.setTopAnchor(node, 0.0);
         AnchorPane.setLeftAnchor(node, 0.0);
@@ -575,6 +621,8 @@ public abstract class Widget extends Region {
                 .put(JsonNames.Widget.FONT_UNDERLINED, this.config.getFontUnderlined())
                 .put(JsonNames.Widget.TITLE_POSITION, this.config.getTitlePosition().toString())
                 .put(JsonNames.Widget.BORDER_SIZE, this.config.getBorderSize().getTop())
+                .put(JsonNames.Widget.BORDER_COLOR, this.config.getBorderColor().toString())
+                .put(JsonNames.Widget.CORNER_RADIUS, this.config.getCornerRadius())
                 .put(JsonNames.Widget.SHOW_SHADOW, this.config.getShowShadow())
                 .put(JsonNames.Widget.LAYER, this.config.getLayer())
                 .put(JsonNames.Widget.WIDTH, this.config.getSize().getWidth())

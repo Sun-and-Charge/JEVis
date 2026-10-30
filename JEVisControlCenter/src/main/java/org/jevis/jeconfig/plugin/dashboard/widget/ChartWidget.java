@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -113,6 +114,7 @@ public class ChartWidget extends Widget implements DataModelWidget {
         showAlertOverview(false, "");
 
         this.sampleHandler.update(interval);
+        this.legend.setInterval(interval);
 
         try {
             Platform.runLater(() -> {
@@ -126,7 +128,7 @@ public class ChartWidget extends Widget implements DataModelWidget {
                     Platform.runLater(() -> this.legend.getItems().add(
                             this.legend.buildHorizontalLegendItem(chartDataModel.getName(), chartDataModel.getColor(),
                                     this.config.getFontColor(), this.config.getFontSize(), chartDataModel.getObject(),
-                                    chartDataModel.getSamples().isEmpty(), I18n.getInstance().getString("plugin.dashboard.alert.nodata"), false)));
+                                    chartDataModel.getSamples().isEmpty(), I18n.getInstance().getString("plugin.dashboard.alert.nodata"), false, chartDataModel)));
                 } catch (Exception ex) {
                     logger.error(ex);
                 }

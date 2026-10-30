@@ -25,10 +25,12 @@ import com.google.common.collect.Iterables;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -36,14 +38,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisFile;
 import org.jevis.api.JEVisObject;
+import org.jevis.commons.dataprocessing.AggregationPeriod;
+import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.TreeHelper;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
+import org.jevis.jeconfig.plugin.dashboard.common.GraphAnalysisLinker;
 import org.jevis.jeconfig.plugin.dashboard.config2.ImageConfig;
 import org.jevis.jeconfig.plugin.dashboard.config2.Size;
 import org.jevis.jeconfig.plugin.dashboard.config2.WidgetConfigDialog;
 import org.jevis.jeconfig.plugin.dashboard.config2.WidgetPojo;
+import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.jevis.jeconfig.tool.SvgImages;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -123,6 +129,7 @@ public class ImageWidget extends Widget {
                     }
                 }
                 updateImage();
+                rootPane.setCursor(imageConfig != null && imageConfig.getLinkType() != ImageConfig.LinkType.NONE ? Cursor.HAND : Cursor.DEFAULT);
             } catch (Exception ex) {
                 logger.error("Failed to load image of widget {}", this.config.getTitle(), ex);
             }
@@ -151,6 +158,13 @@ public class ImageWidget extends Widget {
         imageView.fitHeightProperty().bind(rootPane.heightProperty());
         setGraphic(rootPane);
 
+        /* optional link: open the linked dashboard or analysis on click (in edit mode the edit pane gets the clicks) */
+        rootPane.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && !control.editableProperty.get()) {
+                openLink();
+            }
+        });
+
         /* vector images are rendered at the widget size, render again when the size changes */
         svgResizeDelay.setOnFinished(event -> renderSvg());
         rootPane.widthProperty().addListener((observable, oldValue, newValue) -> {
@@ -167,6 +181,40 @@ public class ImageWidget extends Widget {
             logger.error("Failed to load image widget config node", ex);
         }
 
+    }
+
+    private void openLink() {
+        if (imageConfig == null) {
+            return;
+        }
+        try {
+            switch (imageConfig.getLinkType()) {
+                case DASHBOARD:
+                    JEVisObject dashboard = getDataSource().getObject(imageConfig.getDashboardLink().getDashboardObject());
+                    if (dashboard != null) {
+                        /* keep the time frame and interval of the current dashboard, like the dashboard link widget */
+                        TimeFrame timeFrame = control.getActiveDashboard().getTimeFrame();
+                        Interval interval = control.getInterval();
+                        control.selectDashboard(dashboard);
+                        control.setActiveTimeFrame(timeFrame);
+                        if (interval != null) {
+                            control.setInterval(interval);
+                        }
+                    }
+                    break;
+                case ANALYSIS:
+                    GraphAnalysisLinker linker = new GraphAnalysisLinker(getDataSource());
+                    linker.applyNode(imageConfig.getAnalysisLink());
+                    Interval linkInterval = GraphAnalysisLinker.resolveInterval(control, imageConfig.getAnalysisLink().getForcedInterval(), control.getInterval(), this.config.getFixedTimeframe());
+                    linker.applyConfig(AggregationPeriod.NONE, ManipulationMode.NONE, linkInterval);
+                    linker.openLink();
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception ex) {
+            logger.error("Failed to open link of image widget {}", this.config.getTitle(), ex);
+        }
     }
 
     public void restImageConfig() {

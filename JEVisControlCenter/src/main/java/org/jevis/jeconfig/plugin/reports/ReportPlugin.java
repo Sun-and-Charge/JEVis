@@ -779,7 +779,30 @@ public class ReportPlugin implements Plugin {
 
     @Override
     public void openObject(Object object) {
-
+        if (!(object instanceof JEVisObject)) {
+            return;
+        }
+        long reportID = ((JEVisObject) object).getID();
+        if (!initialized) {
+            loadReports();
+            initialized = true;
+        }
+        /* loadReports adds the reports with runLater, select the report after that */
+        Platform.runLater(() -> {
+            try {
+                filterInput.setText("");
+                for (JEVisObject report : reports) {
+                    if (report.getID() != null && report.getID() == reportID) {
+                        listView.getSelectionModel().select(report);
+                        listView.scrollTo(report);
+                        return;
+                    }
+                }
+                logger.warn("Report {} not found in the report list", reportID);
+            } catch (Exception ex) {
+                logger.error("Failed to open report {}", reportID, ex);
+            }
+        });
     }
 
     @Override

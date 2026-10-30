@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -38,6 +39,8 @@ import static org.jevis.jeconfig.plugin.dashboard.config2.JsonNames.Widget.*;
 public class WidgetPojo {
 
     private BorderWidths borderSize = new BorderWidths(0.2);
+    private Color borderColor = Color.BLACK;
+    private double cornerRadius = 0d;
     private Color fontColor = Color.BLACK;
     private Color fontColorSecondary = Color.WHITESMOKE;
     private String title = "Title";
@@ -194,6 +197,23 @@ public class WidgetPojo {
                 logger.debug("Could not parse position: {}", BORDER_SIZE, ex);
             }
 
+            /* optional, older dashboards have no border colour and no corner radius */
+            if (jsonNode.get(BORDER_COLOR) != null) {
+                try {
+                    this.borderColor = Color.valueOf(jsonNode.get(BORDER_COLOR).asText(Color.BLACK.toString()));
+                } catch (Exception ex) {
+                    logger.debug("Could not parse {}: {}", BORDER_COLOR, ex.getMessage(), ex);
+                }
+            }
+
+            if (jsonNode.get(CORNER_RADIUS) != null) {
+                try {
+                    this.cornerRadius = Math.max(0d, jsonNode.get(CORNER_RADIUS).asDouble(0d));
+                } catch (Exception ex) {
+                    logger.debug("Could not parse {}: {}", CORNER_RADIUS, ex.getMessage(), ex);
+                }
+            }
+
             try {
                 this.decimals = jsonNode.get(DECIMALS).asInt(2);
             } catch (Exception ex) {
@@ -255,6 +275,22 @@ public class WidgetPojo {
 
     public void setBorderSize(BorderWidths borderSize) {
         this.borderSize = borderSize;
+    }
+
+    public Color getBorderColor() {
+        return this.borderColor;
+    }
+
+    public void setBorderColor(Color borderColor) {
+        this.borderColor = borderColor != null ? borderColor : Color.BLACK;
+    }
+
+    public double getCornerRadius() {
+        return this.cornerRadius;
+    }
+
+    public void setCornerRadius(double cornerRadius) {
+        this.cornerRadius = Math.max(0d, cornerRadius);
     }
 
     public Color getFontColor() {
@@ -427,6 +463,8 @@ public class WidgetPojo {
         copy.setTitle(this.getTitle());
         copy.setTitlePosition(this.getTitlePosition());
         copy.setBorderSize(this.getBorderSize());
+        copy.setBorderColor(this.getBorderColor());
+        copy.setCornerRadius(this.getCornerRadius());
         copy.setFont(this.getFont());
         copy.setTooltip(this.getTooltip());
         copy.setFontColorSecondary(this.getFontColorSecondary());

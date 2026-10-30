@@ -20,7 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterables;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -40,11 +42,17 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -138,6 +146,22 @@ public class DashboardControl {
     private WorkDays workDays;
     private SlideshowControl slideshowControl = null;
 
+    /* ---- undo/redo of edit-mode changes: JSON snapshots of the dashboard configuration ---- */
+    private static final int UNDO_LIMIT = 30;
+    private static final KeyCombination UNDO_KEY = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination REDO_KEY = new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination REDO_KEY_ALT = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
+    private final Deque<String> undoStack = new ArrayDeque<>();
+    private final Deque<String> redoStack = new ArrayDeque<>();
+    public final BooleanProperty canUndoProperty = new SimpleBooleanProperty(false);
+    public final BooleanProperty canRedoProperty = new SimpleBooleanProperty(false);
+    /**
+     * Last known (already recorded) state; a detected change pushes this onto the undo stack.
+     */
+    private String undoBaseline = null;
+    private boolean restoringSnapshot = false;
+    private PauseTransition undoDebounce;
+
 
     public DashboardControl(DashBordPlugIn plugin) {
         this.configManager = new ConfigManager(plugin.getDataSource());
@@ -149,6 +173,9 @@ public class DashboardControl {
         widgetNavigator = new WidgetNavigator(this);
         initTimeFrames();
         this.activeDashboard = this.configManager.createEmptyDashboard();
+
+        this.undoDebounce = new PauseTransition(Duration.millis(400));
+        this.undoDebounce.setOnFinished(event -> captureUndoSnapshot());
     }
 
     public void updateWidget(Widget widget) {
@@ -158,6 +185,7 @@ public class DashboardControl {
                 logger.debug("---- Control.updateWidgets");
                 widget.updateConfig(widget.getConfig());
                 widget.updateConfig();
+                scheduleUndoSnapshot();
                 widget.updateData(activeInterval);
 
                 super.done();
@@ -217,6 +245,8 @@ public class DashboardControl {
 
         dashboardPane.widthProperty().addListener(sizeListener);
         dashboardPane.heightProperty().addListener(sizeListener);
+
+        installUndoHandlers(this.dashBordPlugIn.getContentNode());
     }
 
     public void showGrid(boolean showGrid) {
@@ -507,6 +537,7 @@ public class DashboardControl {
             }
             /* reset controls */
             this.firstLoadedConfigHash = null;
+            clearUndoHistory(null);
             this.editableProperty.setValue(false);
             this.snapToGridProperty.setValue(true);
             this.backgroundImage = null;
@@ -582,6 +613,7 @@ public class DashboardControl {
             }
 
             firstLoadedConfigHash = computeDashboardHash();
+            clearUndoHistory(firstLoadedConfigHash);
 
             setZoomFactor(activeDashboard.getZoomFactor());
 
@@ -621,6 +653,7 @@ public class DashboardControl {
     public void redrawDashboardPane() {
         dashboardPane.redrawWidgets(this.widgetList);
         dashboardPane.showGrid(showGridProperty.getValue());
+        scheduleUndoSnapshot();
     }
 
     public void openWidgetNavigator() {
@@ -629,6 +662,7 @@ public class DashboardControl {
 
     public void setDefaultZoom(double zoomFactor) {
         activeDashboard.setZoomFactor(zoomFactor);
+        scheduleUndoSnapshot();
     }
 
     public void setEditable(boolean editable) {
@@ -798,6 +832,7 @@ public class DashboardControl {
             }
             this.widgetList.add(widget);
             this.dashboardPane.addWidget(widget);
+            scheduleUndoSnapshot();
             widget.updateData(this.activeInterval);
         } catch (Exception ex) {
             logger.error(ex);
@@ -810,6 +845,7 @@ public class DashboardControl {
         });
         this.widgetList.removeAll(elements);
         this.dashboardPane.removeAllWidgets(elements);
+        scheduleUndoSnapshot();
     }
 
     public synchronized void removeWidget(Widget widget) {
@@ -817,6 +853,7 @@ public class DashboardControl {
             widget.setVisible(false);
             this.widgetList.remove(widget);
             this.dashboardPane.removeWidget(widget);
+            scheduleUndoSnapshot();
         } catch (Exception ex) {
             logger.error(ex);
         }
@@ -825,6 +862,198 @@ public class DashboardControl {
 
     public List<Widget> getWidgets() {
         return this.widgetList;
+    }
+
+    /**
+     * Registers the edit-mode change detection (mouse/key release, debounced) and the undo/redo shortcuts.
+     */
+    private void installUndoHandlers(Node root) {
+        if (root == null) {
+            return;
+        }
+        root.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> scheduleUndoSnapshot());
+        root.addEventFilter(KeyEvent.KEY_RELEASED, event -> scheduleUndoSnapshot());
+        /* handler (not filter), so text fields keep their own Ctrl+Z */
+        root.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (!editableProperty.get()) {
+                return;
+            }
+            if (UNDO_KEY.match(event)) {
+                undo();
+                event.consume();
+            } else if (REDO_KEY.match(event) || REDO_KEY_ALT.match(event)) {
+                redo();
+                event.consume();
+            }
+        });
+    }
+
+    /**
+     * Requests a (debounced) check whether the dashboard configuration changed since the last recorded state.
+     * Safe to call from any thread and as often as needed.
+     */
+    public void scheduleUndoSnapshot() {
+        if (restoringSnapshot || undoBaseline == null || undoDebounce == null) {
+            return;
+        }
+        if (Platform.isFxApplicationThread()) {
+            if (editableProperty.get()) {
+                undoDebounce.playFromStart();
+            }
+        } else {
+            Platform.runLater(this::scheduleUndoSnapshot);
+        }
+    }
+
+    /**
+     * Compares the current configuration with the last recorded state and pushes an undo step if it changed.
+     */
+    private void captureUndoSnapshot() {
+        if (restoringSnapshot || undoBaseline == null || !editableProperty.get()) {
+            return;
+        }
+        String current = computeDashboardHash();
+        if (current.isEmpty() || current.equals(undoBaseline)) {
+            return;
+        }
+        pushLimited(undoStack, undoBaseline);
+        redoStack.clear();
+        undoBaseline = current;
+        updateUndoState();
+    }
+
+    private void pushLimited(Deque<String> stack, String state) {
+        stack.push(state);
+        while (stack.size() > UNDO_LIMIT) {
+            stack.removeLast();
+        }
+    }
+
+    /**
+     * Drops the undo/redo history, e.g. after loading or saving a dashboard.
+     *
+     * @param baseline the configuration to start from, or {@code null} to stop recording until the next load
+     */
+    private void clearUndoHistory(String baseline) {
+        if (undoDebounce != null) {
+            undoDebounce.stop();
+        }
+        undoStack.clear();
+        redoStack.clear();
+        undoBaseline = (baseline == null || baseline.isEmpty()) ? null : baseline;
+        updateUndoState();
+    }
+
+    private void updateUndoState() {
+        Runnable update = () -> {
+            canUndoProperty.set(!undoStack.isEmpty());
+            canRedoProperty.set(!redoStack.isEmpty());
+        };
+        if (Platform.isFxApplicationThread()) {
+            update.run();
+        } else {
+            Platform.runLater(update);
+        }
+    }
+
+    /**
+     * Reverts the last change made in edit mode.
+     */
+    public void undo() {
+        if (!editableProperty.get() || undoBaseline == null) {
+            return;
+        }
+        undoDebounce.stop();
+        captureUndoSnapshot(); /* record a pending change first, so it can be undone too */
+        if (undoStack.isEmpty()) {
+            return;
+        }
+        pushLimited(redoStack, undoBaseline);
+        restoreSnapshot(undoStack.pop());
+    }
+
+    /**
+     * Re-applies the last change reverted by {@link #undo()}.
+     */
+    public void redo() {
+        if (!editableProperty.get() || undoBaseline == null) {
+            return;
+        }
+        undoDebounce.stop();
+        captureUndoSnapshot(); /* a new pending change makes the redo history obsolete */
+        if (redoStack.isEmpty()) {
+            return;
+        }
+        pushLimited(undoStack, undoBaseline);
+        restoreSnapshot(redoStack.pop());
+    }
+
+    /**
+     * Rebuilds the dashboard from a configuration snapshot the same way loading a dashboard does,
+     * but keeps the dashboard object, the selected interval and the edit mode.
+     */
+    private void restoreSnapshot(String json) {
+        restoringSnapshot = true;
+        try {
+            stopAllUpdates();
+            JsonNode node = this.configManager.getMapper().readTree(json);
+            DashboardPojo restored = this.configManager.loadDashboard(node);
+
+            this.selectionController.clearSelection();
+            List<Widget> oldWidgets = new ArrayList<>(this.widgetList);
+            oldWidgets.forEach(widget -> widget.setVisible(false));
+            this.widgetList.removeAll(oldWidgets);
+            this.dashboardPane.removeAllWidgets(oldWidgets);
+
+            /* copy the dashboard settings into the active pojo, other components keep a reference to it */
+            this.activeDashboard.setBackgroundColor(restored.getBackgroundColor());
+            this.activeDashboard.setBackgroundMode(restored.getBackgroundMode());
+            this.activeDashboard.setSize(restored.getSize());
+            this.activeDashboard.setxGridInterval(restored.getxGridInterval());
+            this.activeDashboard.setyGridInterval(restored.getyGridInterval());
+            this.activeDashboard.setUpdateRate(restored.getUpdateRate());
+            this.activeDashboard.setZoomFactor(restored.getZoomFactor());
+            if (restored.getTimeFrame() != null) {
+                this.activeDashboard.setTimeFrame(restored.getTimeFrame());
+            }
+            this.activeDashboard.getWidgetList().clear();
+            this.activeDashboard.getWidgetList().addAll(restored.getWidgetList());
+
+            List<Widget> newWidgets = this.configManager.createWidgets(this, this.activeDashboard.getWidgetList());
+            this.widgetList.addAll(newWidgets);
+            this.dashBordPlugIn.getDashBoardPane().updateView();
+            newWidgets.forEach(widget -> this.dashboardPane.addWidget(widget));
+            newWidgets.forEach(widget -> {
+                try {
+                    if (widget instanceof DataModelWidget) {
+                        ((DataModelWidget) widget).setCustomWorkday(customWorkdayProperty.get());
+                    }
+                    widget.updateConfig();
+                    widget.setEditable(editableProperty.get());
+                } catch (Exception ex) {
+                    logger.error("Failed to restore widget '{}'", widget.getConfig().getUuid(), ex);
+                }
+            });
+
+            updateBackground();
+            this.dashboardPane.redrawWidgets(this.widgetList);
+            this.dashboardPane.showGrid(showGridProperty.getValue());
+            showConfig();
+            if (this.toolBar != null) {
+                this.toolBar.updateView(activeDashboard);
+            }
+
+            /* record the state as it is after the rebuild, so the restore itself is no new change */
+            String current = computeDashboardHash();
+            this.undoBaseline = current.isEmpty() ? json : current;
+
+            runDataUpdateTasks(true);
+        } catch (Exception ex) {
+            logger.error("Failed to restore dashboard snapshot", ex);
+        } finally {
+            restoringSnapshot = false;
+            updateUndoState();
+        }
     }
 
     /**
@@ -846,6 +1075,7 @@ public class DashboardControl {
             loadDashboardObjects();
             this.toolBar.updateDashboardList(getAllDashboards(), this.activeDashboard);
             firstLoadedConfigHash = computeDashboardHash();
+            clearUndoHistory(firstLoadedConfigHash);
         } catch (Exception ex) {
             logger.error("Failed to save dashboard", ex);
         }
@@ -1066,66 +1296,82 @@ public class DashboardControl {
 
     public void moveSelected(double up, double down, double left, double right) {
         selectionController.moveSelected(up, down, left, right);
+        scheduleUndoSnapshot();
     }
 
     public void layerSelected(int layer) {
         selectionController.layerSelected(layer);
+        scheduleUndoSnapshot();
     }
 
     public void fgColorSelected(Color color) {
         selectionController.fgColorSelected(color);
+        scheduleUndoSnapshot();
     }
 
     public void bgColorSelected(Color color) {
         selectionController.bgColorSelected(color);
+        scheduleUndoSnapshot();
     }
 
     public void sizeSelected(double width, double height) {
         selectionController.sizeSelected(width, height);
+        scheduleUndoSnapshot();
     }
 
     public void positionSelected(double xpos, double ypos) {
         selectionController.positionSelected(xpos, ypos);
+        scheduleUndoSnapshot();
     }
 
     public void equalizeDataModel() {
         selectionController.equalizeDataModel();
+        scheduleUndoSnapshot();
     }
 
     public void shadowSelected(boolean shadows) {
         selectionController.shadowSelected(shadows);
+        scheduleUndoSnapshot();
     }
 
     public void showValueSelected(boolean showValue) {
         selectionController.showValueSelected(showValue);
+        scheduleUndoSnapshot();
     }
 
     public void alignSelected(Pos pos) {
         selectionController.alignSelected(pos);
+        scheduleUndoSnapshot();
     }
 
     public void fontSizeSelected(double size) {
         selectionController.fontSizeSelected(size);
+        scheduleUndoSnapshot();
     }
 
     public void fontWeightSelected(FontWeight fontWeight) {
         selectionController.fontWeightSelected(fontWeight);
+        scheduleUndoSnapshot();
     }
 
     public void fontPostureSelected(FontPosture fontPosture) {
         selectionController.fontPostureSelected(fontPosture);
+        scheduleUndoSnapshot();
     }
 
     public void fontUnderlinedSelected(Boolean underlined) {
         selectionController.fontUnderlinedSelected(underlined);
+        scheduleUndoSnapshot();
     }
 
     public void setWidgetTitle(String name) {
         selectionController.setWidgetTitle(name);
+        scheduleUndoSnapshot();
     }
 
     public void decimalsSelected(int size) {
         selectionController.decimalsSelected(size);
+        scheduleUndoSnapshot();
     }
 
     /**
