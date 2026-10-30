@@ -209,6 +209,39 @@
         "en": "Title",
         "ar": "عنوان"
       }
+    },
+    {
+      "type": "Description",
+      "descriptions": {
+        "de": "Beschreibung der Rolle",
+        "en": "Description of the role"
+      },
+      "names": {
+        "de": "Beschreibung",
+        "en": "Description"
+      }
+    },
+    {
+      "type": "Entra ID Group",
+      "descriptions": {
+        "de": "Microsoft-Entra-ID-Gruppe, deren Mitglieder diese Rolle erhalten",
+        "en": "Microsoft Entra ID group whose members get this role"
+      },
+      "names": {
+        "de": "Entra-ID-Gruppe",
+        "en": "Entra ID group"
+      }
+    },
+    {
+      "type": "Start Dashboard",
+      "descriptions": {
+        "de": "Dashboard, das für Mitglieder der Rolle beim Start geöffnet wird",
+        "en": "Dashboard opened at startup for members of the role"
+      },
+      "names": {
+        "de": "Start-Dashboard",
+        "en": "Start dashboard"
+      }
     }
   ]
 }

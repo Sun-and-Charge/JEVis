@@ -238,12 +238,6 @@ public class TablePlugin implements Plugin {
 
                             JFXDatePicker pickerDate = new JFXDatePicker();
 
-                            if (getTableRow().getIndex() % 2 == 0) {
-                                pickerDate.setStyle("-fx-text-fill: white;");
-                            } else {
-                                pickerDate.setStyle("-fx-text-fill: black;");
-                            }
-
                             if (item.hasSample()) {
                                 try {
                                     DateTime date = JEVisDates.parseDefaultDate(item);

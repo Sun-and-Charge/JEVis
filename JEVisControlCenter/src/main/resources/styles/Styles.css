@@ -278,6 +278,23 @@
     -fx-padding: 4 0 4 20;
 }
 
+/* Modena gives the button cell of a combo box a transparent -fx-background, so a Label used as cell graphic
+   (icon + name) derives white text from it. Use the cell's own text colour instead. */
+.combo-box > .list-cell .label {
+    -fx-text-fill: -fx-text-base-color;
+}
+
+/* Modena draws selected text white on -fx-accent, unreadable on the Sun yellow */
+.text-input:focused {
+    -fx-highlight-fill: -suc-selection;
+    -fx-highlight-text-fill: -suc-selection-text;
+}
+
+/* choice box inside a selected table/list cell: Modena uses white text on the selection bar */
+.cell:focused:selected > .choice-box > .label {
+    -fx-text-fill: -suc-selection-text;
+}
+
 .combo-box-popup .list-cell:section-header {
     -fx-font: italic 10pt sans-serif;
     -fx-padding: 4 0 4 5;
@@ -557,6 +574,11 @@
 
 .date-picker-popup > * > .spinner > .label {
     -fx-text-fill: #313131;
+}
+
+/* Modena draws week numbers in -fx-accent (Sun yellow on the white popup) */
+.date-picker-popup > * > .week-number-cell {
+    -fx-text-fill: -suc-date-accent;
 }
 
 .date-picker-popup > * > .spinner > .button > .left-arrow,
