@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -20,7 +21,6 @@ package org.jevis.commons.driver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 
@@ -28,17 +28,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Creates the data source driver for a data source object. The drivers are registered by the service with
+ * {@link #setDataSourceClasses(Map)}, keyed by the JEVis class name of the data source.
+ *
  * @author Broder
  */
-public class DataSourceFactory extends DriverFactory {
+public class DataSourceFactory {
     private static final Logger logger = LogManager.getLogger(DataSourceFactory.class);
 
     private static Map<String, Class> _dataSourceClasses = new HashMap<>();
-//    private static String _folder = "/home/broder/tmp/";
-
-    public static void initializeDataSource(JEVisDataSource client) {
-        _dataSourceClasses = initialize(client, DataCollectorTypes.DataSourceDriverDirectory.NAME, DataCollectorTypes.Driver.DataSourceDriver.NAME);
-    }
 
     public static void setDataSourceClasses(Map<String, Class> _dataSourceClasses) {
         DataSourceFactory._dataSourceClasses = _dataSourceClasses;
@@ -48,33 +46,22 @@ public class DataSourceFactory extends DriverFactory {
         logger.debug("getDataSource: {} from {}", dataSourceJEVis, _dataSourceClasses);
         DataSource dataSource = null;
         try {
-            String identifier = dataSourceJEVis.getJEVisClass().getName();
-            logger.debug("class identifier: {}", identifier);
-            Class dataSourceClass = _dataSourceClasses.get(identifier);
-            /**
-             * cast needs to be removed
-             */
+            Class dataSourceClass = DriverLookup.find(_dataSourceClasses, dataSourceJEVis.getJEVisClass());
             dataSource = (DataSource) dataSourceClass.newInstance();
             logger.debug("done init dataSource");
         } catch (JEVisException | InstantiationException | NullPointerException | IllegalAccessException ex) {
             logger.fatal("Error creating DataSource", ex);
-            ex.printStackTrace();
         }
         return dataSource;
     }
 
     public static boolean containDataSource(JEVisObject dataSourceJEVis) {
-        boolean contains = false;
         try {
-            String identifier = dataSourceJEVis.getJEVisClass().getName();
-            Class datasourceClass = _dataSourceClasses.get(identifier);
-            if (datasourceClass != null) {
-                contains = true;
-            }
+            return DriverLookup.find(_dataSourceClasses, dataSourceJEVis.getJEVisClass()) != null;
         } catch (JEVisException ex) {
             logger.fatal(ex);
+            return false;
         }
-        return contains;
     }
 
 }

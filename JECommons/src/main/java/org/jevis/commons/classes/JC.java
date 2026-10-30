@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -1710,50 +1711,6 @@ public interface JC {
 
         }
 
-        interface DriverDirectory {
-            String name = "Driver Directory";
-
-            interface ConverterDriverDirectory {
-                String name = "Converter Driver Directory";
-
-            }
-
-            interface DataSourceDriverDirectory {
-                String name = "Data Source Driver Directory";
-
-            }
-
-            interface ImporterDriverDirectory {
-                String name = "Importer Driver Directory";
-
-            }
-
-            interface ParserDriverDirectory {
-                String name = "Parser Driver Directory";
-
-            }
-        }
-
-        interface ConverterDriverDirectory {
-            String name = "Converter Driver Directory";
-
-        }
-
-        interface DataSourceDriverDirectory {
-            String name = "Data Source Driver Directory";
-
-        }
-
-        interface ImporterDriverDirectory {
-            String name = "Importer Driver Directory";
-
-        }
-
-        interface ParserDriverDirectory {
-            String name = "Parser Driver Directory";
-
-        }
-
         interface EnumDirectory {
             String name = "Enum Directory";
 
@@ -2125,51 +2082,6 @@ public interface JC {
         interface EnergyGovernmentalDuesDirectory {
             String name = "Energy Governmental Dues Directory";
 
-        }
-    }
-
-    interface Driver {
-        String name = "Driver";
-
-        String a_Enabled = "Enabled";
-        String a_JEVisClass = "JEVis Class";
-        String a_MainClass = "Main Class";
-        String a_SourceFile = "Source File";
-
-        interface ConverterDriver {
-            String name = "Converter Driver";
-
-            String a_Enabled = "Enabled";
-            String a_JEVisClass = "JEVis Class";
-            String a_MainClass = "Main Class";
-            String a_SourceFile = "Source File";
-        }
-
-        interface DataSourceDriver {
-            String name = "Data Source Driver";
-
-            String a_Enabled = "Enabled";
-            String a_JEVisClass = "JEVis Class";
-            String a_MainClass = "Main Class";
-            String a_SourceFile = "Source File";
-        }
-
-        interface ImporterDriver {
-            String name = "Importer Driver";
-
-            String a_Enabled = "Enabled";
-            String a_JEVisClass = "JEVis Class";
-            String a_MainClass = "Main Class";
-            String a_SourceFile = "Source File";
-        }
-
-        interface ParserDriver {
-            String name = "Parser Driver";
-
-            String a_Enabled = "Enabled";
-            String a_JEVisClass = "JEVis Class";
-            String a_MainClass = "Main Class";
-            String a_SourceFile = "Source File";
         }
     }
 

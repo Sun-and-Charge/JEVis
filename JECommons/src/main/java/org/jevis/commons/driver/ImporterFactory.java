@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -18,10 +19,7 @@
  */
 package org.jevis.commons.driver;
 
-import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisObject;
-
-import java.util.Map;
 
 /**
  * @author Broder
@@ -32,12 +30,6 @@ public class ImporterFactory {
         Importer importer = new JEVisImporter();
         importer.initialize(_dataSourceJEVis);
         return importer;
-    }
-
-    public static void initializeImporter(JEVisDataSource _client) {
-    }
-
-    public static void setImporterClasses(Map<String, Class> parserClasses) {
     }
 
 }

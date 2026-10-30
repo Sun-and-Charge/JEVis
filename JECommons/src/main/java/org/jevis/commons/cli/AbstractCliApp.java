@@ -20,7 +20,6 @@
 package org.jevis.commons.cli;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
@@ -558,10 +557,10 @@ public abstract class AbstractCliApp {
         return false;
     }
 
+    /**
+     * Service specific command line parameters. Currently none, kept so services can register their own.
+     */
     public class Command {
-
-        @Parameter(names = {"--driver-folder", "-df"}, description = "Sets the root folder for the driver structure")
-        public String driverFolder;
     }
 
     public int getThreadCount() {

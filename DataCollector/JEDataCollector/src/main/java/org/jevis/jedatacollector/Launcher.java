@@ -28,7 +28,7 @@ import org.jevis.commons.database.SampleHandler;
 import org.jevis.commons.driver.DataCollectorTypes;
 import org.jevis.commons.driver.DataSource;
 import org.jevis.commons.driver.DataSourceFactory;
-import org.jevis.commons.driver.DriverHelper;
+import org.jevis.commons.driver.ParserFactory;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.task.LogTaskManager;
 import org.jevis.commons.task.Task;
@@ -41,6 +41,7 @@ import org.joda.time.format.PeriodFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
 
@@ -57,6 +58,7 @@ public class Launcher extends AbstractCliApp {
     private boolean firstRun = true;
     private final SampleHandler sampleHandler = new SampleHandler();
     private final ConcurrentHashMap<Long, DateTime> lastRunTimes = new ConcurrentHashMap<>();
+    private final Set<Long> missingDriverWarned = ConcurrentHashMap.newKeySet();
     private static final String MAX_VPN_SESSIONS = "Max VPN Sessions";
     private static final String VPN_ALERT_REMINDER_INTERVAL = "VPN Alert Reminder Interval";
     private VpnSessionManager vpnManager;
@@ -214,7 +216,10 @@ public class Launcher extends AbstractCliApp {
     protected void handleAdditionalCommands() {
         APP_SERVICE_CLASS_NAME = "JEDataCollector";
         initializeThreadPool(APP_SERVICE_CLASS_NAME);
-        DriverHelper.loadDriver(ds, commands.driverFolder);
+        DataSourceFactory.setDataSourceClasses(BuiltInDrivers.dataSources());
+        ParserFactory.setParserClasses(BuiltInDrivers.parsers());
+        logger.info("Data source drivers: {}", BuiltInDrivers.dataSources().keySet());
+        logger.info("Parser drivers: {}", BuiltInDrivers.parsers().keySet());
         initializeVpn();
     }
 
@@ -317,11 +322,16 @@ public class Launcher extends AbstractCliApp {
                     ds.reloadAttribute(dataSource);
                     Boolean enabled = sampleHandler.getLastSample(dataSource, DataCollectorTypes.DataSource.ENABLE, false);
                     Boolean manualTrigger = sampleHandler.getLastSample(dataSource, DataCollectorTypes.DataSource.MANUAL_TRIGGER, false);
-                    if (enabled && DataSourceFactory.containDataSource(dataSource) || (manualTrigger && DataSourceFactory.containDataSource(dataSource))) {
-                        if (!plannedJobs.containsKey(dataSource.getID())) {
-                            enabledDataSources.add(dataSource);
-                            plannedJobs.put(dataSource.getID(), new DateTime());
+                    if (!(enabled || manualTrigger)) {
+                        continue;
+                    }
+                    if (!DataSourceFactory.containDataSource(dataSource)) {
+                        if (missingDriverWarned.add(dataSource.getID())) {
+                            logger.warn("No driver for data source {} ({}) of class {}", dataSource.getName(), dataSource.getID(), dataSource.getJEVisClassName());
                         }
+                    } else if (!plannedJobs.containsKey(dataSource.getID())) {
+                        enabledDataSources.add(dataSource);
+                        plannedJobs.put(dataSource.getID(), new DateTime());
                     }
                 } catch (Exception ex) {
                     logger.error("DataSource failed while checking enabled status:", ex);

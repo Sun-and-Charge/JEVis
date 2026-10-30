@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -20,22 +21,20 @@ package org.jevis.commons.driver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Creates the parser for a parser object below a channel. The parsers are registered by the service with
+ * {@link #setParserClasses(Map)}, keyed by the JEVis class name of the parser object.
+ *
  * @author Broder
  */
-public class ParserFactory extends DriverFactory {
+public class ParserFactory {
     private static final Logger logger = LogManager.getLogger(ParserFactory.class);
     private static Map<String, Class> _parserClasses = new HashMap<>();
-
-    public static void initializeParser(JEVisDataSource client) {
-        _parserClasses = initialize(client, DataCollectorTypes.ParserDriverDirectory.NAME, DataCollectorTypes.Driver.ParserDriver.NAME);
-    }
 
     public static void setParserClasses(Map<String, Class> _parserClasses) {
         ParserFactory._parserClasses = _parserClasses;
@@ -44,8 +43,7 @@ public class ParserFactory extends DriverFactory {
     public static Parser getParser(JEVisObject jevisParser) {
         Parser parser = null;
         try {
-            String identifier = jevisParser.getJEVisClass().getName();
-            Class parserClass = _parserClasses.get(identifier);
+            Class parserClass = DriverLookup.find(_parserClasses, jevisParser.getJEVisClass());
             parser = (Parser) parserClass.newInstance();
 
         } catch (Exception ex) {
