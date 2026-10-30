@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -157,7 +158,8 @@ public class WidgetNavigator {
         JFXButton removeBGIcon = new JFXButton("", JEConfig.getImage("if_trash_(delete)_16x16_10030.gif", this.iconSize, this.iconSize));
         ColorPickerAdv pickerAdv = new ColorPickerAdv();
         pickerAdv.setValue(control.getActiveDashboard().getBackgroundColor());
-        pickerAdv.setMinHeight(backgroundButton.getHeight());
+        /* the button has no height before layout, so follow its height instead of copying 0 */
+        pickerAdv.minHeightProperty().bind(backgroundButton.heightProperty());
 
         JFXComboBox<String> bhModeBox = buildBGMOdeBox();
 
@@ -338,6 +340,7 @@ public class WidgetNavigator {
 
                 control.addWidget(newWidget);
                 newWidget.setEditable(true);
+                control.setSelectedWidget(newWidget);
                 table.getSelectionModel().clearAndSelect(table.getItems().size() - 1);
                 table.scrollTo(newWidget);
                 this.control.requestViewUpdate(newWidget);
@@ -353,6 +356,7 @@ public class WidgetNavigator {
             //newWidget.getConfig().setUuid(control.getNextFreeUUID());
             control.addWidget(newWidget);
             newWidget.setEditable(true);
+            control.setSelectedWidget(newWidget);
             table.getSelectionModel().clearAndSelect(table.getItems().size() - 1);
             table.scrollTo(newWidget);
             this.control.requestViewUpdate(newWidget);

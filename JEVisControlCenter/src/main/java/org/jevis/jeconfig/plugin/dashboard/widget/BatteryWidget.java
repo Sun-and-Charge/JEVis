@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -263,6 +264,9 @@ public class BatteryWidget extends Widget implements DataModelWidget {
 
     private void updateSkin() {
         if (battery != null) {
+            /* no own frame or fill, the widget background shows through (also when it is transparent) */
+            battery.setBorderPaint(Color.TRANSPARENT);
+            battery.setBackgroundPaint(Color.TRANSPARENT);
             if (batteryGaugePojo != null) {
                 logger.debug("update Skin");
                 battery.setBarColor(batteryGaugePojo.getColorValueIndicator());

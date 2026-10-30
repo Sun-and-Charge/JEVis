@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -235,7 +236,12 @@ public class JEVisHelp {
     }
 
     public void removeAll(String plugin) {
-        controlsMap.forEach((s, controls1) -> {
+        removeAll(controlsMap, plugin);
+        removeAll(controlsInfoMap, plugin);
+    }
+
+    private void removeAll(Map<String, Set<ToolTipElement>> map, String plugin) {
+        map.forEach((s, controls1) -> {
             if (s.startsWith(plugin)) {
                 if (controls1 != null) {
                     controls1.clear();
@@ -248,6 +254,10 @@ public class JEVisHelp {
         Set<ToolTipElement> set = controlsMap.get(toKey(plugin, subModule));
         if (set != null) {
             set.clear();
+        }
+        Set<ToolTipElement> infoSet = controlsInfoMap.get(toKey(plugin, subModule));
+        if (infoSet != null) {
+            infoSet.clear();
         }
     }
 
@@ -366,6 +376,8 @@ public class JEVisHelp {
 
             Platform.runLater(() -> {
                 try {
+                    /* skip controls which are hidden or no longer part of a scene, e.g. an inactive toolbar */
+                    if (!control.isVisible() || control.getScene() == null) return;
                     if (tooltip != null && !tooltip.getText().isEmpty() && !tooltip.isShowing()) {
                         logger.debug("Show tt: {},{} text: {} ", tooltip.getFont().getName(), tooltip.getFont().getSize(), tooltip.getText());
 

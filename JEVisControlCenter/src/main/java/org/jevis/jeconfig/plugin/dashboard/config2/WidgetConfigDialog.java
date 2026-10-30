@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -74,7 +75,7 @@ public class WidgetConfigDialog extends Alert {
 
         Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+        /* no setAlwaysOnTop: the dialog is owned by the main stage and modal, always-on-top would hide file choosers behind it */
     }
 
 
