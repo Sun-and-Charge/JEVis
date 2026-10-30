@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014-2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -422,6 +423,12 @@ public class CSVImportDialog {
         });
 
         ok.setOnAction(t -> {
+            if (!table.hasTargetsForAllValueColumns()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("csv.import.dialog.notarget"));
+                alert.initOwner(stage);
+                alert.showAndWait();
+                return;
+            }
             table.setCustomNote(customNoteString);
             final ProgressForm pForm = new ProgressForm(I18n.getInstance().getString("csv.progress.title"));
             Task<Integer> importTask = table.doImport();
@@ -431,8 +438,10 @@ public class CSVImportDialog {
                 showNotification(importTask.getValue() + " " + I18n.getInstance().getString("csv.import.dialog.success.message"), JEConfig.getImage("1404237035_Valid.png", 24, 24));
             });
             importTask.setOnFailed(event -> {
-                showNotification(importTask.getValue() + " " + I18n.getInstance().getString("csv.import.dialog.failed.message") + " " + importTask.getMessage()
-                        , JEConfig.getImage("1401136217_exclamation-diamond_red.png", 24, 24));
+                pForm.getDialogStage().close();
+                String message = importTask.getException() != null ? importTask.getException().getMessage()
+                        : I18n.getInstance().getString("csv.import.dialog.failed.message");
+                showNotification(message, JEConfig.getImage("1401136217_exclamation-diamond_red.png", 24, 24));
             });
             importTask.setOnRunning(event -> {
                 root.setDisable(true);

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -25,13 +26,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.controlsfx.control.HiddenSidesPane;
@@ -42,6 +43,7 @@ import org.jevis.jeconfig.Constants;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.Plugin;
+import org.jevis.jeconfig.application.tools.ColorHelper;
 import org.jevis.jeconfig.plugin.dashboard.config2.Size;
 import org.jevis.jeconfig.tool.Layouts;
 
@@ -173,6 +175,21 @@ public class DashBordPlugIn implements Plugin {
 
     public ScrollPane getScrollPane() {
         return scrollPane;
+    }
+
+    /**
+     * Colours the area around the dashboard (scroll pane and zoom pane) in the given colour.
+     *
+     * @param color dashboard background colour, or null for the default -fx-base background
+     */
+    public void setParentBackground(Color color) {
+        if (color == null) {
+            scrollPane.setStyle("-fx-background-color: -fx-base;");
+            zoomPane.setBackground(null);
+        } else {
+            scrollPane.setStyle("-fx-background-color: " + ColorHelper.toRGBCode(color) + ";");
+            zoomPane.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+        }
     }
 
     public void showMessage(String message) {

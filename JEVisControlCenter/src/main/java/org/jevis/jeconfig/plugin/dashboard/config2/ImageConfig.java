@@ -122,7 +122,8 @@ public class ImageConfig {
             FileChooser.ExtensionFilter pictures = new FileChooser.ExtensionFilter("Pictures", "*.png", "*.gif", "*.jpg", "*.jpeg", "*.bmp", "*.svg");
             fileChooser.getExtensionFilters().add(pictures);
             fileChooser.setSelectedExtensionFilter(pictures);
-            File newBackground = fileChooser.showOpenDialog(JEConfig.getStage());
+            /* own the chooser by the config dialog so it opens in front of it */
+            File newBackground = fileChooser.showOpenDialog(fileButton.getScene() != null ? fileButton.getScene().getWindow() : JEConfig.getStage());
             if (newBackground != null) {
                 try {
                     //BufferedImage bufferedImage = ImageIO.read(newBackground);

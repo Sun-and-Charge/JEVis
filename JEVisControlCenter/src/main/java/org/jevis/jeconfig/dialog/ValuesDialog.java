@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -95,6 +96,7 @@ public class ValuesDialog extends Dialog {
 
                         if (DaySchedule.dateCheck(timestamp, settings.getDaySchedule()) == settings.isInside()) {
                             Double currentValue = sample.getValueAsDouble();
+                            if (!settings.matchesSign(currentValue)) continue;
 
                             min = Math.min(min, currentValue);
                             max = Math.max(max, currentValue);

@@ -116,6 +116,38 @@ public class ResourceSample {
         return absoluteFileDir;
     }
 
+    /**
+     * Deletes the stored files of file samples in the given time range (all if both are {@code null}). Files are named
+     * {@code <UTC yyyyMMddHHmmss>_<file name>} below {@code <file dir>/<id>/<attribute>}.
+     */
+    private void deleteStoredFiles(long id, String attribute, DateTime from, DateTime until) {
+        if (attribute.contains("..") || attribute.contains("/") || attribute.contains("\\")) {
+            return;
+        }
+        File dir = new File(new File(Config.getFileDir(), String.valueOf(id)), attribute);
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
+        DateTimeFormatter fileTs = DateTimeFormat.forPattern("yyyyMMddHHmmss").withZoneUTC();
+        for (File file : files) {
+            String name = file.getName();
+            if (!file.isFile() || name.length() < 15 || name.charAt(14) != '_') {
+                continue;
+            }
+            try {
+                DateTime ts = fileTs.parseDateTime(name.substring(0, 14));
+                if ((from == null || !ts.isBefore(from)) && (until == null || !ts.isAfter(until))) {
+                    if (!file.delete()) {
+                        logger.warn("Could not delete file {}", file);
+                    }
+                }
+            } catch (IllegalArgumentException ex) {
+                logger.debug("Not a sample file: {}", file);
+            }
+        }
+    }
+
     private void saveToFile(InputStream uploadedInputStream, String uploadedFileLocation) throws IOException {
         int read;
         byte[] bytes = new byte[1024];
@@ -303,6 +335,7 @@ public class ResourceSample {
                 logger.debug("Delete Between");
                 ds.deleteSamplesBetween(object.getId(), attribute, startDate, endDate);
             }
+            deleteStoredFiles(object.getId(), attribute, startDate, endDate);
 
             ds.logUserAction(SQLDataSource.LOG_EVENT.DELETE_SAMPLE, String.format("%s:%s|%s -> %s", id, attribute, startDate, endDate));
 

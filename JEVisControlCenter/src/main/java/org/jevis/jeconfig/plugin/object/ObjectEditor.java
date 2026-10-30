@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -173,7 +174,7 @@ public class ObjectEditor {
                     List<TitledPane> tabs = new ArrayList<>();
                     installedExtensions = new ArrayList<>();
 
-                    installedExtensions.add(new CalculationExtension(obj));
+                    installedExtensions.add(new CalculationExtension(obj, this.tree));
                     installedExtensions.add(new CleanDataExtension(obj));
                     installedExtensions.add(new RoleExtention(obj));
                     installedExtensions.add(new HttpChanelExtension(obj));

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -28,6 +29,7 @@ import javafx.scene.control.ScrollPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisObject;
+import org.jevis.jeconfig.application.jevistree.JEVisTree;
 
 
 public class CalculationViewController {
@@ -210,12 +212,12 @@ public class CalculationViewController {
 
     @FXML
     void onMod(ActionEvent event) {
-        formulaBox.addExpression("");
+        formulaBox.addExpression("%");
     }
 
     @FXML
     void onModulo(ActionEvent event) {
-        formulaBox.addExpression("");
+        formulaBox.addExpression("%");
     }
 
     @FXML
@@ -267,12 +269,12 @@ public class CalculationViewController {
 
     @FXML
     void onDeg(ActionEvent event) {
-        formulaBox.addExpression("toDegrees()");//TODO
+        formulaBox.addExpression("deg()");
     }
 
     @FXML
     void onClear(ActionEvent event) {
-        //TODO
+        formulaBox.setExpression("");
     }
 
     @FXML
@@ -282,12 +284,12 @@ public class CalculationViewController {
 
     @FXML
     void onRad(ActionEvent event) {
-        formulaBox.addExpression("toRadians()");//TODO
+        formulaBox.addExpression("rad()");
     }
 
     @FXML
     void onPow(ActionEvent event) {
-        formulaBox.addExpression("pow()");
+        formulaBox.addExpression("^");
     }
 
     @FXML
@@ -307,7 +309,7 @@ public class CalculationViewController {
 
     @FXML
     void onCeil(ActionEvent event) {
-        formulaBox.addExpression("ceil()");
+        formulaBox.addExpression("ceiling()");
     }
 
     @FXML
@@ -327,12 +329,12 @@ public class CalculationViewController {
 
     @FXML
     void onExp(ActionEvent event) {
-        formulaBox.addExpression("exp()");
+        formulaBox.addExpression("e^()");
     }
 
     @FXML
     void onFloor(ActionEvent event) {
-        formulaBox.addExpression("foor()");
+        formulaBox.addExpression("floor()");
     }
 
     @FXML
@@ -422,7 +424,16 @@ public class CalculationViewController {
 
 
     public void setData(JEVisObject obj, JFXButton buttonOutput) {
+        setData(obj, buttonOutput, null);
+    }
+
+    /**
+     * @param tree the object tree for "go to" of inputs and output, may be {@code null}
+     */
+    public void setData(JEVisObject obj, JFXButton buttonOutput, JEVisTree tree) {
         logger.info("setData: {}", buttonOutput);
+        formulaBox.setTree(tree);
+        variablesBox.setTree(tree);
         formulaBox.setCalculation(obj);
 
         formulaBox.setOutputButton(buttonOutput);

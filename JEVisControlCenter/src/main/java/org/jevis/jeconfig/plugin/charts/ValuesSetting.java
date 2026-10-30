@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,6 +33,13 @@ public class ValuesSetting {
     private DateTime resultEnd;
 
     private boolean inside;
+
+    /**
+     * Which values are taken into account: all, only positive (&gt; 0) or only negative (&lt; 0) values.
+     */
+    public enum Sign {ALL, POSITIVE, NEGATIVE}
+
+    private Sign sign = Sign.ALL;
 
     private Map<Integer, DaySchedule> dayScheduleMap = new HashMap<>();
 
@@ -70,5 +78,28 @@ public class ValuesSetting {
 
     public void setInside(boolean inside) {
         this.inside = inside;
+    }
+
+    public Sign getSign() {
+        return sign;
+    }
+
+    public void setSign(Sign sign) {
+        this.sign = sign;
+    }
+
+    /**
+     * @return true if the value matches the selected sign
+     */
+    public boolean matchesSign(double value) {
+        switch (sign) {
+            case POSITIVE:
+                return value > 0;
+            case NEGATIVE:
+                return value < 0;
+            case ALL:
+            default:
+                return true;
+        }
     }
 }

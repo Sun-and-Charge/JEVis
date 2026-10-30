@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -119,6 +120,7 @@ public class NPVData {
             einsparung.addListener(changeListener);
             runningCost.addListener(changeListener);
             inflation.addListener(changeListener);
+            overXYear.addListener(changeListener);
 
             /*
             npvYears.addListener(new ListChangeListener<NPVYearData>() {
@@ -192,7 +194,7 @@ public class NPVData {
         npvResult.set(round(((initalInvestment * -1) + sum), 2));
         Double piR = (sum / initalInvestment);
         piResult.set(piR.isNaN() ? 0 : piR.doubleValue());
-        Double piRoverX = (sum / initalInvestment);
+        Double piRoverX = (sumOverX / initalInvestment);
         piResultOverX.set(piRoverX.isNaN() ? 0 : piRoverX.doubleValue());
 
         sumEinzahlung.setValue(round(einsparrungSum, 2));

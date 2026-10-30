@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -36,6 +37,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import javafx.util.converter.LocalTimeStringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +51,8 @@ import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.application.I18nWS;
+import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.dialog.ProgressForm;
 import org.jevis.jeconfig.plugin.object.ObjectEditorExtension;
 import org.jevis.jeconfig.plugin.object.extension.calculation.CalculationViewController;
@@ -76,9 +80,23 @@ public class CalculationExtension implements ObjectEditorExtension {
     private String oldExpression = "";
     private final JEVisSample lastSampleEnabeld = null;
     private JEVisSample _newSampleEnabled = null;
+    private static final String COMMENT_ATTRIBUTE = "Comment";
+    private final BooleanProperty _commentChanged = new SimpleBooleanProperty(false);
+    private TextArea commentArea = null;
+    private String oldComment = "";
+
+    private final JEVisTree tree;
 
     public CalculationExtension(JEVisObject _obj) {
+        this(_obj, null);
+    }
+
+    /**
+     * @param tree the object tree for "go to" of inputs and output, may be {@code null}
+     */
+    public CalculationExtension(JEVisObject _obj, JEVisTree tree) {
         this._obj = _obj;
+        this.tree = tree;
     }
 
     @Override
@@ -120,7 +138,7 @@ public class CalculationExtension implements ObjectEditorExtension {
             JFXButton buttonOutput = new JFXButton(I18n.getInstance().getString("plugin.object.calc.output"));
             final ScrollPane editConfigPane = fxmlLoader.load();
             control = fxmlLoader.getController();
-            control.setData(_obj, buttonOutput);
+            control.setData(_obj, buttonOutput, tree);
 
             JEVisAttribute aExprsssion = _obj.getAttribute("Expression");
             JEVisSample lastValue = aExprsssion.getLatestSample();
@@ -182,6 +200,7 @@ public class CalculationExtension implements ObjectEditorExtension {
             JFXButton calcNowButton = new JFXButton(I18n.getInstance().getString("plugin.object.calc.recalc"));
             calcNowButton.setOnAction(bEvent -> {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.initOwner(getOwnerWindow());
                 alert.setTitle(I18n.getInstance().getString("plugin.object.calc.recalc"));
                 alert.setHeaderText(I18n.getInstance().getString("plugin.object.calc.recalc.question"));
                 TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
@@ -236,7 +255,7 @@ public class CalculationExtension implements ObjectEditorExtension {
 
                         Task<Void> set = new Task<Void>() {
                             @Override
-                            protected Void call() {
+                            protected Void call() throws Exception {
                                 try {
                                     boolean wasEnabled = false;
                                     if (_obj.getAttribute("Enabled").hasSample()) {
@@ -293,9 +312,9 @@ public class CalculationExtension implements ObjectEditorExtension {
                                     }
 
                                 } catch (Exception ex) {
-                                    ex.printStackTrace();
+                                    logger.error("Recalculation failed", ex);
                                     errorMsg.set(ex.getMessage());
-                                    this.failed();
+                                    throw ex;
                                 }
                                 return null;
                             }
@@ -315,11 +334,13 @@ public class CalculationExtension implements ObjectEditorExtension {
                             logger.debug("Setting all multiplier and differential switches failed");
                             pForm.getDialogStage().hide();
 
+                            restoreTimeZone(defaultTimeZone, defaultDateTimeZone);
                             Alert error = new Alert(Alert.AlertType.ERROR);
+                            error.initOwner(getOwnerWindow());
                             error.setHeaderText(I18n.getInstance().getString("plugin.object.calc.recalc.title"));
                             TopMenu.applyActiveTheme(error.getDialogPane().getScene());
                             error.setContentText(errorMsg.get());
-                            restoreTimeZone(defaultTimeZone, defaultDateTimeZone);
+                            error.showAndWait();
                         });
 
                         pForm.activateProgressBar(set);
@@ -338,12 +359,33 @@ public class CalculationExtension implements ObjectEditorExtension {
 
 
             VBox vbox = new VBox(8, flowPane, editConfigPane);
+
+            JEVisAttribute commentAttribute = _obj.getAttribute(COMMENT_ATTRIBUTE);
+            if (commentAttribute != null) {
+                JEVisSample lastComment = commentAttribute.getLatestSample();
+                oldComment = lastComment != null && lastComment.getValueAsString() != null ? lastComment.getValueAsString() : "";
+                Label commentLabel = new Label(I18nWS.getInstance().getTypeName(CALC_CLASS_NAME, COMMENT_ATTRIBUTE));
+                commentArea = new TextArea(oldComment);
+                commentArea.setWrapText(true);
+                commentArea.setPrefRowCount(4);
+                commentArea.textProperty().addListener((observable, oldValue, newValue) ->
+                        _commentChanged.setValue(!oldComment.equals(newValue)));
+                vbox.getChildren().addAll(commentLabel, commentArea);
+            }
+
             view.setCenter(vbox);
         } catch (Exception e) {
             logger.fatal(e);
         }
 
 
+    }
+
+    private Window getOwnerWindow() {
+        if (view.getScene() != null && view.getScene().getWindow() != null) {
+            return view.getScene().getWindow();
+        }
+        return JEConfig.getStage();
     }
 
     private void restoreTimeZone(TimeZone defaultTimeZone, DateTimeZone defaultDateTimeZone) {
@@ -359,7 +401,7 @@ public class CalculationExtension implements ObjectEditorExtension {
 
     @Override
     public boolean needSave() {
-        return _changed.getValue() || _enabledChanged.getValue();
+        return _changed.getValue() || _enabledChanged.getValue() || _commentChanged.getValue();
 //        return _changed.getValue();
     }
 
@@ -372,7 +414,7 @@ public class CalculationExtension implements ObjectEditorExtension {
     public boolean save() {
         try {
             _changed.setValue(!control.getFormula().equals(oldExpression));
-            if (needSave()) {
+            if (_changed.getValue()) {
                 String newExpression = control.getFormula();
                 JEVisAttribute expression = _obj.getAttribute("Expression");
 
@@ -380,10 +422,19 @@ public class CalculationExtension implements ObjectEditorExtension {
                 newSample.commit();
                 oldExpression = newExpression;
                 _changed.setValue(false);
+            }
 
-
+            if (_enabledChanged.getValue() && _newSampleEnabled != null) {
                 _newSampleEnabled.commit();
-                _enabledChanged.setValue(false);
+                _newSampleEnabled = null;
+            }
+            _enabledChanged.setValue(false);
+
+            if (_commentChanged.getValue() && commentArea != null) {
+                String newComment = commentArea.getText();
+                _obj.getAttribute(COMMENT_ATTRIBUTE).buildSample(new DateTime(), newComment).commit();
+                oldComment = newComment;
+                _commentChanged.setValue(false);
             }
             return true;
         } catch (Exception ex) {

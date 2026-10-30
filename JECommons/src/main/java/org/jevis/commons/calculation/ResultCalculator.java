@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -41,7 +42,6 @@ import java.util.stream.IntStream;
  *   <li>A {@code null} result (NaN / infinite) is replaced by {@code replacementValue} with
  *       note {@code "calc(infinite)"}.</li>
  * </ol>
- * Note: {@code div0Handling} is accepted but not yet evaluated — see inline TODO.
  */
 public class ResultCalculator {
 
@@ -53,7 +53,7 @@ public class ResultCalculator {
         this.template = template;
     }
 
-    public List<JEVisSample> calculateResult(String div0Handling, Double replacementValue, Double allZeroReplacementValue) {
+    public List<JEVisSample> calculateResult(Double replacementValue, Double allZeroReplacementValue) {
         List<JEVisSample> resultList = new ArrayList<>();
 
         mergedSamples.forEach((key, value) -> {
@@ -76,8 +76,6 @@ public class ResultCalculator {
                 BigDecimal evaluate = template.evaluate();
 
                 if (evaluate == null) {
-                    //TODO implement different handling switch...
-
                     VirtualSample smp = new VirtualSample(key, replacementValue);
                     String note = smp.getNote();
 

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -114,7 +115,10 @@ public class HeatMapChart implements Chart {
         this.COLS = 4L;
 
         if (chartDataRows.isEmpty()) {
-            chartModel.getChartData().stream().map(chartData -> new ChartDataRow(ds, chartData)).forEach(this.chartDataRows::add);
+            chartModel.getChartData().stream().map(chartData -> new ChartDataRow(ds, chartData)).forEach(chartDataRow -> {
+                chartDataRow.setCustomWorkDay(chartModel.isCustomWorkDay());
+                this.chartDataRows.add(chartDataRow);
+            });
         } else this.chartDataRows.addAll(chartDataRows);
 
         this.workDays = new WorkDays(this.chartDataRows.get(0).getObject());

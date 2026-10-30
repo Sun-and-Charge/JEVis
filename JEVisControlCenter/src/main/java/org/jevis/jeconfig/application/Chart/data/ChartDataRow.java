@@ -1117,6 +1117,9 @@ public class ChartDataRow extends ChartData {
     }
 
     public void setCustomWorkDay(boolean customWorkDay) {
+        if (this.customWorkDay != customWorkDay) {
+            somethingChanged = true;
+        }
         this.customWorkDay = customWorkDay;
     }
 

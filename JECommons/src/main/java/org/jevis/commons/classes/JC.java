@@ -453,7 +453,6 @@ public interface JC {
 
         String a_Enabled = "Enabled";
         String a_Expression = "Expression";
-        String a_DIV0Handling = "DIV0 Handling";
         String a_StaticValue = "Static Value";
         String a_AllZeroValue = "All Zero Value";
     }

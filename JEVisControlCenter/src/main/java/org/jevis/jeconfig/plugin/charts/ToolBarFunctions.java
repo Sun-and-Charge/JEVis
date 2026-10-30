@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -422,6 +423,44 @@ public class ToolBarFunctions {
         insideBox.selectedProperty().addListener((observableValue, aBoolean, t1) -> valuesSetting.setInside(t1));
         insideBox.setSelected(true);
         gp.add(insideBox, 0, row, 2, 1);
+
+        Label signLabel = new Label(I18n.getInstance().getString("plugin.graph.values.sign"));
+        JFXComboBox<ValuesSetting.Sign> signBox = new JFXComboBox<>(FXCollections.observableArrayList(ValuesSetting.Sign.values()));
+        Callback<ListView<ValuesSetting.Sign>, ListCell<ValuesSetting.Sign>> signCellFactory = new Callback<ListView<ValuesSetting.Sign>, ListCell<ValuesSetting.Sign>>() {
+            @Override
+            public ListCell<ValuesSetting.Sign> call(ListView<ValuesSetting.Sign> param) {
+                return new ListCell<ValuesSetting.Sign>() {
+                    @Override
+                    protected void updateItem(ValuesSetting.Sign item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                        } else {
+                            switch (item) {
+                                case POSITIVE:
+                                    setText(I18n.getInstance().getString("plugin.graph.values.sign.positive"));
+                                    break;
+                                case NEGATIVE:
+                                    setText(I18n.getInstance().getString("plugin.graph.values.sign.negative"));
+                                    break;
+                                case ALL:
+                                default:
+                                    setText(I18n.getInstance().getString("plugin.graph.values.sign.all"));
+                                    break;
+                            }
+                        }
+                    }
+                };
+            }
+        };
+        signBox.setCellFactory(signCellFactory);
+        signBox.setButtonCell(signCellFactory.call(null));
+        signBox.getSelectionModel().select(valuesSetting.getSign());
+        signBox.getSelectionModel().selectedItemProperty().addListener((observableValue, oldSign, newSign) -> {
+            if (newSign != null) valuesSetting.setSign(newSign);
+        });
+        gp.add(signLabel, 2, row);
+        gp.add(signBox, 3, row, 2, 1);
         row++;
 
         Button forAllStart = new Button("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 12, 12));

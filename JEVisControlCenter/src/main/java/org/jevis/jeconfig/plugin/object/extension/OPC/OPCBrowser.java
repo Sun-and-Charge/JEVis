@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -190,14 +191,22 @@ public class OPCBrowser {
 
                 } catch (JEVisException | ExecutionException | InterruptedException | UaException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.initOwner(stage);
 
                     alert.setTitle(I18n.getInstance().getString("plugin.object.opcua.error.server.title"));
                     alert.setHeaderText(I18n.getInstance().getString("plugin.object.opcua.error.server.message"));
-                    alert.setContentText(e.getMessage());
+                    alert.setContentText(I18n.getInstance().getString("plugin.object.opcua.error.server.details"));
+
+                    /* the exception message of the OPC-UA stack can be very long, show it only on demand */
+                    TextArea details = new TextArea(e.getMessage() != null ? e.getMessage() : e.toString());
+                    details.setEditable(false);
+                    details.setWrapText(true);
+                    details.setPrefRowCount(8);
+                    alert.getDialogPane().setExpandableContent(details);
 
                     alert.showAndWait();
 
-                    logger.error(e);
+                    logger.error("Could not connect to OPC-UA server", e);
                 }
 
 

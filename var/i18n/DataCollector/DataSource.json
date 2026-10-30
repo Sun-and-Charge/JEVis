@@ -66,11 +66,11 @@
         "ar": "آخر مرة تم فيها استرداد مصدر البيانات."
       },
       "names": {
-        "de": "Letzter Zyklus",
+        "de": "Letzte Auslesung",
         "ru": "Последний цикл",
         "uk": "Останній цикл",
         "th": "รอบสุดท้าย",
-        "en": "Last cycle",
+        "en": "Last readout",
         "ar": "الدورة الماضية"
       }
     },
@@ -85,11 +85,11 @@
         "ar": "يحدد الفاصل الزمني الذي يتم فيه تكرار قراءة خادم البيانات."
       },
       "names": {
-        "de": "Taktzeit",
+        "de": "Taktzeit (ms)",
         "ru": "время цикла",
         "uk": "час циклу",
         "th": "รอบเวลา",
-        "en": "Cycle Time",
+        "en": "Cycle time (ms)",
         "ar": "وقت الدورة"
       }
     },
@@ -104,11 +104,11 @@
         "ar": "يحدد هذا الحقل وقت إدراج نقطة البيانات. محدد بالساعات."
       },
       "names": {
-        "de": "Kürzest berichtet",
+        "de": "Als veraltet melden nach (h)",
         "ru": "Последний раз сообщалось.",
         "uk": "Найкоротший повідомив",
         "th": "รายงานสั้นที่สุด",
-        "en": "Latest back reported",
+        "en": "Report as outdated after (h)",
         "ar": "ذكرت آخر مرة"
       }
     },

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -63,6 +64,7 @@ public class ChartExportPDF {
     private static final Logger logger = LogManager.getLogger(ChartExportPDF.class);
     private final DataModel model;
     private final boolean directPrint;
+    private final boolean landscape;
     private final String formattedName;
     private File destinationFile;
     private DateTime minDate = null;
@@ -70,8 +72,13 @@ public class ChartExportPDF {
     private FileChooser fileChooser;
 
     public ChartExportPDF(DataModel model, String analysisName, boolean directPrint) {
+        this(model, analysisName, directPrint, true);
+    }
+
+    public ChartExportPDF(DataModel model, String analysisName, boolean directPrint, boolean landscape) {
         this.model = model;
         this.directPrint = directPrint;
+        this.landscape = landscape;
         this.formattedName = FileNames.fixName(analysisName);
         this.setDates();
         if (!directPrint) {
@@ -135,14 +142,14 @@ public class ChartExportPDF {
             try {
                 OutputStream fileStream = new FileOutputStream(destinationFile);
 
-                Document document = new Document();
+                /* the page size has to be set before open(), otherwise the first page stays portrait */
+                Document document = new Document(landscape ? PageSize.A4.rotate() : PageSize.A4);
                 PdfWriter.getInstance(document, fileStream);
 
-                document.open();
-                document.setPageSize(PageSize.A4.rotate());
                 document.addAuthor("JEVis");
                 document.addTitle(formattedName);
                 document.addCreationDate();
+                document.open();
 
                 String tmpFileName = UUID.randomUUID().toString();
                 Path temp = Files.createTempFile(tmpFileName, ".png");

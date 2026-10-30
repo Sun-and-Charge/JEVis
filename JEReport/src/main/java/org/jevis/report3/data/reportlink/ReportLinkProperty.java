@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEReport.
  * <p>
@@ -389,7 +390,10 @@ public class ReportLinkProperty implements ReportData {
 
         name += dataObject.getName();
 
-        return "No data available for data object " + name + " with id " + dataObject.getID();
+        // name the report link too, a report can have many links to the same data object
+        String link = linkObject != null ? linkObject.getName() + " (" + linkObject.getID() + ")" : "?";
+        return "No data available for report link " + link + ", template variable '" + templateVariableName
+                + "', data object " + name + " with id " + dataObject.getID();
     }
 
     @Override

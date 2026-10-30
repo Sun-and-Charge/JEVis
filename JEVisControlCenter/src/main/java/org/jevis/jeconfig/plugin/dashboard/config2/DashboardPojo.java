@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -22,6 +23,7 @@ package org.jevis.jeconfig.plugin.dashboard.config2;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.paint.Color;
 import org.jevis.api.JEVisObject;
+import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -39,7 +41,7 @@ public class DashboardPojo {
     public BorderWidths borderSize = new BorderWidths(0.2);
     public Color fontColor = Color.WHITE;
     public Color fontColorSecondary = Color.DODGERBLUE;
-    public String title = "Default dashboard";
+    public String title = I18n.getInstance().getString("plugin.dashboard.newname");
     public String backgroundMode = "default";
     public Color backgroundColor = Color.web("#f4f4f4");//#126597
     public Double xGridInterval = 25.0d;

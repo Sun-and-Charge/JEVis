@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -120,7 +121,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
                     buildCal(meterData, jeVisType, entry.getValue().getOptionalJEVisSample());
                 } else if (jeVisType.getName().equals("Online ID")) {
                     buildTargetSelect(meterData, jeVisType, entry.getValue().getOptionalJEVisSample());
-                } else if (jeVisType.getName().equals("Remarks")) {
+                } else if (GUIConstants.BASIC_TEXT_MULTI.getId().equals(jeVisType.getGUIDisplayType()) || jeVisType.getName().equals("Remarks")) {
                     buildTextArea(meterData, jeVisType, entry.getValue().getOptionalJEVisSample());
                 } else {
                     buildTextField(meterData, jeVisType, entry.getValue().getOptionalJEVisSample());

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,6 +27,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -41,13 +43,16 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.plugin.action.data.ActionData;
 import org.jevis.jeconfig.plugin.action.data.ActionPlanData;
 import org.jevis.jeconfig.plugin.action.data.Medium;
 import org.jevis.jeconfig.tool.ScreenSize;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ActionPlanForm extends Alert {
     private static final Logger logger = LogManager.getLogger(ActionPlanForm.class);
@@ -68,6 +73,46 @@ public class ActionPlanForm extends Alert {
     ListView<JEVisObject> enpiListView = new ListView<>();
     ListView<String> sueListView = new ListView<>();
     StackPane stackPane = new StackPane();
+    /**
+     * Renamed tags, applied to the actions of the plan by {@link #commitRenames()}.
+     */
+    private final List<Runnable> pendingRenames = new ArrayList<>();
+
+    /**
+     * Replaces a renamed tag in an action.
+     */
+    private interface TagRename {
+        /**
+         * @return {@code true} if the action was changed
+         */
+        boolean rename(ActionData action, String oldValue, String newValue);
+    }
+
+    private static final TagRename STATUS_RENAME = (action, oldValue, newValue) -> {
+        if (oldValue.equals(action.statusTags.get())) {
+            action.statusTags.set(newValue);
+            return true;
+        }
+        return false;
+    };
+
+    private static final TagRename FIELD_RENAME = (action, oldValue, newValue) -> {
+        String renamed = renameInList(action.fieldTags.get(), oldValue, newValue);
+        if (renamed != null) {
+            action.fieldTags.set(renamed);
+            return true;
+        }
+        return false;
+    };
+
+    private static final TagRename SEU_RENAME = (action, oldValue, newValue) -> {
+        String renamed = renameInList(action.seuTagsProperty().get(), oldValue, newValue);
+        if (renamed != null) {
+            action.seuTagsProperty().set(renamed);
+            return true;
+        }
+        return false;
+    };
 
     public ActionPlanForm(ActionPlanData actionPlan) {
         super(AlertType.INFORMATION);
@@ -84,10 +129,10 @@ public class ActionPlanForm extends Alert {
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(false);
 
-        GridPane statusPane = buildMediumView(statusListView);
+        GridPane statusPane = buildMediumView(statusListView, STATUS_RENAME);
         GridPane mediumPane = buildMediumView(mediumListView);
-        GridPane suePane = buildMediumView(sueListView);
-        GridPane fieldPane = buildMediumView(fieldsListView);
+        GridPane suePane = buildMediumView(sueListView, SEU_RENAME);
+        GridPane fieldPane = buildMediumView(fieldsListView, FIELD_RENAME);
         GridPane enpiPane = buildENPIList(enpiListView);
 
         GridPane gridPane = new GridPane();
@@ -217,20 +262,57 @@ public class ActionPlanForm extends Alert {
 
     }
 
-    private GridPane buildMediumView(ListView<String> listView) {
+    /**
+     * Replaces a value in a ";" separated list.
+     *
+     * @return the new list or {@code null} if the value is not in the list
+     */
+    private static String renameInList(String list, String oldValue, String newValue) {
+        if (list == null || list.isEmpty()) return null;
+        List<String> values = new ArrayList<>(Arrays.asList(list.split(";")));
+        if (!values.contains(oldValue)) return null;
+        return values.stream().map(value -> value.equals(oldValue) ? newValue : value).collect(Collectors.joining(";"));
+    }
+
+    /**
+     * Replaces the renamed tags in all actions of the plan and saves the changed actions.
+     * Called when the settings are confirmed.
+     */
+    public void commitRenames() {
+        pendingRenames.forEach(Runnable::run);
+        pendingRenames.clear();
+    }
+
+    private GridPane buildMediumView(ListView<String> listView, TagRename tagRename) {
         Button addButton = new Button("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, iconSize, iconSize));
         Button removeButton = new Button("", JEConfig.getSVGImage(Icon.MINUS_CIRCLE, iconSize, iconSize));
 
         addButton.setOnAction(event -> {
             TextInputDialog dialog = new TextInputDialog("");
-            dialog.setTitle("Neuer Eintrag");
-            dialog.setHeaderText("Neuen Eintrag hinzufügen");
-            dialog.setContentText("Name:");
+            dialog.initOwner(getDialogPane().getScene().getWindow());
+            dialog.setTitle(I18n.getInstance().getString("planform.editor.newentry.title"));
+            dialog.setHeaderText(I18n.getInstance().getString("planform.editor.newentry.header"));
+            dialog.setContentText(I18n.getInstance().getString("planform.editor.newentry.name"));
 
             Optional<String> result = dialog.showAndWait();
-            if (result.isPresent() && !result.get().isEmpty()) {
-                listView.getItems().add(result.get());
+            if (result.isPresent() && !result.get().trim().isEmpty() && !listView.getItems().contains(result.get().trim())) {
+                listView.getItems().add(result.get().trim());
+                FXCollections.sort(listView.getItems(), String.CASE_INSENSITIVE_ORDER);
             }
+        });
+
+        listView.setEditable(true);
+        listView.setCellFactory(TextFieldListCell.forListView());
+        listView.setOnEditCommit(event -> {
+            int index = event.getIndex();
+            if (index < 0 || index >= listView.getItems().size() || event.getNewValue() == null) return;
+            String oldValue = listView.getItems().get(index);
+            String newValue = event.getNewValue().trim();
+            if (newValue.isEmpty() || newValue.equals(oldValue) || listView.getItems().contains(newValue)) return;
+
+            listView.getItems().set(index, newValue);
+            FXCollections.sort(listView.getItems(), String.CASE_INSENSITIVE_ORDER);
+            pendingRenames.add(() -> renameInActions(tagRename, oldValue, newValue));
         });
 
         removeButton.setOnAction(event -> {
@@ -255,6 +337,19 @@ public class ActionPlanForm extends Alert {
 
         return gridPane;
 
+    }
+
+    private void renameInActions(TagRename tagRename, String oldValue, String newValue) {
+        try {
+            actionPlan.loadActionList();
+            for (ActionData action : actionPlan.getActionData()) {
+                if (tagRename.rename(action, oldValue, newValue)) {
+                    action.commit();
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Could not rename {} to {} in the actions", oldValue, newValue, ex);
+        }
     }
 
     private GridPane buildMediumView(TableView<Medium> listView) {

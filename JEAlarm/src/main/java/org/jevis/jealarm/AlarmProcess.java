@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAlarm.
  * <p>
@@ -39,6 +40,7 @@ import org.jevis.jenotifier.notifier.Email.EmailNotification;
 import org.jevis.jenotifier.notifier.Email.EmailNotificationDriver;
 import org.jevis.jenotifier.notifier.Email.EmailServiceProperty;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -96,6 +98,11 @@ public class AlarmProcess {
         DateHelper dateHelper = null;
         start = alarmConfiguration.getTimeStamp();
         dateHelper = PeriodHelper.getDateHelper(alarmConfiguration.getObject(), alarmPeriod, dateHelper, start);
+        if (start == null) {
+            // no "Time Stamp" set yet: begin with the last complete alarm period instead of failing
+            start = firstStart(alarmPeriod, alarmConfiguration.getDateTimeZone(), now, dateHelper);
+            logger.info("Alarm configuration {} has no time stamp, starting at {}", alarmConfiguration.getObject().getID(), start);
+        }
 
         if (alarmPeriod != Period.NONE) {
             end = PeriodHelper.getNextPeriod(start, alarmPeriod, alarmConfiguration.getDateTimeZone(), 1, null).minusMillis(1);
@@ -200,6 +207,46 @@ public class AlarmProcess {
                 logger.warn("No new Data.");
             }
         }
+    }
+
+    /**
+     * Start of the last complete alarm period before {@code now}, used when the configuration has no time stamp yet.
+     */
+    static DateTime firstStart(Period alarmPeriod, DateTimeZone zone, DateTime now, DateHelper dateHelper) {
+        DateTime local = now.withZone(zone != null ? zone : DateTimeZone.getDefault());
+        DateTime periodStart;
+        switch (alarmPeriod) {
+            case MINUTELY:
+                periodStart = local.minuteOfDay().roundFloorCopy();
+                break;
+            case QUARTER_HOURLY:
+                periodStart = local.hourOfDay().roundFloorCopy().plusMinutes((local.getMinuteOfHour() / 15) * 15);
+                break;
+            case HOURLY:
+                periodStart = local.hourOfDay().roundFloorCopy();
+                break;
+            case WEEKLY:
+                periodStart = local.withDayOfWeek(1).withTimeAtStartOfDay();
+                break;
+            case MONTHLY:
+                periodStart = local.withDayOfMonth(1).withTimeAtStartOfDay();
+                break;
+            case QUARTERLY:
+                periodStart = local.withDayOfMonth(1).withMonthOfYear(((local.getMonthOfYear() - 1) / 3) * 3 + 1).withTimeAtStartOfDay();
+                break;
+            case YEARLY:
+                periodStart = local.withDayOfYear(1).withTimeAtStartOfDay();
+                break;
+            case NONE:
+                return local.minusDays(1);
+            default:
+                periodStart = local.withTimeAtStartOfDay();
+                break;
+        }
+        if ((alarmPeriod == Period.CUSTOM || alarmPeriod == Period.CUSTOM2) && dateHelper == null) {
+            return periodStart.minusDays(1);
+        }
+        return PeriodHelper.getPriorStartRecord(periodStart, alarmPeriod, dateHelper);
     }
 
     private void finish() throws JEVisException {

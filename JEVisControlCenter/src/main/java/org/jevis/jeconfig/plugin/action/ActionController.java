@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -277,6 +278,7 @@ public class ActionController {
         ActionPlanForm actionPlanForm = new ActionPlanForm(getActiveTab().getActionPlan());
         Optional<ButtonType> result = actionPlanForm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            actionPlanForm.commitRenames();
             getActiveTab().getActionPlan().commit();
         }
 

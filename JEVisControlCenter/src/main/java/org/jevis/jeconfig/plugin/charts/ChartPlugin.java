@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -150,6 +151,7 @@ public class ChartPlugin implements Plugin {
     private Double xAxisLowerBound;
     private Double xAxisUpperBound;
     private boolean zoomed = false;
+    private boolean periodInfoRegistered = false;
     private boolean temporary = false;
     private WorkDays workDays;
     private long finalSeconds = 60L;
@@ -713,6 +715,7 @@ public class ChartPlugin implements Plugin {
 
         allCharts.clear();
         dataRowMap.clear();
+        periodInfoRegistered = false;
 
         Integer horizontalPies = dataModel.getHorizontalPies();
         Integer horizontalTables = dataModel.getHorizontalTables();
@@ -742,6 +745,7 @@ public class ChartPlugin implements Plugin {
             int currentTableFrame = 0;
 
             for (ChartModel chartModel : dataModel.getChartModels()) {
+                chartModel.setCustomWorkDay(toolBarView.getToolBarSettings().isCustomWorkday());
                 chartModel.getChartData().forEach(chartData -> {
                     if (!chartData.isIntervalEnabled()) {
                         chartData.setIntervalStart(dataSettings.getAnalysisTimeFrame().getStart());
@@ -820,6 +824,7 @@ public class ChartPlugin implements Plugin {
                     if (chartModel.getChartType() != ChartType.TABLE && chartModel.getChartType() != ChartType.TABLE_V
                             && chartModel.getChartType() != ChartType.TABLE_H) {
                         bp.setTop(tableHeader);
+                        registerPeriodInfo(tableHeader);
                     } else if (chartModel.getChartType() == ChartType.TABLE) {
                         TableChart tableChart = (TableChart) chart;
                         bp.setTop(tableChart.getTopPicker());
@@ -995,6 +1000,9 @@ public class ChartPlugin implements Plugin {
 
                 double height = border.getHeight() - (HEATMAP_HEIGHT_FACTOR * noOfCharts);
 
+                long shownRows = children.stream().filter(child -> child instanceof BorderPane || child instanceof HBox).count();
+                final int perScreen = (int) Math.max(1, Math.min(chartsPerScreen, shownRows));
+
                 for (Node node : children) {
                     if (node instanceof BorderPane) {
                         BorderPane borderPane = (BorderPane) node;
@@ -1009,7 +1017,7 @@ public class ChartPlugin implements Plugin {
                                 for (Node node2 : ((VBox) node1).getChildren()) {
                                     if (node2 instanceof de.gsi.chart.XYChart) {
 //                                        Platform.runLater(() -> ((de.gsi.chart.XYChart) node2).setMaxHeight((height) / (chartsPerScreen * 3)));
-                                        maxHeightMap.put(node2, height / (chartsPerScreen * 3));
+                                        maxHeightMap.put(node2, height / (perScreen * 3));
                                     } else if (node2 instanceof HBox) {
                                         isLogical = false;
                                         isTableV = true;
@@ -1033,13 +1041,13 @@ public class ChartPlugin implements Plugin {
                             for (Node child : borderChildren) {
                                 if (child instanceof de.gsi.chart.XYChart) {
                                     de.gsi.chart.XYChart xyChart = (de.gsi.chart.XYChart) child;
-                                    double v = (height / chartsPerScreen) - heightTop;
+                                    double v = (height / perScreen) - heightTop;
 //                                    Platform.runLater(() -> xyChart.setPrefHeight(v));
                                     prefHeightMap.put(xyChart, v);
                                 }
                             }
                         } else if (isTableV) {
-                            double v = height / chartsPerScreen;
+                            double v = height / perScreen;
                             for (Node node1 : borderChildren) {
                                 if (node1 instanceof VBox) {
                                     VBox vBox1 = (VBox) node1;
@@ -1050,7 +1058,7 @@ public class ChartPlugin implements Plugin {
                         }
                     } else if (node instanceof HBox) {
 //                        Platform.runLater(() -> ((HBox) node).setPrefHeight(height / chartsPerScreen));
-                        prefHeightMap.put(node, height / chartsPerScreen);
+                        prefHeightMap.put(node, height / perScreen);
                     }
                 }
             } else {
@@ -1188,8 +1196,8 @@ public class ChartPlugin implements Plugin {
                     });
 
                     tableTopDatePicker.getRightImage().setOnMouseClicked(event -> {
-                        int i = datePicker.getSelectionModel().getSelectedIndex() - 1;
-                        if (i < singleRow.getSamples().size()) {
+                        int i = datePicker.getSelectionModel().getSelectedIndex() + 1;
+                        if (i < datePicker.getItems().size()) {
                             Platform.runLater(() -> datePicker.getSelectionModel().select(i));
                         }
                     });
@@ -1335,9 +1343,22 @@ public class ChartPlugin implements Plugin {
         cv.getChart().getPlugins().add(dataPointTableViewPointer);
     }
 
+    /**
+     * Registers the info tooltip of the period column only for the first visible table header
+     * of a chart update, instead of once for every (re)built table header.
+     */
+    private void registerPeriodInfo(TableHeader tableHeader) {
+        if (periodInfoRegistered || tableHeader.getPeriodLabel() == null) return;
+
+        JEVisHelp.getInstance().addInfoControl(ChartPlugin.class.getSimpleName(), "", JEVisHelp.LAYOUT.HORIZONTAL_TOP_LEFT, tableHeader.getPeriodLabel());
+        periodInfoRegistered = true;
+    }
+
     private void setupLinkedZoom(Chart ac, List<Chart> notActive) {
 
-        MultiChartZoomer multiChartZoomer = new MultiChartZoomer(this, AxisMode.X, notActive, ac);
+        /* without linked zoom every chart zooms on its own */
+        List<Chart> linkedCharts = toolBarView.getToolBarSettings().isLinkedZoom() ? notActive : new ArrayList<>();
+        MultiChartZoomer multiChartZoomer = new MultiChartZoomer(this, AxisMode.X, linkedCharts, ac);
         multiChartZoomer.setSliderVisible(false);
         ac.getChart().getPlugins().add(multiChartZoomer);
     }
@@ -1410,6 +1431,7 @@ public class ChartPlugin implements Plugin {
 
         for (ChartData chartData : chartModel.getChartData()) {
             ChartDataRow chartDataRow = new ChartDataRow(ds, chartData);
+            chartDataRow.setCustomWorkDay(chartModel.isCustomWorkDay());
 
             List<ChartDataRow> dataRows = Collections.singletonList(chartDataRow);
             Chart subView = getChart(ds, chartModel);
@@ -1450,6 +1472,7 @@ public class ChartPlugin implements Plugin {
         allEntries.sort((o1, o2) -> ac.compare(o1.getName(), o2.getName()));
         TableHeader tableHeader = new TableHeader(chartModel, allEntries);
         bp.setTop(tableHeader);
+        registerPeriodInfo(tableHeader);
 
         if (!minValue.equals(Double.MAX_VALUE) && !maxValue.equals(-Double.MAX_VALUE)) {
             for (LogicalChart logicalChart : subCharts) {

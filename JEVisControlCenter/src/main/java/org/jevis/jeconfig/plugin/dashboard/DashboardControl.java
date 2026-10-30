@@ -646,6 +646,7 @@ public class DashboardControl {
             selectionController.clearSelection();
             selectionController.updateHighlightSelected();
         }
+        Platform.runLater(this::updateParentBackground);
 
         showConfig();
 
@@ -917,7 +918,24 @@ public class DashboardControl {
             } catch (Exception ex) {
                 logger.error(ex);
             }
+            updateParentBackground();
         });
+    }
+
+    /**
+     * Outside the edit mode the area around the dashboard follows the dashboard background colour;
+     * in edit mode it keeps the default background so the dashboard bounds stay visible.
+     */
+    private void updateParentBackground() {
+        try {
+            Color color = null;
+            if (!editableProperty.get() && activeDashboard != null) {
+                color = activeDashboard.getBackgroundColor();
+            }
+            this.dashBordPlugIn.setParentBackground(color);
+        } catch (Exception ex) {
+            logger.error("Failed to update dashboard parent background", ex);
+        }
     }
 
     private JEVisObject getUserSelectedDashboard() {
@@ -985,10 +1003,12 @@ public class DashboardControl {
                     if (widget.getTt().isShowing() != show) {
                         if (widget.getTt().isShowing()) Platform.runLater(() -> widget.getTt().hide());
                         else {
-                            Bounds sceneBounds = widget.localToScene(widget.getBoundsInLocal());
+                            /* Tooltip.show(node, x, y) expects screen coordinates */
+                            Bounds screenBounds = widget.localToScreen(widget.getBoundsInLocal());
+                            if (screenBounds == null) continue;
 
-                            double x = sceneBounds.getMinX() + 2;
-                            double y = sceneBounds.getMinY() + 4;
+                            double x = screenBounds.getMinX() + 2;
+                            double y = screenBounds.getMinY() + 4;
 
                             Platform.runLater(() -> widget.getTt().show(widget, x, y));
                         }

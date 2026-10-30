@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -54,7 +55,6 @@ public class CalcJob {
     private long calcObjID;
     private Double staticValue = 0.0;
     private Double allZeroValue;
-    private String DIV0Handling = "";
     private boolean newSamplesWritten;
 
     public CalcJob() {
@@ -80,7 +80,7 @@ public class CalcJob {
             Map<DateTime, List<Sample>> mergedSamples = sampleMerger.merge();
             logger.debug("{} mergable calculations found", mergedSamples.size());
             ResultCalculator resultCalc = new ResultCalculator(mergedSamples, new CalcTemplate(calcObjID, expression));
-            List<JEVisSample> calculateResult = resultCalc.calculateResult(DIV0Handling, staticValue, allZeroValue);
+            List<JEVisSample> calculateResult = resultCalc.calculateResult(staticValue, allZeroValue);
             if (calculateResult.size() > 0) {
                 newSamplesWritten = true;
             }
@@ -104,7 +104,7 @@ public class CalcJob {
         Map<DateTime, List<Sample>> mergedSamples = sampleMerger.merge();
         logger.debug("{} mergable calculations found", mergedSamples.size());
         ResultCalculator resultCalc = new ResultCalculator(mergedSamples, new CalcTemplate(calcObjID, expression));
-        List<JEVisSample> calculateResult = resultCalc.calculateResult(DIV0Handling, staticValue, allZeroValue);
+        List<JEVisSample> calculateResult = resultCalc.calculateResult(staticValue, allZeroValue);
         logger.info("{} results calculated", calculateResult.size());
         return calculateResult;
     }
@@ -177,13 +177,7 @@ public class CalcJob {
         this.staticValue = staticValue;
     }
 
-    public String getDIV0Handling() {
-        return DIV0Handling;
-    }
 
-    public void setDIV0Handling(String div0Handling) {
-        this.DIV0Handling = div0Handling;
-    }
 
     public void setCalcInputObjects(List<CalcInputObject> calcInputObjects) {
         this.calcInputObjects = calcInputObjects;

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -167,12 +168,12 @@ public class BatteryPojo {
         jfxTextFieldMinValue = new JFXTextField();
         jfxTextFieldMinValue.setText(String.valueOf(minimum));
 
-        gridPane.addRow(1, new Label(I18n.getInstance().getString("plugin.dashboard.gaugewidget.min")), jfxTextFieldMinValue);
+        gridPane.addRow(1, new Label(I18n.getInstance().getString("plugin.dashboard.min")), jfxTextFieldMinValue);
 
         jfxTextFieldMaxValue = new JFXTextField();
         jfxTextFieldMaxValue.setText(String.valueOf(maximum));
 
-        gridPane.addRow(2, new Label(I18n.getInstance().getString("plugin.dashboard.gaugewidget.max")), jfxTextFieldMaxValue);
+        gridPane.addRow(2, new Label(I18n.getInstance().getString("plugin.dashboard.max")), jfxTextFieldMaxValue);
 
 
         colorPickerAdvValueIndicator = new ColorPickerAdv();

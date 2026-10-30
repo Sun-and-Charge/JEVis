@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -68,6 +69,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -332,21 +334,36 @@ public class ReportPlugin implements Plugin {
 
         fileComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (oldValue != null && newValue != null && !newValue.equals(oldValue)) {
-                try {
-                    byte[] bytesFromSampleMap = sampleMap.get(newValue).getPdfFile().getBytes();
-                    model.setBytes(bytesFromSampleMap);
-                    pagination.setPageCount(model.numPages());
-                    zoomFactor.set(0.3);
-                    pagination.setPageFactory((Integer pageIndex) -> {
-                        if (pageIndex >= model.numPages()) {
-                            return null;
-                        } else {
-                            return createPage(pageIndex);
-                        }
-                    });
-                } catch (Exception e) {
-                    logger.error("Could not load report for ts {}", newValue, e);
+                JEVisFileWithSample selected = sampleMap.get(newValue);
+                if (selected == null) {
+                    return;
                 }
+                /* the file is downloaded on first use, so not on the FX thread */
+                Task<byte[]> loadFile = new Task<byte[]>() {
+                    @Override
+                    protected byte[] call() {
+                        return selected.getPdfFile().getBytes();
+                    }
+                };
+                loadFile.setOnSucceeded(event -> {
+                    try {
+                        model.setBytes(loadFile.getValue());
+                        pagination.setPageCount(model.numPages());
+                        zoomFactor.set(0.3);
+                        pagination.setPageFactory((Integer pageIndex) -> {
+                            if (pageIndex >= model.numPages()) {
+                                return null;
+                            } else {
+                                return createPage(pageIndex);
+                            }
+                        });
+                    } catch (Exception e) {
+                        logger.error("Could not load report for ts {}", newValue, e);
+                    }
+                });
+                loadFile.setOnFailed(event -> logger.error("Could not load report for ts {}", newValue, loadFile.getException()));
+                JEConfig.getStatusBar().addTask(ReportPlugin.class.getName() + ".file", loadFile,
+                        (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
             }
         });
 
@@ -586,11 +603,12 @@ public class ReportPlugin implements Plugin {
 
                     if (lastReportPDFAttribute != null && lastReportXLSXAttribute != null) {
                         List<JEVisSample> allPDFSamples = lastReportPDFAttribute.getAllSamples();
-                        for (JEVisSample allPDFSample : allPDFSamples) {
-                            fileNames.add(allPDFSample.getValueAsString());
-                        }
 
-                        List<JEVisSample> allXLSXSamples = lastReportXLSXAttribute.getAllSamples();
+                        /* XLSX files belong to the PDF written within a minute of it */
+                        TreeMap<DateTime, JEVisSample> xlsxByTime = new TreeMap<>();
+                        for (JEVisSample sample : lastReportXLSXAttribute.getAllSamples()) {
+                            xlsxByTime.put(sample.getTimestamp(), sample);
+                        }
                         if (allPDFSamples.size() > 0) {
                             JEVisFile lastSampleValueAsFile = allPDFSamples.get(allPDFSamples.size() - 1).getValueAsFile();
                             Task loadLastReport = new Task() {
@@ -621,29 +639,22 @@ public class ReportPlugin implements Plugin {
                             };
                             JEConfig.getStatusBar().addTask(ReportPlugin.class.getName(), loadLastReport, (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
 
+                            /* only the list is built here, the files are downloaded when one is opened or saved */
+                            List<String> names = new ArrayList<>();
                             for (JEVisSample pdfSample : allPDFSamples) {
                                 try {
-                                    JEVisFile pdfFile = pdfSample.getValueAsFile();
                                     String name = pdfSample.getValueAsString();
+                                    DateTime pdfTs = pdfSample.getTimestamp();
+                                    Map.Entry<DateTime, JEVisSample> xlsx = xlsxByTime.ceilingEntry(pdfTs.minusMinutes(1));
+                                    JEVisSample xlsxSample = xlsx != null && xlsx.getKey().isBefore(pdfTs.plusMinutes(1)) ? xlsx.getValue() : null;
 
-                                    JEVisFile xlsxFile = null;
-                                    DateTime pdfTSLower = pdfSample.getTimestamp().minusMinutes(1);
-                                    DateTime pdfTSUpper = pdfSample.getTimestamp().plusMinutes(1);
-                                    for (JEVisSample sample : allXLSXSamples) {
-                                        if (sample.getTimestamp().isAfter(pdfTSLower) && sample.getTimestamp().isBefore(pdfTSUpper)) {
-                                            xlsxFile = sample.getValueAsFile();
-                                            break;
-                                        }
-                                    }
-
-                                    JEVisFileWithSample jeVisFileWithSample = new JEVisFileWithSample(pdfSample, pdfFile, xlsxFile);
-
-                                    sampleMap.put(name, jeVisFileWithSample);
-
+                                    sampleMap.put(name, new JEVisFileWithSample(pdfSample, xlsxSample));
+                                    names.add(name);
                                 } catch (JEVisException e) {
                                     logger.error("Could not add date to date list.");
                                 }
                             }
+                            Platform.runLater(() -> fileNames.setAll(names));
                         }
                     }
                     succeeded();

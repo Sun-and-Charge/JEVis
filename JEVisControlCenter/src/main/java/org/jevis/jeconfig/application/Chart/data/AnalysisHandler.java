@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -127,13 +128,7 @@ public class AnalysisHandler {
                     chartDataNode.put("chartType", chartData.getChartType().toString());
                 }
 
-                if (chartData.getAggregationPeriod() != null) {
-                    chartDataNode.put("aggregationPeriod", chartData.getAggregationPeriod().toString());
-                }
-
-                if (chartData.getManipulationMode() != null) {
-                    chartDataNode.put("manipulationMode", chartData.getManipulationMode().toString());
-                }
+                /* aggregation and manipulation are not part of the analysis, they come from the toolbar or a favorite */
 
                 chartDataNode.put("decimalDigits", chartData.getDecimalDigits());
 
@@ -178,6 +173,16 @@ public class AnalysisHandler {
             chartModelNode.put("coloringEnabled", chartModel.isColoringEnabled());
             chartModelNode.put("showColumnSums", chartModel.isShowColumnSums());
             chartModelNode.put("showRowSums", chartModel.isShowRowSums());
+
+            if (!chartModel.getFilterTexts().isEmpty()) {
+                ObjectNode filterTextsNode = JsonNodeFactory.instance.objectNode();
+                chartModel.getFilterTexts().forEach((columnTitle, filterText) -> {
+                    if (columnTitle != null && filterText != null && !filterText.isEmpty()) {
+                        filterTextsNode.put(columnTitle, filterText);
+                    }
+                });
+                chartModelNode.set("filterTexts", filterTextsNode);
+            }
 
             if (chartModel.getxAxisTitle() != null) {
                 chartModelNode.put("xAxisTitle", chartModel.getxAxisTitle());
