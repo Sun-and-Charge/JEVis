@@ -1613,7 +1613,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     public void reloadAttribute(JEVisObject object) {
         try {
             if (object != null) {
-                logger.warn("Reload Attribute: {}", object);
+                logger.debug("Reload Attribute: {}", object);
                 getAttributesFromWS(object.getID());
             } else {
                 logger.error("Error trying to reload null object");

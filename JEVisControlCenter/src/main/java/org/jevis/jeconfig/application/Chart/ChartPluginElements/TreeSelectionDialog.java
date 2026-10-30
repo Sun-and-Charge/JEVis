@@ -38,6 +38,7 @@ import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
+import org.jevis.commons.CommonClasses;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jeconfig.JEConfig;
@@ -114,6 +115,20 @@ public class TreeSelectionDialog extends Dialog {
         box.setSpacing(8);
 
         treeView = new JEVisTreeView(ds, selectionMode, selection, showAttributes);
+        /* a link whose target is of a required class stands for its target, so the caller gets the real object (OpenJEVis #1674) */
+        treeView.setSelectionResolver(object -> {
+            if (this.requiredClasses.isEmpty() || !isLink(object)) return object;
+            try {
+                if (this.requiredClasses.contains(object.getJEVisClass())) return object;
+                JEVisObject linkedObject = object.getLinkedObject();
+                if (linkedObject != null && this.requiredClasses.contains(linkedObject.getJEVisClass())) {
+                    return linkedObject;
+                }
+            } catch (Exception e) {
+                logger.warn("Could not resolve link {}", object, e);
+            }
+            return object;
+        });
 
         Label filterLabel = new Label(I18n.getInstance().getString("searchbar.search"));
         VBox filterVBox = new VBox(filterLabel);
@@ -203,6 +218,7 @@ public class TreeSelectionDialog extends Dialog {
             try {
                 boolean correctChoice = true;
                 List<JEVisObject> incorrectObjects = new ArrayList<>();
+                // getSelectedObjects() already resolves links to accepted targets
                 for (JEVisObject object : treeView.getSelectedObjects()) {
                     if (!this.requiredClasses.isEmpty() && !this.requiredClasses.contains(object.getJEVisClass())) {
                         correctChoice = false;
@@ -407,22 +423,10 @@ public class TreeSelectionDialog extends Dialog {
                         return contains;
                     });
                 } else if ((filterTextField.getText() == null || filterTextField.getText().isEmpty()) && (!this.classFilter.isEmpty())) {
-                    return TreeItemPredicate.create(jeVisTreeViewItem -> {
-                        try {
-                            return this.classFilter.contains(jeVisTreeViewItem.getObject().getJEVisClass());
-                        } catch (JEVisException e) {
-                            e.printStackTrace();
-                        }
-                        return false;
-                    });
+                    return TreeItemPredicate.create(jeVisTreeViewItem -> matchesClassFilter(jeVisTreeViewItem.getObject()));
                 } else return TreeItemPredicate.create(jeVisTreeViewItem -> {
                     boolean containsName = jeVisTreeViewItem.getObject().getLocalName(I18n.getInstance().getLocale().getLanguage()).toLowerCase(I18n.getInstance().getLocale()).contains(filterTextField.getText().toLowerCase(I18n.getInstance().getLocale()));
-                    boolean classFiltered = false;
-                    try {
-                        classFiltered = this.classFilter.contains(jeVisTreeViewItem.getObject().getJEVisClass());
-                    } catch (JEVisException e) {
-                        e.printStackTrace();
-                    }
+                    boolean classFiltered = matchesClassFilter(jeVisTreeViewItem.getObject());
 
                     boolean b = containsName && classFiltered;
                     if (b) {
@@ -433,6 +437,30 @@ public class TreeSelectionDialog extends Dialog {
                 });
             }, filterTextField.textProperty()));
         }
+    }
+
+    private static boolean isLink(JEVisObject object) {
+        try {
+            return object != null && CommonClasses.LINK.NAME.equals(object.getJEVisClassName());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * True if the object's class is in the class filter. A link passes if its target's class does (OpenJEVis #1674).
+     */
+    private boolean matchesClassFilter(JEVisObject object) {
+        try {
+            if (this.classFilter.contains(object.getJEVisClass())) return true;
+            if (isLink(object)) {
+                JEVisObject linkedObject = object.getLinkedObject();
+                return linkedObject != null && this.classFilter.contains(linkedObject.getJEVisClass());
+            }
+        } catch (JEVisException e) {
+            logger.error("Could not check class of {}", object, e);
+        }
+        return false;
     }
 
     private void expandTreeView(TreeItem<?> item) {

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -54,6 +55,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.*;
 import org.jevis.jeconfig.application.Chart.TimeFrame;
 import org.jevis.jeconfig.application.jevistree.methods.DataMethods;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.plugin.AnalysisRequest;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
@@ -139,12 +141,13 @@ public class NotesPlugin implements Plugin {
         tableView.setItems(filteredData);
 
         createColumns();
+        TableColumnStateStore.bind(tableView, "notes");
     }
 
     public static void autoFitTable(TableView<NotesRow> tableView) {
         for (TableColumn<NotesRow, ?> column : tableView.getColumns()) {
             try {
-                if (tableView.getSkin() != null) {
+                if (tableView.getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
                     columnToFitMethod.invoke(tableView.getSkin(), column, -1);
                 }
             } catch (Exception e) {

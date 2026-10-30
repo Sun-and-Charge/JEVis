@@ -50,6 +50,9 @@ import org.joda.time.format.ISODateTimeFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This Edior is used to configure the Attributes of an Objects. Its used in the
@@ -68,6 +71,9 @@ public class ObjectEditor {
     private JEVisTree tree;
     private SideNode help;
     private final BooleanProperty showWebHelp = new SimpleBooleanProperty(false);
+    private static final long ATTRIBUTE_RELOAD_INTERVAL_MS = 30000;
+    private final Map<Long, Long> lastAttributeReload = new ConcurrentHashMap<>();
+    private final AtomicLong setObjectRequest = new AtomicLong();
 
 
     private final HiddenSidesPane _view = new HiddenSidesPane();
@@ -146,9 +152,13 @@ public class ObjectEditor {
     }
 
     public void setObject(final JEVisObject obj) {
+        final long requestID = setObjectRequest.incrementAndGet();
         Task<Void> load = new Task<Void>() {
             @Override
             protected Void call() {
+                reloadAttributesIfDue(obj);
+                /* a newer selection was made while reloading, do not overwrite it with this (older) object */
+                if (requestID != setObjectRequest.get()) return null;
                 loadObject(obj);
                 return null;
             }
@@ -162,6 +172,26 @@ public class ObjectEditor {
 
     }
 
+    /**
+     * Reloads the attributes of the given object from the server so the editor shows current values
+     * (OpenJEVis #2012). To limit the server load an object is reloaded at most once within
+     * {@link #ATTRIBUTE_RELOAD_INTERVAL_MS}. Must not be called on the FX thread.
+     */
+    private void reloadAttributesIfDue(JEVisObject obj) {
+        if (obj == null || obj.getID() == null) return;
+        try {
+            long now = System.currentTimeMillis();
+            Long last = lastAttributeReload.get(obj.getID());
+            if (last != null && now - last < ATTRIBUTE_RELOAD_INTERVAL_MS) return;
+            lastAttributeReload.put(obj.getID(), now);
+            if (lastAttributeReload.size() > 1000) {
+                lastAttributeReload.entrySet().removeIf(entry -> now - entry.getValue() >= ATTRIBUTE_RELOAD_INTERVAL_MS);
+            }
+            obj.getDataSource().reloadAttribute(obj);
+        } catch (Exception ex) {
+            logger.warn("Could not reload attributes of object {}", obj.getID(), ex);
+        }
+    }
 
     public void loadObject(final JEVisObject obj) {
         //        checkIfSaved(obj); //TODO reimplement

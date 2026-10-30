@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -162,7 +163,8 @@ public class BasicCellFilter implements JEVisTreeFilter {
     public boolean showItem(JEVisObject object) {
         for (ObjectAttributeFilter objectAttributeFilter : itemFilters) {
             try {
-                if (objectAttributeFilter.showClass(object.getJEVisClassName())) {
+                /* showObject also lets links to matching objects pass (OpenJEVis #1674) */
+                if (objectAttributeFilter.showObject(object)) {
                     return true;
                 }
             } catch (Exception ignored) {

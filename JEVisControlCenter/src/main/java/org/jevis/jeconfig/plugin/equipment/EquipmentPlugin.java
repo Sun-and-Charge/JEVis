@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -50,6 +51,7 @@ import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.dialog.EquipmentDialog;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.RegisterTableRow;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.plugin.TablePlugin;
 import org.joda.time.DateTime;
 
@@ -517,6 +519,7 @@ public class EquipmentPlugin extends TablePlugin {
 
                             tab.setClosable(false);
                             createColumns(tableView, jeVisClass);
+                            TableColumnStateStore.bind(tableView, "equipment." + jeVisClass.getName());
 
                             tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                                 if (newValue != oldValue && newValue != null) {

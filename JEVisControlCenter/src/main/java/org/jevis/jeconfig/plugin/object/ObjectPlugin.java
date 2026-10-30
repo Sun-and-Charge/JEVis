@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -61,7 +62,9 @@ import org.jevis.jeconfig.tool.LoadingPane;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 
@@ -88,6 +91,14 @@ public class ObjectPlugin implements Plugin {
 //    private ObjectTree tree;
     private JEVisTree tree;
     private boolean initToolbar = false;
+    /* selection history for back/forward navigation (OpenJEVis #1600) */
+    private static final int HISTORY_LIMIT = 50;
+    private final Deque<JEVisObject> backHistory = new ArrayDeque<>();
+    private final Deque<JEVisObject> forwardHistory = new ArrayDeque<>();
+    private final SimpleBooleanProperty backHistoryEmpty = new SimpleBooleanProperty(true);
+    private final SimpleBooleanProperty forwardHistoryEmpty = new SimpleBooleanProperty(true);
+    private JEVisObject currentHistoryObject;
+    private boolean navigatingHistory = false;
 
     public ObjectPlugin(JEVisDataSource ds, String newname) {
         this.ds = ds;
@@ -275,6 +286,99 @@ public class ObjectPlugin implements Plugin {
         //TreeItem<JEVisTreeRow>
 
         tree.getSelectionModel().selectedItemProperty().addListener(this::changed);
+
+        final KeyCombination backCombination = new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN);
+        final KeyCombination forwardCombination = new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN);
+        viewPane.addEventFilter(KeyEvent.KEY_PRESSED, t -> {
+            if (backCombination.match(t)) {
+                navigateHistory(true);
+                t.consume();
+            } else if (forwardCombination.match(t)) {
+                navigateHistory(false);
+                t.consume();
+            }
+        });
+    }
+
+    /**
+     * Remembers the newly selected object in the back history (OpenJEVis #1600).
+     */
+    private void recordHistory(JEVisObject obj) {
+        if (navigatingHistory || obj == null) return;
+        if (isSameObject(currentHistoryObject, obj)) return;
+        if (currentHistoryObject != null) {
+            pushHistory(backHistory, currentHistoryObject);
+        }
+        forwardHistory.clear();
+        currentHistoryObject = obj;
+        updateHistoryState();
+    }
+
+    private void pushHistory(Deque<JEVisObject> history, JEVisObject obj) {
+        if (!history.isEmpty() && isSameObject(history.peekFirst(), obj)) return;
+        history.addFirst(obj);
+        while (history.size() > HISTORY_LIMIT) {
+            history.removeLast();
+        }
+    }
+
+    private boolean isSameObject(JEVisObject o1, JEVisObject o2) {
+        if (o1 == null || o2 == null) return false;
+        return o1.getID() != null && o1.getID().equals(o2.getID());
+    }
+
+    private void updateHistoryState() {
+        backHistoryEmpty.set(backHistory.isEmpty());
+        forwardHistoryEmpty.set(forwardHistory.isEmpty());
+    }
+
+    /**
+     * Selects the previous (back = true) or next object of the selection history in the tree.
+     * Entries which can no longer be selected (deleted, filtered) are skipped.
+     */
+    private void navigateHistory(boolean back) {
+        if (tree == null) return;
+        Deque<JEVisObject> from = back ? backHistory : forwardHistory;
+        Deque<JEVisObject> to = back ? forwardHistory : backHistory;
+
+        while (!from.isEmpty()) {
+            JEVisObject target = from.pollFirst();
+            if (isSameObject(target, currentHistoryObject)) continue;
+            if (selectInTree(target)) {
+                if (currentHistoryObject != null) {
+                    pushHistory(to, currentHistoryObject);
+                }
+                currentHistoryObject = target;
+                break;
+            }
+        }
+        updateHistoryState();
+    }
+
+    private boolean selectInTree(JEVisObject target) {
+        navigatingHistory = true;
+        try {
+            JEVisObject object = ds.getObject(target.getID());
+            if (object == null) return false;
+            List<JEVisObject> toOpen = org.jevis.commons.utils.ObjectHelper.getAllParents(object);
+            toOpen.add(object);
+            // the tree allows multiple selection, so the old entry must not stay selected
+            tree.getSelectionModel().clearSelection();
+            TreeHelper.openPath(tree, toOpen, tree.getRoot(), object);
+
+            // expanding the path can move the selection, select the item itself at the end
+            TreeItem<JEVisTreeRow> item = tree.getItemForObject(object);
+            if (item == null) return false;
+            tree.getSelectionModel().clearSelection();
+            tree.getSelectionModel().select(item);
+            return tree.getSelectionModel().getSelectedItems().contains(item);
+        } catch (Exception ex) {
+            logger.warn("Could not navigate to object {}", target, ex);
+            return false;
+        } finally {
+            // expanding the path queues further selection changes; they must not count as user selections
+            Platform.runLater(() -> navigatingHistory = false);
+        }
     }
 
     @Override
@@ -469,13 +573,33 @@ public class ObjectPlugin implements Plugin {
             toSourceItem.setTooltip(new Tooltip(I18n.getInstance().getString("jevistree.menu.gotosrc")));
 
 
+            ToggleButton backItem = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_UP, iconSize, iconSize, -90));
+            GlobalToolBar.changeBackgroundOnHoverUsingBinding(backItem);
+            backItem.setOnAction(event -> {
+                backItem.setSelected(false);
+                navigateHistory(true);
+            });
+            backItem.disableProperty().bind(backHistoryEmpty);
+            backItem.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.toolbar.back")));
+
+            ToggleButton forwardItem = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_UP, iconSize, iconSize, 90));
+            GlobalToolBar.changeBackgroundOnHoverUsingBinding(forwardItem);
+            forwardItem.setOnAction(event -> {
+                forwardItem.setSelected(false);
+                navigateHistory(false);
+            });
+            forwardItem.disableProperty().bind(forwardHistoryEmpty);
+            forwardItem.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.toolbar.forward")));
+
+            Separator sep0 = new Separator();
             Separator sep1 = new Separator();
             Separator sep2 = new Separator();
             Separator sep3 = new Separator();
             Separator sep4 = new Separator();
 
             //JEVisHelp.getInstance().addHelpControl(ObjectPlugin.class.getSimpleName(), "", JEVisHelp.LAYOUT.VERTICAL_BOT_CENTER, save, newB, delete, reload, collapseTree, sep1, helpButton);
-            toolBar.getItems().setAll(save, newB, delete, reload, collapseTree,
+            toolBar.getItems().setAll(backItem, forwardItem, sep0,
+                    save, newB, delete, reload, collapseTree,
                     sep1, copyItem, cutItem, pasteItem,
                     sep2, copyAttributeItem, pasteAttributeItem,
                     sep3, wizardItem, reCalcItem, manualSampleItem, toSourceItem,
@@ -953,6 +1077,7 @@ public class ObjectPlugin implements Plugin {
         if (newValue instanceof JEVisTreeItem) {
             JEVisTreeItem item = (JEVisTreeItem) newValue;
             JEVisObject obj = item.getValue().getJEVisObject();
+            recordHistory(obj);
 
             loadingObjectProperty.setValue(true);
 

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -49,6 +50,7 @@ import org.jevis.jeconfig.*;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.plugin.RegisterTableRow;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.plugin.TablePlugin;
 import org.jevis.jeconfig.plugin.charts.TableViewContextMenuHelper;
 import org.jevis.jeconfig.plugin.equipment.JEVisClassTab;
@@ -478,6 +480,7 @@ public class BaseDataPlugin extends TablePlugin {
 
                             tab.setClosable(false);
                             createColumns(tableView);
+                            TableColumnStateStore.bind(tableView, "basedata." + typeOfBaseData);
 
                             ObservableList<RegisterTableRow> registerTableRows = FXCollections.observableArrayList();
 

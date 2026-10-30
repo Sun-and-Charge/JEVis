@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -22,6 +23,7 @@ package org.jevis.jeconfig.application.jevistree.filter;
 import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
+import org.jevis.commons.CommonClasses;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeRow;
 
 public class ObjectAttributeFilter {
@@ -51,7 +53,20 @@ public class ObjectAttributeFilter {
     }
 
     public boolean showObject(JEVisObject obj) throws JEVisException {
-        return showClass(obj.getJEVisClassName());
+        String className = obj.getJEVisClassName();
+        if (showClass(className)) {
+            return true;
+        }
+
+        /* a link is treated like its target, e.g. a link to a data object passes a data filter (OpenJEVis #1674) */
+        if (CommonClasses.LINK.NAME.equals(className)) {
+            JEVisObject linkedObject = obj.getLinkedObject();
+            return linkedObject != null
+                    && !CommonClasses.LINK.NAME.equals(linkedObject.getJEVisClassName())
+                    && showClass(linkedObject.getJEVisClassName());
+        }
+
+        return false;
     }
 
     /**
