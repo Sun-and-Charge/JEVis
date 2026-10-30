@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisObject;
+import org.jevis.commons.CommonClasses;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeRow;
@@ -68,7 +70,8 @@ public class SimpleTargetPlugin implements TreePlugin {
             if (data.isSelected()) {
 //                _preselect.add(new UserSelection(UserSelection.SelectionType.Object, data.getObj()));
                 if (data.getAtt() == null) {
-                    result.add(new UserSelection(UserSelection.SelectionType.Object, data.getObj()));
+                    /* a selected link stands for its target (OpenJEVis #1674) */
+                    result.add(new UserSelection(UserSelection.SelectionType.Object, resolveLink(data.getObj())));
                 } else {
                     result.add(new UserSelection(UserSelection.SelectionType.Attribute, data.getAtt(), null, null));
                 }
@@ -76,6 +79,23 @@ public class SimpleTargetPlugin implements TreePlugin {
         }
 
         return result;
+    }
+
+    /**
+     * Returns the linked object if the given object is a link, otherwise the object itself.
+     */
+    public static JEVisObject resolveLink(JEVisObject object) {
+        try {
+            if (object != null && CommonClasses.LINK.NAME.equals(object.getJEVisClassName())) {
+                JEVisObject linkedObject = object.getLinkedObject();
+                if (linkedObject != null) {
+                    return linkedObject;
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Could not resolve link {}", object, ex);
+        }
+        return object;
     }
 
     @Override

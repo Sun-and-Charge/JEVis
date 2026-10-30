@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -58,6 +59,7 @@ import org.jevis.commons.utils.JEVisDates;
 import org.jevis.jeconfig.GlobalToolBar;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.Plugin;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.control.AnalysisLinkButton;
@@ -169,7 +171,7 @@ public class TablePlugin implements Plugin {
         for (TableColumn<RegisterTableRow, ?> column : tableView.getColumns()) {
 //            if (column.isVisible()) {
             try {
-                if (tableView.getSkin() != null) {
+                if (tableView.getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
                     TablePlugin.columnToFitMethod.invoke(tableView.getSkin(), column, -1);
                 }
             } catch (Exception e) {

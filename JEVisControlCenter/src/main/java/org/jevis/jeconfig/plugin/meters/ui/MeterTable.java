@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -41,6 +42,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.jeconfig.application.Chart.ChartTools;
 import org.jevis.jeconfig.application.application.I18nWS;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.application.table.TableFindScrollbar;
 import org.jevis.jeconfig.plugin.meters.cells.*;
 import org.jevis.jeconfig.plugin.meters.data.JEVisTypeWrapper;
@@ -252,6 +254,7 @@ public class MeterTable extends TableView<MeterData> implements TableFindScrollb
         } catch (Exception e) {
             logger.error(e);
         }
+        TableColumnStateStore.bind(this, "meters");
         sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(this.comparatorProperty());
         Platform.runLater(() -> {

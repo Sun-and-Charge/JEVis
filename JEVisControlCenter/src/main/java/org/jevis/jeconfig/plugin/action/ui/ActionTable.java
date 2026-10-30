@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -41,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.table.SummeryData;
 import org.jevis.jeconfig.application.table.SummeryTable;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.plugin.action.data.*;
 import org.jevis.jeconfig.plugin.action.ui.control.CurrencyColumnCell;
 import org.jevis.jeconfig.plugin.action.ui.control.StringListColumnCell;
@@ -388,6 +390,7 @@ public class ActionTable extends TableView<ActionData> {
                 if (c.wasAdded() || c.wasRemoved()) autoFitTable();
             }
         });
+        TableColumnStateStore.bind(this, "action");
 
         getSortOrder().addAll(createDatePropertyCol, actionNoPropertyCol);
 
@@ -579,7 +582,7 @@ public class ActionTable extends TableView<ActionData> {
                 if (column.getId().equals("Note") || column.getId().equals("Title") || (column.getId().equals("Description"))) {
                     /*ignore this columns for now, there are to big to autoresize*/
                 } else {
-                    if (getSkin() != null) {
+                    if (getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
                         columnToFitMethod.invoke(getSkin(), column, -1);
                     }
                 }

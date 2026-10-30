@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -52,10 +53,8 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
 /**
@@ -80,6 +79,10 @@ public class SampleTable extends TableView<TableSample> {
     private final DateTimeZone dateTimeZone;
     private final NumberFormat nf = NumberFormat.getInstance(I18n.getInstance().getLocale());
     private final DoubleValidator validator = DoubleValidator.getInstance();
+    /**
+     * Text of the "Data Notes" objects of the attribute's object, by timestamp in millis (#2238)
+     */
+    private final Map<Long, String> dataNotes = new ConcurrentHashMap<>();
     boolean canDelete = false;
     private DateTime minDate = null;
     private DateTime maxDate = null;
@@ -120,6 +123,10 @@ public class SampleTable extends TableView<TableSample> {
         TableColumn<TableSample, DateTime> timeStampColumn = createTimeStampColumn(I18n.getInstance().getString("sampleeditor.confirmationdialog.column.time"));
         TableColumn<TableSample, Object> valueCol = createValueColumn(I18n.getInstance().getString("sampleeditor.confirmationdialog.column.value"));
         TableColumn<TableSample, String> noteColumn = createNoteColumn(I18n.getInstance().getString("sampleeditor.confirmationdialog.column.note"));
+        TableColumn<TableSample, String> dataNotesColumn = null;
+        if (hasDataNotes(attribute)) {
+            dataNotesColumn = createDataNotesColumn(I18n.getInstance().getString("plugin.notes.title"));
+        }
 
         try {
             if (attribute.getPrimitiveType() == JEVisConstants.PrimitiveType.DOUBLE || attribute.getPrimitiveType() == JEVisConstants.PrimitiveType.LONG) {
@@ -155,6 +162,11 @@ public class SampleTable extends TableView<TableSample> {
         valueCol.setPrefWidth(310);
 
         getColumns().addAll(selectionColumn, timeStampColumn, valueCol, noteColumn);
+        if (dataNotesColumn != null) {
+            dataNotesColumn.setPrefWidth(300);
+            getColumns().add(dataNotesColumn);
+            loadDataNotes();
+        }
 
 //        setEditable(true);
 
@@ -1259,6 +1271,91 @@ public class SampleTable extends TableView<TableSample> {
             }
         });
 
+        return column;
+    }
+
+    /**
+     * Data Notes belong to the value attribute of data rows ("Data", "Clean Data", "String Data" and their heirs).
+     */
+    private static boolean hasDataNotes(JEVisAttribute attribute) {
+        try {
+            if (attribute == null || !"Value".equals(attribute.getName())) {
+                return false;
+            }
+            JEVisObject object = attribute.getObject();
+            JEVisDataSource ds = object.getDataSource();
+            JEVisClass objectClass = object.getJEVisClass();
+            for (String className : Arrays.asList("Data", "Clean Data", "String Data")) {
+                JEVisClass dataClass = ds.getJEVisClass(className);
+                if (dataClass != null && (dataClass.equals(objectClass) || dataClass.getHeirs().contains(objectClass))) {
+                    return true;
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Could not check for data notes", ex);
+        }
+        return false;
+    }
+
+    /**
+     * Loads the "Data Notes" of the attribute's object once in the background. Like in the charts the notes
+     * object is a sibling named after the data object, notes objects below the data object are used too.
+     */
+    private void loadDataNotes() {
+        Thread thread = new Thread(() -> {
+            try {
+                JEVisObject object = attribute.getObject();
+                JEVisClass noteClass = object.getDataSource().getJEVisClass("Data Notes");
+                if (noteClass == null) {
+                    return;
+                }
+                Set<JEVisObject> noteObjects = new LinkedHashSet<>(object.getChildren(noteClass, true));
+                for (JEVisObject parent : object.getParents()) {
+                    for (JEVisObject sibling : parent.getChildren(noteClass, true)) {
+                        if (sibling.getName().contains(object.getName())) {
+                            noteObjects.add(sibling);
+                        }
+                    }
+                }
+
+                Map<Long, String> notes = new HashMap<>();
+                for (JEVisObject noteObject : noteObjects) {
+                    JEVisAttribute noteAttribute = noteObject.getAttribute("Value");
+                    if (noteAttribute == null || !noteAttribute.hasSample()) {
+                        continue;
+                    }
+                    for (JEVisSample sample : noteAttribute.getAllSamples()) {
+                        String text = sample.getValueAsString();
+                        if (text == null || text.trim().isEmpty()) {
+                            continue;
+                        }
+                        notes.merge(sample.getTimestamp().getMillis(), text, (a, b) -> a + "; " + b);
+                    }
+                }
+
+                if (!notes.isEmpty()) {
+                    dataNotes.putAll(notes);
+                    Platform.runLater(this::refresh);
+                }
+            } catch (Exception ex) {
+                logger.error("Could not load data notes", ex);
+            }
+        }, "SampleTable-DataNotes");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * Create the read-only column with the text of the data notes for the sample's timestamp
+     */
+    private TableColumn<TableSample, String> createDataNotesColumn(String columnName) {
+        TableColumn<TableSample, String> column = new TableColumn<>(columnName);
+        column.setEditable(false);
+        column.setCellValueFactory(param -> {
+            DateTime timeStamp = param.getValue().getTimeStamp();
+            String text = timeStamp != null ? dataNotes.get(timeStamp.getMillis()) : null;
+            return new ReadOnlyObjectWrapper<>(text);
+        });
         return column;
     }
 }

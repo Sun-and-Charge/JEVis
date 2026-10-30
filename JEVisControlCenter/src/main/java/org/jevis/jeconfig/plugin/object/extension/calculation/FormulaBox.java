@@ -44,6 +44,7 @@ import org.jevis.jeconfig.application.Chart.ChartPluginElements.TreeSelectionDia
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.TreeHelper;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
+import org.jevis.jeconfig.application.jevistree.dialog.NewObject;
 import org.jevis.jeconfig.dialog.ExceptionDialog2;
 import org.jevis.jeconfig.dialog.Response;
 import org.joda.time.DateTime;
@@ -62,6 +63,7 @@ public class FormulaBox extends HBox {
     Label errorArea = new Label();
     //    JFXTextArea textArea = new TextArea();
     JFXTextArea textArea = new JFXTextArea();
+    private static final String DATA_DIRECTORY_CLASS = "Data Directory";
     private JEVisObject calcObj;
     private JFXButton outputButton;
     private JEVisTree tree;
@@ -454,6 +456,19 @@ public class FormulaBox extends HBox {
                 classes.add(calcObj.getDataSource().getJEVisClass(className));
             }
 
+            /* #2253: a data directory can be selected too, a new data object is created below it */
+            List<JEVisClass> directoryClasses = new ArrayList<>();
+            JEVisClass dataDirectoryClass = calcObj.getDataSource().getJEVisClass(DATA_DIRECTORY_CLASS);
+            if (dataDirectoryClass != null) {
+                directoryClasses.add(dataDirectoryClass);
+                for (JEVisClass heir : dataDirectoryClass.getHeirs()) {
+                    if (!directoryClasses.contains(heir)) {
+                        directoryClasses.add(heir);
+                    }
+                }
+            }
+            classes.addAll(directoryClasses);
+
             TreeSelectionDialog selectionDialog = new TreeSelectionDialog(calcObj.getDataSource(), classes, SelectionMode.SINGLE, openList, true);
             final JEVisObject out = outputObj;
             selectionDialog.setOnCloseRequest(event -> {
@@ -461,11 +476,16 @@ public class FormulaBox extends HBox {
                     if (selectionDialog.getResponse() == Response.OK) {
                         for (UserSelection us : selectionDialog.getUserSelection()) {
                             JEVisObject outputObject = out;
+                            JEVisObject targetObject = us.getSelectedObject();
                             JEVisAttribute targetAtt = us.getSelectedAttribute();
-                            if (targetAtt == null) {
-                                targetAtt = us.getSelectedObject().getAttribute("Value");
+                            if (directoryClasses.contains(targetObject.getJEVisClass())) {
+                                targetObject = createOutputDataObject(targetObject);
+                                targetAtt = null;
                             }
-                            TargetHelper th = new TargetHelper(this.calcObj.getDataSource(), us.getSelectedObject(), targetAtt);
+                            if (targetAtt == null) {
+                                targetAtt = targetObject.getAttribute("Value");
+                            }
+                            TargetHelper th = new TargetHelper(this.calcObj.getDataSource(), targetObject, targetAtt);
 
                             if (th.isValid() && th.targetObjectAccessible()) {
 
@@ -474,8 +494,8 @@ public class FormulaBox extends HBox {
                                  */
                                 try {
                                     if (outputObject == null) {
-                                        JEVisObject newObject = this.calcObj.buildObject(NameFormatter.createVariableName(us.getSelectedObject()), outputClass);
-                                        newObject.setLocalNames(us.getSelectedObject().getLocalNameList());
+                                        JEVisObject newObject = this.calcObj.buildObject(NameFormatter.createVariableName(targetObject), outputClass);
+                                        newObject.setLocalNames(targetObject.getLocalNameList());
                                         newObject.commit();
                                         outputObject = newObject;
                                     }
@@ -492,8 +512,8 @@ public class FormulaBox extends HBox {
                                 newSample.commit();
 
                                 /** update output variable name **/
-                                if (!outputObject.getName().equals(NameFormatter.createVariableName(us.getSelectedObject()))) {
-                                    outputObject.setName(NameFormatter.createVariableName(us.getSelectedObject()));
+                                if (!outputObject.getName().equals(NameFormatter.createVariableName(targetObject))) {
+                                    outputObject.setName(NameFormatter.createVariableName(targetObject));
                                     outputObject.commit();
                                 }
                                 outputButton.setText(th.getObject().get(0).getName() + "." + th.getAttribute().get(0).getName());
@@ -511,6 +531,23 @@ public class FormulaBox extends HBox {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Creates a new "Data" object named after the calculation below the given data directory,
+     * with the same default values and "Clean Data" child as the new object dialog creates.
+     */
+    private JEVisObject createOutputDataObject(JEVisObject directory) throws JEVisException {
+        JEVisClass dataClass = calcObj.getDataSource().getJEVisClass("Data");
+        JEVisObject newData = directory.buildObject(calcObj.getName(), dataClass);
+        newData.setLocalNames(calcObj.getLocalNameList());
+        newData.commit();
+        try {
+            NewObject.createDefaultValues(newData, true);
+        } catch (Exception ex) {
+            logger.error("Error while setting default values of new output data object", ex);
+        }
+        return newData;
     }
 
     public void setCalculation(JEVisObject calcObj) {

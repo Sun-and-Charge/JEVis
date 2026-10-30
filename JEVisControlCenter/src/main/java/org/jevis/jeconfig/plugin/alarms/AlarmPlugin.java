@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -67,6 +68,7 @@ import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.jeconfig.GlobalToolBar;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.Plugin;
 import org.jevis.jeconfig.application.Chart.TimeFrame;
 import org.jevis.jeconfig.application.application.I18nWS;
@@ -162,6 +164,7 @@ public class AlarmPlugin implements Plugin {
         this.endDatePicker.getStyleClass().add("ToolBarDatePicker");
 
         createColumns();
+        TableColumnStateStore.bind(tableView, "alarms");
 
         this.activeAlarms.addListener((MapChangeListener<? super DateTime, ? super Boolean>) change -> {
             this.hasAlarms.set(!this.activeAlarms.isEmpty());
@@ -183,7 +186,7 @@ public class AlarmPlugin implements Plugin {
     public static void autoFitTable(TableView<AlarmRow> tableView) {
         for (TableColumn<AlarmRow, ?> column : tableView.getColumns()) {
             try {
-                if (tableView.getSkin() != null) {
+                if (tableView.getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
                     columnToFitMethod.invoke(tableView.getSkin(), column, -1);
                 }
             } catch (Exception e) {

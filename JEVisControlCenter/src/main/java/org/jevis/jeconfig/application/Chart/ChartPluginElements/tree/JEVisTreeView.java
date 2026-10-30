@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -33,6 +34,7 @@ import org.jevis.jeconfig.application.jevistree.filter.DirectoryHelper;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 public class JEVisTreeView extends JFXTreeView<JEVisTreeViewItem> {
     private final double iconSize = 18d;
@@ -42,6 +44,10 @@ public class JEVisTreeView extends JFXTreeView<JEVisTreeViewItem> {
     private final List<JEVisAttribute> selectedAttributes = new ArrayList<>();
     private final List<FilterableTreeItem> selectedFilterableTreeItems = new ArrayList<>();
     private final List<FilterableTreeItem> allFilterableTreeItems = new ArrayList<>();
+    /**
+     * Maps a selected object to the object handed to the caller, e.g. a link to its target (OpenJEVis #1674).
+     */
+    private UnaryOperator<JEVisObject> selectionResolver = UnaryOperator.identity();
 
     public JEVisTreeView(JEVisDataSource ds, SelectionMode selectionMode, List<UserSelection> selection, boolean showAttributes) {
         this.showAttributes = showAttributes;
@@ -176,11 +182,15 @@ public class JEVisTreeView extends JFXTreeView<JEVisTreeViewItem> {
         for (TreeItem<JEVisTreeViewItem> selectedItem : getSelectionModel().getSelectedItems()) {
             if (selectedItem instanceof FilterableTreeItem) {
                 FilterableTreeItem treeItem = (FilterableTreeItem) selectedItem;
-                result.add(treeItem.getValue().getObject());
+                result.add(selectionResolver.apply(treeItem.getValue().getObject()));
             }
         }
 
         return result;
+    }
+
+    public void setSelectionResolver(UnaryOperator<JEVisObject> selectionResolver) {
+        this.selectionResolver = selectionResolver != null ? selectionResolver : UnaryOperator.identity();
     }
 
     public List<JEVisAttribute> getSelectedAttributes() {
@@ -203,7 +213,7 @@ public class JEVisTreeView extends JFXTreeView<JEVisTreeViewItem> {
                 JEVisTreeViewItem treeItemValue = treeItem.getValue();
                 UserSelection userSelection;
                 if (treeItemValue.getItemType() == JEVisTreeViewItem.ItemType.OBJECT) {
-                    userSelection = new UserSelection(UserSelection.SelectionType.Object, treeItemValue.getObject());
+                    userSelection = new UserSelection(UserSelection.SelectionType.Object, selectionResolver.apply(treeItemValue.getObject()));
                 } else {
                     userSelection = new UserSelection(UserSelection.SelectionType.Attribute, treeItemValue.getAttribute(), null, null);
                 }
