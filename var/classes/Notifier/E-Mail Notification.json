@@ -108,6 +108,24 @@
       "jevisClass": "E-Mail Notification"
     },
     {
+      "name": "Recipient Users",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Mail Notification"
+    },
+    {
+      "name": "Recipient Groups",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Mail Notification"
+    },
+    {
       "name": "Subject",
       "primitiveType": 0,
       "guiType": "Text",

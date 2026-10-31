@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,6 +27,7 @@ public class Icon {
 
     public static final String CSS_PLUGIN = "pluginSVG";
     public static final String SAVE = "/icons/MaterialDesignSVG/outlined/save.svg";
+    public static final String MAIL = "/icons/MaterialDesignSVG/outlined/mail_outline.svg";
     public static final String PLUS_CIRCLE = "/icons/MaterialDesignSVG/outlined/add_circle_outline.svg";
     public static final String PLUS = "/icons/MaterialDesignSVG/outlined/add.svg";
     public static final String MINUS = "/icons/MaterialDesignSVG/outlined/remove.svg";

@@ -1,0 +1,53 @@
+{
+  "jevisclass": "Appointment",
+  "names": {
+    "de": "Termin",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Appointment"
+  },
+  "descriptions": {
+    "de": "Termin mit Fälligkeit, Wiederholung und Erinnerung per E-Mail",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Appointment with due date, recurrence and reminder mails"
+  },
+  "types": [
+    {
+      "type": "Data",
+      "descriptions": {
+        "de": "JSON-Daten des Eintrags, bearbeitet im Control Center",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "JSON data of the entry, edited in the Control Center"
+      },
+      "names": {
+        "de": "Datenmodell",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Data Model"
+      }
+    },
+    {
+      "type": "Mail State",
+      "descriptions": {
+        "de": "Versendete E-Mails (JSON), wird vom Dienst JENotifier geschrieben",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mails sent (JSON), written by the JENotifier service"
+      },
+      "names": {
+        "de": "Mail-Status",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mail State"
+      }
+    }
+  ]
+}

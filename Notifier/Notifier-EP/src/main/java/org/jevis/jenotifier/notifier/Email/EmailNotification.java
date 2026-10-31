@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of Notifier.
  * <p>
@@ -24,6 +25,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
+import org.jevis.commons.mail.MailRecipients;
 import org.jevis.jenotifier.notifier.Notification;
 import org.joda.time.DateTime;
 
@@ -35,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,6 +67,11 @@ public class EmailNotification implements Notification {
     public static final String HTML_EMAIL = "HTML E-Mail";
     public static final String MESSAGE = "Message";
     public static final String RECIPIENTS = "Recipients";
+    /**
+     * Users and groups (object ids) whose e-mail addresses are added to the recipients when the mail is sent (upstream #1437)
+     */
+    public static final String RECIPIENT_USERS = "Recipient Users";
+    public static final String RECIPIENT_GROUPS = "Recipient Groups";
     public static final String SUBJECT = "Subject";
     //    public static final String SENT_TIME = "Sent Time";
 //    public static final String ENABLED = "Enabled";
@@ -521,6 +529,57 @@ public class EmailNotification implements Notification {
     }
 
     /**
+     * Adds already resolved e-mail addresses (e.g. of users and groups) to the receivers. Illegal and repetitive
+     * addresses are skipped, the typed receivers stay unchanged.
+     *
+     * @param addresses the e-mail addresses to add
+     */
+    public void addResolvedReceivers(Collection<String> addresses) {
+        if (_receivers == null) {
+            _receivers = new ArrayList<>();
+        }
+        if (addresses == null) {
+            return;
+        }
+        for (String address : addresses) {
+            String rec = trimSpace(address);
+            if (rec == null || rec.isEmpty()) {
+                continue;
+            }
+            if (!isEmailAddressLegal(rec)) {
+                logger.warn("Illegal e-mail address of recipient user or group: {}", rec);
+            } else if (!_receivers.contains(rec)) {
+                _receivers.add(rec);
+            }
+        }
+    }
+
+    /**
+     * Resolves the attributes "Recipient Users" and "Recipient Groups" of the notification object to e-mail addresses
+     * and adds them to the receivers.
+     *
+     * @param notiObj the E-Mail Notification object
+     */
+    private void addRecipientObjects(JEVisObject notiObj) {
+        for (String attName : new String[]{RECIPIENT_USERS, RECIPIENT_GROUPS}) {
+            try {
+                JEVisAttribute att = notiObj.getAttribute(attName);
+                if (att == null || !att.hasSample()) {
+                    continue;
+                }
+                JEVisSample sample = att.getLatestSample();
+                String ids = sample != null ? sample.getValueAsString() : null;
+                if (ids == null || ids.trim().isEmpty()) {
+                    continue;
+                }
+                addResolvedReceivers(MailRecipients.resolveIds(notiObj.getDataSource(), ids));
+            } catch (Exception ex) {
+                logger.error("Could not resolve {} of {}", attName, notiObj, ex);
+            }
+        }
+    }
+
+    /**
      * To check, whether the email addresses in a list are legal. The illegal
      * email addresses will be deleted. If the list is empty at the beginning,
      * it will be considered as illegal.
@@ -685,6 +744,7 @@ public class EmailNotification implements Notification {
                 setReceivers(null);
                 logger.error(ex);
             }
+            addRecipientObjects(notiObj);
             try {
                 setCarbonCopys(String.valueOf(getAttribute(notiObj, CARBON_COPYS)));
             } catch (Exception ex) {
@@ -768,6 +828,7 @@ public class EmailNotification implements Notification {
                 setReceivers(null);
                 logger.fatal(ex);
             }
+            addRecipientObjects(notiObj);
             try {
                 setCarbonCopys(String.valueOf(getAttribute(notiObj, CARBON_COPYS)));
             } catch (IllegalArgumentException ex) {

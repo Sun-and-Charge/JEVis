@@ -1,0 +1,27 @@
+{
+  "name": "Maintenance Plugin",
+  "unique": true,
+  "relationships": [
+    {
+      "start": "Maintenance Plugin",
+      "end": "Control Center Plugin",
+      "type": 0
+    },
+    {
+      "start": "Maintenance Plugin",
+      "end": "Control Center",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Enable",
+      "primitiveType": 4,
+      "guiType": "Check Box",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Maintenance Plugin"
+    }
+  ]
+}

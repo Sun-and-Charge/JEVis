@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -43,13 +44,11 @@ import org.joda.time.format.DateTimeFormatter;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 
 /**
  * Export an Dashboard to an PDF file.
@@ -65,86 +64,15 @@ public class DashboardExport {
 
     public void toPDF(DashboardControl control, String fileName) {
         try {
-            String title = control.getActiveDashboard().getTitle();
             FileChooser fileChooser = new FileChooser();
             FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PDF files (*.pdf)", ".pdf");
             fileChooser.getExtensionFilters().add(extFilter);
             fileChooser.setInitialFileName(FileNames.fixName(fileName) + ".pdf");
-            Document document = new Document();
             File file = fileChooser.showSaveDialog(JEConfig.getStage());
             if (file != null) {
-                OutputStream fileStream = new FileOutputStream(file);
-                PdfWriter.getInstance(document, fileStream);
-
-
-                document.setPageSize(PageSize.A4.rotate());
-                document.addAuthor("JEVis");
-                document.addTitle(control.getActiveDashboard().getTitle());
-                document.addCreationDate();
-                document.open();
-//berichtsperiode
-
-                WritableImage image = control.getDashboardPane().snapshot(new SnapshotParameters(), null);
-                String tmpFileName = UUID.randomUUID().toString();
-                Path temp = Files.createTempFile(tmpFileName, ".png");
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", temp.toFile());
-                Image img = Image.getInstance(temp.toFile().toURI().toURL());
-
-                PdfPTable table = new PdfPTable(1);
-                table.setWidthPercentage(100);
-
-               
-                Font CUSTOM_FONT_HEADER = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL | Font.UNDERLINE);
-                Font CUSTOM_FONT_TEXT = new Font(Font.FontFamily.HELVETICA, 8);
-
-                Paragraph headerParagraph = new Paragraph(title, CUSTOM_FONT_HEADER);
-                headerParagraph.setAlignment(Paragraph.ALIGN_LEFT);
-                //headerParagraph.setFont(CUSTOM_FONT_HEADER);
-
-                PdfPCell cellTitle = new PdfPCell(headerParagraph);
-                cellTitle.setBorder(Rectangle.NO_BORDER);
-
-                PdfPCell cellImage = new PdfPCell(img, true);
-                cellImage.setBorder(Rectangle.NO_BORDER);
-                cellImage.setPadding(5);
-
-
-                DateTimeFormatter dTF = DateTimeFormat.forPattern("yyyy.MM.dd HH:mm");
-                /*
-                String footer = String.format("%s: %s, %s: %s %s %s",
-                        I18n.getInstance().getString("dashboard.pdf.creatdate"),
-                        dTF.print(new DateTime()),
-                        I18n.getInstance().getString("dashboard.pdf.duration"),
-                        dTF.print(control.getInterval().getStart()),
-                        I18n.getInstance().getString("dashboard.pdf.until"),
-                        dTF.print(control.getInterval().getEnd())
-                );
-                */
-
-                String footer = String.format("%s: %s, %s: %s %s",
-                        I18n.getInstance().getString("dashboard.pdf.createdate"),
-                        dTF.print(new DateTime()),
-                        I18n.getInstance().getString("dashboard.pdf.duration"),
-                        control.getActiveTimeFrame().getListName(),
-                        control.getActiveTimeFrame().format(control.getInterval())
-
-                );
-
-
-                //controller.getActiveTimeFrame().format(controller.getInterval())
-                //controller.getActiveTimeFrame().getListName
-                Paragraph datePara = new Paragraph(footer, CUSTOM_FONT_TEXT);
-                //datePara.setFont(CUSTOM_FONT_TEXT);
-                datePara.setAlignment(Paragraph.ALIGN_LEFT);
-                PdfPCell cellFooter = new PdfPCell(datePara);
-                cellFooter.setBorder(Rectangle.NO_BORDER);
-
-                table.addCell(cellTitle);
-                table.addCell(cellImage);
-                table.addCell(cellFooter);
-
-                document.add(table);
-                document.close();
+                try (OutputStream fileStream = new FileOutputStream(file)) {
+                    writePDF(control, fileStream);
+                }
                 try {
                     Desktop desktop = Desktop.getDesktop();
                     desktop.open(file);
@@ -158,6 +86,79 @@ public class DashboardExport {
             logger.error("Failed to export dashboard to PDF", ex);
         }
 
+    }
+
+    /**
+     * The dashboard as PDF in memory, for sending by mail (OpenJEVis #2234). Must run on the FX thread.
+     */
+    public static byte[] toPDFBytes(DashboardControl control) throws IOException, DocumentException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        writePDF(control, out);
+        return out.toByteArray();
+    }
+
+    /**
+     * A snapshot of the node as PNG in memory, for sending by mail (OpenJEVis #2234). Must run on the FX thread.
+     */
+    public static byte[] toPNGBytes(Node node) throws IOException {
+        WritableImage image = node.snapshot(new SnapshotParameters(), null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", out);
+        return out.toByteArray();
+    }
+
+    private static void writePDF(DashboardControl control, OutputStream outputStream) throws IOException, DocumentException {
+        String title = control.getActiveDashboard().getTitle();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+
+        document.setPageSize(PageSize.A4.rotate());
+        document.addAuthor("JEVis");
+        document.addTitle(title);
+        document.addCreationDate();
+        document.open();
+
+        WritableImage image = control.getDashboardPane().snapshot(new SnapshotParameters(), null);
+        ByteArrayOutputStream png = new ByteArrayOutputStream();
+        ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", png);
+        Image img = Image.getInstance(png.toByteArray());
+
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+
+        Font CUSTOM_FONT_HEADER = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL | Font.UNDERLINE);
+        Font CUSTOM_FONT_TEXT = new Font(Font.FontFamily.HELVETICA, 8);
+
+        Paragraph headerParagraph = new Paragraph(title, CUSTOM_FONT_HEADER);
+        headerParagraph.setAlignment(Paragraph.ALIGN_LEFT);
+
+        PdfPCell cellTitle = new PdfPCell(headerParagraph);
+        cellTitle.setBorder(Rectangle.NO_BORDER);
+
+        PdfPCell cellImage = new PdfPCell(img, true);
+        cellImage.setBorder(Rectangle.NO_BORDER);
+        cellImage.setPadding(5);
+
+        DateTimeFormatter dTF = DateTimeFormat.forPattern("yyyy.MM.dd HH:mm");
+        String footer = String.format("%s: %s, %s: %s %s",
+                I18n.getInstance().getString("dashboard.pdf.createdate"),
+                dTF.print(new DateTime()),
+                I18n.getInstance().getString("dashboard.pdf.duration"),
+                control.getActiveTimeFrame().getListName(),
+                control.getActiveTimeFrame().format(control.getInterval())
+        );
+
+        Paragraph datePara = new Paragraph(footer, CUSTOM_FONT_TEXT);
+        datePara.setAlignment(Paragraph.ALIGN_LEFT);
+        PdfPCell cellFooter = new PdfPCell(datePara);
+        cellFooter.setBorder(Rectangle.NO_BORDER);
+
+        table.addCell(cellTitle);
+        table.addCell(cellImage);
+        table.addCell(cellFooter);
+
+        document.add(table);
+        document.close();
     }
 
     public void toPNG(Node node, String name) {

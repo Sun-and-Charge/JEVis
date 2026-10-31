@@ -26,8 +26,11 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
+import org.jevis.commons.appointment.ScheduledMailProcessor;
 import org.jevis.commons.cli.AbstractCliApp;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.mail.MailSender;
+import org.jevis.commons.mail.MailSettings;
 import org.jevis.commons.task.LogTaskManager;
 import org.jevis.commons.task.Task;
 import org.jevis.jenotifier.config.JENotifierConfig;
@@ -35,6 +38,7 @@ import org.jevis.jenotifier.exporter.CSVExport;
 import org.jevis.jenotifier.exporter.Export;
 import org.jevis.jenotifier.notifier.Email.EmailNotificationDriver;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormat;
 
@@ -217,6 +221,10 @@ public class ExporterLauncher extends AbstractCliApp {
             } else {
                 logger.info("Still running queue. Going to sleep again.");
             }
+
+            if (checkServiceStatus(APP_SERVICE_CLASS_NAME)) {
+                sendScheduledMails();
+            }
         }
 
         sleep();
@@ -224,7 +232,28 @@ public class ExporterLauncher extends AbstractCliApp {
 
     @Override
     protected void runComplete() {
+        if (checkConnection()) {
+            sendScheduledMails();
+        }
+    }
 
+    /**
+     * Appointment reminders (OpenJEVis #1855) and maintenance messages (#2663): sends the mails that are due, once
+     * per cycle, with the default "EMail Plugin" settings. Runs independently of the export queue.
+     */
+    private void sendScheduledMails() {
+        try {
+            MailSettings mailSettings = MailSettings.findDefault(ds);
+            if (mailSettings == null || !mailSettings.isValid()) {
+                logger.info("No default EMail Plugin configured, appointment and maintenance mails are not sent");
+                return;
+            }
+            MailSender mailSender = new MailSender(mailSettings);
+            ScheduledMailProcessor.Result result = new ScheduledMailProcessor(ds, mailSender::send).run(new LocalDateTime());
+            logger.info("Appointment and maintenance mails: {}", result);
+        } catch (Throwable t) {
+            logger.error("Appointment and maintenance mails failed", t);
+        }
     }
 
     private List<JEVisObject> getAllExports() {

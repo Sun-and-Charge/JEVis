@@ -1,0 +1,53 @@
+{
+  "jevisclass": "Maintenance Message",
+  "names": {
+    "de": "Wartungs-/Störungsmeldung",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Maintenance Message"
+  },
+  "descriptions": {
+    "de": "Geplante Wartung oder bekanntes Problem, über das Benutzer per E-Mail informiert werden",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Planned maintenance or known issue that users are informed about by mail"
+  },
+  "types": [
+    {
+      "type": "Data",
+      "descriptions": {
+        "de": "JSON-Daten des Eintrags, bearbeitet im Control Center",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "JSON data of the entry, edited in the Control Center"
+      },
+      "names": {
+        "de": "Datenmodell",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Data Model"
+      }
+    },
+    {
+      "type": "Mail State",
+      "descriptions": {
+        "de": "Versendete E-Mails (JSON), wird vom Dienst JENotifier geschrieben",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mails sent (JSON), written by the JENotifier service"
+      },
+      "names": {
+        "de": "Mail-Status",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mail State"
+      }
+    }
+  ]
+}

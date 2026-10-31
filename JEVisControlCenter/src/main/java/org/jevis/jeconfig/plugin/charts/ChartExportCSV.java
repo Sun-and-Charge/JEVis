@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -54,10 +55,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import tech.units.indriya.AbstractUnit;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.*;
@@ -89,12 +87,34 @@ public class ChartExportCSV {
     private Boolean xlsx = false;
     private boolean needSave = false;
     private File destinationFile;
+    /**
+     * Target of an in-memory export, {@code null} when exporting to a file
+     */
+    private ByteArrayOutputStream memoryOutput;
     private Boolean multipleCharts = false;
     private Locale selectedLocale;
     private NumberFormat numberFormat;
     private Boolean withUserNotes = false;
 
     public ChartExportCSV(JEVisDataSource ds, Map<Chart, List<ChartDataRow>> model, String analysisName, DateTime xAxisLowerBound, DateTime xAxisUpperBound) {
+        this(ds, model, xAxisLowerBound, xAxisUpperBound);
+        showDialogs(model, analysisName);
+    }
+
+    /**
+     * Export into memory without dialogs, for sending by mail (OpenJEVis #2234): default number format, no user
+     * notes, see {@link #exportToBytes()}.
+     *
+     * @param xlsx {@code true} for Excel, {@code false} for CSV
+     */
+    public ChartExportCSV(JEVisDataSource ds, Map<Chart, List<ChartDataRow>> model, DateTime xAxisLowerBound, DateTime xAxisUpperBound, boolean xlsx) {
+        this(ds, model, xAxisLowerBound, xAxisUpperBound);
+        this.xlsx = xlsx;
+        this.multipleCharts = model.size() > 1;
+        this.memoryOutput = new ByteArrayOutputStream();
+    }
+
+    private ChartExportCSV(JEVisDataSource ds, Map<Chart, List<ChartDataRow>> model, DateTime xAxisLowerBound, DateTime xAxisUpperBound) {
         this.NAME = I18n.getInstance().getString("plugin.graph.export.text.name");
         this.IN = I18n.getInstance().getString("plugin.graph.export.text.in");
         this.NOTE = I18n.getInstance().getString("plugin.graph.export.text.note");
@@ -117,7 +137,9 @@ public class ChartExportCSV {
         numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
         numberFormat.setMinimumFractionDigits(2);
         numberFormat.setMaximumFractionDigits(2);
+    }
 
+    private void showDialogs(Map<Chart, List<ChartDataRow>> model, String analysisName) {
         JFXComboBox decimalSeparatorChoiceBox = new JFXComboBox(choices);
 
         Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>() {
@@ -247,9 +269,26 @@ public class ChartExportCSV {
             }
         }
 
-        if (!xlsx && destinationFile != null && exportStrg != null) {
+        if (!xlsx && memoryOutput != null && exportStrg != null) {
+            byte[] bytes = exportStrg.toString().getBytes(StandardCharsets.UTF_8);
+            memoryOutput.write(bytes, 0, bytes.length);
+        } else if (!xlsx && destinationFile != null && exportStrg != null) {
             writeFile(destinationFile, exportStrg);
         }
+    }
+
+    /**
+     * Runs the export into memory, only for the constructor without dialogs.
+     *
+     * @return the CSV (UTF-8) or XLSX content
+     */
+    public byte[] exportToBytes() throws FileNotFoundException, UnsupportedEncodingException, JEVisException {
+        if (memoryOutput == null) {
+            throw new IllegalStateException("Not an in-memory export");
+        }
+        memoryOutput.reset();
+        export();
+        return memoryOutput.toByteArray();
     }
 
     private void createXLSXFileMulti() throws JEVisException {
@@ -520,7 +559,7 @@ public class ChartExportCSV {
         }
 
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream(destinationFile);
+            OutputStream fileOutputStream = memoryOutput != null ? memoryOutput : new FileOutputStream(destinationFile);
             workbook.write(fileOutputStream);
             workbook.close();
             fileOutputStream.close();
@@ -772,7 +811,7 @@ public class ChartExportCSV {
         }
 
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream(destinationFile);
+            OutputStream fileOutputStream = memoryOutput != null ? memoryOutput : new FileOutputStream(destinationFile);
             workbook.write(fileOutputStream);
             workbook.close();
             fileOutputStream.close();

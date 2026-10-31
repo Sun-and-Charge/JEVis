@@ -1,0 +1,18 @@
+{
+  "jevisclass": "Maintenance Directory",
+  "names": {
+    "de": "Wartung & Störungen Verzeichnis",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Maintenance Directory"
+  },
+  "descriptions": {
+    "de": "Verzeichnis für Wartungs- und Störungsmeldungen",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Directory for maintenance and known-issue messages"
+  },
+  "types": []
+}

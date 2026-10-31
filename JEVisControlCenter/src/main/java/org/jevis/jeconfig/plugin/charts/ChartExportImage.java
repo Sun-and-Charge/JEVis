@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -141,6 +142,19 @@ public class ChartExportImage {
 //                JEConfig.getStage().setWidth(width);
             });
         });
+    }
+
+    /**
+     * Snapshot of the node as PNG in memory, for sending by mail (OpenJEVis #2234). Must run on the FX thread.
+     */
+    public static byte[] toPNG(VBox vBox) throws IOException {
+        SnapshotParameters snapshotParameters = new SnapshotParameters();
+        snapshotParameters.setTransform(new Scale(2, 2));
+        snapshotParameters.setFill(Color.WHITESMOKE);
+        WritableImage image = vBox.snapshot(snapshotParameters, null);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", out);
+        return out.toByteArray();
     }
 
     private void setDates() {
