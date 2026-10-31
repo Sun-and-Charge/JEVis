@@ -58,12 +58,14 @@ import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.dialog.LoadAnalysisDialog;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.dialog.SaveAnalysisDialog;
+import org.jevis.jeconfig.dialog.SendMailDialog;
 import org.jevis.jeconfig.tool.NumberSpinner;
 import org.joda.time.DateTime;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +97,7 @@ public class ToolBarView {
     private ToggleButton exportImage;
     private MenuItem exportPDF;
     private MenuItem exportPDFPortrait;
+    private MenuItem sendMail;
     private ToggleButton printButton;
     private ToggleButton reload;
     private ToggleButton delete;
@@ -321,7 +324,9 @@ public class ToolBarView {
         exportPDF = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.exportpdf.landscape"));
         exportPDFPortrait = new MenuItem(I18n.getInstance().getString("plugin.graph.toolbar.exportpdf.portrait"));
 
-        export.getItems().addAll(exportCSV, exportPDF, exportPDFPortrait);
+        sendMail = new MenuItem(I18n.getInstance().getString("dialog.sendmail.menu"));
+
+        export.getItems().addAll(exportCSV, exportPDF, exportPDFPortrait, new SeparatorMenuItem(), sendMail);
 
         printButton = new ToggleButton("", JEConfig.getSVGImage(Icon.PRINT, iconSize, iconSize));
         Tooltip printTooltip = new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.print"));
@@ -527,6 +532,33 @@ public class ToolBarView {
     }
 
     /**
+     * Sends the analysis as PNG, PDF, XLSX or CSV by mail (OpenJEVis #2234).
+     */
+    private void sendMail() {
+        if (chartPlugin.getDataSettings().getCurrentAnalysis() == null) return;
+        String name = chartPlugin.getDataSettings().getCurrentAnalysis().getName();
+        DateTime start;
+        DateTime end;
+        if (chartPlugin.isZoomed()) {
+            start = new DateTime(chartPlugin.getxAxisLowerBound().longValue() * 1000);
+            end = new DateTime(chartPlugin.getxAxisUpperBound().longValue() * 1000);
+        } else {
+            start = chartPlugin.getDataSettings().getAnalysisTimeFrame().getStart();
+            end = chartPlugin.getDataSettings().getAnalysisTimeFrame().getEnd();
+        }
+        String fileName = name;
+        if (start != null && end != null) {
+            fileName += "_" + start.toString("yyyyMMdd") + "_" + end.toString("yyyyMMdd");
+        }
+        List<SendMailDialog.Format> formats = new ArrayList<>();
+        formats.add(SendMailDialog.Format.pdf(() -> ChartExportPDF.toPDF(chartPlugin.getvBox(), name, true)));
+        formats.add(SendMailDialog.Format.png(() -> ChartExportImage.toPNG(chartPlugin.getvBox())));
+        formats.add(SendMailDialog.Format.xlsx(() -> new ChartExportCSV(ds, chartPlugin.getDataRowMap(), start, end, true).exportToBytes()));
+        formats.add(SendMailDialog.Format.csv(() -> new ChartExportCSV(ds, chartPlugin.getDataRowMap(), start, end, false).exportToBytes()));
+        new SendMailDialog(ds, name, fileName, formats).show();
+    }
+
+    /**
      * Builds a menu item that embeds a control next to its label and keeps the menu open while it is used.
      */
     private CustomMenuItem buildControlMenuItem(String text, Node control) {
@@ -594,6 +626,8 @@ public class ToolBarView {
         exportPDF.setOnAction(event -> exportPDF(true));
 
         exportPDFPortrait.setOnAction(event -> exportPDF(false));
+
+        sendMail.setOnAction(event -> sendMail());
 
         printButton.setOnAction(event -> {
             if (chartPlugin.getDataSettings().getCurrentAnalysis() != null) {
@@ -698,6 +732,7 @@ public class ToolBarView {
         exportImage.setDisable(bool);
         exportPDF.setDisable(bool);
         exportPDFPortrait.setDisable(bool);
+        sendMail.setDisable(bool);
         printButton.setDisable(bool);
         reload.setDisable(bool);
         runUpdateButton.setDisable(bool);

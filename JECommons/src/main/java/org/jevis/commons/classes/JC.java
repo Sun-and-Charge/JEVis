@@ -3425,6 +3425,8 @@ public interface JC {
             String a_HTMLEMail = "HTML E-Mail";
             String a_Message = "Message";
             String a_Recipients = "Recipients";
+            String a_RecipientUsers = "Recipient Users";
+            String a_RecipientGroups = "Recipient Groups";
             String a_Subject = "Subject";
             String a_SentTime = "Sent Time";
         }

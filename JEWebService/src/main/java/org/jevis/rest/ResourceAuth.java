@@ -34,6 +34,8 @@ import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.JEVisUserSQL;
 import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.commons.ws.sql.auth.AuthService;
+import org.jevis.commons.ws.sql.auth.PasswordResetPolicy;
+import org.jevis.commons.ws.sql.auth.PasswordResetService;
 
 import javax.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
@@ -56,6 +58,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * POST /auth/handoff          Bearer                              -> {"code"}
  * POST /auth/handoff/redeem   {"code"}                            -> JsonLoginResult
  * POST /auth/password         {"oldPassword","newPassword","remember"} + Bearer -> JsonLoginResult
+ * POST /auth/password/forgot  {"login"}                           -> {"message"} (always the same answer)
+ * POST /auth/password/reset   {"login","code","newPassword"}      -> {"message"}, 400 for a wrong/expired code
  * GET  /auth/me               Bearer
  * GET  /auth/mfa              Bearer                              -> JsonMfaStatus
  * POST /auth/mfa/totp/setup   {"password"} + Bearer, or {"mfaToken"} -> JsonMfaStatus (secret, otpAuthUri)
@@ -80,6 +84,15 @@ public class ResourceAuth {
     private static final int MAX_FAILURES_PER_ADDRESS = 30;
     private static final Cache<String, AtomicInteger> FAILURES = CacheBuilder.newBuilder()
             .maximumSize(10_000).expireAfterWrite(5, TimeUnit.MINUTES).build();
+
+    /**
+     * Password reset requests per client address and hour (OpenJEVis #2267); the per-user limit is in the database.
+     */
+    private static final int MAX_RESET_REQUESTS_PER_ADDRESS = 10;
+    private static final Cache<String, AtomicInteger> RESET_REQUESTS = CacheBuilder.newBuilder()
+            .maximumSize(10_000).expireAfterWrite(1, TimeUnit.HOURS).build();
+    private static final String RESET_REQUESTED_MESSAGE = "If the account exists and has an e-mail address, a code was sent.";
+    private static final String RESET_FAILED_MESSAGE = "The code is not valid or has expired.";
 
     @Context
     private org.glassfish.grizzly.http.server.Request grizzlyRequest;
@@ -320,6 +333,82 @@ public class ResourceAuth {
         } finally {
             Config.CloseDS(ds);
         }
+    }
+
+    /**
+     * First step of the password reset: mails a code if the login (user name or e-mail address) belongs to an
+     * enabled user with an e-mail address. Always answers with the same message.
+     */
+    @POST
+    @Logged
+    @Path("/password/forgot")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response forgotPassword(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
+        try {
+            JsonNode json = parse(body);
+            String login = text(json, "login");
+            if (login == null || login.trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("The user name or e-mail address is missing").build();
+            }
+            AtomicInteger requests = RESET_REQUESTS.get(remoteAddress(), AtomicInteger::new);
+            if (requests.incrementAndGet() > MAX_RESET_REQUESTS_PER_ADDRESS) {
+                logger.warn("Too many password reset requests from {}", remoteAddress());
+                return Response.status(429).entity("Too many requests, try again later").build();
+            }
+            ds = new SQLDataSource(httpHeaders, request, url, false);
+            PasswordResetService.requestReset(ds, login.trim(), clientInfo(httpHeaders));
+            return message(RESET_REQUESTED_MESSAGE);
+        } catch (BadRequestException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
+        } catch (Exception ex) {
+            logger.error("Password reset request failed", ex);
+            /* same answer, nothing is revealed */
+            return message(RESET_REQUESTED_MESSAGE);
+        } finally {
+            Config.CloseDS(ds);
+        }
+    }
+
+    /**
+     * Second step of the password reset: sets the new password with the mailed code.
+     */
+    @POST
+    @Logged
+    @Path("/password/reset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response resetPassword(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
+        try {
+            if (isThrottled()) return tooManyAttempts();
+            JsonNode json = parse(body);
+            String newPassword = text(json, "newPassword");
+            if (!PasswordResetPolicy.isValidPassword(newPassword)) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("The new password must have at least " + MIN_PASSWORD_LENGTH + " characters").build();
+            }
+            ds = new SQLDataSource(httpHeaders, request, url, false);
+            if (!PasswordResetService.isAvailable(ds)) {
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("The password reset is not available").build();
+            }
+            if (PasswordResetService.resetPassword(ds, text(json, "login"), text(json, "code"), newPassword, clientInfo(httpHeaders))) {
+                return message("The password was changed.");
+            }
+            registerFailure();
+            return Response.status(Response.Status.BAD_REQUEST).entity(RESET_FAILED_MESSAGE).build();
+        } catch (BadRequestException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
+        } catch (Exception ex) {
+            logger.error("Password reset failed", ex);
+            return Response.serverError().build();
+        } finally {
+            Config.CloseDS(ds);
+        }
+    }
+
+    private static Response message(String message) {
+        Map<String, Object> answer = new LinkedHashMap<>();
+        answer.put("message", message);
+        return json(answer);
     }
 
     @GET

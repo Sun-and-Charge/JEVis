@@ -45,6 +45,8 @@ import org.jevis.jeconfig.GlobalToolBar;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
+import org.jevis.jeconfig.dialog.SendMailDialog;
+import org.jevis.jeconfig.plugin.dashboard.common.DashboardExport;
 import org.jevis.jeconfig.plugin.dashboard.config2.DashboardPojo;
 import org.jevis.jeconfig.plugin.dashboard.config2.NewWidgetSelector;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.ToolBarIntervalSelector;
@@ -79,6 +81,7 @@ public class DashBoardToolbar extends ToolBar {
     private final ToggleButton save = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, this.iconSize, this.iconSize));
     private final ToggleButton exportPNG = new ToggleButton("", JEConfig.getSVGImage(Icon.IMAGE, this.iconSize, this.iconSize));
     private final ToggleButton exportPDF = new ToggleButton("", JEConfig.getSVGImage(Icon.PDF, this.iconSize, this.iconSize));
+    private final ToggleButton sendMail = new ToggleButton("", JEConfig.getSVGImage(Icon.MAIL, this.iconSize, this.iconSize));
     //private ToggleButton newButton = new ToggleButton("", JEConfig.getImage("1390343812_folder-open.png", this.iconSize, this.iconSize));
     private final ToggleButton deleteDashboard = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
     private final ToggleButton deleteWidget = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
@@ -206,6 +209,7 @@ public class DashBoardToolbar extends ToolBar {
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(save);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(exportPNG);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(exportPDF);
+        GlobalToolBar.changeBackgroundOnHoverUsingBinding(sendMail);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(deleteWidget);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(deleteDashboard);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(zoomIn);
@@ -317,6 +321,11 @@ public class DashBoardToolbar extends ToolBar {
             this.dashboardControl.toPDF();
         });
 
+        sendMail.setOnAction(event -> {
+            sendMail.setSelected(false);
+            sendMail();
+        });
+
         save.setOnAction(event -> {
             this.dashboardControl.save();
         });
@@ -422,6 +431,7 @@ public class DashBoardToolbar extends ToolBar {
         navigator.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.settings")));
         exportPNG.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.export")));
         exportPDF.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.exportPDF")));
+        sendMail.setTooltip(new Tooltip(I18n.getInstance().getString("dialog.sendmail.menu")));
         reloadButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.reload")));
         customWorkDay.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.customworkday")));
         sidebarEditor.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.showsidebar")));
@@ -438,7 +448,7 @@ public class DashBoardToolbar extends ToolBar {
                     , sep3, toolBarIntervalSelector, customWorkDay
                     , sep1, zoomOut, zoomIn, listZoomLevel, reloadButton
                     , sep4, loadDialogButton, save, deleteDashboard
-                    , sep5, exportPNG, exportPDF
+                    , sep5, exportPNG, exportPDF, sendMail
                     , sep6, runUpdateButton, unlockButton, navigator, widgetSelector, newWidget, copyButton, deleteWidget, undoButton, redoButton
                     , separatorEditMode, showGridButton, snapGridButton, sidebarEditor
                     , JEVisHelp.getInstance().buildSpacerNode(), helpButton, infoButton
@@ -718,4 +728,15 @@ public class DashBoardToolbar extends ToolBar {
     }
 
 
+    /**
+     * Sends the dashboard as PDF or PNG by mail (OpenJEVis #2234).
+     */
+    private void sendMail() {
+        if (this.dashboardControl.getActiveDashboard() == null) return;
+        List<SendMailDialog.Format> formats = new ArrayList<>();
+        formats.add(SendMailDialog.Format.pdf(() -> DashboardExport.toPDFBytes(this.dashboardControl)));
+        formats.add(SendMailDialog.Format.png(() -> DashboardExport.toPNGBytes(this.dashboardControl.getDashboardPane())));
+        new SendMailDialog(this.dashboardControl.getDataSource(), this.dashboardControl.getActiveDashboard().getTitle(),
+                this.dashboardControl.getExportName(), formats).show();
+    }
 }

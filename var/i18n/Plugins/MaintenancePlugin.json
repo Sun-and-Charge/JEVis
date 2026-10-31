@@ -1,0 +1,36 @@
+{
+  "jevisclass": "Maintenance Plugin",
+  "names": {
+    "de": "Wartung & Störungen Plugin",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Maintenance Plugin"
+  },
+  "descriptions": {
+    "de": "Modul Wartung & Störungen",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Maintenance and known issues module"
+  },
+  "types": [
+    {
+      "type": "Enable",
+      "descriptions": {
+        "de": "Aktiviert oder deaktiviert das Modul Wartung & Störungen",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enable or disable the module Maintenance & Known Issues"
+      },
+      "names": {
+        "de": "Aktiviert",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enabled"
+      }
+    }
+  ]
+}

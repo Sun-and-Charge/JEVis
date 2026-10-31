@@ -1190,6 +1190,13 @@ public class DashboardControl {
         return getInterval().getStart().toString("yyyyMMdd") + "_" + getInterval().getEnd().toString("yyyyMMdd");
     }
 
+    /**
+     * @return the file name (without extension) of exports: dashboard title and interval
+     */
+    public String getExportName() {
+        return activeDashboard.getTitle() + "_" + intervalToString();
+    }
+
     public void toPNG() {
         DashboardExport exporter = new DashboardExport();
         exporter.toPNG(dashboardPane, activeDashboard.getTitle() + "_" + intervalToString());

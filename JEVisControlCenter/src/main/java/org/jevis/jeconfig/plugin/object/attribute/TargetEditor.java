@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -206,7 +207,16 @@ public class TargetEditor implements AttributeEditor {
                 List<JEVisClass> channelHeirs = channelClass.getHeirs();
 
 
-                if (_attribute.getObject().getJEVisClassName().equals("Alarm Configuration")
+                String mailRecipientClass = getMailRecipientClass();
+                if (mailRecipientClass != null) {
+                    /* users or groups as e-mail recipients, several can be selected (upstream #1437) */
+                    JEVisClass recipientClass = _attribute.getDataSource().getJEVisClass(mailRecipientClass);
+                    if (recipientClass != null) {
+                        classes.add(recipientClass);
+                        classes.addAll(recipientClass.getHeirs());
+                    }
+                    treeSelectionDialog = new TreeSelectionDialog(_attribute.getDataSource(), classes, SelectionMode.MULTIPLE, openList, false);
+                } else if (_attribute.getObject().getJEVisClassName().equals("Alarm Configuration")
                         || channelHeirs.contains(_attribute.getObject().getJEVisClass())) {
                     treeSelectionDialog = new TreeSelectionDialog(_attribute.getDataSource(), classes, SelectionMode.MULTIPLE, openList, showAttributes);
                 } else {
@@ -234,7 +244,11 @@ public class TargetEditor implements AttributeEditor {
                             }
                             JEVisSample newSample = _attribute.buildSample(DateTime.now(), newTarget);
                             newSample.commit();
-                            setButtonText();
+                            if (newTarget.isEmpty()) {
+                                Platform.runLater(() -> _treeButton.setText(I18n.getInstance().getString("plugin.object.attribute.target.button")));
+                            } else {
+                                setButtonText();
+                            }
                         }
                     } catch (Exception ex) {
                         logger.catching(ex);
@@ -246,6 +260,25 @@ public class TargetEditor implements AttributeEditor {
                 logger.catching(ex);
             }
         };
+    }
+
+    /**
+     * @return "User" or "Group" if this is the attribute "Recipient Users" or "Recipient Groups" of an E-Mail
+     * Notification, otherwise null
+     */
+    private String getMailRecipientClass() {
+        try {
+            if (JC.Notification.EMailNotification.name.equals(_attribute.getObject().getJEVisClassName())) {
+                if (JC.Notification.EMailNotification.a_RecipientUsers.equals(_attribute.getName())) {
+                    return JC.User.name;
+                } else if (JC.Notification.EMailNotification.a_RecipientGroups.equals(_attribute.getName())) {
+                    return JC.Group.name;
+                }
+            }
+        } catch (Exception ex) {
+            logger.catching(ex);
+        }
+        return null;
     }
 
     void setButtonText() {

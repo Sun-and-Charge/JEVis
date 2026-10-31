@@ -981,6 +981,88 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     }
 
     /**
+     * First step of the self-service password reset: the webservice mails a code if the user name or e-mail address
+     * belongs to an account with an e-mail address. Works without login.
+     *
+     * @return the (always identical) answer of the webservice
+     * @throws JEVisException if the webservice does not support it, rejects the request (e.g. too many requests) or
+     *                        is not reachable
+     */
+    public String requestPasswordReset(String login) throws JEVisException {
+        HTTPConnection connection = new HTTPConnection(this.host, null, null, sslTrustMode);
+        try {
+            ObjectNode body = this.objectMapper.createObjectNode();
+            body.put("login", login);
+            HTTPConnection.HttpResult response = connection.postJson(REQUEST.API_PATH_V1 + AUTH_PATH + "password/forgot", this.objectMapper.writeValueAsString(body), false);
+            if (response.getCode() != HttpURLConnection.HTTP_OK) {
+                throw new JEVisException(response.getBody() != null && !response.getBody().isEmpty() ? response.getBody() : "HTTP " + response.getCode(), response.getCode());
+            }
+            return messageOf(response.getBody());
+        } catch (IOException ex) {
+            logger.catching(ex);
+            throw new JEVisException(ex.getMessage(), 402, ex);
+        }
+    }
+
+    /**
+     * Second step of the self-service password reset: sets a new password with the mailed code.
+     *
+     * @return {@code null} on success, otherwise the error message of the webservice
+     * @throws JEVisException if the webservice is not reachable or does not support it
+     */
+    public String resetPassword(String login, String code, String newPassword) throws JEVisException {
+        HTTPConnection connection = new HTTPConnection(this.host, null, null, sslTrustMode);
+        try {
+            ObjectNode body = this.objectMapper.createObjectNode();
+            body.put("login", login);
+            body.put("code", code);
+            body.put("newPassword", newPassword);
+            HTTPConnection.HttpResult response = connection.postJson(REQUEST.API_PATH_V1 + AUTH_PATH + "password/reset", this.objectMapper.writeValueAsString(body), false);
+            if (response.getCode() == HttpURLConnection.HTTP_OK) return null;
+            if (response.getCode() == HttpURLConnection.HTTP_NOT_FOUND || response.getCode() == HttpURLConnection.HTTP_UNAVAILABLE) {
+                throw new JEVisException("Password reset is not supported by this webservice", response.getCode());
+            }
+            return response.getBody() != null && !response.getBody().isEmpty() ? response.getBody() : "HTTP " + response.getCode();
+        } catch (IOException ex) {
+            logger.catching(ex);
+            throw new JEVisException(ex.getMessage(), 402, ex);
+        }
+    }
+
+    private String messageOf(String json) {
+        try {
+            com.fasterxml.jackson.databind.JsonNode node = this.objectMapper.readTree(json);
+            return node != null && node.hasNonNull("message") ? node.get("message").asText() : json;
+        } catch (IOException ex) {
+            return json;
+        }
+    }
+
+    /**
+     * Sends a mail with attachments through the webservice, with the system mail settings (OpenJEVis #2234).
+     *
+     * @return the number of recipients
+     * @throws JEVisException with the message of the webservice if the mail was rejected (invalid recipients, too
+     *                        large, no mail server, ...)
+     */
+    public int sendMail(JsonMailRequest mail) throws JEVisException {
+        try {
+            HTTPConnection.HttpResult response = this.con.postJson(REQUEST.API_PATH_V1 + "mail/send", this.objectMapper.writeValueAsString(mail), true);
+            if (response.getCode() == HttpURLConnection.HTTP_OK) {
+                com.fasterxml.jackson.databind.JsonNode node = this.objectMapper.readTree(response.getBody());
+                return node != null && node.has("recipients") ? node.get("recipients").asInt() : 0;
+            }
+            if (response.getCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+                throw new JEVisException("Sending mails is not supported by this webservice", response.getCode());
+            }
+            throw new JEVisException(response.getBody() != null && !response.getBody().isEmpty() ? response.getBody() : "HTTP " + response.getCode(), response.getCode());
+        } catch (IOException ex) {
+            logger.catching(ex);
+            throw new JEVisException(ex.getMessage(), 402, ex);
+        }
+    }
+
+    /**
      * Sys Admin only: removes the two-factor authentication of a user who lost the device and the recovery codes.
      */
     public boolean resetMfa(long userId) throws JEVisException {

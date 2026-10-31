@@ -94,6 +94,7 @@ public class FXLogin extends AnchorPane {
     private final Label passwordLabel = new Label();
     private final Label languageLabel = new Label();
     private Hyperlink registerLink;
+    private Hyperlink forgotLink;
     private final JFXPasswordField userPassword = new JFXPasswordField();
     private final GridPane authGrid = new GridPane();
     private final Preferences jevisPref = Preferences.userRoot().node("JEVis");
@@ -435,6 +436,9 @@ public class FXLogin extends AnchorPane {
         if (this.registerLink != null && this.registerLink.isVisible()) {
             this.registerLink.setText(i18n.getString("app.login.register"));
         }
+        if (this.forgotLink != null) {
+            this.forgotLink.setText(i18n.getString("app.login.forgot.link"));
+        }
         if (this.storedRefreshToken != null) {
             this.userPassword.setPromptText(i18n.getString("app.login.remembered"));
         }
@@ -763,7 +767,7 @@ public class FXLogin extends AnchorPane {
 
         HBox buttonBox = new HBox(10);
         Node link = buildLink();
-        buttonBox.getChildren().setAll(link, spacer, this.closeButton, this.loginButton);
+        buttonBox.getChildren().setAll(link, buildForgotPasswordLink(), spacer, this.closeButton, this.loginButton);
         HBox.setHgrow(link, Priority.NEVER);
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox.setHgrow(this.loginButton, Priority.NEVER);
@@ -1106,6 +1110,28 @@ public class FXLogin extends AnchorPane {
 
     public Locale getSelectedLocale() {
         return this.selectedLocale;
+    }
+
+    /**
+     * Link to the self-service password reset with a code by mail (OpenJEVis #2267).
+     */
+    private Node buildForgotPasswordLink() {
+        Hyperlink link = new Hyperlink(I18n.getInstance().getString("app.login.forgot.link"));
+        link.setId("fxlogin-form-forgot");
+        this.forgotLink = link;
+        link.setOnAction(event -> {
+            if (!(this._ds instanceof JEVisDataSourceWS)) {
+                logger.warn("Password reset is only available for webservice connections");
+                return;
+            }
+            String login = new PasswordResetDialog(this.mainStage, (JEVisDataSourceWS) this._ds).show(this.userName.getText());
+            if (login != null) {
+                this.userName.setText(login);
+                this.userPassword.clear();
+                this.userPassword.requestFocus();
+            }
+        });
+        return link;
     }
 
     /**

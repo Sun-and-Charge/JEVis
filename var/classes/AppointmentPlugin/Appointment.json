@@ -1,0 +1,30 @@
+{
+  "name": "Appointment",
+  "description": "Appointment with due date, recurrence and reminder mails",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Appointment",
+      "end": "Appointment Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Data",
+      "primitiveType": 0,
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Appointment"
+    },
+    {
+      "name": "Mail State",
+      "primitiveType": 0,
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Appointment"
+    }
+  ]
+}

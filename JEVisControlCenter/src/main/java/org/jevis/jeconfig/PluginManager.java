@@ -39,6 +39,7 @@ import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.map.MapViewPlugin;
 import org.jevis.jeconfig.plugin.accounting.AccountingPlugin;
 import org.jevis.jeconfig.plugin.action.ActionPlugin;
+import org.jevis.jeconfig.plugin.appointment.AppointmentPlugin;
 import org.jevis.jeconfig.plugin.alarms.AlarmPlugin;
 import org.jevis.jeconfig.plugin.basedata.BaseDataPlugin;
 import org.jevis.jeconfig.plugin.browser.ISO50001Plugin;
@@ -49,6 +50,7 @@ import org.jevis.jeconfig.plugin.equipment.EquipmentPlugin;
 import org.jevis.jeconfig.plugin.legal.LegalCatasdrePlugin;
 import org.jevis.jeconfig.plugin.loadprofile.LoadProfilePlugin;
 import org.jevis.jeconfig.plugin.meters.MeterPlugin;
+import org.jevis.jeconfig.plugin.maintenance.MaintenancePlugin;
 import org.jevis.jeconfig.plugin.nonconformities.NonconformitiesPlugin;
 import org.jevis.jeconfig.plugin.notes.NotesPlugin;
 import org.jevis.jeconfig.plugin.object.ObjectPlugin;
@@ -180,6 +182,8 @@ public class PluginManager {
                         new ISO50001Plugin(this._ds, I18n.getInstance().getString("plugin.iso50001.title")),
                         new AccountingPlugin(this._ds, I18n.getInstance().getString("plugin.accounting.title")),
                         new ActionPlugin(this._ds, I18n.getInstance().getString("plugin.action.name")),
+                        new AppointmentPlugin(this._ds, I18n.getInstance().getString("plugin.appointments.name")),
+                        new MaintenancePlugin(this._ds, I18n.getInstance().getString("plugin.maintenance.name")),
                         new NonconformitiesPlugin(this._ds, I18n.getInstance().getString("plugin.nonconformities.name")),
                         new LegalCatasdrePlugin(this._ds, I18n.getInstance().getString("plugin.indexoflegalprovisions.name")),
                         new LoadProfilePlugin(this._ds, I18n.getInstance().getString("plugin.loadprofile.name")),
@@ -222,6 +226,10 @@ public class PluginManager {
                                     enabledPlugins.add(new AccountingPlugin(this._ds, I18n.getInstance().getString("plugin.accounting.title")));
                                 } else if (plugObj.getJEVisClassName().equals(ActionPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new ActionPlugin(this._ds, I18n.getInstance().getString("plugin.action.name")));
+                                } else if (plugObj.getJEVisClassName().equals(AppointmentPlugin.PLUGIN_NAME)) {
+                                    enabledPlugins.add(new AppointmentPlugin(this._ds, I18n.getInstance().getString("plugin.appointments.name")));
+                                } else if (plugObj.getJEVisClassName().equals(MaintenancePlugin.PLUGIN_NAME)) {
+                                    enabledPlugins.add(new MaintenancePlugin(this._ds, I18n.getInstance().getString("plugin.maintenance.name")));
                                 } else if (plugObj.getJEVisClassName().equals(NonconformitiesPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new NonconformitiesPlugin(this._ds, I18n.getInstance().getString("plugin.nonconformities.name")));
                                 } else if (plugObj.getJEVisClassName().equals(LegalCatasdrePlugin.PLUGIN_NAME)) {

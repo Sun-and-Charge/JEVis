@@ -1,0 +1,22 @@
+{
+  "name": "Appointment Directory",
+  "description": "Directory for appointments with reminders",
+  "unique": true,
+  "relationships": [
+    {
+      "start": "Appointment Directory",
+      "end": "Organization",
+      "type": 3
+    },
+    {
+      "start": "Appointment Directory",
+      "end": "Building",
+      "type": 3
+    },
+    {
+      "start": "Appointment Directory",
+      "end": "Directory",
+      "type": 0
+    }
+  ]
+}

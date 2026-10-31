@@ -1,0 +1,36 @@
+{
+  "jevisclass": "Appointment Plugin",
+  "names": {
+    "de": "Termine Plugin",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Appointment Plugin"
+  },
+  "descriptions": {
+    "de": "Modul Termine mit Erinnerungen",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Appointments module with reminders"
+  },
+  "types": [
+    {
+      "type": "Enable",
+      "descriptions": {
+        "de": "Aktiviert oder deaktiviert das Modul Termine",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enable or disable the module Appointments"
+      },
+      "names": {
+        "de": "Aktiviert",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enabled"
+      }
+    }
+  ]
+}

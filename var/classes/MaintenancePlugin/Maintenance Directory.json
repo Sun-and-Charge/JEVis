@@ -1,0 +1,22 @@
+{
+  "name": "Maintenance Directory",
+  "description": "Directory for maintenance and known-issue messages",
+  "unique": true,
+  "relationships": [
+    {
+      "start": "Maintenance Directory",
+      "end": "Organization",
+      "type": 3
+    },
+    {
+      "start": "Maintenance Directory",
+      "end": "Building",
+      "type": 3
+    },
+    {
+      "start": "Maintenance Directory",
+      "end": "Directory",
+      "type": 0
+    }
+  ]
+}

@@ -52,6 +52,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -132,57 +133,13 @@ public class ChartExportPDF {
 
     public byte[] export(VBox vBox) {
 
-        SnapshotParameters snapshotParameters = new SnapshotParameters();
-        snapshotParameters.setTransform(new Scale(2, 2));
-        snapshotParameters.setFill(Color.WHITESMOKE);
+        SnapshotParameters snapshotParameters = snapshotParameters();
 
         Platform.runLater(() -> {
             WritableImage image = vBox.snapshot(snapshotParameters, null);
 
-            try {
-                OutputStream fileStream = new FileOutputStream(destinationFile);
-
-                /* the page size has to be set before open(), otherwise the first page stays portrait */
-                Document document = new Document(landscape ? PageSize.A4.rotate() : PageSize.A4);
-                PdfWriter.getInstance(document, fileStream);
-
-                document.addAuthor("JEVis");
-                document.addTitle(formattedName);
-                document.addCreationDate();
-                document.open();
-
-                String tmpFileName = UUID.randomUUID().toString();
-                Path temp = Files.createTempFile(tmpFileName, ".png");
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", temp.toFile());
-                Image img = Image.getInstance(temp.toFile().toURI().toURL());
-
-                PdfPTable table = new PdfPTable(1);
-                table.setWidthPercentage(100);
-
-                Font CUSTOM_FONT_HEADER = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD | Font.UNDERLINE);
-                Font CUSTOM_FONT_TEXT = new Font(Font.FontFamily.TIMES_ROMAN, 11);
-
-                Paragraph headerParagraph = new Paragraph(formattedName);
-                headerParagraph.setFont(CUSTOM_FONT_HEADER);
-
-                PdfPCell cellTitle = new PdfPCell(headerParagraph);
-                cellTitle.setBorder(Rectangle.NO_BORDER);
-
-                PdfPCell cellImage = new PdfPCell(img, true);
-                cellImage.setBorder(Rectangle.NO_BORDER);
-                cellImage.setPadding(5);
-
-                Paragraph datePara = new Paragraph(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").print(new DateTime()));
-                datePara.setFont(CUSTOM_FONT_TEXT);
-                PdfPCell cellFooter = new PdfPCell(datePara);
-                cellFooter.setBorder(Rectangle.NO_BORDER);
-
-                table.addCell(cellTitle);
-                table.addCell(cellImage);
-                table.addCell(cellFooter);
-
-                document.add(table);
-                document.close();
+            try (OutputStream fileStream = new FileOutputStream(destinationFile)) {
+                writePdf(image, formattedName, landscape, fileStream);
 
                 if (!directPrint) {
                     try {
@@ -210,6 +167,65 @@ public class ChartExportPDF {
 
 
         return null;
+    }
+
+    /**
+     * Snapshot of the node as PDF in memory, for sending by mail (OpenJEVis #2234). Must run on the FX thread.
+     */
+    public static byte[] toPDF(VBox vBox, String title, boolean landscape) throws IOException, DocumentException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        writePdf(vBox.snapshot(snapshotParameters(), null), FileNames.fixName(title), landscape, out);
+        return out.toByteArray();
+    }
+
+    private static SnapshotParameters snapshotParameters() {
+        SnapshotParameters snapshotParameters = new SnapshotParameters();
+        snapshotParameters.setTransform(new Scale(2, 2));
+        snapshotParameters.setFill(Color.WHITESMOKE);
+        return snapshotParameters;
+    }
+
+    private static void writePdf(WritableImage image, String title, boolean landscape, OutputStream outputStream) throws IOException, DocumentException {
+        /* the page size has to be set before open(), otherwise the first page stays portrait */
+        Document document = new Document(landscape ? PageSize.A4.rotate() : PageSize.A4);
+        PdfWriter.getInstance(document, outputStream);
+
+        document.addAuthor("JEVis");
+        document.addTitle(title);
+        document.addCreationDate();
+        document.open();
+
+        ByteArrayOutputStream png = new ByteArrayOutputStream();
+        ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", png);
+        Image img = Image.getInstance(png.toByteArray());
+
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+
+        Font CUSTOM_FONT_HEADER = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD | Font.UNDERLINE);
+        Font CUSTOM_FONT_TEXT = new Font(Font.FontFamily.TIMES_ROMAN, 11);
+
+        Paragraph headerParagraph = new Paragraph(title);
+        headerParagraph.setFont(CUSTOM_FONT_HEADER);
+
+        PdfPCell cellTitle = new PdfPCell(headerParagraph);
+        cellTitle.setBorder(Rectangle.NO_BORDER);
+
+        PdfPCell cellImage = new PdfPCell(img, true);
+        cellImage.setBorder(Rectangle.NO_BORDER);
+        cellImage.setPadding(5);
+
+        Paragraph datePara = new Paragraph(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").print(new DateTime()));
+        datePara.setFont(CUSTOM_FONT_TEXT);
+        PdfPCell cellFooter = new PdfPCell(datePara);
+        cellFooter.setBorder(Rectangle.NO_BORDER);
+
+        table.addCell(cellTitle);
+        table.addCell(cellImage);
+        table.addCell(cellFooter);
+
+        document.add(table);
+        document.close();
     }
 
     private void print() {

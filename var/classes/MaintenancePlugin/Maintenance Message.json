@@ -1,0 +1,30 @@
+{
+  "name": "Maintenance Message",
+  "description": "Planned maintenance or known issue that users are informed about by mail",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Maintenance Message",
+      "end": "Maintenance Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Data",
+      "primitiveType": 0,
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Maintenance Message"
+    },
+    {
+      "name": "Mail State",
+      "primitiveType": 0,
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Maintenance Message"
+    }
+  ]
+}
