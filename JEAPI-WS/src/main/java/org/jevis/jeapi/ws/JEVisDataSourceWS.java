@@ -203,7 +203,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         JsonJEVisClass json = new JsonJEVisClass();
         json.setName(name);
 
-        return new JEVisClassWS(this, json);
+        return new JEVisClassWS(this, json, true);
     }
 
     @Override
@@ -212,29 +212,25 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     }
 
     /**
-     * @param fromClass
-     * @param toClass
-     * @param type
-     * @return
-     * @TODO: we may need to cache the relationships but for now its fast
-     * enough. IF so we need an Cach implementaion for the relationships
+     * Creates a class relationship and saves it with the start class (OpenJEVis #2079). Use
+     * {@link JEVisClass#buildRelationship(JEVisClass, int, int)} to change a class in memory only.
+     *
+     * @param fromClass start class
+     * @param toClass   end class
+     * @param type      relationship type, see {@link JEVisConstants.ClassRelationship}
+     * @return the relationship
+     * @throws JEVisException if a class does not exist or the class could not be saved
      */
     @Override
-    public JEVisClassRelationship buildClassRelationship(String fromClass, String toClass, int type) {
-
-        //TODO: re-impalement after Webservice change
-        try {
-            JsonClassRelationship newJsonRel = new JsonClassRelationship();
-            newJsonRel.setStart(fromClass);
-            newJsonRel.setEnd(toClass);
-            newJsonRel.setType(type);
-            return new JEVisClassRelationshipWS(this, newJsonRel);
-
-
-        } catch (Exception ex) {
-            logger.catching(ex);
-            return null;//TODO throw error
+    public JEVisClassRelationship buildClassRelationship(String fromClass, String toClass, int type) throws JEVisException {
+        JEVisClass start = getJEVisClass(fromClass);
+        JEVisClass end = getJEVisClass(toClass);
+        if (start == null || end == null) {
+            throw new JEVisException("Unknown class '" + (start == null ? fromClass : toClass) + "'", 404);
         }
+        JEVisClassRelationship rel = start.buildRelationship(end, type, JEVisConstants.Direction.FORWARD);
+        start.commit();
+        return rel;
     }
 
     @Override
@@ -1136,6 +1132,67 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     }
 
     /**
+     * Reads one page of the user activity log, newest first (OpenJEVis #2341). Sys Admins can read every user,
+     * other users only their own log.
+     *
+     * @param userId user, or {@code null} for all users (Sys Admin) or the own log
+     * @param from   inclusive start in ms, or {@code null}
+     * @param until  inclusive end in ms, or {@code null}
+     * @return the entries, or {@code null} if the webservice has no user log endpoint (older version)
+     */
+    public List<JsonUserLogEntry> getUserLog(Long userId, Long from, Long until, int offset, int limit) throws JEVisException {
+        StringBuilder resource = new StringBuilder(REQUEST.API_PATH_V1 + "userlog?offset=" + offset + "&limit=" + limit);
+        if (userId != null) resource.append("&user=").append(userId);
+        if (from != null) resource.append("&from=").append(from);
+        if (until != null) resource.append("&until=").append(until);
+        HttpURLConnection conn = null;
+        try {
+            conn = this.con.getGetConnection(resource.toString());
+            int code = conn.getResponseCode();
+            if (code == HttpURLConnection.HTTP_NOT_FOUND || code == HttpURLConnection.HTTP_BAD_METHOD) {
+                return null;
+            }
+            if (code != HttpURLConnection.HTTP_OK) {
+                throw new JEVisException("Could not read the user log: HTTP " + code, code);
+            }
+            InputStream in = conn.getInputStream();
+            if ("gzip".equals(conn.getContentEncoding())) {
+                in = new java.util.zip.GZIPInputStream(in);
+            }
+            try (InputStream stream = in) {
+                return new ArrayList<>(Arrays.asList(this.objectMapper.readValue(stream, JsonUserLogEntry[].class)));
+            }
+        } catch (IOException ex) {
+            throw new JEVisException(ex.getMessage(), 402, ex);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+    }
+
+    /**
+     * Writes a client event (login/logout) of the current user into the user activity log.
+     *
+     * @return {@code false} if the webservice has no user log endpoint (older version)
+     */
+    public boolean writeUserLog(String action, String details) throws JEVisException {
+        try {
+            ObjectNode body = this.objectMapper.createObjectNode();
+            body.put("action", action);
+            body.put("details", details);
+            HTTPConnection.HttpResult response = this.con.postJson(REQUEST.API_PATH_V1 + "userlog", this.objectMapper.writeValueAsString(body), true);
+            if (response.getCode() == HttpURLConnection.HTTP_NOT_FOUND || response.getCode() == HttpURLConnection.HTTP_BAD_METHOD) {
+                return false;
+            }
+            if (response.getCode() >= 300) {
+                throw new JEVisException("Could not write the user log: HTTP " + response.getCode(), response.getCode());
+            }
+            return true;
+        } catch (IOException ex) {
+            throw new JEVisException(ex.getMessage(), 402, ex);
+        }
+    }
+
+    /**
      * Authenticates using an SSO token (e.g. Microsoft/OAuth bearer token) and initialises a
      * session-based connection. The session key is stored in {@link HTTPConnection} for
      * subsequent requests.
@@ -1521,21 +1578,50 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     @Override
     public boolean deleteClass(String jclass) {
         try {
-            logger.debug("Delete: {}", jclass);
-
-            String resource = REQUEST.API_PATH_V1
-                    + REQUEST.CLASSES.PATH
-                    + jclass;
-
-            HttpURLConnection conn = getHTTPConnection().getDeleteConnection(resource);
-            boolean response = conn.getResponseCode() == HttpURLConnection.HTTP_OK;
-            conn.disconnect();
-            return response;
-
+            deleteClassOrThrow(jclass);
+            return true;
         } catch (Exception ex) {
-            logger.catching(ex);
+            logger.error("Could not delete class '{}': {}", jclass, ex.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Deletes a class on the server (Sys Admins only). The web service refuses this while other
+     * classes inherit from it or objects of the class exist.
+     *
+     * @throws JEVisException with the message of the web service if the class could not be deleted
+     */
+    public void deleteClassOrThrow(String jclass) throws JEVisException {
+        logger.debug("Delete: {}", jclass);
+
+        String resource = REQUEST.API_PATH_V1
+                + REQUEST.CLASSES.PATH
+                + jclass;
+
+        HttpURLConnection conn = null;
+        try {
+            conn = getHTTPConnection().getDeleteConnection(resource);
+            int code = conn.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                String message = "";
+                InputStream error = conn.getErrorStream();
+                if (error != null) {
+                    try (InputStream in = error) {
+                        message = org.apache.commons.io.IOUtils.toString(in, java.nio.charset.StandardCharsets.UTF_8).trim();
+                    }
+                }
+                throw new JEVisException(message.isEmpty() ? "HTTP " + code : message, code);
+            }
+        } catch (IOException ex) {
+            throw new JEVisException("Could not delete the class '" + jclass + "': " + ex.getMessage(), 500, ex);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+        this.classCache.remove(jclass);
+        reloadClasses();
     }
 
     @Override
@@ -1571,10 +1657,34 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         }
     }
 
+    /**
+     * Deletes a class relationship and saves the start class (the web service also removes it
+     * from the file of the end class).
+     *
+     * @return {@code false} if the start class does not exist or could not be saved
+     */
     @Override
     public boolean deleteClassRelationship(String fromClass, String toClass, int type) {
-        //TODO: re-implement after webservice change
-        return false;
+        try {
+            JEVisClass start = getJEVisClass(fromClass);
+            if (start == null) {
+                return false;
+            }
+            start.deleteRelationship(buildClassRelationshipLocal(fromClass, toClass, type));
+            start.commit();
+            return true;
+        } catch (Exception ex) {
+            logger.error("Could not delete class relationship {} -> {} ({})", fromClass, toClass, type, ex);
+            return false;
+        }
+    }
+
+    private JEVisClassRelationship buildClassRelationshipLocal(String fromClass, String toClass, int type) {
+        JsonClassRelationship json = new JsonClassRelationship();
+        json.setStart(fromClass);
+        json.setEnd(toClass);
+        json.setType(type);
+        return new JEVisClassRelationshipWS(this, json);
     }
 
     @Override
@@ -2362,9 +2472,27 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         return samples;
     }
 
+    /**
+     * Loads all classes from the server again; classes which no longer exist are removed from
+     * the cache.
+     */
     public void reloadClasses() {
-        this.classLoaded = false;
-        getJEVisClasses();
+        List<JEVisClass> classes = getJEVisClassesWS();
+        if (classes.isEmpty()) {
+            /* request failed, keep the cache */
+            return;
+        }
+        Set<String> names = new HashSet<>();
+        for (JEVisClass jclass : classes) {
+            try {
+                names.add(jclass.getName());
+                this.classCache.put(jclass.getName(), jclass);
+            } catch (Exception ex) {
+                logger.error("Error in class {}", jclass, ex);
+            }
+        }
+        this.classCache.keySet().retainAll(names);
+        this.classLoaded = true;
     }
 
     public List<JEVisObject> getRootObjectsWS() {

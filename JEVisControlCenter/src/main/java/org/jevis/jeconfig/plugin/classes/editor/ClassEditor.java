@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -47,6 +48,7 @@ import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisClass;
+import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisType;
 import org.jevis.commons.constants.DisplayType;
@@ -257,15 +259,17 @@ public class ClassEditor {
                     }
                 });
 
+                boolean sysAdmin = false;
                 try {
-                    if (JEConfig.getDataSource().getCurrentUser().isSysAdmin()) {
-                        fName.setDisable(false);
-                        fUnique.setDisable(false);
-                        fDescription.setDisable(false);
-                    }
+                    sysAdmin = JEConfig.getDataSource().getCurrentUser().isSysAdmin();
                 } catch (Exception ex) {
-
+                    logger.error("Could not check the Sys Admin right", ex);
                 }
+                /* renaming a class would orphan its objects, it is not supported */
+                fName.setEditable(false);
+                fName.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.classes.editor.rename.notsupported")));
+                fUnique.setDisable(!sysAdmin);
+                fDescription.setEditable(sysAdmin);
 
                 _view.getChildren().setAll(accordion);
                 VBox.setVgrow(accordion, Priority.ALWAYS);
@@ -293,39 +297,44 @@ public class ClassEditor {
 
         Label headerName = new Label(I18n.getInstance().getString("plugin.classes.editor.type.name"));
         Label headerPType = new Label(I18n.getInstance().getString("plugin.classes.editor.type.prim_type"));
-        Label headerUnit = new Label(I18n.getInstance().getString("plugin.classes.editor.type.unit"));
         Label headerGType = new Label(I18n.getInstance().getString("plugin.classes.editor.type.guitype"));
-        Label headerControl = new Label(I18n.getInstance().getString("plugin.classes.editor.type.controls"));
+        Label headerValidity = new Label(I18n.getInstance().getString("plugin.classes.editor.type.validity"));
+        Label headerDescription = new Label(I18n.getInstance().getString("plugin.classes.editor.type.description"));
 
         Separator headerSep = new Separator();
         gridPane.add(headerName, 0, 0);
         gridPane.add(headerPType, 1, 0);
         gridPane.add(headerGType, 2, 0);
-        gridPane.add(headerUnit, 3, 0);
-        gridPane.add(headerControl, 4, 0);
-        gridPane.add(headerSep, 0, 1, 7, 1);
+        gridPane.add(headerValidity, 3, 0);
+        gridPane.add(headerDescription, 4, 0);
+        gridPane.add(headerSep, 0, 1, 8, 1);
 
-        //disabled as long the dont function right
-        headerUnit.setVisible(false);
-        headerControl.setVisible(false);
-        headerSep.setVisible(false);
+        boolean sysAdmin = false;
+        try {
+            sysAdmin = JEConfig.getDataSource().getCurrentUser().isSysAdmin();
+        } catch (Exception ex) {
+            logger.error("Could not check the Sys Admin right", ex);
+        }
+        final String validityLast = I18n.getInstance().getString("plugin.classes.editor.type.validity.last");
+        final String validityAtDate = I18n.getInstance().getString("plugin.classes.editor.type.validity.atdate");
 
         int row = 2;
         try {
-            Collections.sort(_class.getTypes());
-            if (_class.getTypes().isEmpty()) {
+            sortTypes();
+            final List<JEVisType> types = _class.getTypes();
+            if (types.isEmpty()) {
                 Label emty = new Label(I18n.getInstance().getString("plugin.classes.editor.type.emty"));
                 gridPane.add(emty, 0, row, 4, 1);
                 row++;
             }
-            for (final JEVisType type : _class.getTypes()) {
-//                boolean isInherited = !type.getJEVisClass().equals(_class);
+            for (int i = 0; i < types.size(); i++) {
+                final JEVisType type = types.get(i);
                 boolean isInherited = type.isInherited();
+                boolean editable = sysAdmin && !isInherited;
 
                 final Label lName = new Label(type.getName());
 
-                //test
-                final ChoiceBox guiType = new ChoiceBox();
+                final ChoiceBox<String> guiType = new ChoiceBox<>();
                 guiType.setMaxWidth(500);
                 guiType.setPrefWidth(160);
 
@@ -333,173 +342,108 @@ public class ClassEditor {
                 for (DisplayType id : GUIConstants.getALL(type.getPrimitiveType())) {
                     gTypes.add(id.getId());
                 }
+                if (type.getGUIDisplayType() != null && !gTypes.contains(type.getGUIDisplayType())) {
+                    gTypes.add(type.getGUIDisplayType());
+                }
 
-                ObservableList<String> items = FXCollections.observableList(gTypes);
-                guiType.setItems(items);
-                guiType.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
+                guiType.setItems(FXCollections.observableList(gTypes));
                 guiType.getSelectionModel().select(type.getGUIDisplayType());
-                guiType.valueProperty().addListener(new ChangeListener<String>() {
-
-                    @Override
-                    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                        try {
+                guiType.valueProperty().addListener((observable, oldValue, newValue) -> {
+                    try {
+                        if (newValue != null) {
                             type.setGUIDisplayType(newValue);
-                        } catch (JEVisException ex) {
-                            logger.catching(ex);
                         }
+                    } catch (JEVisException ex) {
+                        logger.catching(ex);
                     }
                 });
 
-                final JFXButton unitSelector = new JFXButton("");
-                unitSelector.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
-                unitSelector.setMaxWidth(56.0);
-                setUnitButton(unitSelector, type);
-
-                try {
-                    unitSelector.setOnAction(new EventHandler<ActionEvent>() {
-                                                 @Override
-                                                 public void handle(ActionEvent t) {
-                                                     try {
-//                                UnitSelectDialog usd = new UnitSelectDialog();
-//                                if (usd.show(JEConfig.getStage(), "Select Unit", _class.getDataSource()) == UnitSelectDialog.Response.YES) {
-//                                    logger.info("OK");
-//                                    unitSelector.setText(usd.getUnit().toString());
-//                                    if (type.getUnit() != null && !type.getUnit().equals(usd.getUnit())) {
-//                                        //TODO reimplement unit
-////                                        type.setUnit(usd.getUnit());
-//                                    }
-//
-//                                }
-
-                                                     } catch (Exception ex) {
-                                                         logger.catching(ex);
-                                                     }
-                                                 }
-                                             }
-                    );
-                } catch (Exception ex) {
-                    logger.catching(ex);
-                }
-
-                ChoiceBox primType = new ChoiceBox();
+                ChoiceBox<String> primType = new ChoiceBox<>();
                 primType.setItems(ClassHelper.getAllPrimitiveTypes());
-                primType.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
                 primType.getSelectionModel().select(ClassHelper.getNameforPrimitiveType(type));
-                primType.valueProperty().addListener(new ChangeListener<String>() {
+                primType.valueProperty().addListener((observable, oldValue, newValue) -> {
+                    try {
+                        type.setPrimitiveType(ClassHelper.getIDforPrimitiveType(newValue));
 
-                    @Override
-                    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                        try {
-                            type.setPrimitiveType(ClassHelper.getIDforPrimitiveType(newValue));
-
-                            List<String> gTypes = new ArrayList<>();
-                            for (DisplayType id : GUIConstants.getALL(type.getPrimitiveType())) {
-                                logger.trace("Add Guid Tpye: {}", id.getId());
-
-                                gTypes.add(id.getId());
-                            }
-
-                            ObservableList<String> items = FXCollections.observableList(gTypes);
-                            guiType.setItems(items);
-                            guiType.getSelectionModel().selectFirst();
-
-                        } catch (JEVisException ex) {
-                            logger.catching(ex);
+                        List<String> newGTypes = new ArrayList<>();
+                        for (DisplayType id : GUIConstants.getALL(type.getPrimitiveType())) {
+                            logger.trace("Add Guid Tpye: {}", id.getId());
+                            newGTypes.add(id.getId());
                         }
+
+                        guiType.setItems(FXCollections.observableList(newGTypes));
+                        guiType.getSelectionModel().selectFirst();
+
+                    } catch (JEVisException ex) {
+                        logger.catching(ex);
                     }
                 });
 
-//                PopOver poUnit = new PopOver(unitSelector);
+                ChoiceBox<String> validity = new ChoiceBox<>(FXCollections.observableArrayList(validityLast, validityAtDate));
+                validity.getSelectionModel().select(type.getValidity() == JEVisConstants.Validity.AT_DATE ? validityAtDate : validityLast);
+                validity.valueProperty().addListener((observable, oldValue, newValue) -> {
+                    try {
+                        type.setValidity(validityAtDate.equals(newValue) ? JEVisConstants.Validity.AT_DATE : JEVisConstants.Validity.LAST);
+                    } catch (JEVisException ex) {
+                        logger.catching(ex);
+                    }
+                });
+
+                JFXTextField description = new JFXTextField(type.getDescription() == null ? "" : type.getDescription());
+                description.setPrefWidth(250);
+                description.textProperty().addListener((observable, oldValue, newValue) -> {
+                    try {
+                        type.setDescription(newValue);
+                    } catch (JEVisException ex) {
+                        logger.catching(ex);
+                    }
+                });
+
+                final int index = i;
                 JFXButton up = new JFXButton();
-                if (_class.getTypes().indexOf(type) == 0) {
-//                    up.disableProperty().set(true);
-                    up.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
-                }
                 up.setGraphic(JEConfig.getImage("1395085229_arrow_return_right_up.png", 20, 20));
-                up.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent t) {
-                        try {
-                            int pos = _class.getTypes().indexOf(type);
-                            int lastPos = type.getGUIPosition();
-                            if (pos > 0) {
-                                JEVisType prevType = _class.getTypes().get(pos - 1);
-                                type.setGUIPosition(prevType.getGUIPosition());
-                                prevType.setGUIPosition(lastPos);
-                            }
-                            t2.setContent(buildTypeNode());
-
-                        } catch (JEVisException ex) {
-                            logger.catching(ex);
-                        }
-                    }
-                });
+                up.setDisable(!editable || index == 0 || types.get(index - 1).isInherited());
+                up.setOnAction(t -> swapPosition(type, types.get(index - 1)));
 
                 JFXButton down = new JFXButton();
-                if (_class.getTypes().indexOf(type) == _class.getTypes().size() - 1) {
-//                    down.disableProperty().set(true);
-                    down.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
-                }
                 down.setGraphic(JEConfig.getImage("1395085233_arrow_return_right_down.png", 20, 20));
-                down.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent t) {
-                        try {
-                            int pos = _class.getTypes().indexOf(type);
-                            int lastPos = type.getGUIPosition();
-                            if (pos < _class.getTypes().size() - 1) {
-
-                                JEVisType afterType = _class.getTypes().get(pos + 1);
-                                type.setGUIPosition(afterType.getGUIPosition());
-                                afterType.setGUIPosition(lastPos);
-                            }
-                            t2.setContent(buildTypeNode());
-
-                        } catch (JEVisException ex) {
-                            logger.catching(ex);
-                        }
-                    }
-                });
+                down.setDisable(!editable || index == types.size() - 1 || types.get(index + 1).isInherited());
+                down.setOnAction(t -> swapPosition(type, types.get(index + 1)));
 
                 JFXButton remove = new JFXButton();
                 remove.setGraphic(JEConfig.getImage("list-remove.png", 20, 20));
-                remove.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
-                remove.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent t) {
-                        try {
-                            _class.getTypes().remove(type);//TODo: this is no so save..
-                            _toDelete.add(type);
-                            type.delete();//TODO remove this and use the global "Save action"
-                            t2.setContent(buildTypeNode());
-
-                        } catch (JEVisException ex) {
-                            logger.catching(ex);
-                        }
+                remove.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.classes.editor.type.remove.tooltip")));
+                remove.setOnAction(t -> {
+                    /* persisted with the save action of the plugin */
+                    try {
+                        _class.getTypes().remove(type);
+                    } catch (JEVisException ex) {
+                        logger.catching(ex);
                     }
+                    _toDelete.add(type);
+                    t2.setContent(buildTypeNode());
                 });
 
                 //                                              x, y
                 gridPane.add(lName, 0, row);
                 gridPane.add(primType, 1, row);
                 gridPane.add(guiType, 2, row);
-                gridPane.add(unitSelector, 3, row);
-                gridPane.add(remove, 4, row);
-                gridPane.add(up, 5, row);
-                gridPane.add(down, 6, row);
+                gridPane.add(validity, 3, row);
+                gridPane.add(description, 4, row);
+                gridPane.add(remove, 5, row);
+                gridPane.add(up, 6, row);
+                gridPane.add(down, 7, row);
 
                 lName.setDisable(isInherited);
-                primType.setDisable(isInherited);
-                guiType.setDisable(isInherited);
-                unitSelector.setDisable(isInherited);
-                remove.setDisable(isInherited);
-                up.setDisable(isInherited);
-                down.setDisable(isInherited);
-
-                //disabled as long the dont function right
-                up.setVisible(false);
-                down.setVisible(false);
-                unitSelector.setVisible(false);
+                if (isInherited) {
+                    lName.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.classes.editor.type.inherited")));
+                }
+                primType.setDisable(!editable);
+                guiType.setDisable(!editable);
+                validity.setDisable(!editable);
+                description.setEditable(editable);
+                description.setDisable(isInherited);
+                remove.setDisable(!editable);
 
                 GridPane.setHgrow(lName, Priority.ALWAYS);
 
@@ -511,7 +455,7 @@ public class ClassEditor {
         }
 
         Separator newSep = new Separator();
-        gridPane.add(newSep, 0, row++, 6, 1);
+        gridPane.add(newSep, 0, row++, 8, 1);
 
         final JFXTextField fName = new JFXTextField();
         fName.setPromptText(I18n.getInstance().getString("plugin.classes.editor.type.newname"));
@@ -595,16 +539,61 @@ public class ClassEditor {
                 return;
             }
 
-            JEVisType newType = _class.buildType(name);
+            int position = 0;
+            for (JEVisType type : _class.getTypes()) {
+                position = Math.max(position, type.getGUIPosition());
+            }
 
-            JEVisType lastType = _class.getTypes().get(_class.getTypes().size() - 1);
-//                    newType.setPrimitiveType(ClassHelper.getIDforPrimitiveType(pTypeBox.getSelectionModel().getSelectedItem().toString()));
-            newType.setGUIPosition(lastType.getGUIPosition() + 1);
-//            logger.info("new pos for new Type: " + newType.getGUIPosition());
+            JEVisType newType = _class.buildType(name);
+            newType.setPrimitiveType(JEVisConstants.PrimitiveType.STRING);
+            List<DisplayType> displayTypes = GUIConstants.getALL(JEVisConstants.PrimitiveType.STRING);
+            if (!displayTypes.isEmpty()) {
+                newType.setGUIDisplayType(displayTypes.get(0).getId());
+            }
+            newType.setValidity(JEVisConstants.Validity.LAST);
+            newType.setGUIPosition(position + 1);
+            _toDelete.remove(newType);
 
             t2.setContent(buildTypeNode());
 
         } catch (Exception ex) {
+            logger.catching(ex);
+        }
+    }
+
+    /**
+     * Sorts the types of the class by GUI position, then by name.
+     */
+    private void sortTypes() throws JEVisException {
+        _class.getTypes().sort((a, b) -> {
+            try {
+                int cmp = Integer.compare(a.getGUIPosition(), b.getGUIPosition());
+                return cmp != 0 ? cmp : a.getName().compareTo(b.getName());
+            } catch (Exception ex) {
+                return 0;
+            }
+        });
+    }
+
+    /**
+     * Swaps the GUI position of two types; if both have the same position the first one moves to the place of the
+     * second one.
+     */
+    private void swapPosition(JEVisType type, JEVisType other) {
+        try {
+            int typePos = type.getGUIPosition();
+            int otherPos = other.getGUIPosition();
+            if (typePos == otherPos) {
+                int index = _class.getTypes().indexOf(type);
+                int otherIndex = _class.getTypes().indexOf(other);
+                typePos = otherIndex > index ? otherPos + 1 : otherPos - 1;
+                type.setGUIPosition(typePos);
+            } else {
+                type.setGUIPosition(otherPos);
+                other.setGUIPosition(typePos);
+            }
+            t2.setContent(buildTypeNode());
+        } catch (JEVisException ex) {
             logger.catching(ex);
         }
     }
@@ -648,40 +637,42 @@ public class ClassEditor {
         }
     }
 
+    /**
+     * Saves the class with its types and relationships (only Sys Admins; OpenJEVis #2079). Removed types are
+     * already removed from the class, the web service refuses the change while objects have values in them.
+     */
     public void commitAll() {
+        if (_class == null) {
+            return;
+        }
         try {
+            if (!_class.getDataSource().getCurrentUser().isSysAdmin()) {
+                return;
+            }
             logger.trace("commitAll() old: '{}' new: '{}'", _class.getName(), fName.getText());
             logger.trace("Type.count: {}", _class.getTypes().size());
-            _class.setName(fName.getText());
+            if (!fName.getText().equals(_class.getName())) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle(I18n.getInstance().getString("plugin.classes.editor.type.alert.save.title"));
+                alert.setHeaderText(I18n.getInstance().getString("plugin.classes.editor.type.alert.save.message"));
+                alert.setContentText(I18n.getInstance().getString("plugin.classes.editor.rename.notsupported"));
+                alert.showAndWait();
+                fName.setText(_class.getName());
+                return;
+            }
             _class.setDescription(fDescription.getText());
             _class.setUnique(fUnique.isSelected());
 
-            //ToDo: if inheritace change also change the tree
             _class.commit();
+            _toDelete.clear();
 
-            for (JEVisType type : _class.getTypes()) {
-                logger.trace("Type: {}", type.getName());
-                if (!_toDelete.contains(type)) {
-                    logger.trace("Type.commit: {}", type.getName());
-                    type.commit();
-                }
-            }
-            for (JEVisType type : _toDelete) {
-                logger.trace("Type.delete: {}", type.getName());
-                type.delete();
-            }
-
-            org.jevis.commons.classes.ClassHelper.updateTypesForHeirs(_class.getDataSource(), _class.getName());
-//            _tree.reload(_class);
-//            _class.notifyListeners(new JEVisEvent(_class, JEVisEvent.TYPE.CLASS_UPDATE));
-
+            setJEVisClass(_class);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.catching(ex);
+            logger.error("Error while saving class", ex);
             ExceptionDialog dia = new ExceptionDialog();
             dia.show(I18n.getInstance().getString("plugin.classes.editor.type.alert.save.title"),
-                    I18n.getInstance().getString("plugin.classes.editor.type.alert.save.message"), ex.getLocalizedMessage(), ex, null);
+                    I18n.getInstance().getString("plugin.classes.editor.type.alert.save.message"), ex.getMessage(), ex, null);
         }
     }
 

@@ -246,8 +246,7 @@ public class HeatMapChart implements Chart {
 
         Period inputSampleRate = chartDataRow.getPeriod();
         NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
-        numberFormat.setMinimumFractionDigits(chartModel.getMinFractionDigits());
-        numberFormat.setMaximumFractionDigits(chartModel.getMaxFractionDigits());
+        chartModel.applyFractionDigits(numberFormat, chartDataRow);
 
         AggregationPeriod selectedAggregation = chartDataRow.getAggregationPeriod();
         ManipulationMode selectedManipulationMode = chartDataRow.getManipulationMode();

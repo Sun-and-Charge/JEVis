@@ -93,12 +93,8 @@ public class XYChartSerie {
         this.valueDataSet = new DoubleDataSet(singleRow.getName());
         this.noteDataSet = new DoubleDataSet(singleRow.getName());
         this.forecast = forecast;
-        this.nf.setMinimumFractionDigits(chartModel.getMinFractionDigits());
-        this.nf.setMaximumFractionDigits(chartModel.getMaxFractionDigits());
-        if (singleRow.getDecimalDigits() > -1) {
-            this.nf.setMinimumFractionDigits(singleRow.getDecimalDigits());
-            this.nf.setMaximumFractionDigits(singleRow.getDecimalDigits());
-        }
+        /* decimal digits of the row in the chart, explicit fraction digits of the chart or those of the data row (#1194) */
+        chartModel.applyFractionDigits(this.nf, singleRow);
         minValue = new ValueWithDateTime(Double.MAX_VALUE, nf);
         maxValue = new ValueWithDateTime(-Double.MAX_VALUE, nf);
 

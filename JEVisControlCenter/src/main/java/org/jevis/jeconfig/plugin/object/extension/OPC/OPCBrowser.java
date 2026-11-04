@@ -44,6 +44,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.csv.CSVColumnHeader;
 import org.jevis.jeconfig.dialog.DialogHeader;
 import org.jevis.jeconfig.tool.ImageConverter;
@@ -116,9 +117,7 @@ public class OPCBrowser {
             //TODo better be dynamic
 
             stage.initStyle(StageStyle.UTILITY);
-            stage.setResizable(true);
-            stage.setWidth(650);
-            stage.setHeight(800);
+            WindowSize.apply(stage, JEConfig.getStage(), 650, 800, 400, 400);
         } catch (Exception e) {
             logger.error(e);
         }

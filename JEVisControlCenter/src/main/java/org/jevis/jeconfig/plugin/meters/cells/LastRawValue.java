@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -34,6 +35,7 @@ import org.jevis.jeconfig.plugin.meters.data.MeterData;
 import org.jevis.jeconfig.plugin.meters.event.PrecisionEventHandler;
 
 import java.util.Optional;
+import org.jevis.commons.object.ValueFormat;
 
 public class LastRawValue extends TableColumn<MeterData, LastRawValuePojo> {
 
@@ -58,9 +60,9 @@ public class LastRawValue extends TableColumn<MeterData, LastRawValuePojo> {
         this.setCellValueFactory(meterDataJEVisSampleCellDataFeatures -> {
 
             try {
-                long precision = getPrecision(meterDataJEVisSampleCellDataFeatures.getValue());
                 JEVisAttribute targetAttribute = meterDataJEVisSampleCellDataFeatures.getValue().getJeVisObject().getAttribute(jeVisType);
                 TargetHelper th = new TargetHelper(ds, targetAttribute);
+                long precision = getPrecision(meterDataJEVisSampleCellDataFeatures.getValue(), th);
                 double value = getValueAs(th).orElse(0.0);
                 String unit = getUnit(th).orElse("");
                 LastRawValuePojo lastRawValuePojo = new LastRawValuePojo(meterDataJEVisSampleCellDataFeatures.getValue(), value, unit, (int) precision, targetAttribute);
@@ -96,19 +98,30 @@ public class LastRawValue extends TableColumn<MeterData, LastRawValuePojo> {
     }
 
     private void setStringProperty(StringProperty stringProperty, double value, long precision, String unitLabel) {
-        stringProperty.set(String.format("%.0" + precision + "f", value) + " " + unitLabel);
+        stringProperty.set(ValueFormat.numberFormat((int) precision).format(value) + " " + unitLabel);
     }
 
-    private int getPrecision(MeterData meterData) {
+    /**
+     * The decimal places set on the meter in this plugin, otherwise those of the target data row
+     * ({@link ValueFormat}, upstream issue #1194).
+     */
+    private int getPrecision(MeterData meterData, TargetHelper th) {
         try {
-            if (meterData.getJeVisAttributeJEVisSampleMap().get(jeVisTypeWrapperDecimalPlaces) == null) return 2;
-            Optional<JEVisSample> optionalJEVisSample = (meterData.getJeVisAttributeJEVisSampleMap().get(jeVisTypeWrapperDecimalPlaces).getOptionalJEVisSample());
-            if (!optionalJEVisSample.isPresent()) return 2;
-            JEVisSample jeVisSample = optionalJEVisSample.get();
-            return Math.toIntExact(jeVisSample.getValueAsLong());
+            if (meterData.getJeVisAttributeJEVisSampleMap().get(jeVisTypeWrapperDecimalPlaces) != null) {
+                Optional<JEVisSample> optionalJEVisSample = (meterData.getJeVisAttributeJEVisSampleMap().get(jeVisTypeWrapperDecimalPlaces).getOptionalJEVisSample());
+                if (optionalJEVisSample.isPresent()) {
+                    Integer decimals = ValueFormat.parse(optionalJEVisSample.get().getValueAsString());
+                    if (decimals != null) {
+                        return decimals;
+                    }
+                }
+            }
+            if (th != null && th.isValid() && th.targetObjectAccessible() && !th.getObject().isEmpty()) {
+                return ValueFormat.decimals(th.getObject().get(0));
+            }
         } catch (Exception e) {
             logger.error(e);
-            return 2;
         }
+        return ValueFormat.DEFAULT_DECIMALS;
     }
 }

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -24,6 +25,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import org.controlsfx.control.PropertySheet;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.plugin.scada.data.ConfigSheet;
 
 import java.util.LinkedHashMap;
@@ -68,12 +70,7 @@ public class HiddenConfig {
 
 
         configDia.getDialogPane().setContent(propertySheet);
-        configDia.resizableProperty().setValue(true);
-        configDia.setHeight(800);
-        configDia.setWidth(500);
-
-        configDia.getDialogPane().setMinWidth(500);
-        configDia.getDialogPane().setMinHeight(500);
+        WindowSize.apply(configDia, 500, 800, 400, 400);
 
         configDia.getDialogPane().getButtonTypes().addAll(buttonTypeCancel, buttonTypeOk);
 

@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.commons.ws.json.JsonJEVisClass;
+import org.jevis.commons.ws.sql.archive.ArchiveSettings;
 import org.jevis.commons.ws.sql.auth.AuthConfig;
 
 import java.io.File;
@@ -123,6 +124,14 @@ public class Config {
     public static Cache<String, Session> sessions;
     /** HTTP session idle-timeout in minutes, read from the config file. */
     public static int sessiontimeout;
+    /**
+     * Days the user activity log is kept ({@code webservice.userlog.retentiondays}), {@code <= 0} keeps it forever.
+     */
+    private static int userLogRetentionDays = 365;
+    /**
+     * Old data archive ({@code webservice.archive.*}, OpenJEVis #1440), disabled by default.
+     */
+    private static ArchiveSettings archiveSettings = new ArchiveSettings();
 
     /** @return the configured MySQL host name or IP address. */
     public static String getDBHost() {
@@ -252,6 +261,16 @@ public class Config {
     }
 
     /**
+     * Drops the class definition cache and the list of class files, so that the next call of
+     * {@link #getClassCache()} reads the class directory again (new, changed and deleted class
+     * files; OpenJEVis #2079).
+     */
+    public static synchronized void reloadClassCache() {
+        classFiles = null;
+        classCache.invalidateAll();
+    }
+
+    /**
      * Reads a String configuration value, returning {@code defaultValue} if
      * the key is absent or any error occurs.
      *
@@ -347,6 +366,13 @@ public class Config {
                     entraTenantID = getParameter(config, "entra.tenant", "");
                     entraConfigToken = getParameter(config, "entra.configtoken", "");
                     sessiontimeout = Integer.parseInt(getParameter(config, "webservice.sessiontimeout", "15"));
+                    try {
+                        userLogRetentionDays = Integer.parseInt(getParameter(config, "webservice.userlog.retentiondays", "365").trim());
+                    } catch (NumberFormatException nfe) {
+                        logger.error("Invalid webservice.userlog.retentiondays, using 365 days");
+                        userLogRetentionDays = 365;
+                    }
+                    archiveSettings = readArchiveSettings(config, homeDir);
                     AuthConfig.read(config);
 
                     fileIsLoaded = true;
@@ -361,6 +387,40 @@ public class Config {
             logger.fatal("Unable to read config", ex);
             throw new IllegalStateException("Unable to read config file: " + cfile.getAbsolutePath(), ex);
         }
+    }
+
+    /**
+     * Reads {@code webservice.archive.*}; invalid numbers fall back to the defaults of {@link ArchiveSettings}.
+     */
+    private static ArchiveSettings readArchiveSettings(XMLConfiguration config, String homeDir) {
+        ArchiveSettings settings = new ArchiveSettings();
+        settings.setEnabled(Boolean.parseBoolean(getParameter(config, "webservice.archive.enabled", "false").trim()));
+        String dir = getParameter(config, "webservice.archive.dir", homeDir + "/jevis/var/archive/").trim();
+        settings.setDir(dir.isEmpty() ? null : new File(dir));
+        settings.setOlderThanYears((int) ArchiveSettings.parseLong(getParameter(config, "webservice.archive.olderthanyears", null),
+                ArchiveSettings.DEFAULT_OLDER_THAN_YEARS, 1));
+        settings.setClasses(ArchiveSettings.parseList(getParameter(config, "webservice.archive.classes", "Data")));
+        settings.setAttributes(ArchiveSettings.parseList(getParameter(config, "webservice.archive.attributes", "Value")));
+        settings.setTime(ArchiveSettings.parseTime(getParameter(config, "webservice.archive.time", "03:00")));
+        settings.setMaxRows(ArchiveSettings.parseLong(getParameter(config, "webservice.archive.maxrows", null),
+                ArchiveSettings.DEFAULT_MAX_ROWS, 1));
+        settings.setMaxMinutes((int) ArchiveSettings.parseLong(getParameter(config, "webservice.archive.maxminutes", null),
+                ArchiveSettings.DEFAULT_MAX_MINUTES, 1));
+        settings.setBatchSize((int) Math.min(50000, ArchiveSettings.parseLong(getParameter(config, "webservice.archive.batchsize", null),
+                ArchiveSettings.DEFAULT_BATCH_SIZE, 1)));
+        settings.setPauseMs((int) ArchiveSettings.parseLong(getParameter(config, "webservice.archive.pausems", null),
+                ArchiveSettings.DEFAULT_PAUSE_MS, 0));
+        return settings;
+    }
+
+    /** @return settings of the old data archive (OpenJEVis #1440) */
+    public static ArchiveSettings getArchiveSettings() {
+        return archiveSettings;
+    }
+
+    /** @return days the user activity log is kept, {@code <= 0} keeps it forever (OpenJEVis #2341). */
+    public static int getUserLogRetentionDays() {
+        return userLogRetentionDays;
     }
 
     /** @return the Microsoft Entra config-token string used for SSO. */

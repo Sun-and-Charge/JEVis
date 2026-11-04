@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -27,6 +28,7 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.object.ValueFormat;
 
 public class DoubleEditor extends BasicEditor {
 
@@ -73,6 +75,21 @@ public class DoubleEditor extends BasicEditor {
             return formatValue(value.getValueAsDouble());
         }
 
+    }
+
+    /**
+     * The value of a data row is shown with the decimal places of the data row (upstream issue #1194) and edited with
+     * full precision.
+     */
+    @Override
+    public String formatSampleForDisplay(JEVisSample value) throws JEVisException {
+        if (!"Value".equals(attribute.getName()) || attribute.getObject() == null) {
+            return formatSample(value);
+        }
+        double doubleValue = attribute.getInputUnit() != null && attribute.getDisplayUnit() != null
+                ? value.getValueAsDouble(attribute.getDisplayUnit())
+                : value.getValueAsDouble();
+        return ValueFormat.numberFormat(attribute.getObject()).format(doubleValue);
     }
 
     @Override

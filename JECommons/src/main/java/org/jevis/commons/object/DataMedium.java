@@ -22,14 +22,13 @@ package org.jevis.commons.object;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
-import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisSample;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Medium of a data object, e.g. for a cost breakdown by medium (upstream issue #1370).
@@ -42,8 +41,6 @@ public enum DataMedium {
     ELECTRICITY, HEAT, COLD, GAS, WATER, STEAM, COMPRESSED_AIR, AIR, NITROGEN, OIL, OTHER;
 
     public static final String ATTRIBUTE_NAME = "Medium";
-    private static final String MEASUREMENT_INSTRUMENT = "Measurement Instrument";
-    private static final String ONLINE_ID = "Online ID";
     private static final Logger logger = LogManager.getLogger(DataMedium.class);
 
     /**
@@ -103,38 +100,17 @@ public enum DataMedium {
      */
     public static DataMedium of(JEVisObject dataObject, Map<Long, String> meterClassesByOnlineId) {
         try {
-            JEVisObject current = dataObject;
-            Map<Long, String> meters = meterClassesByOnlineId;
-            for (int depth = 0; current != null && depth < 3; depth++) {
-                DataMedium own = fromAttribute(current);
-                if (own != null) {
-                    return own;
-                }
-
-                if (meters == null) {
-                    meters = meterClassesByOnlineId(current.getDataSource());
-                }
-                DataMedium meter = fromMeterClass(meters.get(current.getID()));
-                if (meter != null) {
-                    return meter;
-                }
-
-                JEVisObject parent = firstParent(current);
-                if (parent == null || !isDataObject(parent)) {
-                    break;
-                }
-                current = parent;
-            }
-
-            /* data objects below a measurement instrument */
-            JEVisObject parent = firstParent(dataObject);
-            for (int depth = 0; parent != null && depth < 10; depth++) {
-                DataMedium meter = fromMeterClass(parent.getJEVisClassName());
-                if (meter != null) {
-                    return meter;
-                }
-                parent = firstParent(parent);
-            }
+            /* the meters are only read when an object has no medium of its own */
+            AtomicReference<Map<Long, String>> meters = new AtomicReference<>(meterClassesByOnlineId);
+            return DataObjectChain.resolve(dataObject,
+                    DataMedium::fromAttribute,
+                    object -> {
+                        if (meters.get() == null) {
+                            meters.set(meterClassesByOnlineId(object.getDataSource()));
+                        }
+                        return fromMeterClass(meters.get().get(object.getID()));
+                    },
+                    parent -> fromMeterClass(parent.getJEVisClassName()));
         } catch (Exception e) {
             logger.warn("Could not determine medium of object {}", dataObject, e);
         }
@@ -147,19 +123,8 @@ public enum DataMedium {
     public static Map<Long, String> meterClassesByOnlineId(JEVisDataSource ds) {
         Map<Long, String> result = new HashMap<>();
         try {
-            JEVisClass meterClass = ds.getJEVisClass(MEASUREMENT_INSTRUMENT);
-            if (meterClass == null) {
-                return result;
-            }
-            for (JEVisObject meter : ds.getObjects(meterClass, true)) {
-                JEVisAttribute onlineId = meter.getAttribute(ONLINE_ID);
-                if (onlineId == null || !onlineId.hasSample()) {
-                    continue;
-                }
-                Long id = parseTargetId(onlineId.getLatestSample().getValueAsString());
-                if (id != null) {
-                    result.put(id, meter.getJEVisClassName());
-                }
+            for (Map.Entry<Long, JEVisObject> entry : DataObjectChain.metersByOnlineId(ds).entrySet()) {
+                result.put(entry.getKey(), entry.getValue().getJEVisClassName());
             }
         } catch (Exception e) {
             logger.warn("Could not read measurement instruments", e);
@@ -168,15 +133,7 @@ public enum DataMedium {
     }
 
     static Long parseTargetId(String target) {
-        if (target == null) {
-            return null;
-        }
-        String id = target.split("[:;]")[0].trim();
-        try {
-            return id.isEmpty() ? null : Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return DataObjectChain.parseTargetId(target);
     }
 
     private static DataMedium fromAttribute(JEVisObject object) throws Exception {
@@ -186,14 +143,5 @@ public enum DataMedium {
             return sample != null ? parse(sample.getValueAsString()) : null;
         }
         return null;
-    }
-
-    private static boolean isDataObject(JEVisObject object) throws Exception {
-        return object.getAttribute("Value") != null;
-    }
-
-    private static JEVisObject firstParent(JEVisObject object) throws Exception {
-        List<JEVisObject> parents = object.getParents();
-        return parents == null || parents.isEmpty() ? null : parents.get(0);
     }
 }

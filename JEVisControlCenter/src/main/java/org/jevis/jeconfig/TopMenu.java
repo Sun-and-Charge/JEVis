@@ -51,6 +51,7 @@ import org.jevis.jeconfig.application.Chart.data.FavoriteAnalysisHandler;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeItem;
 import org.jevis.jeconfig.application.login.ApiKeyDialog;
+import org.jevis.jeconfig.dialog.UserLogDialog;
 import org.jevis.jeconfig.application.login.TwoFactorDialogs;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.csv.CSVImportDialog;
@@ -609,6 +610,9 @@ public class TopMenu extends MenuBar {
                 logger.error("Could not check sys admin rights", ex);
             }
         }
+        MenuItem userLog = new MenuItem(I18n.getInstance().getString("app.userlog.title"));
+        userLog.setOnAction(event -> UserLogDialog.show(JEConfig.getStage(), JEConfig.getDataSource()));
+        options.getItems().add(userLog);
         options.getItems().addAll(enablePreview, welcome, expertMode);
 
         if (JEConfig.getExpert()) {

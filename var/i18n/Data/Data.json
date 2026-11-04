@@ -144,6 +144,17 @@
           }
         }
       }
+    },
+    {
+      "type": "Decimal Places",
+      "descriptions": {
+        "de": "Anzahl der Nachkommastellen, mit der die Werte der Datenreihe angezeigt werden. Leer: die Nachkommastellen werden vom übergeordneten Datenobjekt oder vom Zähler (Online ID) übernommen, sonst 2.",
+        "en": "Number of decimal places used to display the values of the data series. Empty: the decimal places are taken from the parent data object or from the meter (Online ID), otherwise 2."
+      },
+      "names": {
+        "de": "Nachkommastellen",
+        "en": "Decimal places"
+      }
     }
   ]
 }

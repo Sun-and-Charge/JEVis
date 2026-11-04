@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -46,6 +47,7 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.SelectionTable.ValueFieldTableCellForNotes;
 import org.jevis.jeconfig.application.Chart.data.RowNote;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -311,7 +313,8 @@ public class NoteDialog extends Dialog<ButtonType> {
         this.setResizable(true);
         this.initOwner(JEConfig.getStage());
 
-        this.getDialogPane().setPrefWidth(1220);
+        this.getDialogPane().setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 1220));
+        WindowSize.keepOnScreen(this);
     }
 
     public Map<String, RowNote> getNoteMap() {

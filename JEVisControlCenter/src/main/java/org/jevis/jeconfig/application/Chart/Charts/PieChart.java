@@ -219,7 +219,7 @@ public class PieChart implements Chart {
             if (qu.isQuantityUnit(currentUnit)) currentUnitString = getUnit(currentUnit);
             else currentUnitString = getUnit(qu.getSumUnit(currentUnit));
 //            String seriesName = name + " - " + nf.format(listSumsPiePieces.get(listTableEntryNames.indexOf(name)))
-            String seriesName = nf.format(listSumsPiePieces.get(listTableEntryNames.indexOf(name)))
+            String seriesName = chartModel.getNumberFormat(chartDataRows.get(listTableEntryNames.indexOf(name))).format(listSumsPiePieces.get(listTableEntryNames.indexOf(name)))
                     + " " + currentUnitString
                     + " (" + nf.format(listPercentages.get(listTableEntryNames.indexOf(name)) * 100) + "%)";
 
@@ -387,7 +387,7 @@ public class PieChart implements Chart {
                 if (qu.isQuantityUnit(currentUnit)) currentUnitString = getUnit(currentUnit);
                 else currentUnitString = getUnit(qu.getSumUnit(currentUnit));
 
-                String seriesName = nf.format(listSumsPiePieces.get(listTableEntryNames.indexOf(name)))
+                String seriesName = chartModel.getNumberFormat(chartDataRows.get(listTableEntryNames.indexOf(name))).format(listSumsPiePieces.get(listTableEntryNames.indexOf(name)))
                         + " " + currentUnitString
                         + " (" + nf.format(listPercentages.get(listTableEntryNames.indexOf(name)) * 100) + " %)";
 

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -92,6 +93,8 @@ public class GaugeWidget extends Widget implements DataModelWidget {
         widgetPojo.setType(typeID());
         widgetPojo.setSize(new Size(control.getActiveDashboard().yGridInterval * 4, control.getActiveDashboard().xGridInterval * 4));
         widgetPojo.setDecimals(1);
+        /* the value is shown with the decimal places of the data row, the percentage with the widget decimals */
+        widgetPojo.setDecimalsAuto(true);
 
 
         return widgetPojo;
@@ -157,7 +160,10 @@ public class GaugeWidget extends Widget implements DataModelWidget {
             gauge.setTitleColor(this.config.getFontColor());
             gauge.setUnitColor(this.config.getFontColor());
             gauge.setValueColor(this.config.getFontColor());
-            gauge.setDecimals(this.config.getDecimals());
+            /* in percent the widget decimals are used, otherwise explicit widget decimals or those of the data row (#1194) */
+            boolean inPercent = gaugeSettings != null && gaugeSettings.isInPercent();
+            ChartDataRow dataRow = sampleHandler != null && !sampleHandler.getChartDataRows().isEmpty() ? sampleHandler.getChartDataRows().get(0) : null;
+            gauge.setDecimals(inPercent ? this.config.getDecimals() : getDecimals(dataRow));
 
             if (!gaugeSettings.isShowTitle()) {
                 gauge.setTitle("");

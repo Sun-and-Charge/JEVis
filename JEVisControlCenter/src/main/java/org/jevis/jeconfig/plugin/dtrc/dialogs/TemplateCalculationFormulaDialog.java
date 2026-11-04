@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -39,6 +40,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.jevis.jeconfig.plugin.dtrc.RCTemplate;
@@ -246,7 +248,8 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         });
 
         ScrollPane outputsScrollPane = new ScrollPane(outputsGridPane);
-        outputsScrollPane.setMinHeight(550);
+        outputsScrollPane.setPrefHeight(WindowSize.fitHeight(JEConfig.getStage(), 550, 450));
+        outputsScrollPane.setMinHeight(150);
 
         VBox vBox = new VBox(4, new HBox(4, nameLabel, jfxTextField), separator1,
                 formulaLabel, jfxTextArea, separator2,
@@ -264,6 +267,7 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         vBoxScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         getDialogPane().setContent(vBoxScrollPane);
+        WindowSize.keepOnScreen(this);
     }
 
     public Response getResponse() {

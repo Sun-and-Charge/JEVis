@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  *
  * This file is part of JEApplication.
  *
@@ -42,6 +43,10 @@ public class DialogHeader {
         header.getStyleClass().add("dialog-header");
 
         Label topTitle = new Label(text);
+
+        topTitle.setWrapText(true);
+
+        topTitle.setMinHeight(Region.USE_PREF_SIZE);
         topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage(icon, 64, 64);
@@ -53,7 +58,8 @@ public class DialogHeader {
         vboxRight.setAlignment(Pos.CENTER_LEFT);
         vboxRight.getChildren().add(imageView);
 
-        header.setLeft(vboxLeft);
+        /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
+        header.setCenter(vboxLeft);
 
         header.setRight(vboxRight);
 
@@ -66,6 +72,8 @@ public class DialogHeader {
         header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
         Label topTitle = new Label(text);
+        topTitle.setWrapText(true);
+        topTitle.setMinHeight(Region.USE_PREF_SIZE);
         topTitle.getStyleClass().add("dialog-header-title");
 
         //ImageView imageView = ResourceLoader.getImage(icon, 64, 64);
@@ -77,7 +85,8 @@ public class DialogHeader {
         vboxRight.setAlignment(Pos.CENTER_LEFT);
         vboxRight.getChildren().add(icon);
 
-        header.setLeft(vboxLeft);
+        /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
+        header.setCenter(vboxLeft);
 
         header.setRight(vboxRight);
 
@@ -90,6 +99,8 @@ public class DialogHeader {
         header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
         Label topTitle = new Label(text);
+        topTitle.setWrapText(true);
+        topTitle.setMinHeight(Region.USE_PREF_SIZE);
         topTitle.getStyleClass().add("dialog-header-title");
 
         //ImageView imageView = ResourceLoader.getImage(icon, 64, 64);
@@ -101,7 +112,8 @@ public class DialogHeader {
         vboxRight.setAlignment(Pos.CENTER_LEFT);
         vboxRight.getChildren().add(icon);
 
-        header.setLeft(vboxLeft);
+        /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
+        header.setCenter(vboxLeft);
 
         header.setRight(vboxRight);
 

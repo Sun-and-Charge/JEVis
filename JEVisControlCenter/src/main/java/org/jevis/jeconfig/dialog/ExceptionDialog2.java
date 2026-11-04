@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -25,6 +26,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Window;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -75,8 +77,8 @@ public class ExceptionDialog2 {
 // Set expandable Exception into the dialog pane.
         alert.getDialogPane().setExpandableContent(expContent);
         alert.initOwner(parent);
-        alert.setWidth(500);
-        alert.setHeight(500);
+        alert.setWidth(WindowSize.fitWidth(parent, 500));
+        alert.setHeight(WindowSize.fitHeight(parent, 500));
         alert.showAndWait();
     }
 

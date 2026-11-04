@@ -37,7 +37,9 @@ import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.jevis.api.JEVisException;
 import org.jevis.commons.utils.JEVisDates;
 import org.jevis.commons.ws.sql.*;
+import org.jevis.commons.ws.sql.archive.ArchiveService;
 import org.jevis.commons.ws.sql.auth.AuthService;
+import org.jevis.commons.ws.sql.userlog.UserLogService;
 import org.joda.time.DateTime;
 
 import javax.security.sasl.AuthenticationException;
@@ -310,6 +312,11 @@ public class Main {
             logger.error("Server error: ", e);
             throw new RuntimeException(e);
         }
+        /* daily deletion of old user log entries (OpenJEVis #2341) */
+        UserLogService.startDailyCleanup(Config.getUserLogRetentionDays());
+        /* daily export and deletion of old samples, disabled by default (OpenJEVis #1440) */
+        ArchiveService.startDailyArchive(Config.getArchiveSettings());
+
         try {
             logger.info("{} is now running", VERSION);
             logger.info("Press CTRL^C to exit..");

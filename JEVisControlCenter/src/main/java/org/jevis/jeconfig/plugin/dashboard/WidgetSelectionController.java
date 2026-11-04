@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -330,11 +331,13 @@ public class WidgetSelectionController {
     }
 
     /**
-     * Sets the decimal precision for all selected widgets.
+     * Sets the decimal precision for all selected widgets. It is then an explicit setting that wins over the decimal
+     * places of the data rows (#1194).
      */
     public void decimalsSelected(int size) {
         selectedWidgets.forEach(widget -> {
             widget.getConfig().setDecimals(size);
+            widget.getConfig().setDecimalsAuto(false);
             widget.updateConfig();
             control.requestViewUpdate(widget);
         });

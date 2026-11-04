@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -40,6 +41,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.DialogHeader;
 import tech.units.indriya.AbstractUnit;
 
@@ -59,8 +61,7 @@ public class SimpleTreeUnitChooser {
 //        stage.initOwner(owner);
         stage.setX(position.getX());
         stage.setY(position.getY());
-        stage.setWidth(410);
-        stage.setHeight(640);
+        WindowSize.apply(stage, null, 410, 640, 300, 400);
 
         VBox root = new VBox();
 

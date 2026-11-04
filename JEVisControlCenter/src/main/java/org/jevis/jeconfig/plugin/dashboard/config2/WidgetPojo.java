@@ -38,6 +38,8 @@ import static org.jevis.jeconfig.plugin.dashboard.config2.JsonNames.Widget.*;
  */
 public class WidgetPojo {
 
+    public static final int DEFAULT_DECIMALS = 2;
+
     private BorderWidths borderSize = new BorderWidths(0.2);
     private Color borderColor = Color.BLACK;
     private double cornerRadius = 0d;
@@ -56,7 +58,11 @@ public class WidgetPojo {
     private Boolean fontUnderlined = false;
     private Pos titlePosition = Pos.CENTER;
     private Boolean showShadow = true;
-    private Integer decimals = 2;
+    private Integer decimals = DEFAULT_DECIMALS;
+    /**
+     * true: the decimal places of the data row are used, false: {@link #decimals}, null: not set (#1194)
+     */
+    private Boolean decimalsAuto = null;
     private String type = "";
     private Integer layer = 1;
     private boolean showValue = true;
@@ -218,6 +224,10 @@ public class WidgetPojo {
                 this.decimals = jsonNode.get(DECIMALS).asInt(2);
             } catch (Exception ex) {
                 logger.debug("Could not parse decimals: {}", DECIMALS, ex);
+            }
+
+            if (jsonNode.get(DECIMALS_AUTO) != null && !jsonNode.get(DECIMALS_AUTO).isNull()) {
+                this.decimalsAuto = jsonNode.get(DECIMALS_AUTO).asBoolean();
             }
 
             try {
@@ -423,6 +433,28 @@ public class WidgetPojo {
         this.decimals = decimals;
     }
 
+    public Boolean getDecimalsAuto() {
+        return decimalsAuto;
+    }
+
+    public void setDecimalsAuto(Boolean decimalsAuto) {
+        this.decimalsAuto = decimalsAuto;
+    }
+
+    /**
+     * Rule for the decimal places of values (upstream issue #1194): an explicit setting of the widget wins, otherwise
+     * the values are shown with the decimal places of their data row. Without a stored setting (dashboards saved
+     * before #1194), the widget setting counts as explicit only if it differs from the default 2.
+     *
+     * @return true if the decimal places of the data row are used
+     */
+    public boolean isDecimalsAuto() {
+        if (decimalsAuto != null) {
+            return decimalsAuto;
+        }
+        return decimals == null || decimals == DEFAULT_DECIMALS;
+    }
+
     public String getType() {
         return this.type;
     }
@@ -472,6 +504,7 @@ public class WidgetPojo {
         copy.setShowShadow(this.getShowShadow());
         copy.setSize(this.getSize());
         copy.setDecimals(this.getDecimals());
+        copy.setDecimalsAuto(this.getDecimalsAuto());
         copy.setFontSize(this.getFontSize());
         copy.setFontWeight(this.getFontWeight());
         copy.setFontPosture(this.getFontPosture());

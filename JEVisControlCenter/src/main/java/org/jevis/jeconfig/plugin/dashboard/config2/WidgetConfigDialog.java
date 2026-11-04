@@ -36,12 +36,12 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.ChartTab;
 import org.jevis.jeconfig.application.Chart.data.ChartData;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.plugin.dashboard.datahandler.DataModelDataHandler;
 import org.jevis.jeconfig.plugin.dashboard.widget.ChartWidget;
 import org.jevis.jeconfig.plugin.dashboard.widget.GenericConfigNode;
 import org.jevis.jeconfig.plugin.dashboard.widget.ValueWidget;
 import org.jevis.jeconfig.plugin.dashboard.widget.Widget;
-import org.jevis.jeconfig.tool.ScreenSize;
 
 public class WidgetConfigDialog extends Alert {
 
@@ -66,8 +66,8 @@ public class WidgetConfigDialog extends Alert {
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(this.tabPane);
-        borderPane.setPrefWidth(ScreenSize.fitScreenWidth(1500));
-        borderPane.setPrefHeight(650d);
+        borderPane.setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 1500d, 40d));
+        borderPane.setPrefHeight(WindowSize.fitHeight(JEConfig.getStage(), 650d, 180d));
 
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 

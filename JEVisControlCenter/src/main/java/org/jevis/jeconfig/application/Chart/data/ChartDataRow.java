@@ -39,6 +39,7 @@ import org.jevis.commons.datetime.PeriodHelper;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.json.JsonGapFillingConfig;
 import org.jevis.commons.json.JsonLimitsConfig;
+import org.jevis.commons.object.ValueFormat;
 import org.jevis.commons.unit.ChartUnits.ChartUnits;
 import org.jevis.commons.unit.ChartUnits.QuantityUnits;
 import org.jevis.commons.unit.UnitManager;
@@ -90,6 +91,10 @@ public class ChartDataRow extends ChartData {
     private Boolean absolute = false;
     private boolean isStringData = false;
     private boolean hasForecastData = false;
+    /**
+     * Decimal places of the data row, resolved once (upstream issue #1194)
+     */
+    private Integer dataRowDecimals;
     private Double scaleFactor = 1d;
     private Double timeFactor = 1d;
     private ValueWithDateTime min = new ValueWithDateTime(0d, NumberFormat.getInstance(I18n.getInstance().getLocale()));
@@ -818,6 +823,17 @@ public class ChartDataRow extends ChartData {
             }
         }
         return inputList;
+    }
+
+    /**
+     * @return the decimal places of the data row (Clean Data, else Data), see {@link ValueFormat}
+     */
+    public int dataRowDecimals() {
+        if (dataRowDecimals == null) {
+            JEVisObject dataObject = getDataProcessor() != null ? getDataProcessor() : getObject();
+            dataRowDecimals = ValueFormat.decimals(dataObject);
+        }
+        return dataRowDecimals;
     }
 
     public JEVisObject getDataProcessor() {

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -44,6 +45,7 @@ import org.jevis.commons.unit.UnitManager;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.plugin.scada.data.ConfigSheet;
 import org.jevis.jeconfig.plugin.scada.data.ScadaElementData;
 import org.joda.time.DateTime;
@@ -418,10 +420,7 @@ public class LabelElement extends MoveableNode implements SCADAElement {
 
         ConfigSheet ct = new ConfigSheet();
         configDia.getDialogPane().setContent(ct.getSheet(userConfig));
-        configDia.resizableProperty().setValue(true);
-        configDia.setHeight(500);
-        configDia.setWidth(500);
-        configDia.getDialogPane().setMinWidth(500);
+        WindowSize.apply(configDia, 500, 500, 400, 300);
         configDia.setGraphic(ResourceLoader.getImage("1394482166_blueprint_tool.png", 50, 50));
 
         ButtonType buttonTypeOk = new ButtonType(I18n.getInstance().getString("plugin.scada.element.config.ok"), ButtonBar.ButtonData.OK_DONE);

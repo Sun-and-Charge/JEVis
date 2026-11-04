@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEWebService.
  * <p>
@@ -23,6 +24,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.jevis.commons.ws.sql.archive.ArchiveService;
+import org.jevis.commons.ws.sql.userlog.UserLogService;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -59,5 +62,12 @@ public class GrizzlyServerShutdownHookThread extends Thread {
         }
 
         logger.info("Server stopped.");
+        ArchiveService.shutdown();
+        try {
+            /* write the queued user log entries */
+            UserLogService.shutdown();
+        } catch (Exception e) {
+            logger.error("Error while writing the user log on shutdown", e);
+        }
     }
 }

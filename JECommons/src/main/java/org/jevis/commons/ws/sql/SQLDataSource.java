@@ -33,6 +33,7 @@ import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.commons.ws.json.*;
 import org.jevis.commons.ws.sql.auth.AuthService;
 import org.jevis.commons.ws.sql.tables.*;
+import org.jevis.commons.ws.sql.userlog.UserLogService;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
@@ -189,7 +190,9 @@ public class SQLDataSource {
 
     /**
      * Logs a user action for audit purposes. Sys-admin actions are suppressed
-     * to avoid excessive log volume.
+     * to avoid excessive log volume. The entry is written asynchronously into the
+     * table {@code user_log}, or into the samples of the attribute {@code Activities}
+     * if migration V14 is not applied (OpenJEVis #2341).
      *
      * @param event the type of action performed
      * @param msg   a human-readable description of the action
@@ -199,19 +202,13 @@ public class SQLDataSource {
             /** we do not log SysAdmin because of the huge amount of event for the services. The Logging is for user events. **/
             return;
         }
-        try {
-            logger.debug("Event '{}'| {}: {} ", getCurrentUser().getAccountName(), event, msg);
-            JsonSample newSample = new JsonSample();
-            newSample.setTs(JsonFactory.sampleDTF.print(DateTime.now()));
-            newSample.setValue(String.format("%s|%s|%s", user.getAccountName(), event, msg));
-            getSampleTable().insertSamples(getCurrentUser().getUserID(), "Activities", JEVisConstants.PrimitiveType.STRING, Collections.singletonList(newSample));
-        } catch (Exception ex) {
-            logger.error("Error while logging Event: {}:{}:{}", event, msg, ex);
-        }
+        logger.debug("Event '{}'| {}: {} ", getCurrentUser().getAccountName(), event, msg);
+        UserLogService.log(this, getCurrentUser(), event.name(), null, msg);
     }
 
     /**
-     * Deletes user activity log entries older than one year, in compliance with
+     * Deletes user activity log entries older than the configured retention
+     * ({@code webservice.userlog.retentiondays}, default one year), in compliance with
      * General Data Protection Regulations (GDPR).
      *
      * @throws SQLException            if a database error occurs
@@ -219,8 +216,14 @@ public class SQLDataSource {
      * @throws JEVisException          if a JEVis-level error occurs
      */
     public void gdprCleanUp() throws SQLException, AuthenticationException, JEVisException {
-        logger.error("Starting user log cleanup for Data Protection");
-        getSampleTable().deleteOldLogging();
+        logger.info("Starting user log cleanup for Data Protection");
+        try {
+            UserLogService.cleanup(getConnection(), Config.getUserLogRetentionDays(), System.currentTimeMillis());
+        } catch (SQLException | JEVisException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new JEVisException("User log cleanup failed", 5439, ex);
+        }
     }
 
     /**
@@ -1315,7 +1318,7 @@ public class SQLDataSource {
      * Event types recorded in the user activity log.
      */
     public enum LOG_EVENT {
-        USER_LOGIN,
+        USER_LOGIN, USER_LOGOUT,
         DELETE_OBJECT, MARK_AS_DELETE_OBJECT, DELETE_SAMPLE, DELETE_RELATIONSHIP,
         CREATE_OBJECT, CREATE_SAMPLE, CREATE_RELATIONSHIP,
         UPDATE_OBJECT, UPDATE_ATTRIBUTE

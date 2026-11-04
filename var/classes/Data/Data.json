@@ -56,6 +56,15 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Data"
+    },
+    {
+      "name": "Decimal Places",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Data"
     }
   ]
 }

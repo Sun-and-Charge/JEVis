@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -20,44 +21,35 @@
 package org.jevis.jeconfig.tool;
 
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Control;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 
 public class ScreenSize {
 
 
     /**
-     * Returns pref size if it fits screensize
+     * Returns the pref size (pixels at 100 % Windows scaling) grown with the default font
+     * and limited to the screen of the main window, see {@link WindowSize#fitWidth}.
      *
      * @param prefSize
      * @return
      */
     public static double fitScreenWidth(double prefSize) {
-        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-        if (primaryScreenBounds.getWidth() < prefSize) {
-            return primaryScreenBounds.getWidth();
-        } else {
-            return prefSize;
-        }
+        return WindowSize.fitWidth(null, prefSize);
     }
 
     /**
-     * Returns pref size if it fits screensize
+     * Returns the pref size (pixels at 100 % Windows scaling) grown with the default font
+     * and limited to the screen of the main window, see {@link WindowSize#fitHeight}.
      *
      * @param prefSize
      * @return
      */
     public static double fitScreenHeight(double prefSize) {
-        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-        if (primaryScreenBounds.getHeight() < prefSize) {
-            return primaryScreenBounds.getHeight();
-        } else {
-            return prefSize;
-        }
+        return WindowSize.fitHeight(null, prefSize);
     }
 
     /**

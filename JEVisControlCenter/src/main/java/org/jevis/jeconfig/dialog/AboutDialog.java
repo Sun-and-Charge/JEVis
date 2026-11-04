@@ -42,6 +42,7 @@ import org.jevis.commons.utils.JEVisDates;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.joda.time.DateTime;
 
 import java.awt.Desktop;
@@ -174,7 +175,8 @@ public class AboutDialog {
 
         Label licenseNotice = new Label(I18n.getInstance().getString("licenses.project.summary"));
         licenseNotice.setWrapText(true);
-        licenseNotice.setMaxWidth(340);
+        licenseNotice.setMaxWidth(WindowSize.scaled(340));
+        licenseNotice.setMinHeight(Region.USE_PREF_SIZE);
         licenseNotice.setPadding(new Insets(0, 10, 0, 10));
 
         Hyperlink projectLink = new Hyperlink(LicenseDialog.PROJECT_URL);
@@ -205,9 +207,8 @@ public class AboutDialog {
             }
         });
 
-        stage.setWidth(365);
-        stage.setHeight(500);
-
+        // size from the content, the text grows with the font (#1768)
+        WindowSize.keepOnScreen(stage);
         stage.sizeToScene();
         stage.showAndWait();
     }

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartTools;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
 import org.jevis.jeconfig.plugin.dashboard.config2.DashboardSorter;
@@ -85,9 +87,8 @@ public class LoadDashboardDialog extends Dialog {
 
         setTitle(I18n.getInstance().getString("plugin.dashboards.loaddashboard.title"));
         setHeaderText(I18n.getInstance().getString("plugin.dashboards.loaddashboard.header"));
-        setResizable(true);
-        getDialogPane().setMinSize(800, 600);
         initOwner(JEConfig.getStage());
+        WindowSize.applyMin(this, 800, 600);
         initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());

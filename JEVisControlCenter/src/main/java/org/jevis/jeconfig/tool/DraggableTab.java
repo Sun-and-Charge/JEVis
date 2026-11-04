@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -35,7 +36,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.Plugin;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -141,10 +144,8 @@ public class DraggableTab extends Tab {
             freigestellt.setValue(true);
             newStage.setScene(new Scene(borderPane));
             newStage.initStyle(StageStyle.DECORATED);
-            newStage.setX(200);
-            newStage.setY(200);
-            newStage.setWidth(1000);
-            newStage.setHeight(600);
+            WindowSize.apply(newStage, JEConfig.getStage(), 1000, 600, 400, 300);
+            newStage.centerOnScreen();
             newStage.show();
             pane.requestLayout();
             pane.requestFocus();

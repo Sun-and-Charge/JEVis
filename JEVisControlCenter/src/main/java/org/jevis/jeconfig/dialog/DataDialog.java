@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -52,6 +53,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
@@ -308,8 +310,8 @@ public class DataDialog extends Dialog {
 
         TableView<DataSample> changedView = new TableView<>();
         changedView.setEditable(true);
-        changedView.setMinHeight(360);
-        changedView.setMinWidth(650);
+        changedView.setPrefSize(WindowSize.fitWidth(JEConfig.getStage(), 650), WindowSize.scaled(360));
+        changedView.setMinSize(400, 150);
         changedView.getColumns().setAll(oldValueColumn, newValueColumn, commitChangeColumn);
         changedView.getItems().setAll(changedSamples);
 
@@ -320,8 +322,8 @@ public class DataDialog extends Dialog {
 
         TableView<DataSample> deleteView = new TableView<>();
         deleteView.setEditable(true);
-        deleteView.setMinHeight(360);
-        deleteView.setMinWidth(650);
+        deleteView.setPrefSize(WindowSize.fitWidth(JEConfig.getStage(), 650), WindowSize.scaled(360));
+        deleteView.setMinSize(400, 150);
         deleteView.getColumns().setAll(deleteColumn, commitDeleteColumn);
         deleteView.getItems().setAll(deleteList);
 
@@ -334,6 +336,7 @@ public class DataDialog extends Dialog {
         Stage stage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
+        WindowSize.keepOnScreen(stage);
 
         Label headerText = new Label(I18n.getInstance().getString("dialog.data.confirm.message"));
 

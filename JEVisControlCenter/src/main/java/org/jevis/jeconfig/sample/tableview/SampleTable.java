@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.object.ValueFormat;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.ImageViewerDialog;
 import org.jevis.jeconfig.dialog.PDFViewerDialog;
@@ -78,6 +79,10 @@ public class SampleTable extends TableView<TableSample> {
     private final ObservableList<TableSample> data = FXCollections.observableArrayList();
     private final DateTimeZone dateTimeZone;
     private final NumberFormat nf = NumberFormat.getInstance(I18n.getInstance().getLocale());
+    /**
+     * Format of the values while they are not edited, see {@link #valueDisplayFormat(JEVisAttribute)}
+     */
+    private final NumberFormat displayFormat;
     private final DoubleValidator validator = DoubleValidator.getInstance();
     /**
      * Text of the "Data Notes" objects of the attribute's object, by timestamp in millis (#2238)
@@ -98,6 +103,7 @@ public class SampleTable extends TableView<TableSample> {
         this.attribute = attribute;
         this.dateTimeZone = dateTimeZone;
         this.dateViewFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ssZ").withZone(dateTimeZone);
+        this.displayFormat = valueDisplayFormat(attribute);
 
         try {
             if (attribute.getObject().getDataSource().getCurrentUser().canWrite(attribute.getObject().getID())) {
@@ -695,6 +701,21 @@ public class SampleTable extends TableView<TableSample> {
 
 
     /**
+     * Values of data rows are shown with the decimal places of the data row (upstream issue #1194), other numbers with
+     * full precision. While a value is edited it is always shown with full precision.
+     */
+    private NumberFormat valueDisplayFormat(JEVisAttribute attribute) {
+        try {
+            if (attribute != null && "Value".equals(attribute.getName()) && attribute.getObject() != null) {
+                return ValueFormat.numberFormat(attribute.getObject());
+            }
+        } catch (Exception ex) {
+            logger.warn("Could not determine decimal places of attribute {}", attribute, ex);
+        }
+        return nf;
+    }
+
+    /**
      * Create an callback for an Double based sample
      *
      * @return
@@ -715,14 +736,23 @@ public class SampleTable extends TableView<TableSample> {
                             TableSample tableSample = (TableSample) getTableRow().getItem();
                             JFXTextField textField = new JFXTextField();
                             setDefaultFieldStyle(this, textField);
+                            /* true while the text is replaced by the display or edit format, not by the user */
+                            boolean[] formatting = {false};
 
                             try {
-                                textField.setText(nf.format(tableSample.getJEVisSample().getValueAsDouble()));
+                                formatting[0] = true;
+                                Object value = tableSample.getValue();
+                                textField.setText(displayFormat.format(value instanceof Number ? value : tableSample.getJEVisSample().getValueAsDouble()));
                             } catch (JEVisException e) {
                                 e.printStackTrace();
+                            } finally {
+                                formatting[0] = false;
                             }
 
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
+                                if (formatting[0]) {
+                                    return;
+                                }
                                 try {
                                     if (!oldValue.equals(newValue)) {
                                         tableSample.setValue(nf.parse(newValue).doubleValue());
@@ -741,12 +771,14 @@ public class SampleTable extends TableView<TableSample> {
                                 }
                             });
                             textField.focusedProperty().addListener((observable, oldValue, newValue) -> {
-                                if (!newValue) {
-                                    try {
-                                        textField.setText(nf.format(tableSample.getValue()));
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
+                                /* full precision while editing, the decimal places of the data row otherwise */
+                                try {
+                                    formatting[0] = true;
+                                    textField.setText((newValue ? nf : displayFormat).format(tableSample.getValue()));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    formatting[0] = false;
                                 }
                             });
 

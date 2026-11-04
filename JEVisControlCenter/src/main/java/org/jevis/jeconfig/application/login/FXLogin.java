@@ -875,7 +875,9 @@ public class FXLogin extends AnchorPane {
         leftSpacer.setId("fxlogin-body-left");
         rightSpacer.setId("fxlogin-body-right");
 
-        leftSpacer.setMinWidth(200);//todo 20%
+        // 200px when there is room, may shrink on small screens or with 125 % scaling (#1768)
+        leftSpacer.setPrefWidth(200);
+        leftSpacer.setMinWidth(20);
 
         HBox body = new HBox();
         body.setId("fxlogin-body");
@@ -1224,7 +1226,9 @@ public class FXLogin extends AnchorPane {
         AnchorPane.setLeftAnchor(this.progress, 100d);
         rightSpacer.getChildren().setAll(this.progress);
 
-        leftSpacer.setMinWidth(200);//todo 20%
+        // 200px when there is room, may shrink on small screens or with 125 % scaling (#1768)
+        leftSpacer.setPrefWidth(200);
+        leftSpacer.setMinWidth(20);
 
         Node authForm = buildAuthForm();
 

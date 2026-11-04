@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -67,6 +68,8 @@ public abstract class BasicEditor implements AttributeEditor {
     private boolean readonly = false;
     private Object finalNewValue;
     private boolean initialized = false;
+    /* true while the shown text is replaced by the display or edit format, not by the user */
+    private boolean formatting = false;
 
     /**
      * @param att
@@ -87,7 +90,7 @@ public abstract class BasicEditor implements AttributeEditor {
 
         try {
             if (this.orgSample != null) {
-                valueField.setText(formatSample(this.orgSample));
+                setFormattedText(valueField, formatSampleForDisplay(this.orgSample));
                 this.isValid.setValue(true);
 
                 Tooltip tt = new Tooltip("TimeStamp: " +
@@ -120,7 +123,22 @@ public abstract class BasicEditor implements AttributeEditor {
             }
         }
 
+        /* the value is edited with full precision and shown in the display format otherwise, while unchanged */
+        valueField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (this.orgSample == null || hasChanged()) {
+                return;
+            }
+            try {
+                setFormattedText(valueField, newValue ? formatSample(this.orgSample) : formatSampleForDisplay(this.orgSample));
+            } catch (Exception ex) {
+                logger.catching(ex);
+            }
+        });
+
         valueField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (formatting) {
+                return;
+            }
             if (!newValue.equals(oldValue)) {
                 try {
                     if ((valueField.getText().isEmpty() && validateEmptyValue())
@@ -144,6 +162,15 @@ public abstract class BasicEditor implements AttributeEditor {
         });
 
         return hbox;
+    }
+
+    private void setFormattedText(JFXTextField valueField, String text) {
+        try {
+            formatting = true;
+            valueField.setText(text);
+        } finally {
+            formatting = false;
+        }
     }
 
     public boolean isOtherUnit(JEVisUnit unit) {
@@ -241,6 +268,13 @@ public abstract class BasicEditor implements AttributeEditor {
     public abstract String formatValue(Object value) throws ParseException, JEVisException;
 
     public abstract String formatSample(JEVisSample value) throws ParseException, JEVisException;
+
+    /**
+     * @return the sample as shown while it is not edited, by default the same as {@link #formatSample(JEVisSample)}
+     */
+    public String formatSampleForDisplay(JEVisSample value) throws ParseException, JEVisException {
+        return formatSample(value);
+    }
 
     public abstract Object parseValue(String value) throws ParseException;
 
