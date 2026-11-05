@@ -713,6 +713,7 @@ public interface JC {
         String a_Value = "Value";
         String a_Period = "Period";
         String a_Medium = "Medium";
+        String a_DecimalPlaces = "Decimal Places";
 
         interface CleanData {
             String name = "Clean Data";

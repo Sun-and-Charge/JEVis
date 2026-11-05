@@ -58,6 +58,7 @@ import org.jevis.jeconfig.tool.Calculations;
 import org.jevis.jeconfig.tool.CleanDatas;
 import org.jevis.jeconfig.tool.CreateAlarms;
 import org.jevis.jeconfig.tool.dwdbrowser.DWDBrowser;
+import org.jevis.jeconfig.tool.permission.PermissionMenu;
 import org.joda.time.DateTime;
 
 import java.io.File;
@@ -318,6 +319,9 @@ public class JEVisTreeContextMenu extends ContextMenu {
                     if (obj.getAttribute("Value") != null) {
                         getItems().add(buildManualSample());
                     }
+
+                    /* permission tools for Sys Admins on organisations and buildings (OpenJEVis #1211) */
+                    getItems().addAll(PermissionMenu.treeItems(obj));
                 }
 
 

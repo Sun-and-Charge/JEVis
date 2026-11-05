@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 /**
  * @author fs
@@ -84,10 +86,11 @@ public class NewClassDialog {
         Scene scene = new Scene(root);
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
-        stage.setWidth(350);
-        stage.setHeight(230);
+        // width relative to the screen, height from the content (#1768)
+        root.setPrefWidth(WindowSize.fitWidth(owner, 334));
+        WindowSize.keepOnScreen(stage);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(false);
+        stage.setResizable(true);
 
         HBox buttonPanel = new HBox();
 

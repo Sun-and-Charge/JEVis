@@ -1777,7 +1777,7 @@ public class XYChart implements Chart {
                         String formattedDouble = null;
                         if (!serie.getSingleRow().isStringData()) {
                             valueAsDouble = sample.getValueAsDouble();
-                            formattedDouble = nf.format(valueAsDouble);
+                            formattedDouble = serie.getNf().format(valueAsDouble);
                             String finalFormattedDouble = formattedDouble;
                             Platform.runLater(() -> tableEntry.setValue(finalFormattedDouble + " " + unit));
                         } else {

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -42,6 +43,7 @@ import org.controlsfx.control.spreadsheet.*;
 import org.jevis.api.*;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.tool.ImageConverter;
 
 import javax.measure.BinaryPrefix;
@@ -261,10 +263,8 @@ public class EditTable {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initOwner(owner);
         stage.setScene(scene);
-        stage.setWidth(1250);
-        stage.setHeight(800);
+        WindowSize.apply(stage, owner, 1250, 800, 700, 400);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(true);
         stage.showAndWait();
 
         return response;

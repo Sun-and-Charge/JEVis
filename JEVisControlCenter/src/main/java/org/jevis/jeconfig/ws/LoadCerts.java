@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -36,7 +37,6 @@ import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 
@@ -59,34 +59,21 @@ public class LoadCerts extends Application {
     public void importCertificate(URL destinationURL, String keystore, String pw, boolean isUI, boolean autoAccept) throws Exception {
         String host = destinationURL.getHost();
         char[] passphrase = pw.toCharArray();
-        ;
-        boolean isQuiet = false;
+        boolean isQuiet = autoAccept;
 
-        File file = null;
-        if (keystore != null) {
-            file = new File(keystore);
-        } else {
-            file = new File("");
-        }
-
-        logger.debug("File: {} canRead: {}", file, file.canRead());
-        if (file.isFile() == false) {
-            logger.debug("Error: keystore file not found");
-            char SEP = File.separatorChar;
-            File dir = new File(System.getProperty("java.home") + SEP + "lib" + SEP + "security");
-            file = new File(dir, "jssecacerts");
-            if (file.isFile() == false) {
-                file = new File(dir, "cacerts");
-                keystore = file.getAbsolutePath();
+        /* the trust store of the user (accepted certificates) or the one of the Java installation; written is only the
+         * one of the user, the Java installation may need administrator rights (C:\Program Files) */
+        KeyStore ks;
+        if (keystore != null && new File(keystore).isFile()) {
+            ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            try (InputStream in = new FileInputStream(keystore)) {
+                ks.load(in, passphrase);
             }
+        } else {
+            ks = UserTrustStore.loadCurrent();
         }
 
         logger.debug("host: {}, Keystore: {}", host, keystore);
-
-        InputStream in = new FileInputStream(keystore);
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(in, passphrase);
-        in.close();
 
         SSLContext context = SSLContext.getInstance("TLS");
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -96,9 +83,11 @@ public class LoadCerts extends Application {
         context.init(null, new TrustManager[]{tm}, null);
         SSLSocketFactory factory = context.getSocketFactory();
 
-        logger.debug("Opening connection to: {}, Port: {}", host, destinationURL.getPort());
+        /* "https://host" without a port has getPort() == -1 */
+        int port = destinationURL.getPort() > 0 ? destinationURL.getPort() : destinationURL.getDefaultPort();
+        logger.debug("Opening connection to: {}, Port: {}", host, port);
 
-        SSLSocket socket = (SSLSocket) factory.createSocket(host, destinationURL.getPort());
+        SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
         socket.setSoTimeout(10000);
 
         try {
@@ -164,15 +153,10 @@ public class LoadCerts extends Application {
         }
         if (isQuiet || userSasYes) {
             X509Certificate cert = chain[0];
-            String alias = String.format(host + "-" + DateTimeFormatter.ofPattern("yyyyMMdd"), DateTime.now());
-            ks.setCertificateEntry(alias, cert);
-
-            OutputStream out = new FileOutputStream(keystore);
-            ks.store(out, passphrase);
-            out.close();
-
+            String alias = host + "-" + DateTime.now().toString("yyyyMMdd");
+            /* stored for the current user and used right away, no restart needed */
+            UserTrustStore.addCertificate(alias, cert);
             logger.info("cert: {}", cert);
-            System.exit(0);
         }
 
 

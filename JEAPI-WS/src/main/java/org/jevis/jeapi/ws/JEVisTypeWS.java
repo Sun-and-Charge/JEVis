@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI-WS.
  * <p>
@@ -25,6 +26,9 @@ import tech.units.indriya.AbstractUnit;
 
 
 /**
+ * Attribute type of a {@link JEVisClassWS}. Types are stored as part of their class: {@link #commit()} and
+ * {@link #delete()} save the whole class (see {@link JEVisClassWS#commit()}).
+ *
  * @author fs
  */
 public class JEVisTypeWS implements JEVisType {
@@ -32,18 +36,50 @@ public class JEVisTypeWS implements JEVisType {
     private String jclass = null;
     private final JEVisDataSourceWS ds;
     private final JsonType json;
+    /**
+     * the class instance this type belongs to, may be {@code null} (then the class is looked up by name)
+     */
+    private JEVisClassWS owner;
 
     public JEVisTypeWS(JEVisDataSourceWS ds, JsonType json, String jclass) {
+        this(ds, json, jclass, null);
+    }
+
+    public JEVisTypeWS(JEVisDataSourceWS ds, JsonType json, String jclass, JEVisClassWS owner) {
         this.jclass = jclass;
         this.ds = ds;
         this.json = json;
+        this.owner = owner;
     }
 
     public JEVisTypeWS(JEVisDataSourceWS ds, String name, String jclass) {
+        this(ds, name, jclass, null);
+    }
+
+    public JEVisTypeWS(JEVisDataSourceWS ds, String name, String jclass, JEVisClassWS owner) {
         this.json = new JsonType();
         this.json.setName(name);
         this.jclass = jclass;
         this.ds = ds;
+        this.owner = owner;
+    }
+
+    /**
+     * @return the JSON of this type (changes are visible to the owning class)
+     */
+    JsonType getJson() {
+        return json;
+    }
+
+    private JEVisClassWS getOwner() throws JEVisException {
+        if (owner == null) {
+            JEVisClass jevisClass = ds.getJEVisClass(jclass);
+            if (!(jevisClass instanceof JEVisClassWS)) {
+                throw new JEVisException("The class '" + jclass + "' of the type '" + getName() + "' does not exist.", 404);
+            }
+            owner = (JEVisClassWS) jevisClass;
+        }
+        return owner;
     }
 
     @Override
@@ -138,9 +174,18 @@ public class JEVisTypeWS implements JEVisType {
         json.setDescription(discription);
     }
 
+    /**
+     * Removes this type from its class and saves the class. The web service refuses this while objects have
+     * values in this attribute.
+     *
+     * @throws JEVisException with the message of the web service if the class could not be saved
+     */
     @Override
-    public boolean delete() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean delete() throws JEVisException {
+        JEVisClassWS jevisClass = getOwner();
+        jevisClass.deleteType(getName());
+        jevisClass.commit();
+        return true;
     }
 
     @Override
@@ -148,9 +193,32 @@ public class JEVisTypeWS implements JEVisType {
         return ds;
     }
 
+    /**
+     * Saves the class of this type, including this type.
+     *
+     * @throws JEVisException with the message of the web service if the class could not be saved
+     */
     @Override
     public void commit() throws JEVisException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        JEVisClassWS jevisClass = getOwner();
+        boolean contained = false;
+        for (JEVisType type : jevisClass.getTypes()) {
+            if (type == this) {
+                contained = true;
+                break;
+            }
+        }
+        if (!contained) {
+            JEVisType existing = jevisClass.getType(getName());
+            if (existing != null) {
+                jevisClass.getTypes().remove(existing);
+            }
+            if (json.getJevisClass() == null) {
+                json.setJevisclass(jclass);
+            }
+            jevisClass.getTypes().add(this);
+        }
+        jevisClass.commit();
     }
 
     @Override
@@ -179,9 +247,21 @@ public class JEVisTypeWS implements JEVisType {
         return jclass;
     }
 
+    /**
+     * @return {@code true} if the type is marked as inherited or the super class of its class has a type with the
+     * same name
+     */
     @Override
     public boolean isInherited() {
-        return json.getInherited();
+        if (json.getInherited()) {
+            return true;
+        }
+        try {
+            JEVisClass superClass = getOwner().getInheritance();
+            return superClass != null && superClass.getType(getName()) != null;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     @Override

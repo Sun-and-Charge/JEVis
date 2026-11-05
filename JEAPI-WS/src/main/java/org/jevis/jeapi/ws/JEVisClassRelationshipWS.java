@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI-WS.
  * <p>
@@ -107,5 +108,23 @@ public class JEVisClassRelationshipWS implements org.jevis.api.JEVisClassRelatio
                 "  to=" + json.getEnd() +
                 "  type=" + json.getType() +
                 '}';
+    }
+
+    /**
+     * Two class relationships are equal if start, end and type are equal.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JEVisClassRelationshipWS)) return false;
+        JEVisClassRelationshipWS other = (JEVisClassRelationshipWS) o;
+        return json.getType() == other.json.getType()
+                && java.util.Objects.equals(json.getStart(), other.json.getStart())
+                && java.util.Objects.equals(json.getEnd(), other.json.getEnd());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(json.getStart(), json.getEnd(), json.getType());
     }
 }

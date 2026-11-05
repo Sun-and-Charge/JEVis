@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -37,6 +38,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -47,6 +49,7 @@ import org.jevis.commons.application.ApplicationInfo;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.awt.*;
 import java.io.PrintWriter;
@@ -81,10 +84,12 @@ public class ExceptionDialog {
         Scene scene = new Scene(root);
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
-        stage.setWidth(500);
-        stage.setHeight(250);
+        // width relative to the screen, height from the content (text must not be clipped, #1768)
+        root.setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 484));
+        root.setMinWidth(300);
+        WindowSize.keepOnScreen(stage);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(false);
+        stage.setResizable(true);
 
         BorderPane header = new BorderPane();
 //        header.setStyle("-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);");
@@ -135,6 +140,7 @@ public class ExceptionDialog {
         Label mewssage = new Label(message);
         messagePanel.getChildren().add(mewssage);
         mewssage.setWrapText(true);
+        mewssage.setMinHeight(Region.USE_PREF_SIZE);
         mewssage.setAlignment(Pos.CENTER_LEFT);
 
         Separator sep = new Separator(Orientation.HORIZONTAL);
@@ -255,10 +261,8 @@ public class ExceptionDialog {
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setWidth(600);
-        stage.setHeight(350);
+        WindowSize.apply(stage, owner, 600, 350, 400, 250);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(false);
 
         HBox infoBox = new HBox();
         JFXTextArea info = new JFXTextArea(exceptionToString(ex));
@@ -267,6 +271,8 @@ public class ExceptionDialog {
         info.setPrefColumnCount(50);
         info.setPrefRowCount(20);
         infoBox.getChildren().add(info);
+        HBox.setHgrow(info, Priority.ALWAYS);
+        VBox.setVgrow(infoBox, Priority.ALWAYS);
 
         HBox buttonPanel = new HBox();
 

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -57,6 +58,7 @@ import org.jevis.jeconfig.application.Chart.ChartTools;
 import org.jevis.jeconfig.application.Chart.TimeFrame;
 import org.jevis.jeconfig.application.tools.DisabledItemsComboBox;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
 import org.joda.time.DateTime;
 
@@ -728,8 +730,9 @@ public class LoadAnalysisDialog extends Dialog {
 
         GridPane.setFillWidth(analysisListView, true);
         GridPane.setFillHeight(analysisListView, true);
-        if (!ChartTools.isMultiSite(ds) && !ChartTools.isMultiDir(ds)) analysisListView.setMinWidth(600d);
-        else analysisListView.setMinWidth(900d);
+        if (!ChartTools.isMultiSite(ds) && !ChartTools.isMultiDir(ds)) analysisListView.setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 600d, 450d));
+        else analysisListView.setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 900d, 450d));
+        analysisListView.setMinWidth(300d);
 //            analysisListView.setMaxWidth(600d);
         GridPane.setHgrow(analysisListView, Priority.ALWAYS);
         GridPane.setVgrow(analysisListView, Priority.ALWAYS);

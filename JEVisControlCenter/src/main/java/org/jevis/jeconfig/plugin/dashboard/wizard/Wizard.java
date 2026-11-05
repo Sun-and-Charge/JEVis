@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -34,6 +35,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.DialogHeader;
 import org.jevis.jeconfig.plugin.dashboard.widget.Widget;
 
@@ -167,12 +169,14 @@ public class Wizard {
         AnchorPane.setLeftAnchor(this.contentPane, 5.0);
         AnchorPane.setRightAnchor(this.contentPane, 5.0);
 
-        Scene scene = new Scene(this.rootPane, 600, 700);
+        Scene scene = new Scene(this.rootPane, WindowSize.fitWidth(null, 600), WindowSize.fitHeight(null, 700));
         TopMenu.applyActiveTheme(scene);
         Stage newWindow = new Stage();
 
         newWindow.setTitle("dashboard Wizard");
         newWindow.setScene(scene);
+        newWindow.setMinWidth(WindowSize.fitWidth(null, 400));
+        newWindow.setMinHeight(WindowSize.fitHeight(null, 400));
         newWindow.toFront();
 
         BooleanProperty isFinised = new SimpleBooleanProperty(false);

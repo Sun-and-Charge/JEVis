@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -38,6 +39,7 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.EnterDataDialog;
 import org.jevis.jeconfig.plugin.meters.event.PrecisionEvent;
 import org.jevis.jeconfig.plugin.meters.event.PrecisionEventHandler;
+import org.jevis.commons.object.ValueFormat;
 
 public class LastRawValueCell<T> implements Callback<TableColumn<T, LastRawValuePojo>, TableCell<T, LastRawValuePojo>> {
     private static final Logger logger = LogManager.getLogger(LastRawValueCell.class);
@@ -102,7 +104,7 @@ public class LastRawValueCell<T> implements Callback<TableColumn<T, LastRawValue
     }
 
     private String getString(double value, int precision, String unitLabel) {
-        return (String.format("%.0" + precision + "f", value) + " " + unitLabel);
+        return ValueFormat.numberFormat(precision).format(value) + " " + unitLabel;
     }
 
     protected void addEventManSampleAction(JEVisAttribute targetAttribute, JFXButton buttonToAddEvent) {

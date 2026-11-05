@@ -43,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.DialogHeader;
 
 /**
@@ -81,10 +82,11 @@ public class PasswordDialog {
         Scene scene = new Scene(root);
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
-        stage.setWidth(400);
-        stage.setHeight(300);
+        // width relative to the screen, height from the content (#1768)
+        root.setPrefWidth(WindowSize.fitWidth(owner, 384));
+        WindowSize.keepOnScreen(stage);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(false);
+        stage.setResizable(true);
 
         HBox buttonPanel = new HBox();
 

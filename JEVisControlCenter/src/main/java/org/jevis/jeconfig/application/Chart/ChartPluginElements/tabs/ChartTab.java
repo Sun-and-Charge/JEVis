@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -82,6 +83,9 @@ public class ChartTab extends Tab {
     private final NumberSpinner maxFractionDigits;
     private final Label minFractionDigitsLabel = new Label(I18n.getInstance().getString("plugin.graph.chart.selectiondialog.minfractiondigits"));
     private final Label maxFractionDigitsLabel = new Label(I18n.getInstance().getString("plugin.graph.chart.selectiondialog.maxfractiondigits"));
+    /* the values of each data row are shown with the decimal places of the data row (#1194) */
+    private final Label fractionDigitsAutoLabel = new Label(I18n.getInstance().getString("plugin.graph.chart.selectiondialog.fractiondigitsauto"));
+    private final JFXCheckBox fractionDigitsAuto = new JFXCheckBox();
     private final Label labelChartType = new Label(I18n.getInstance().getString("graph.tabs.tab.charttype"));
     private final ChartTypeComboBox chartTypeComboBox;
     private final Label labelGroupingInterval = new Label(I18n.getInstance().getString("graph.tabs.tab.groupinginterval"));
@@ -127,6 +131,12 @@ public class ChartTab extends Tab {
             this.chartModel.setGroupingInterval(newValue.doubleValue());
         }
     };
+    private final ChangeListener<Boolean> fractionDigitsAutoChangeListener = ((observable, oldValue, newValue) -> {
+        if (chartModel != null && !newValue.equals(oldValue)) {
+            this.chartModel.setFractionDigitsAuto(newValue);
+            disableFractionDigits(newValue);
+        }
+    });
     private final ChangeListener<Boolean> fixYAxisToZeroChangeListener = ((observable, oldValue, newValue) -> {
         if (chartModel != null && !newValue.equals(oldValue)) {
             this.chartModel.setFixYAxisToZero(newValue);
@@ -262,6 +272,9 @@ public class ChartTab extends Tab {
         int maxFracs = chartModel.getMaxFractionDigits();
         maxFractionDigits = new NumberSpinner(new BigDecimal(maxFracs), new BigDecimal(1));
 
+        fractionDigitsAuto.setSelected(chartModel.isAutoFractionDigits());
+        disableFractionDigits(fractionDigitsAuto.isSelected());
+
         fixYAxisToZero.setSelected(chartModel.isFixYAxisToZero());
         enableColoring.setSelected(chartModel.isColoringEnabled());
         showColumnSums.setSelected(chartModel.isShowColumnSums());
@@ -372,6 +385,10 @@ public class ChartTab extends Tab {
 
         chartSettings.add(labelChartType, 0, row);
         chartSettings.add(chartTypeComboBox, 1, row);
+        row++;
+
+        chartSettings.add(fractionDigitsAutoLabel, 0, row);
+        chartSettings.add(fractionDigitsAuto, 1, row);
         row++;
 
         chartSettings.add(minFractionDigitsLabel, 0, row);
@@ -588,10 +605,19 @@ public class ChartTab extends Tab {
         enableListener();
     }
 
+    /**
+     * The fraction digits of the chart are only used when the decimal places of the data rows are not (#1194)
+     */
+    private void disableFractionDigits(boolean disable) {
+        minFractionDigits.setDisable(disable);
+        maxFractionDigits.setDisable(disable);
+    }
+
     private void enableListener() {
         groupingInterval.numberProperty().addListener(groupingIntervalChangeListener);
         minFractionDigits.numberProperty().addListener(minFractionDigitsChangeListener);
         maxFractionDigits.numberProperty().addListener(maxFractionChangeListener);
+        fractionDigitsAuto.selectedProperty().addListener(fractionDigitsAutoChangeListener);
         fixYAxisToZero.selectedProperty().addListener(fixYAxisToZeroChangeListener);
         showColumnSums.selectedProperty().addListener(showColumnSumsChangeListener);
         showRowSums.selectedProperty().addListener(showRowSumsChangeListener);
@@ -602,6 +628,7 @@ public class ChartTab extends Tab {
         groupingInterval.numberProperty().removeListener(groupingIntervalChangeListener);
         minFractionDigits.numberProperty().removeListener(minFractionDigitsChangeListener);
         maxFractionDigits.numberProperty().removeListener(maxFractionChangeListener);
+        fractionDigitsAuto.selectedProperty().removeListener(fractionDigitsAutoChangeListener);
         fixYAxisToZero.selectedProperty().removeListener(fixYAxisToZeroChangeListener);
         showColumnSums.selectedProperty().removeListener(showColumnSumsChangeListener);
         showRowSums.selectedProperty().removeListener(showRowSumsChangeListener);

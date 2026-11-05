@@ -195,8 +195,11 @@ public class ValueWidget extends Widget implements DataModelWidget {
 
     private void updateText() {
         logger.debug("updateText: {}", this.getConfig().getTitle());
-        this.nf.setMinimumFractionDigits(this.config.getDecimals());
-        this.nf.setMaximumFractionDigits(this.config.getDecimals());
+        /* explicit decimals of the widget, otherwise those of the data row (#1194) */
+        int decimals = getDecimals(this.sampleHandler != null && !this.sampleHandler.getChartDataRows().isEmpty()
+                ? this.sampleHandler.getChartDataRows().get(0) : null);
+        this.nf.setMinimumFractionDigits(decimals);
+        this.nf.setMaximumFractionDigits(decimals);
 
         StringProperty valueText = new SimpleStringProperty();
         if (displayedSample.getValue().isNaN()) {

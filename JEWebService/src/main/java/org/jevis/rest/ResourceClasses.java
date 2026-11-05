@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2013 - 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEWebService.
  * <p>
@@ -19,13 +20,14 @@
  */
 package org.jevis.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisException;
-import org.jevis.commons.json.JsonTools;
+import org.jevis.commons.ws.json.JsonAttribute;
 import org.jevis.commons.ws.json.JsonJEVisClass;
+import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.sql.Config;
+import org.jevis.commons.ws.sql.JEVisClassHelper;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
 import javax.annotation.PostConstruct;
@@ -37,9 +39,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.*;
 
 /**
  * Jersey REST resource that handles JEVisClass (schema) CRUD operations and icon serving.
@@ -48,7 +50,8 @@ import java.util.List;
  * <ul>
  *   <li>{@code GET    /classes}          — list all JEVisClasses</li>
  *   <li>{@code GET    /classes/{name}}   — fetch one class by name</li>
- *   <li>{@code POST   /classes/{name}}   — create or update a class (sysadmin only)</li>
+ *   <li>{@code POST   /classes/{name}}   — create or update a class incl. its types and
+ *       relationships (sysadmin only, persisted in the class JSON files)</li>
  *   <li>{@code DELETE /classes/{name}}   — delete a class definition (sysadmin only)</li>
  *   <li>{@code GET    /classes/{name}/icon} — fetch the class icon image</li>
  *   <li>{@code POST   /classes/{name}/icon} — upload a new class icon (sysadmin only)</li>
@@ -60,7 +63,6 @@ import java.util.List;
 public class ResourceClasses {
 
     private static final Logger logger = LogManager.getLogger(ResourceClasses.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private SQLDataSource ds = null;
     private List<File> classIconFiles;
 
@@ -149,18 +151,23 @@ public class ResourceClasses {
     }
 
     /**
-     * Deletes the JEVisClass definition file for the given class name.
-     * Only system administrators may call this endpoint.
+     * Deletes the JEVisClass definition file for the given class name, its icons and its
+     * relationships in the files of other classes. Only system administrators may call this
+     * endpoint.
+     *
+     * <p>The class is not deleted (409 CONFLICT, plain text message) as long as other classes
+     * inherit from it or objects (also deleted ones) of the class exist.
      *
      * @param httpHeaders HTTP headers (used for authentication)
      * @param request     JAX-RS request context
      * @param url         URI info context
      * @param name        class name to delete
-     * @return 200 OK on success, 401 UNAUTHORIZED, 404 NOT FOUND, or 500 on error
+     * @return 200 OK on success, 401 UNAUTHORIZED, 403 FORBIDDEN, 404 NOT FOUND, 409 CONFLICT, or 500 on error
      */
     @DELETE
     @Logged
     @Path("/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
     public Response deleteJEVisClass(
             @Context HttpHeaders httpHeaders,
             @Context Request request,
@@ -170,33 +177,57 @@ public class ResourceClasses {
         try {
             ds = new SQLDataSource(httpHeaders, request, url);
 
+            if (!ds.getUserManager().isSysAdmin()) {
+                return Response.status(Response.Status.FORBIDDEN).entity("Only system administrators can delete classes.").build();
+            }
 
-            JsonJEVisClass jclass = Config.getClassCache().get(name);
-            if (jclass != null || ds.getUserManager().isSysAdmin()) {
-                //TODO: delete orphaned relationships on other classes
-//                for (Map.Entry<String, JsonJEVisClass> jc : Config.getClassCache().entrySet()) {
-//                    //delete.relationship with delete class
-//                }
-
-                for (File file : Config.getClassDir().listFiles()) {
-                    if (file.getName().equalsIgnoreCase(name) && file.canWrite()) {
-                        file.delete();
-                        //TODO: Also delete Icon
-                        return Response.ok().build();
-                    }
+            synchronized (ClassFileStore.LOCK) {
+                ClassFileStore store = new ClassFileStore(Config.getClassDir());
+                Map<String, File> index = store.index();
+                File file = index.get(name);
+                if (file == null) {
+                    return Response.status(Response.Status.NOT_FOUND).entity("The class '" + name + "' does not exist.").build();
                 }
 
-                return Response.status(Response.Status.NOT_FOUND).build();
+                Set<String> heirs = ClassDefinitions.findDirectHeirs(name, Config.getClassCache().values());
+                if (!heirs.isEmpty()) {
+                    return Response.status(Response.Status.CONFLICT)
+                            .entity("The class '" + name + "' cannot be deleted because other classes inherit from it: " + String.join(", ", heirs))
+                            .build();
+                }
 
-            } else {
-                return Response.status(Response.Status.UNAUTHORIZED).build();
+                int objects = 0;
+                List<JsonObject> allObjects = new ArrayList<>(ds.getObjects());
+                allObjects.addAll(ds.getDeletedObjects());
+                for (JsonObject object : allObjects) {
+                    if (name.equals(object.getJevisClass())) {
+                        objects++;
+                    }
+                }
+                if (objects > 0) {
+                    return Response.status(Response.Status.CONFLICT)
+                            .entity("The class '" + name + "' cannot be deleted because " + objects + " objects (including deleted objects) use it.")
+                            .build();
+                }
+
+                Files.delete(file.toPath());
+                store.deleteIcons(name, null);
+                List<String> changed = store.removeRelationshipsFromOtherFiles(index, name, Collections.emptySet());
+                logger.info("Class '{}' deleted, relationships removed from: {}", name, changed);
+
+                Config.reloadClassCache();
+                new File(FileCache.CLASS_ICON_FILE).delete();
             }
+            return Response.ok().build();
 
         } catch (JEVisException jex) {
             logger.catching(jex);
             return Response.serverError().build();
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
+        } catch (Exception ex) {
+            logger.error("Error while deleting class '{}'", name, ex);
+            return Response.serverError().entity(String.valueOf(ex.getMessage())).build();
         } finally {
             Config.CloseDS(ds);
         }
@@ -204,20 +235,31 @@ public class ResourceClasses {
     }
 
     /**
-     * Creates or replaces the JEVisClass definition for the given name.
-     * Only system administrators may call this endpoint; changes are immediately reflected in the
-     * class cache.
+     * Creates or replaces the JEVisClass definition for the given name. Only system
+     * administrators may call this endpoint.
+     *
+     * <p>The body is the complete class as the client knows it (as served by {@code GET}, i.e.
+     * including inherited types and relationships stored in other class files). It is reduced to
+     * the content of the class file by {@link ClassDefinitions#merge}: types inherited from the
+     * super class are not stored; relationships of the class which are missing in the body are
+     * also removed from the files of the other classes. New classes are stored next to the file
+     * of their super class. The class cache is reloaded afterwards.
+     *
+     * <p>Renaming a class is not supported (the name in the path has to match the body). Own
+     * types which are removed or whose primitive type changes are refused with 409 CONFLICT as
+     * long as objects of the class or its heirs have samples in such an attribute.
      *
      * @param httpHeaders HTTP headers (used for authentication)
      * @param request     JAX-RS request context
      * @param url         URI info context
      * @param name        class name to create or replace
      * @param input       JSON body of the {@link org.jevis.commons.ws.json.JsonJEVisClass}
-     * @return 200 OK with the stored class, 401 UNAUTHORIZED, or 500 on error
+     * @return 200 OK with the stored (completed) class, 400 BAD REQUEST, 401 UNAUTHORIZED,
+     * 403 FORBIDDEN, 409 CONFLICT (plain text message), or 500 on error
      */
     @POST
     @Logged
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{name}")
     public Response postJEVisClass(
@@ -230,31 +272,105 @@ public class ResourceClasses {
         try {
             ds = new SQLDataSource(httpHeaders, request, url);
 
-            if (ds.getUserManager().isSysAdmin()) {
-//                JsonJEVisClass json = (new Gson()).fromJson(input, JsonJEVisClass.class);//parse it again to be save and to make it pretty
-                JsonJEVisClass json = OBJECT_MAPPER.readValue(input, JsonJEVisClass.class);
-//                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-                PrintWriter writer = new PrintWriter(Config.getClassDir().getAbsoluteFile() + "/" + name + ".json", "UTF-8");
-//                writer.println(gson.toJson(json));
-                JsonTools.prettyObjectMapper().writeValueAsString(json);
-                writer.close();
-
-
-                Config.getClassCache().clear();
-                return Response.ok(ds.getJEVisClass(name)).build();
-            } else {
-                return Response.status(Response.Status.UNAUTHORIZED).build();
+            if (!ds.getUserManager().isSysAdmin()) {
+                return textResponse(Response.Status.FORBIDDEN, "Only system administrators can change classes.");
             }
 
+            JsonJEVisClass json;
+            try {
+                json = ClassDefinitions.parse(input == null ? new byte[0] : input.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ex) {
+                return textResponse(Response.Status.BAD_REQUEST, "Invalid class definition: " + ex.getMessage());
+            }
+            if (json == null || !name.equals(json.getName())) {
+                return textResponse(Response.Status.BAD_REQUEST, "The class name in the path and in the body differ; renaming a class is not supported.");
+            }
+
+            synchronized (ClassFileStore.LOCK) {
+                ClassFileStore store = new ClassFileStore(Config.getClassDir());
+                Map<String, File> index = store.index();
+                File file = index.get(name);
+                JsonJEVisClass stored = file != null ? store.read(file) : null;
+
+                ClassDefinitions.MergeResult result = ClassDefinitions.merge(json, stored, Config.getClassCache());
+
+                Set<String> checkTypes = new TreeSet<>(result.getRemovedTypes());
+                checkTypes.addAll(result.getChangedPrimitiveTypes());
+                if (stored != null && !checkTypes.isEmpty()) {
+                    Map<String, Integer> used = findAttributesWithSamples(name, checkTypes);
+                    if (!used.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (Map.Entry<String, Integer> entry : used.entrySet()) {
+                            if (sb.length() > 0) sb.append(", ");
+                            sb.append("'").append(entry.getKey()).append("' (").append(entry.getValue()).append(" objects)");
+                        }
+                        return textResponse(Response.Status.CONFLICT,
+                                "The following types cannot be deleted or get another primitive type because objects have values in them: " + sb);
+                    }
+                }
+
+                if (file == null) {
+                    File superFile = result.getSuperClass() != null ? index.get(result.getSuperClass()) : null;
+                    file = store.newClassFile(name, superFile);
+                    if (file.exists()) {
+                        return textResponse(Response.Status.CONFLICT, "The file " + file.getName() + " already exists for another class.");
+                    }
+                }
+
+                store.write(file, result.getPersisted());
+                List<String> changed = store.removeRelationshipsFromOtherFiles(index, name, result.getInvolvingRelationships());
+                logger.info("Class '{}' saved to {}, relationships removed from: {}", name, file, changed);
+
+                Config.reloadClassCache();
+            }
+            return Response.ok(Config.getClassCache().get(name), MediaType.APPLICATION_JSON).build();
+
+        } catch (ClassDefinitions.ClassDefinitionException ex) {
+            return textResponse(Response.Status.fromStatusCode(ex.getStatus()), ex.getMessage());
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception jex) {
-            logger.catching(jex);
-            return Response.serverError().build();
+            logger.error("Error while saving class '{}'", name, jex);
+            return textResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error while saving the class: " + jex.getMessage());
         } finally {
             Config.CloseDS(ds);
         }
+    }
+
+    private static Response textResponse(Response.Status status, String message) {
+        return Response.status(status).entity(message).type(MediaType.TEXT_PLAIN_TYPE.withCharset("UTF-8")).build();
+    }
+
+    /**
+     * Counts, per type name, the objects (also deleted ones) of the class and its heirs which have
+     * samples in an attribute of that name.
+     */
+    private Map<String, Integer> findAttributesWithSamples(String className, Set<String> typeNames) throws JEVisException {
+        List<String> classes = new ArrayList<>();
+        classes.add(className);
+        JEVisClassHelper.findHeir(className, classes);
+        Set<String> classSet = new HashSet<>(classes);
+
+        Set<Long> objectIDs = new HashSet<>();
+        List<JsonObject> allObjects = new ArrayList<>(ds.getObjects());
+        allObjects.addAll(ds.getDeletedObjects());
+        for (JsonObject object : allObjects) {
+            if (classSet.contains(object.getJevisClass())) {
+                objectIDs.add(object.getId());
+            }
+        }
+
+        Map<String, Integer> result = new TreeMap<>();
+        if (objectIDs.isEmpty()) {
+            return result;
+        }
+        for (JsonAttribute attribute : ds.getAttributeTable().getAllAttributes()) {
+            if (objectIDs.contains(attribute.getObjectID()) && typeNames.contains(attribute.getType())
+                    && attribute.getSampleCount() > 0) {
+                result.merge(attribute.getType(), 1, Integer::sum);
+            }
+        }
+        return result;
     }
 
     /**
@@ -355,14 +471,25 @@ public class ResourceClasses {
             ds = new SQLDataSource(httpHeaders, request, url);
 
             if (!ds.getUserManager().isSysAdmin()) {
-                return Response.status(Response.Status.UNAUTHORIZED).build();
+                return Response.status(Response.Status.FORBIDDEN).build();
             }
 
             try {
-                File newFile = new File(Config.getClassDir().getAbsoluteFile() + "/" + name + ".png");
+                if (ClassDefinitions.checkClassName(name) != null) {
+                    return Response.status(Response.Status.BAD_REQUEST).entity(ClassDefinitions.checkClassName(name)).build();
+                }
                 BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
-                //TODO: maybe resize the image to an default size
-                ImageIO.write(img, "png", newFile);
+                if (img == null) {
+                    return Response.status(Response.Status.BAD_REQUEST).entity("The icon is not a readable image.").build();
+                }
+                synchronized (ClassFileStore.LOCK) {
+                    ClassFileStore store = new ClassFileStore(Config.getClassDir());
+                    /* next to the class file, other icons of the class would shadow the new one */
+                    File newFile = store.iconFile(name, store.index().get(name));
+                    //TODO: maybe resize the image to an default size
+                    ImageIO.write(img, "png", newFile);
+                    store.deleteIcons(name, newFile);
+                }
 
                 //clean cache
                 File tmpZipFile = new File(FileCache.CLASS_ICON_FILE);

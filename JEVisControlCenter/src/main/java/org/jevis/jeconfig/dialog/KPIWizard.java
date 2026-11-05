@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -42,6 +43,7 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.control.KPIVariable;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
@@ -95,7 +97,8 @@ public class KPIWizard extends Dialog {
         variablePane.setVgap(6);
         ScrollPane scrollPane = new ScrollPane(variablePane);
         scrollPane.setFitToWidth(true);
-        scrollPane.setMinSize(900, 650);
+        scrollPane.setPrefSize(WindowSize.fitWidth(JEConfig.getStage(), 900, 60), WindowSize.fitHeight(JEConfig.getStage(), 650, 250));
+        scrollPane.setMinSize(400, 200);
 
         add.setOnAction(event -> {
             KPIVariable kpiVariable = new KPIVariable(objects, objectRelations, index);

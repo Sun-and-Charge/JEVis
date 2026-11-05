@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -27,6 +28,7 @@ import org.jevis.api.JEVisSample;
 import org.jevis.commons.classes.JC;
 import org.jevis.jeconfig.plugin.meters.data.MeterData;
 import org.joda.time.DateTime;
+import org.jevis.commons.object.ValueFormat;
 
 
 public class LastRawValuePojo {
@@ -103,6 +105,7 @@ public class LastRawValuePojo {
         try {
             JEVisSample jeVisSample = meterData.getJeVisObject().getAttribute(JC.MeasurementInstrument.a_DecimalPlaces).buildSample(DateTime.now(), decimalPlaces);
             jeVisSample.commit();
+            ValueFormat.invalidateCache(meterData.getJeVisObject().getDataSource());
             meterData.load();
 
         } catch (Exception e) {

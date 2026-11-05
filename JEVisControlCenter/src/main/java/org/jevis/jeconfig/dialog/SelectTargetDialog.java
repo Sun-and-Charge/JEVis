@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -41,6 +42,7 @@ import org.jevis.jeconfig.application.jevistree.filter.FilterFactory;
 import org.jevis.jeconfig.application.jevistree.filter.JEVisTreeFilter;
 import org.jevis.jeconfig.application.jevistree.filter.ObjectAttributeFilter;
 import org.jevis.jeconfig.application.jevistree.plugin.SimpleTargetPlugin;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.util.List;
 
@@ -380,8 +382,10 @@ public class SelectTargetDialog extends Dialog {
 
 
         tree = JEVisTreeFactory.buildBasicDefault(ds, basicFilter, false);
-        tree.setMinWidth(1024);
-        tree.setMinHeight(768);
+        // relative to the screen instead of a fixed minimum, the dialog must fit at 125 % scaling (#1768)
+        tree.setPrefWidth(WindowSize.fitWidth(getOwner(), 1024, 40));
+        tree.setPrefHeight(WindowSize.fitHeight(getOwner(), 768, 160));
+        tree.setMinSize(300, 200);
 
         tree.getPlugins().add(simpleTargetPlugin);
 

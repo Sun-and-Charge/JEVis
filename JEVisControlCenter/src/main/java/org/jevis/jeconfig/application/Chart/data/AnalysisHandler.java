@@ -150,6 +150,9 @@ public class AnalysisHandler {
 
             chartModelNode.put("minFractionDigits", chartModel.getMinFractionDigits());
             chartModelNode.put("maxFractionDigits", chartModel.getMaxFractionDigits());
+            if (chartModel.getFractionDigitsAuto() != null) {
+                chartModelNode.put("fractionDigitsAuto", chartModel.getFractionDigitsAuto());
+            }
             chartModelNode.put("groupingInterval", chartModel.getGroupingInterval());
             chartModelNode.put("height", chartModel.getHeight());
 

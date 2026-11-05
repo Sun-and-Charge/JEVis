@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -43,6 +44,7 @@ import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.application.I18nWS;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.jevis.jeconfig.plugin.dtrc.*;
@@ -187,7 +189,8 @@ public class TemplateCalculationInputDialog extends Dialog {
         JFXComboBox<JEVisType> attributeSelector = new JFXComboBox<>();
 
         JFXListView<JEVisObject> listView = new JFXListView<>();
-        listView.setMinSize(450, 550);
+        listView.setPrefSize(WindowSize.fitWidth(JEConfig.getStage(), 450), WindowSize.fitHeight(JEConfig.getStage(), 550, 250));
+        listView.setMinSize(300, 200);
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> listViewCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override
             public ListCell<JEVisObject> call(ListView<JEVisObject> param) {

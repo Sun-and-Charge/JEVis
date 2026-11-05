@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -51,6 +52,7 @@ import org.jevis.commons.object.plugin.RangingValues;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.joda.time.DateTime;
 
 import java.text.NumberFormat;
@@ -149,8 +151,10 @@ public class RangingValueEditor implements AttributeEditor {
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
-        dialog.setHeight(450);
-        dialog.setWidth(620);
+        dialog.setHeight(WindowSize.fitHeight(JEConfig.getStage(), 450));
+        dialog.setWidth(WindowSize.fitWidth(JEConfig.getStage(), 620));
+        stage.setMinWidth(WindowSize.fitWidth(JEConfig.getStage(), 400));
+        stage.setMinHeight(WindowSize.fitHeight(JEConfig.getStage(), 300));
 
         for (RangingValue rangingValue : rangingValues.get().getRangingValues()) {
             Tab newTab = new Tab(String.valueOf(rangingValues.get().getRangingValues().indexOf(rangingValue)));

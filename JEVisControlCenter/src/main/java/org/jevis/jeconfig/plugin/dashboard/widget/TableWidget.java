@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -37,6 +38,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.object.ValueFormat;
 import org.jevis.jeconfig.application.tools.ColorHelper;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -113,7 +115,7 @@ public class TableWidget extends Widget implements DataModelWidget {
                 if (!results.isEmpty()) {
                     tableData.add(new TableData(
                             chartDataModel.getName(),
-                            this.nf.format(results.get(0).getValueAsDouble()),
+                            ValueFormat.numberFormat(getDecimals(chartDataModel)).format(results.get(0).getValueAsDouble()),
                             chartDataModel.getUnitLabel()));
                 } else {
                     tableData.add(new TableData(

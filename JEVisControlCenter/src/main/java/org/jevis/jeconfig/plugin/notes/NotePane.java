@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -39,6 +40,7 @@ import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeFactory;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.filter.JEVisTreeFilter;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.SelectTargetDialog;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeFieldType;
@@ -155,7 +157,7 @@ public class NotePane extends Dialog {
                 }
             });
 
-            selectTargetDialog.getDialogPane().setPrefSize(800, 1200);
+            WindowSize.apply(selectTargetDialog, 1050, 1200, 400, 300);
             selectTargetDialog.show();
         });
 

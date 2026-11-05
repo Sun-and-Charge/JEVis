@@ -46,6 +46,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config2.JsonNames;
 import org.jevis.jeconfig.plugin.dashboard.config2.Size;
@@ -240,6 +241,21 @@ public abstract class Widget extends Region {
 
     public WidgetPojo getConfig() {
         return this.config;
+    }
+
+    /**
+     * @return the decimal places for the values of a data row (upstream issue #1194): the decimal digits of the data
+     * point in this widget if set, then the explicit setting of the widget, otherwise the decimal places of the data
+     * row (see {@link WidgetPojo#isDecimalsAuto()})
+     */
+    public int getDecimals(ChartDataRow dataRow) {
+        if (dataRow != null && dataRow.getDecimalDigits() > -1) {
+            return dataRow.getDecimalDigits();
+        }
+        if (dataRow != null && this.config.isDecimalsAuto()) {
+            return dataRow.dataRowDecimals();
+        }
+        return this.config.getDecimals() != null ? this.config.getDecimals() : WidgetPojo.DEFAULT_DECIMALS;
     }
 
 
@@ -633,6 +649,9 @@ public abstract class Widget extends Region {
                 .put(JsonNames.Widget.Y_POS, this.config.getyPosition())
                 .put(JsonNames.Widget.FIXED_TIMEFRAME, this.config.getFixedTimeframe())
                 .put(JsonNames.Widget.FORCED_TIMEFRAME, this.config.getForcedTimeFrame());
+        if (this.config.getDecimalsAuto() != null) {
+            widgetNode.put(JsonNames.Widget.DECIMALS_AUTO, this.config.getDecimalsAuto());
+        }
 
         return widgetNode;
     }

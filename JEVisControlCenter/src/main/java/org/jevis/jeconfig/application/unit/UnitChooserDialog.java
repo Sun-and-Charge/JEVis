@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -46,6 +47,7 @@ import org.jevis.api.JEVisType;
 import org.jevis.api.JEVisUnit;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 /**
  *
@@ -91,10 +93,11 @@ public class UnitChooserDialog {
         Scene scene = new Scene(root);
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
-        stage.setWidth(420);
-        stage.setHeight(320);
+        // width relative to the screen, height from the content (#1768)
+        root.setPrefWidth(WindowSize.fitWidth(owner, 404));
+        WindowSize.keepOnScreen(stage);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(false);
+        stage.setResizable(true);
 
         Node header = buildHeader("Unit selection");
 

@@ -55,6 +55,7 @@ import org.jevis.api.*;
 import org.jevis.commons.application.ApplicationInfo;
 import org.jevis.commons.config.CommonOptions;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.ws.sql.userlog.UserLogUtil;
 import org.jevis.jeapi.ws.JEVisDataSourceWS;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.application.JavaVersionCheck;
@@ -66,6 +67,7 @@ import org.jevis.jeconfig.dialog.HiddenConfig;
 import org.jevis.jeconfig.tool.Exceptions;
 import org.jevis.jeconfig.tool.WelcomePage;
 import org.jevis.jeconfig.ws.CertificateImporter;
+import org.jevis.jeconfig.ws.UserTrustStore;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -215,6 +217,27 @@ public class JEConfig extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    /**
+     * Writes login/logout into the user activity log of the webservice (OpenJEVis #2341), or into the samples of
+     * the attribute Activities for an older webservice.
+     */
+    private static void writeUserLog(JEVisDataSource ds, String action, String text, DateTime legacyTimestamp) {
+        try {
+            if (ds instanceof JEVisDataSourceWS && ((JEVisDataSourceWS) ds).writeUserLog(action, text)) {
+                return;
+            }
+            JEVisAttribute activities = ds.getCurrentUser().getUserObject().getAttribute(UserLogUtil.LEGACY_ATTRIBUTE);
+            if (activities != null) {
+                JEVisSample log = activities.buildSample(legacyTimestamp, text);
+                log.commit();
+            } else {
+                logger.warn("Missing activities attribute for user");
+            }
+        } catch (Exception ex) {
+            logger.error("Could not write {} to the user log", action, ex);
+        }
     }
 
     /**
@@ -484,19 +507,8 @@ public class JEConfig extends Application {
                 Platform.runLater(() -> primaryStage.setTitle(I18n.getInstance().getString("app.name")));
 
                 ExecutorService exe = Executors.newSingleThreadExecutor();
-                exe.submit(() -> {
-                    try {
-                        JEVisAttribute activities = getDataSource().getCurrentUser().getUserObject().getAttribute("Activities");
-                        if (activities != null) {
-                            JEVisSample log = activities.buildSample((new DateTime()).plusSeconds(5), "Login: " + PROGRAM_INFO.getName() + " Version: " + PROGRAM_INFO.getVersion());
-                            log.commit();
-                        } else {
-                            logger.warn("Missing activities attribute for user");
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                });
+                exe.submit(() -> writeUserLog(getDataSource(), UserLogUtil.ACTION_LOGIN,
+                        "Login: " + PROGRAM_INFO.getName() + " Version: " + PROGRAM_INFO.getVersion(), (new DateTime()).plusSeconds(5)));
 
                 final KeyCombination saveCombo = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
                 final KeyCombination deleteCombo = new KeyCodeCombination(KeyCode.DELETE);
@@ -676,13 +688,8 @@ public class JEConfig extends Application {
         primaryStage.onCloseRequestProperty().addListener((ov, t, t1) -> {
             try {
                 logger.info("Disconnect");
-                try {
-                    JEVisAttribute activities = _mainDS.getCurrentUser().getUserObject().getAttribute("Activities");
-                    JEVisSample log = activities.buildSample(new DateTime(), "Logout: " + PROGRAM_INFO.getName() + " Version: " + PROGRAM_INFO.getVersion());
-                    log.commit();
-                } catch (Exception ex) {
-                    logger.error("Could not write logout to activities log:", ex);
-                }
+                writeUserLog(_mainDS, UserLogUtil.ACTION_LOGOUT,
+                        "Logout: " + PROGRAM_INFO.getName() + " Version: " + PROGRAM_INFO.getVersion(), new DateTime());
 
                 _mainDS.disconnect();
             } catch (JEVisException ex) {
@@ -722,6 +729,8 @@ public class JEConfig extends Application {
         }
 
         _primaryStage = primaryStage;
+        /* certificates accepted earlier by this user, before the first connection to the server */
+        UserTrustStore.install();
         loadFonts();
         initGUI(primaryStage);
     }

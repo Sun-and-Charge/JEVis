@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -84,8 +85,7 @@ public class BarChartSerie {
         }
 
         NumberFormat nf_out = NumberFormat.getNumberInstance();
-        nf_out.setMaximumFractionDigits(this.chartModel.getMinFractionDigits());
-        nf_out.setMinimumFractionDigits(this.chartModel.getMaxFractionDigits());
+        this.chartModel.applyFractionDigits(nf_out, singleRow);
         String text = nf_out.format(result) + " " + unit;
         tableEntry.setValue(text);
 

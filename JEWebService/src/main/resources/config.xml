@@ -17,6 +17,26 @@
             <demogroup>1</demogroup>
             <apikey>CHANGE_ME</apikey>
         </registration>
+        <!-- user activity log: days until entries are deleted, 0 keeps them forever -->
+        <userlog>
+            <retentiondays>365</retentiondays>
+        </userlog>
+        <!-- old data archive (OpenJEVis #1440): complete years older than <olderthanyears> are written per data row
+             and year as gzip CSV into <dir>, verified and then deleted from the database. Manual runs and restore:
+             java -cp JEWebService-<version>-jar-with-dependencies.jar org.jevis.rest.archive.ArchiveTool -c <this file> dry-run|archive|verify|restore
+        <archive>
+            <enabled>false</enabled>
+            <dir>/home/jevis/jevis/var/archive/</dir>
+            <olderthanyears>5</olderthanyears>
+            <classes>Data</classes>
+            <attributes>Value</attributes>
+            <time>03:00</time>
+            <maxrows>2000000</maxrows>
+            <maxminutes>60</maxminutes>
+            <batchsize>5000</batchsize>
+            <pausems>100</pausems>
+        </archive>
+        -->
     </webservice>   
     
     

@@ -47,6 +47,7 @@ import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.control.ColorPickerAdv;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.DialogHeader;
 import org.jevis.jeconfig.plugin.dashboard.DashBoardToolbar;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -55,7 +56,6 @@ import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFactoryBox;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.jevis.jeconfig.plugin.dashboard.widget.Widget;
 import org.jevis.jeconfig.tool.Layouts;
-import org.jevis.jeconfig.tool.ScreenSize;
 
 import java.util.TreeSet;
 
@@ -97,10 +97,8 @@ public class WidgetNavigator {
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
 
-        stage.setWidth(ScreenSize.fitScreenWidth(1100));
-        stage.setHeight(800);
+        WindowSize.apply(stage, JEConfig.getStage(), 1100, 800, 600, 400);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(true);
         scene.setFill(Color.TRANSPARENT);
 
         Control table = buildTable();

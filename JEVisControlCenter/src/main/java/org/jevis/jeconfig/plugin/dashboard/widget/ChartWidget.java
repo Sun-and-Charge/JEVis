@@ -155,6 +155,8 @@ public class ChartWidget extends Widget implements DataModelWidget {
             ChartModel chartModel = this.sampleHandler.getDataModel().getChartModels().get(0);
             chartModel.setMinFractionDigits(getConfig().getDecimals());
             chartModel.setMaxFractionDigits(getConfig().getDecimals());
+            /* explicit widget decimals win, otherwise each data row uses its own decimal places (#1194) */
+            chartModel.setFractionDigitsAuto(getConfig().isDecimalsAuto());
 
             List<ChartType> chartTypes = new ArrayList<>();
             ChartType chartType;

@@ -50,6 +50,7 @@ import org.jevis.jeconfig.application.Chart.ChartPluginElements.tree.TreeViewPat
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.methods.DataMethods;
 import org.jevis.jeconfig.application.tools.DisabledItemsComboBox;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.Response;
 
 import java.util.ArrayList;
@@ -256,8 +257,8 @@ public class TreeSelectionDialog extends Dialog {
 
         box.getChildren().addAll(new TreeViewPath(treeView), treeView, buttonBar);
         VBox.setVgrow(treeView, Priority.ALWAYS);
-        box.setMinHeight(480);
-        box.setMinWidth(640);
+        box.setPrefSize(WindowSize.fitWidth(JEConfig.getStage(), 640), WindowSize.fitHeight(JEConfig.getStage(), 480, 150));
+        box.setMinSize(400, 250);
 
         this.getDialogPane().setContent(box);
     }

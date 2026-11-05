@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -44,6 +45,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.permission.Rights;
+import org.jevis.commons.permission.SiteSharing;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.relationship.RelationsManagment;
 import org.jevis.jeconfig.Constants;
@@ -115,6 +118,7 @@ public class MemberExtension implements ObjectEditorExtension {
         Label exceHeader = new Label(I18n.getInstance().getString("plugin.object.member.execute"));
         Label deleteHeader = new Label(I18n.getInstance().getString("plugin.object.member.delete"));
         Label createHeader = new Label(I18n.getInstance().getString("plugin.object.member.create"));
+        Label presetHeader = new Label(I18n.getInstance().getString("permission.member.column.preset"));
         Label contolsHeader = new Label(I18n.getInstance().getString("plugin.object.member.remove"));
 
         userHeader.setStyle("-fx-font-weight: bold;");
@@ -123,6 +127,7 @@ public class MemberExtension implements ObjectEditorExtension {
         exceHeader.setStyle("-fx-font-weight: bold;");
         deleteHeader.setStyle("-fx-font-weight: bold;");
         createHeader.setStyle("-fx-font-weight: bold;");
+        presetHeader.setStyle("-fx-font-weight: bold;");
         contolsHeader.setStyle("-fx-font-weight: bold;");
 
         int yAxis = 0;
@@ -134,7 +139,8 @@ public class MemberExtension implements ObjectEditorExtension {
         gridPane.add(exceHeader, 3, yAxis);
         gridPane.add(deleteHeader, 4, yAxis);
         gridPane.add(createHeader, 5, yAxis);
-        gridPane.add(contolsHeader, 6, yAxis);
+        gridPane.add(presetHeader, 6, yAxis);
+        gridPane.add(contolsHeader, 7, yAxis);
 
         GridPane.setHalignment(readHeader, HPos.CENTER);
         GridPane.setHalignment(writeHeader, HPos.CENTER);
@@ -143,7 +149,7 @@ public class MemberExtension implements ObjectEditorExtension {
         GridPane.setHalignment(createHeader, HPos.CENTER);
 
         yAxis++;
-        gridPane.add(new Separator(Orientation.HORIZONTAL), 0, yAxis, 7, 1);
+        gridPane.add(new Separator(Orientation.HORIZONTAL), 0, yAxis, 8, 1);
 
         Map<JEVisObject, List<JEVisRelationship>> members = new TreeMap<>(Comparator.comparing(this::getDisplayName));
 
@@ -298,12 +304,13 @@ public class MemberExtension implements ObjectEditorExtension {
             gridPane.add(execBox, 3, yAxis);
             gridPane.add(deleteBox, 4, yAxis);
             gridPane.add(createBox, 5, yAxis);
-            gridPane.add(control, 6, yAxis);
+            gridPane.add(buildPresetMenu(member.getKey(), obj, member.getValue(), userCanEdit), 6, yAxis);
+            gridPane.add(control, 7, yAxis);
 
         }
 
         yAxis++;
-        gridPane.add(new Separator(Orientation.HORIZONTAL), 0, yAxis, 7, 1);
+        gridPane.add(new Separator(Orientation.HORIZONTAL), 0, yAxis, 8, 1);
 
         yAxis++;
         Label newUserLabel = new Label(I18n.getInstance().getString("plugin.object.member.addmember"));
@@ -312,7 +319,7 @@ public class MemberExtension implements ObjectEditorExtension {
         GridPane addNewBox = new GridPane();
         addNewBox.setHgap(2);
         addNewBox.setVgap(2);
-        gridPane.add(addNewBox, 0, yAxis, 7, 1);
+        gridPane.add(addNewBox, 0, yAxis, 8, 1);
         GridPane.setFillWidth(addNewBox, true);
 
         JFXButton newB = new JFXButton();
@@ -504,6 +511,74 @@ public class MemberExtension implements ObjectEditorExtension {
             logger.fatal(ex);
         }
 
+    }
+
+    /**
+     * Shortcut menu of a member row: sets the five rights of the user in this group to a preset (Ansehen,
+     * Bearbeiten, Verwalten, Keine). The button shows the preset the current rights match.
+     */
+    private MenuButton buildPresetMenu(JEVisObject userObj, JEVisObject group, List<JEVisRelationship> memberships, boolean userCanEdit) {
+        int mask = 0;
+        for (JEVisRelationship rel : memberships) {
+            try {
+                mask |= Rights.bitOfMemberType(rel.getType());
+            } catch (Exception ex) {
+                logger.debug(ex);
+            }
+        }
+        SiteSharing.Preset currentPreset = SiteSharing.Preset.ofMask(mask);
+        MenuButton menu = new MenuButton(currentPreset == null
+                ? I18n.getInstance().getString("permission.member.preset.custom") : presetText(currentPreset));
+        menu.setTooltip(new Tooltip(I18n.getInstance().getString("permission.member.preset.tooltip")));
+        for (SiteSharing.Preset preset : Arrays.asList(SiteSharing.Preset.VIEW, SiteSharing.Preset.EDIT,
+                SiteSharing.Preset.MANAGE, SiteSharing.Preset.NONE)) {
+            MenuItem item = new MenuItem(presetText(preset));
+            item.setDisable(preset == currentPreset);
+            item.setOnAction(e -> {
+                applyPreset(userObj, group, memberships, preset.mask);
+                Platform.runLater(() -> {
+                    try {
+                        buildView(_obj);
+                    } catch (JEVisException ex) {
+                        logger.fatal(ex);
+                    }
+                });
+            });
+            menu.getItems().add(item);
+        }
+        menu.setDisable(!userCanEdit);
+        return menu;
+    }
+
+    private static String presetText(SiteSharing.Preset preset) {
+        return I18n.getInstance().getString("permission.member.preset." + preset.name().toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Adds the missing and removes the surplus membership relationships so the user has exactly the given rights.
+     */
+    private void applyPreset(JEVisObject userObj, JEVisObject group, List<JEVisRelationship> memberships, int targetMask) {
+        int has = 0;
+        for (JEVisRelationship rel : memberships) {
+            try {
+                int bit = Rights.bitOfMemberType(rel.getType());
+                if (bit == 0) continue;
+                if ((targetMask & bit) == 0) {
+                    rel.getStartObject().deleteRelationship(rel);
+                } else {
+                    has |= bit;
+                }
+            } catch (Exception ex) {
+                logger.error("Could not remove membership {}", rel, ex);
+            }
+        }
+        for (Integer type : Rights.memberTypes(targetMask & ~has)) {
+            try {
+                userObj.buildRelationship(group, type, JEVisConstants.Direction.FORWARD);
+            } catch (Exception ex) {
+                logger.error("Could not add membership {} of {} in {}", type, userObj, group, ex);
+            }
+        }
     }
 
     private void removeRelationships(List<JEVisRelationship> memberships) {

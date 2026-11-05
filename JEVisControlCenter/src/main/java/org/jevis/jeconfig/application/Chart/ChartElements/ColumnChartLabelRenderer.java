@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -105,7 +106,7 @@ public class ColumnChartLabelRenderer extends LabelledMarkerRenderer {
         for (int i = indexMin; i < indexMax; i++) {
             final double screenX = (int) xAxis.getDisplayPosition(dataSet.get(DataSet.DIM_X, i));
             final double screenY = (int) yAxis.getDisplayPosition(dataSet.get(DataSet.DIM_Y, i));
-            final String label = nf.format(doubleDataSet.getY(i));
+            final String label = (currentSerie != null ? currentSerie.getNf() : nf).format(doubleDataSet.getY(i));
 
             if (label == null) {
                 continue;

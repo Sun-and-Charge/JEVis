@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -86,9 +87,7 @@ public class LicenseDialog {
         stage.setTitle(I18n.getInstance().getString("licenses.title"));
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initOwner(JEConfig.getStage());
-        stage.setWidth(950);
-        stage.setHeight(650);
-        stage.setResizable(true);
+        WindowSize.apply(stage, JEConfig.getStage(), 950, 650, 600, 400);
 
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);

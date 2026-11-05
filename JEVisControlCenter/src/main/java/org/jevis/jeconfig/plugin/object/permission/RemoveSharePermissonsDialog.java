@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  *
  * This file is part of JEApplication.
  *
@@ -37,6 +38,7 @@ import javafx.stage.StageStyle;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 /**
  *
@@ -59,10 +61,12 @@ public class RemoveSharePermissonsDialog {
         Scene scene = new Scene(root);
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
-        stage.setWidth(500);
-        stage.setHeight(250);
+        // width relative to the screen, height from the content (text must not be clipped, #1768)
+        root.setPrefWidth(WindowSize.fitWidth(owner, 484));
+        root.setMinWidth(300);
+        WindowSize.keepOnScreen(stage);
         stage.initStyle(StageStyle.UTILITY);
-        stage.setResizable(false);
+        stage.setResizable(true);
 
         BorderPane header = new BorderPane();
         header.getStyleClass().add("dialog-header");
@@ -117,6 +121,7 @@ public class RemoveSharePermissonsDialog {
         Label mewssage = new Label(message);
         messagePanel.getChildren().add(mewssage);
         mewssage.setWrapText(true);
+        mewssage.setMinHeight(Region.USE_PREF_SIZE);
         mewssage.setAlignment(Pos.CENTER_LEFT);
 
         Separator sep = new Separator(Orientation.HORIZONTAL);

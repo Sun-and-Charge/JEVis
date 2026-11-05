@@ -32,6 +32,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
@@ -84,6 +85,8 @@ public class GenericConfigNode extends Tab implements ConfigTab {
     private final ColorPickerAdv borderColorPicker = new ColorPickerAdv();
     private final Spinner<Integer> cornerRadiusSpinner = new Spinner<Integer>(0, 100, 0);
     private final Spinner<Integer> precisionSpinner = new Spinner<Integer>(0, 20, 2);
+    /* values are shown with the decimal places of their data row instead of the widget decimals (#1194) */
+    private final JFXCheckBox decimalsAutoField = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.edit.general.decimalsauto"));
     private final ColorPickerAdv bgColorPicker = new ColorPickerAdv();
     private final ColorPickerAdv fColorPicker = new ColorPickerAdv();
     private final JFXCheckBox fixedTimeFrame = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.controls.fixedtimeframe"));
@@ -224,10 +227,14 @@ public class GenericConfigNode extends Tab implements ConfigTab {
             }
         });
 
+        precisionSpinner.disableProperty().bind(decimalsAutoField.selectedProperty());
+        HBox precisionBox = new HBox(8, precisionSpinner, decimalsAutoField);
+        precisionBox.setAlignment(Pos.CENTER_LEFT);
+
         gridPane.addColumn(0, idLabel, nameLabel, tooltipLabel, bgColorLabel, fColorLabel, yPosLabel, xPosLabel,
                 shadowLabel, showValueLabel, borderSizeLabel, borderColorLabel, cornerRadiusLabel, precisionLabel, fontSizeLabel, fontWeightLabel, fontPostureLabel, fontUnderlined, alignmentLabel, timeFrameLabel);
         gridPane.addColumn(1, idField, nameField, tooltipField, bgColorPicker, fColorPicker, yPosField, xPosField,
-                showShadowField, showValueField, borderSizeSpinner, borderColorPicker, cornerRadiusSpinner, precisionSpinner, fontSizeSpinner, fontWeightBox, fontPostureBox, new Region(), alignmentBox, timeFrameBox, fixedTimeFrame);
+                showShadowField, showValueField, borderSizeSpinner, borderColorPicker, cornerRadiusSpinner, precisionBox, fontSizeSpinner, fontWeightBox, fontPostureBox, new Region(), alignmentBox, timeFrameBox, fixedTimeFrame);
 
         setContent(gridPane);
 
@@ -272,6 +279,7 @@ public class GenericConfigNode extends Tab implements ConfigTab {
         cornerRadiusSpinner.getValueFactory().setValue((int) Math.round(widget.getConfig().getCornerRadius()));
         alignmentBox.getSelectionModel().select(widget.getConfig().getTitlePosition());
         precisionSpinner.getValueFactory().setValue(widget.getConfig().getDecimals().intValue());
+        decimalsAutoField.setSelected(widget.getConfig().isDecimalsAuto());
     }
 
     @Override
@@ -329,6 +337,7 @@ public class GenericConfigNode extends Tab implements ConfigTab {
 
         try {
             widget.getConfig().setDecimals(precisionSpinner.getValue());
+            widget.getConfig().setDecimalsAuto(decimalsAutoField.isSelected());
         } catch (Exception ex) {
             logger.error("Failed to set decimals", ex);
         }

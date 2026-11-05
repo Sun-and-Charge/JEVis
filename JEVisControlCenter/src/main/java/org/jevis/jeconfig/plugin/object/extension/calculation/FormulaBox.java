@@ -45,6 +45,7 @@ import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.TreeHelper;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.dialog.NewObject;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.ExceptionDialog2;
 import org.jevis.jeconfig.dialog.Response;
 import org.joda.time.DateTime;
@@ -312,7 +313,8 @@ public class FormulaBox extends HBox {
             alert.setTitle(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.title"));
             alert.setHeaderText(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.header"));
             alert.setResizable(true);
-            alert.getDialogPane().setPrefWidth(1350);
+            alert.getDialogPane().setPrefWidth(WindowSize.fitWidth(getOwnerWindow(), 1350));
+            WindowSize.keepOnScreen(alert);
             //alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 
             alert.getDialogPane().setContent(vBox);

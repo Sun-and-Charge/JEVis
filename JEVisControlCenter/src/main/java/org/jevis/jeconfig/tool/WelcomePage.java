@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -44,6 +45,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.TopMenu;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -78,10 +80,8 @@ public class WelcomePage {
         stage.setTitle("Welcome");
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initOwner(owner);
-        stage.setWidth(950);
-        stage.setHeight(550);
+        WindowSize.apply(stage, owner, 950, 550, 600, 400);
         stage.initStyle(StageStyle.UNDECORATED);
-        stage.setResizable(false);
 
 //        BorderPane root = new BorderPane();
         VBox root = new VBox(0);

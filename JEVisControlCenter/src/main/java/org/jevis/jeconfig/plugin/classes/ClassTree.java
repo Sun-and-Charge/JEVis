@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -41,6 +42,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.RelationshipFactory;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.ConfirmDialog;
+import org.jevis.jeconfig.dialog.ExceptionDialog;
 import org.jevis.jeconfig.plugin.classes.editor.ClassEditor;
 import org.jevis.jeconfig.tool.NewClassDialog;
 import org.joda.time.DateTime;
@@ -359,7 +361,22 @@ public class ClassTree extends TreeView<JEVisClass> {
                         final TreeItem<JEVisClass> item = getObjectTreeItem(jclass);
                         final TreeItem<JEVisClass> parentItem = item.getParent();
 
-                        jclass.delete();
+                        try {
+                            jclass.delete();
+                        } catch (JEVisException deleteEx) {
+                            logger.error("Could not delete class {}", jclass.getName(), deleteEx);
+                            ExceptionDialog errorDialog = new ExceptionDialog();
+                            errorDialog.show(I18n.getInstance().getString("plugin.classes.tree.delete.error.title"),
+                                    I18n.getInstance().getString("plugin.classes.tree.delete.error.message"), deleteEx.getMessage(), deleteEx, null);
+                            return;
+                        }
+                        /* the inheritance relationship of the super class still knows the deleted class */
+                        JEVisClass superClass = jclass.getInheritance();
+                        if (superClass != null) {
+                            for (JEVisClassRelationship rel : jclass.getRelationships(JEVisConstants.ClassRelationship.INHERIT, JEVisConstants.Direction.FORWARD)) {
+                                superClass.deleteRelationship(rel);
+                            }
+                        }
                         deteleItemFromTree(item);
 
 //                        Platform.runLater(new Runnable() {
@@ -478,10 +495,23 @@ public class ClassTree extends TreeView<JEVisClass> {
                 if (dia.getInheritance() != null && dia.getInheritance().getIcon() != null) {
                     newClass.setIcon(dia.getInheritance().getIcon());
                 }
-                newClass.commit();
+                /* the inheritance is stored with the new class, so it has to exist before the commit */
+                if (dia.getInheritance() != null) {
+                    newClass.buildRelationship(dia.getInheritance(), JEVisConstants.ClassRelationship.INHERIT, JEVisConstants.Direction.FORWARD);
+                }
+                try {
+                    newClass.commit();
+                } catch (JEVisException saveEx) {
+                    if (dia.getInheritance() != null) {
+                        for (JEVisClassRelationship rel : newClass.getRelationships()) {
+                            dia.getInheritance().deleteRelationship(rel);
+                        }
+                    }
+                    showSaveError(saveEx);
+                    return;
+                }
                 TreeItem<JEVisClass> newItem;
                 if (dia.getInheritance() != null) {
-                    JEVisClassRelationship cr = RelationshipFactory.buildInheritance(dia.getInheritance(), newClass);
                     newItem = getObjectTreeItem(newClass);
 //                    getChildrenList(getObjectTreeItem(dia.getInheritance())).add(getObjectTreeItem(newClass));
                     getChildrenList(getObjectTreeItem(dia.getInheritance())).add(newItem);
@@ -504,6 +534,13 @@ public class ClassTree extends TreeView<JEVisClass> {
         } catch (Exception ex) {
             logger.fatal(ex);
         }
+    }
+
+    private void showSaveError(Exception ex) {
+        logger.error("Error while saving class", ex);
+        ExceptionDialog dia = new ExceptionDialog();
+        dia.show(I18n.getInstance().getString("plugin.classes.editor.type.alert.save.title"),
+                I18n.getInstance().getString("plugin.classes.editor.type.alert.save.message"), ex.getMessage(), ex, null);
     }
 
     //TODO i dont like this way
@@ -606,23 +643,42 @@ public class ClassTree extends TreeView<JEVisClass> {
                     @Override
                     public void handle(DragEvent dragEvent) {
                         try {
+                            JEVisClass dragClass = getDragItem();
+                            if (!dragClass.getDataSource().getCurrentUser().isSysAdmin()) {
+                                dragEvent.consume();
+                                return;
+                            }
+                            /* only the own inheritance (this class -> super class), not the heirs */
+                            List<JEVisClassRelationship> oldRels = dragClass.getRelationships(JEVisConstants.ClassRelationship.INHERIT, JEVisConstants.Direction.FORWARD);
+                            JEVisClassRelationship newRel = null;
                             //if the inherit is the faske root we create no now relationship but set the inherit to null
                             if (obj.getName().equals(getRoot().getValue().getName())) {
-                                for (JEVisClassRelationship rel : getDragItem().getRelationships(JEVisConstants.ClassRelationship.INHERIT)) {
-                                    getDragItem().deleteRelationship(rel);
+                                for (JEVisClassRelationship rel : oldRels) {
+                                    dragClass.deleteRelationship(rel);
                                 }
 
                             } else {
-                                JEVisClassRelationship newRel = getDragItem().buildRelationship(obj, JEVisConstants.ClassRelationship.INHERIT, JEVisConstants.Direction.FORWARD);
-                                for (JEVisClassRelationship rel : getDragItem().getRelationships(JEVisConstants.ClassRelationship.INHERIT)) {
+                                newRel = dragClass.buildRelationship(obj, JEVisConstants.ClassRelationship.INHERIT, JEVisConstants.Direction.FORWARD);
+                                for (JEVisClassRelationship rel : oldRels) {
                                     if (!rel.equals(newRel)) {
-                                        getDragItem().deleteRelationship(rel);
-
-                                        TreeItem<JEVisClass> dragParentItem = getObjectTreeItem(rel.getOtherClass(getDragItem().getInheritance()));
-                                        getChildrenList(dragParentItem).remove(getObjectTreeItem(getDragItem()));
-
+                                        dragClass.deleteRelationship(rel);
                                     }
                                 }
+                            }
+
+                            try {
+                                dragClass.commit();
+                            } catch (JEVisException saveEx) {
+                                /* restore the old inheritance in memory */
+                                if (newRel != null && !oldRels.contains(newRel)) {
+                                    dragClass.deleteRelationship(newRel);
+                                }
+                                for (JEVisClassRelationship rel : oldRels) {
+                                    dragClass.buildRelationship(rel.getEnd(), JEVisConstants.ClassRelationship.INHERIT, JEVisConstants.Direction.FORWARD);
+                                }
+                                showSaveError(saveEx);
+                                dragEvent.consume();
+                                return;
                             }
 
                             Platform.runLater(new Runnable() {

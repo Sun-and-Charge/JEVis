@@ -67,6 +67,7 @@ public interface JsonNames {
         String DATA_HANDLER_NODE = "dataHandler";
         String LAYER = "layer";
         String DECIMALS = "decimals";
+        String DECIMALS_AUTO = "decimalsAuto";
         String SHOW_VALUE = "showValue";
         String FIXED_TIMEFRAME = "fixedTimeframe";
         String FORCED_TIMEFRAME = "forcedTimeFrame";

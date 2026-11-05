@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2018 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -50,6 +51,7 @@ import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.control.BoundSpecificBox;
 import org.jevis.jeconfig.application.control.GapFillingTypeBox;
 import org.jevis.jeconfig.application.control.ReferencePeriodsBox;
+import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.tool.NumberSpinner;
 import org.joda.time.DateTime;
 
@@ -377,8 +379,10 @@ public class GapFillingEditor implements AttributeEditor {
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
-        dialog.setHeight(450);
-        dialog.setWidth(620);
+        dialog.setHeight(WindowSize.fitHeight(JEConfig.getStage(), 450));
+        dialog.setWidth(WindowSize.fitWidth(JEConfig.getStage(), 620));
+        stage.setMinWidth(WindowSize.fitWidth(JEConfig.getStage(), 400));
+        stage.setMinHeight(WindowSize.fitHeight(JEConfig.getStage(), 300));
 
         for (JsonGapFillingConfig config : _listConfig) {
             Tab newTab = new Tab(config.getName());

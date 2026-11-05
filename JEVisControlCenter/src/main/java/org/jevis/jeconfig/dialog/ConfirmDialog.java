@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -36,13 +37,16 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 /**
  * @author fs
@@ -74,8 +78,10 @@ public class ConfirmDialog {
         Scene scene = new Scene(root);
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
-        stage.setWidth(500);
-        stage.setHeight(250);
+        // width relative to the screen, height from the content (text must not be clipped, #1768)
+        root.setPrefWidth(WindowSize.fitWidth(owner, 484));
+        root.setMinWidth(300);
+        WindowSize.keepOnScreen(stage);
         stage.initStyle(StageStyle.UTILITY);
         stage.setResizable(true);
         stage.setAlwaysOnTop(true);
@@ -86,6 +92,10 @@ public class ConfirmDialog {
         header.setPadding(new Insets(10, 10, 10, 10));
 
         Label topTitle = new Label(titleLong);
+
+        topTitle.setWrapText(true);
+
+        topTitle.setMinHeight(Region.USE_PREF_SIZE);
         topTitle.getStyleClass().add("dialog-header-title");
 
         ImageView imageView = ResourceLoader.getImage(ICON_QUESTION, 65, 65);
@@ -99,7 +109,8 @@ public class ConfirmDialog {
         vboxRight.setAlignment(Pos.CENTER_LEFT);
         vboxRight.getChildren().add(imageView);
 
-        header.setLeft(vboxLeft);
+        /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
+        header.setCenter(vboxLeft);
 
         header.setRight(vboxRight);
 
@@ -108,7 +119,7 @@ public class ConfirmDialog {
         JFXButton ok = new JFXButton("OK");
         ok.setDefaultButton(true);
 
-        JFXButton cancel = new JFXButton("Cancel");
+        JFXButton cancel = new JFXButton(I18n.getInstance().getString("graph.dialog.cancel"));
         cancel.setCancelButton(true);
 
         buttonPanel.getChildren().addAll(ok, cancel);

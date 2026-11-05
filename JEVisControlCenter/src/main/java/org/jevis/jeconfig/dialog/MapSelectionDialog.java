@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -39,6 +40,7 @@ import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeFactory;
 import org.jevis.jeconfig.application.jevistree.TreePlugin;
 import org.jevis.jeconfig.application.jevistree.plugin.MapPlugin;
+import org.jevis.jeconfig.application.tools.WindowSize;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,9 +68,7 @@ public class MapSelectionDialog {
         stage.initStyle(StageStyle.UTILITY);
         stage.initOwner(JEConfig.getStage());
 
-        stage.setWidth(1124);
-        stage.setHeight(768);
-        stage.setResizable(false);
+        WindowSize.apply(stage, JEConfig.getStage(), 1124, 768, 600, 400);
 
         VBox root = new VBox();
 

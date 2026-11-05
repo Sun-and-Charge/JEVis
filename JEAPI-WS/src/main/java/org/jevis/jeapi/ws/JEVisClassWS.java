@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEAPI-WS.
  * <p>
@@ -62,7 +63,16 @@ public class JEVisClassWS implements JEVisClass {
     private BufferedImage image = null;
     private JsonJEVisClass json;
     private List<JEVisClassRelationship> relations = new ArrayList<>();
+    private boolean relationsLoaded = false;
     private boolean iconChanged = false;
+    /**
+     * {@code true} for a class built by {@link JEVisDataSourceWS#buildClass(String)} which was not committed yet
+     */
+    private boolean isNew;
+    /**
+     * name of the class on the server, renaming is not supported
+     */
+    private String originalName;
 
     /**
      * Constructs a {@code JEVisClassWS} from its JSON DTO.
@@ -71,8 +81,17 @@ public class JEVisClassWS implements JEVisClass {
      * @param json the raw JSON representation of the class definition
      */
     public JEVisClassWS(JEVisDataSourceWS ds, JsonJEVisClass json) {
+        this(ds, json, false);
+    }
+
+    /**
+     * @param isNew {@code true} for a class which does not exist on the server yet
+     */
+    public JEVisClassWS(JEVisDataSourceWS ds, JsonJEVisClass json, boolean isNew) {
         this.ds = ds;
         this.json = json;
+        this.isNew = isNew;
+        this.originalName = json.getName();
     }
 
     /**
@@ -114,15 +133,20 @@ public class JEVisClassWS implements JEVisClass {
     /**
      * Deletes the type with the given name from this class definition.
      *
-     * <p><b>Note:</b> not yet implemented — always returns {@code false}.</p>
+     * <p>Like all changes of a class it is persisted with {@link #commit()}.</p>
      *
      * @param type the name of the type to delete
-     * @return {@code false} always
+     * @return {@code true} if the type was removed
      */
     @Override
     public boolean deleteType(String type) {
-        //TODO re-implement
-        return false;
+        return getTypes().removeIf(t -> {
+            try {
+                return t.getName().equals(type);
+            } catch (Exception ex) {
+                return false;
+            }
+        });
     }
 
     /**
@@ -242,7 +266,7 @@ public class JEVisClassWS implements JEVisClass {
         if (types == null && json.getTypes() != null) {
             types = new ArrayList<>();
             for (JsonType t : json.getTypes()) {
-                types.add(new JEVisTypeWS(ds, t, getName()));
+                types.add(new JEVisTypeWS(ds, t, getName(), this));
             }
 
             types.sort(Comparator.comparingInt(jeVisType -> {
@@ -284,16 +308,26 @@ public class JEVisClassWS implements JEVisClass {
 
     /**
      * Creates a new attribute type with the given name and adds it to this
-     * class definition. The type is not persisted until {@link #commit()} is
-     * called.
+     * class definition. The type is not persisted until {@link #commit()} (or
+     * {@link JEVisTypeWS#commit()}) is called. If a type with this name exists it is returned.
      *
      * @param name the name for the new type; must not be {@code null}
      * @return the newly created {@link JEVisType}
      */
     @Override
     public JEVisType buildType(String name) {
-        JEVisType newType = new JEVisTypeWS(ds, name, getName());
-        getTypes().add(newType);//not save, waht will happen if the user does not commit() the type
+        for (JEVisType type : getTypes()) {
+            try {
+                if (type.getName().equals(name)) {
+                    return type;
+                }
+            } catch (Exception ex) {
+                logger.error("Error while reading type name", ex);
+            }
+        }
+        JEVisTypeWS newType = new JEVisTypeWS(ds, name, getName(), this);
+        newType.getJson().setJevisclass(getName());
+        getTypes().add(newType);
         return newType;
 
     }
@@ -473,10 +507,12 @@ public class JEVisClassWS implements JEVisClass {
      * operation — all objects of this class will also be affected.
      *
      * @return {@code true} if the deletion succeeded
+     * @throws JEVisException with the message of the web service if the class could not be deleted
      */
     @Override
-    public boolean delete() {
-        return ds.deleteClass(getName());
+    public boolean delete() throws JEVisException {
+        ds.deleteClassOrThrow(getName());
+        return true;
     }
 
     /**
@@ -487,18 +523,57 @@ public class JEVisClassWS implements JEVisClass {
      * @return a list of class relationships; never {@code null}
      */
     @Override
-    public List<JEVisClassRelationship> getRelationships() {
-        if (relations.isEmpty() && json.getRelationships() != null) {
-            for (JsonClassRelationship crel : json.getRelationships()) {
-                relations.add(new JEVisClassRelationshipWS(ds, crel));
-            }
-        }
-
-        if (relations == null) {
+    public synchronized List<JEVisClassRelationship> getRelationships() {
+        if (!relationsLoaded) {
             relations = new ArrayList<>();
+            if (json.getRelationships() != null) {
+                for (JsonClassRelationship crel : json.getRelationships()) {
+                    JEVisClassRelationshipWS rel = new JEVisClassRelationshipWS(ds, crel);
+                    if (!relations.contains(rel)) {
+                        relations.add(rel);
+                    }
+                }
+            }
+            relationsLoaded = true;
         }
 
         return relations;
+    }
+
+    /**
+     * Adds the relationship to the in-memory list of this class (not persisted).
+     *
+     * @return the relationship of this class (an existing equal one if there is one)
+     */
+    synchronized JEVisClassRelationship addRelationshipLocal(JsonClassRelationship jsonRel) {
+        JEVisClassRelationshipWS rel = new JEVisClassRelationshipWS(ds, jsonRel);
+        int index = getRelationships().indexOf(rel);
+        if (index >= 0) {
+            return getRelationships().get(index);
+        }
+        getRelationships().add(rel);
+        return rel;
+    }
+
+    /**
+     * Removes the relationship from the in-memory list of this class (not persisted).
+     */
+    synchronized boolean removeRelationshipLocal(String start, String end, int type) {
+        return getRelationships().removeIf(rel -> {
+            try {
+                return start.equals(rel.getStartName()) && end.equals(rel.getEndName()) && rel.getType() == type;
+            } catch (JEVisException ex) {
+                return false;
+            }
+        });
+    }
+
+    private JEVisClassWS otherClassWS(String name) {
+        if (name == null || name.equals(getName())) {
+            return null;
+        }
+        JEVisClass other = ds.getJEVisClass(name);
+        return other instanceof JEVisClassWS ? (JEVisClassWS) other : null;
     }
 
     /**
@@ -555,31 +630,54 @@ public class JEVisClassWS implements JEVisClass {
      * @param jclass    the other class in the relationship
      * @param type      the relationship type constant
      * @param direction the direction of the relationship from this class's perspective
+     * <p>The relationship is added to this class and (in memory) to the other class; it is
+     * persisted with {@link #commit()} of this class.</p>
+     *
      * @return the newly created {@link JEVisClassRelationship}
-     * @throws JEVisException if the server request fails
+     * @throws JEVisException if a class name cannot be read
      */
     @Override
     public JEVisClassRelationship buildRelationship(JEVisClass jclass, int type, int direction) throws JEVisException {
-        JEVisClassRelationship rel;
+        JsonClassRelationship jsonRel = new JsonClassRelationship();
         if (direction == JEVisConstants.Direction.FORWARD) {//this to otherClass
-            rel = ds.buildClassRelationship(this.getName(), jclass.getName(), type);
+            jsonRel.setStart(getName());
+            jsonRel.setEnd(jclass.getName());
         } else {
-            rel = ds.buildClassRelationship(jclass.getName(), this.getName(), type);
+            jsonRel.setStart(jclass.getName());
+            jsonRel.setEnd(getName());
+        }
+        jsonRel.setType(type);
+
+        JEVisClassRelationship rel = addRelationshipLocal(jsonRel);
+        if (jclass instanceof JEVisClassWS && jclass != this && !jclass.getName().equals(getName())) {
+            ((JEVisClassWS) jclass).addRelationshipLocal(jsonRel);
+        }
+        JEVisClassWS cached = otherClassWS(jclass.getName());
+        if (cached != null && cached != jclass) {
+            cached.addRelationshipLocal(jsonRel);
         }
 
         return rel;
     }
 
     /**
-     * Removes the given class relationship from the server.
+     * Removes the given class relationship from this class and (in memory) from the other class.
+     * It is persisted with {@link #commit()} of this class; the web service also removes it from
+     * the file of the other class.
      *
      * @param rel the relationship to delete
-     * @throws JEVisException if the server request fails
+     * @throws JEVisException if a class name cannot be read
      */
     @Override
     public void deleteRelationship(JEVisClassRelationship rel) throws JEVisException {
-        ds.deleteClassRelationship(rel.getStartName(), rel.getEndName(), rel.getType());
-
+        String start = rel.getStartName();
+        String end = rel.getEndName();
+        int type = rel.getType();
+        removeRelationshipLocal(start, end, type);
+        JEVisClassWS other = otherClassWS(getName().equals(start) ? end : start);
+        if (other != null) {
+            other.removeRelationshipLocal(start, end, type);
+        }
     }
 
     /**
@@ -593,7 +691,7 @@ public class JEVisClassWS implements JEVisClass {
     }
 
 
-    private void commitIconToWS() {
+    private void commitIconToWS() throws JEVisException {
         try {
             logger.info("post icon");
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -618,44 +716,95 @@ public class JEVisClassWS implements JEVisClass {
 //
             int responseCode = connection.getResponseCode();
             connection.disconnect();
-            logger.error("commit icon: {}", responseCode);
+            logger.debug("commit icon: {}", responseCode);
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new JEVisException("Could not save the class icon: HTTP " + responseCode, responseCode);
+            }
+            iconChanged = false;
 
+        } catch (JEVisException ex) {
+            throw ex;
         } catch (Exception ex) {
-            ex.printStackTrace();
             logger.catching(ex);
+            throw new JEVisException("Could not save the class icon: " + ex.getMessage(), 500, ex);
         }
     }
 
     /**
-     * Persists all pending changes for this class definition to the server via
-     * a POST request. If the icon has been changed, it is uploaded in a
-     * separate request afterwards. The local JSON DTO is updated with the
-     * server's response, and the data source's class cache is refreshed.
+     * @return the types of this class as JSON (own and inherited ones, the web service stores only the own types)
+     */
+    private List<JsonType> typesToJson() {
+        List<JsonType> list = new ArrayList<>();
+        for (JEVisType type : getTypes()) {
+            if (type instanceof JEVisTypeWS) {
+                list.add(((JEVisTypeWS) type).getJson());
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Persists all pending changes for this class definition (description, unique, types and
+     * relationships) to the server via a POST request; the web service stores them in the class
+     * file. If the icon has been changed, it is uploaded in a separate request afterwards. The
+     * local JSON DTO is updated with the server's response, and the data source's class cache is
+     * refreshed. Only Sys Admins may change classes; renaming an existing class is not supported.
      *
-     * @throws JEVisException if the server request fails or the response cannot be parsed
+     * @throws JEVisException with the message of the web service if the class could not be saved
      */
     @Override
-    public void commit() throws JEVisException {
-        try {
-
-            String resource = REQUEST.API_PATH_V1
-                    + REQUEST.CLASSES.PATH
-                    + getName();
-
-//            Gson gson = new Gson();
-
-            StringBuffer response = ds.getHTTPConnection().postRequest(resource, this.ds.getObjectMapper().writeValueAsString(json));
-
-            this.json = this.ds.getObjectMapper().readValue(response.toString(), JsonJEVisClass.class);
-
-            if (iconChanged) {
-                commitIconToWS();
-            }
-
-        } catch (Exception ex) {
-            logger.catching(ex);
+    public synchronized void commit() throws JEVisException {
+        if (!isNew && originalName != null && !originalName.equals(getName())) {
+            throw new JEVisException("Renaming a class is not supported.", 400);
         }
 
+        json.setTypes(typesToJson());
+        List<JsonClassRelationship> jsonRels = new ArrayList<>();
+        for (JEVisClassRelationship rel : getRelationships()) {
+            JsonClassRelationship jsonRel = new JsonClassRelationship();
+            jsonRel.setStart(rel.getStartName());
+            jsonRel.setEnd(rel.getEndName());
+            jsonRel.setType(rel.getType());
+            jsonRels.add(jsonRel);
+        }
+        json.setRelationships(jsonRels);
+
+        String resource = REQUEST.API_PATH_V1
+                + REQUEST.CLASSES.PATH
+                + getName();
+
+        HTTPConnection.HttpResult response;
+        try {
+            response = ds.getHTTPConnection().postJson(resource, this.ds.getObjectMapper().writeValueAsString(json), true);
+        } catch (Exception ex) {
+            logger.catching(ex);
+            throw new JEVisException("Could not save the class '" + getName() + "': " + ex.getMessage(), 500, ex);
+        }
+
+        if (response.getCode() != HttpURLConnection.HTTP_OK) {
+            String message = response.getBody() == null || response.getBody().trim().isEmpty()
+                    ? "HTTP " + response.getCode()
+                    : response.getBody().trim();
+            logger.error("Could not save class '{}': [{}] {}", getName(), response.getCode(), message);
+            throw new JEVisException(message, response.getCode());
+        }
+
+        try {
+            JsonJEVisClass saved = this.ds.getObjectMapper().readValue(response.getBody(), JsonJEVisClass.class);
+            if (saved != null) {
+                this.json = saved;
+            }
+        } catch (Exception ex) {
+            logger.error("Could not read the saved class '{}'", getName(), ex);
+        }
+        this.types = null;
+        this.relationsLoaded = false;
+        this.isNew = false;
+        this.originalName = getName();
+
+        if (iconChanged) {
+            commitIconToWS();
+        }
 
         ds.reloadClasses();
     }

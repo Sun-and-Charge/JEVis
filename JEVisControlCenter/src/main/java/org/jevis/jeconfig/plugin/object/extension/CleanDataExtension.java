@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -45,6 +46,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.json.JsonDeltaConfig;
 import org.jevis.commons.json.JsonGapFillingConfig;
 import org.jevis.commons.json.JsonLimitsConfig;
+import org.jevis.commons.object.ValueFormat;
 import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jeconfig.JEConfig;
@@ -500,7 +502,8 @@ public class CleanDataExtension implements ObjectEditorExtension {
         FavUnitList unitValue = new FavUnitList(valueAttribute, selectedUnit, true);
 
         if (valueLastSample != null) {
-            value.setText(nf.format(valueLastSample.getValueAsDouble()));
+            /* shown with the decimal places of the data row (OpenJEVis #1194) */
+            value.setText(ValueFormat.numberFormat(_obj).format(valueLastSample.getValueAsDouble()));
         }
 
 

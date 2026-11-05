@@ -24,9 +24,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.hansolo.fx.charts.tools.ColorMapping;
 import javafx.beans.property.*;
 import javafx.geometry.Orientation;
+import org.jevis.commons.object.ValueFormat;
 import org.jevis.jeconfig.application.Chart.ChartType;
 import org.joda.time.LocalTime;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +43,7 @@ import java.util.Map;
  *   <li>Rendering — {@code chartType}, {@code orientation}, {@code colorMapping},
  *       {@code height}</li>
  *   <li>Numeric formatting — {@code minFractionDigits}, {@code maxFractionDigits},
- *       {@code groupingInterval}</li>
+ *       {@code fractionDigitsAuto}, {@code groupingInterval}</li>
  *   <li>Flags — {@code filterEnabled}, {@code fixYAxisToZero}, {@code coloringEnabled},
  *       {@code showColumnSums}, {@code showRowSums}</li>
  *   <li>Heat-map time window — {@code dayStart}, {@code dayEnd}</li>
@@ -50,11 +52,22 @@ import java.util.Map;
  * Each field is backed by a JavaFX property so that UI components can bind to it directly.
  * The model is serialised to JSON by {@link AnalysisHandler} and deserialised via Jackson's
  * {@code readerForUpdating}.
+ * <p>
+ * Decimal places of the values of a data row (upstream issue #1194), see {@link #getNumberFormat(ChartData)}:
+ * <ol>
+ *   <li>the decimal digits of the row in this chart ({@link ChartData#getDecimalDigits()}), if set</li>
+ *   <li>the fraction digits of the chart, if they are explicit ({@link #isAutoFractionDigits()} is false)</li>
+ *   <li>otherwise the "Decimal Places" of the data row ({@link ChartDataRow#dataRowDecimals()})</li>
+ * </ol>
+ * The fraction digits of a chart are explicit when {@code fractionDigitsAuto} is false. Analyses saved before this
+ * setting existed have none; their fraction digits count as explicit only if they differ from the default 2/2.
  *
  * @see DataModel
  * @see ChartData
  */
 public class ChartModel {
+
+    public static final int DEFAULT_FRACTION_DIGITS = 2;
 
     private final SimpleIntegerProperty chartId = new SimpleIntegerProperty(this, "chartId", -1);
     private final SimpleStringProperty chartName = new SimpleStringProperty(this, "chartName", "");
@@ -65,6 +78,10 @@ public class ChartModel {
     private final SimpleObjectProperty<Orientation> orientation = new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
     private final SimpleIntegerProperty minFractionDigits = new SimpleIntegerProperty(this, "minFractionDigits", 2);
     private final SimpleIntegerProperty maxFractionDigits = new SimpleIntegerProperty(this, "maxFractionDigits", 2);
+    /**
+     * true: the decimal places of the data rows are used, false: the fraction digits of the chart, null: not set
+     */
+    private final SimpleObjectProperty<Boolean> fractionDigitsAuto = new SimpleObjectProperty<>(this, "fractionDigitsAuto", null);
     private final SimpleBooleanProperty filterEnabled = new SimpleBooleanProperty(this, "filterEnabled", false);
     private final SimpleBooleanProperty fixYAxisToZero = new SimpleBooleanProperty(this, "fixYAxisToZero", false);
     private final SimpleBooleanProperty coloringEnabled = new SimpleBooleanProperty(this, "coloringEnabled", false);
@@ -193,6 +210,57 @@ public class ChartModel {
 
     public SimpleIntegerProperty maxFractionDigitsProperty() {
         return maxFractionDigits;
+    }
+
+    public Boolean getFractionDigitsAuto() {
+        return fractionDigitsAuto.get();
+    }
+
+    public void setFractionDigitsAuto(Boolean fractionDigitsAuto) {
+        this.fractionDigitsAuto.set(fractionDigitsAuto);
+    }
+
+    public SimpleObjectProperty<Boolean> fractionDigitsAutoProperty() {
+        return fractionDigitsAuto;
+    }
+
+    /**
+     * @return true if the values of each data row are shown with the decimal places of the data row instead of the
+     * fraction digits of the chart; without a stored setting, only charts with the default fraction digits 2/2 do so
+     */
+    @JsonIgnore
+    public boolean isAutoFractionDigits() {
+        Boolean auto = fractionDigitsAuto.get();
+        if (auto != null) {
+            return auto;
+        }
+        return getMinFractionDigits() == DEFAULT_FRACTION_DIGITS && getMaxFractionDigits() == DEFAULT_FRACTION_DIGITS;
+    }
+
+    /**
+     * @return the format for the values of a data row in this chart, see the class description
+     */
+    @JsonIgnore
+    public NumberFormat getNumberFormat(ChartData row) {
+        if (row != null && row.getDecimalDigits() > -1) {
+            return ValueFormat.numberFormat(row.getDecimalDigits());
+        }
+        if (row instanceof ChartDataRow && isAutoFractionDigits()) {
+            return ValueFormat.numberFormat(((ChartDataRow) row).dataRowDecimals());
+        }
+        NumberFormat nf = ValueFormat.numberFormat(getMaxFractionDigits());
+        nf.setMinimumFractionDigits(Math.min(getMinFractionDigits(), getMaxFractionDigits()));
+        return nf;
+    }
+
+    /**
+     * Sets the fraction digits for the values of a data row in this chart (see {@link #getNumberFormat(ChartData)})
+     * on a number format of the charts.
+     */
+    public void applyFractionDigits(com.ibm.icu.text.NumberFormat nf, ChartData row) {
+        NumberFormat format = getNumberFormat(row);
+        nf.setMinimumFractionDigits(format.getMinimumFractionDigits());
+        nf.setMaximumFractionDigits(format.getMaximumFractionDigits());
     }
 
     public boolean isFilterEnabled() {
