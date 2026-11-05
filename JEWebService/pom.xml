@@ -30,8 +30,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
         </dependency>
 
         <dependency>
@@ -42,6 +42,10 @@
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
         </dependency>
 
 
@@ -108,18 +112,6 @@
             <artifactId>bcprov-jdk18on</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.8.1</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
@@ -212,8 +204,9 @@
 
     </build>
 
-    <!-- newer version need some changed with json -->
     <properties>
-        <jersey.version>2.6</jersey.version>
+        <!-- Jersey 3 (jakarta.ws.rs) on Grizzly 4; the web service runs on Java 25 -->
+        <jersey.version>3.1.12</jersey.version>
+        <maven.compiler.release>25</maven.compiler.release>
     </properties>
 </project>

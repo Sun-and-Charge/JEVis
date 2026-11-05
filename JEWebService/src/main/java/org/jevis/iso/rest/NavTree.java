@@ -24,10 +24,10 @@ import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.iso.add.JEVisClassTree;
 import org.jevis.iso.add.JEVisObjectTree;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.*;
 
 /**
  * @author <gerrit.schutz@sunandcharge.com>Gerrit Schutz</gerrit.schutz@sunandcharge.com>
@@ -49,7 +49,7 @@ public class NavTree {
         SQLDataSource ds = null;
         try {
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

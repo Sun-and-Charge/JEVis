@@ -25,8 +25,8 @@ import org.jevis.iso.add.NaturalOrderComparator;
 import org.jevis.iso.add.TemplateChooser;
 import org.jevis.iso.classes.ISO50001;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +53,7 @@ public class Navbar {
         SQLDataSource ds = null;
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
             ISO50001 iso = new ISO50001(ds);

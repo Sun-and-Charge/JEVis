@@ -25,8 +25,8 @@ import org.jevis.iso.add.TemplateChooser;
 import org.jevis.iso.classes.ISO50001;
 import org.jevis.iso.classes.ManagementManualDirectory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public class ManagementManual {
         SQLDataSource ds = null;
         try {
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

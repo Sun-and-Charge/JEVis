@@ -28,8 +28,8 @@ import org.jevis.iso.classes.InitialContact;
 import org.jevis.iso.classes.Meeting;
 import org.jevis.iso.classes.Organisation;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +57,7 @@ public class SuperiorMeetings {
         SQLDataSource ds = null;
         try {
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

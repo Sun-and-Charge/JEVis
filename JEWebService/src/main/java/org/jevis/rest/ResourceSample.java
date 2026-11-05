@@ -40,12 +40,12 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,7 +184,7 @@ public class ResourceSample {
             @DefaultValue("latest") @PathParam("timestamp") String timestamp
     ) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject obj = ds.getObject(id);
             if (obj == null) {
@@ -292,7 +292,7 @@ public class ResourceSample {
 
         try {
             logger.debug("Delete Sample: {}:{} from:{} to:{}", id, attribute, start, end);
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject object = ds.getObject(id);
 
@@ -388,7 +388,7 @@ public class ResourceSample {
             InputStream payload
     ) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject obj = ds.getObject(id);
             if (obj == null) {
@@ -518,7 +518,7 @@ public class ResourceSample {
     ) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject obj = ds.getObject(id);
             if (obj == null) {
@@ -633,7 +633,7 @@ public class ResourceSample {
 
         if (input != null && !input.isEmpty()) {
             try {
-                ds = new SQLDataSource(httpHeaders, request, url);
+                ds = new SQLDataSource(httpHeaders::getRequestHeader);
                 if ("Password".equals(attribute)) {
                     logger.debug("Post: {}-{}", id, attribute);
                 } else {

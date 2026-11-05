@@ -37,16 +37,27 @@ It is a fork of the OpenJEVis project, originally developed by Envidatec GmbH. S
 
 ## Requirements
 
-- Java 8 with JavaFX (for example Zulu or Liberica "FX" builds)
-- Maven 3.6+
+- Java 25 for building and for the server (web service and services), for example Azul Zulu 25
+- Java 8 with JavaFX for the Control Center (for example Zulu or Liberica "FX" builds); Maven uses it as a
+  toolchain, see [docs/toolchains-example.xml](docs/toolchains-example.xml)
+- Maven 3.9+
 - MySQL (5.7 or newer recommended)
 - LibreOffice 5+ (only for reports)
 - A Java keystore for the TLS connection of the web service
 
 ## Build
 
+Maven runs on Java 25 (`JAVA_HOME`). The modules shared with the Control Center are compiled for Java 8,
+the web service for Java 25. The Control Center is compiled with the Java 8 toolchain:
+
 ```bash
-mvn clean install
+mvn -t docs/toolchains-example.xml clean install
+```
+
+Without a Java 8 toolchain, build everything except the Control Center:
+
+```bash
+mvn clean install -pl '!JEVisControlCenter'
 ```
 
 The Control Center is built as an executable jar with all dependencies:
@@ -58,7 +69,7 @@ java -jar JEVisControlCenter/target/JEVisControlCenter-<version>-jar-with-depend
 To build the server including the database migrations, use the `jevisserver` profile:
 
 ```bash
-mvn clean install -P jevisserver
+mvn -t docs/toolchains-example.xml clean install -P jevisserver
 ```
 
 ## Installation (server)

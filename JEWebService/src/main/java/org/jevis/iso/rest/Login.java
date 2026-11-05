@@ -27,9 +27,9 @@ import org.jevis.iso.add.TemplateChooser;
 import org.jevis.iso.add.ThemeHelper;
 import org.jevis.iso.add.Translations;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;

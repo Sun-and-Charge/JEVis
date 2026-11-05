@@ -29,8 +29,8 @@ import org.jevis.iso.classes.DocumentsDirectory;
 import org.jevis.iso.classes.ISO50001;
 import org.jevis.iso.classes.ManagementReview;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +59,7 @@ public class ManagementReviews {
         SQLDataSource ds = null;
         try {
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 
@@ -108,7 +108,7 @@ public class ManagementReviews {
         SQLDataSource ds = null;
         try {
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             ISO50001 iso = new ISO50001(ds);
 

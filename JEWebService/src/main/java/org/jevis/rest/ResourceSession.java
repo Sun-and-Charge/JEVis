@@ -26,12 +26,12 @@ import org.jevis.commons.ws.json.JsonSSOConfig;
 import org.jevis.commons.ws.ms.MSOauth2;
 import org.jevis.commons.ws.sql.*;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class ResourceSession {
 
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
 
             if (httpHeaders.getRequestHeader("token") == null) {
                 throw new AuthenticationException("token header is missing");
@@ -167,7 +167,7 @@ public class ResourceSession {
 
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!ds.getCurrentUser().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }

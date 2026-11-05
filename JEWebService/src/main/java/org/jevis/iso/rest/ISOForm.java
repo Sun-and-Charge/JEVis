@@ -34,8 +34,8 @@ import org.jevis.iso.add.*;
 import org.jevis.iso.classes.Equipment;
 import org.jevis.iso.classes.MeasuringPoint;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.*;
 
 /**
@@ -65,7 +65,7 @@ public class ISOForm {
         SQLDataSource ds = null;
         try {
             Form f = new Form();
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (classname.equals("")) {
                 ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);

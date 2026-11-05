@@ -25,8 +25,8 @@ import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.iso.classes.ISO50001;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -211,7 +211,7 @@ public class Resources {
             imageData = IOUtils.toByteArray(in);
         } else {
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

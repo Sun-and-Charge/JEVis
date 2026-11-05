@@ -29,8 +29,8 @@ import org.jevis.iso.classes.ISO50001;
 import org.jevis.iso.classes.Produce;
 import org.joda.time.DateTime;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.*;
 
 /**
@@ -59,7 +59,7 @@ public class ProductionOverview {
 
         SQLDataSource ds = null;
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

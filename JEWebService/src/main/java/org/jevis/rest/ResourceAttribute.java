@@ -28,10 +28,10 @@ import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class ResourceAttribute {
             @PathParam("id") long id) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject obj = ds.getObject(id);
             if (obj == null) {
@@ -126,7 +126,7 @@ public class ResourceAttribute {
             @PathParam("attribute") String attribute) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             JsonObject obj = ds.getObject(id);
             if (obj == null) {
                 logger.debug("Can not access Object: {}", id);
@@ -183,7 +183,7 @@ public class ResourceAttribute {
         if (payload != null && payload.length() > 0) {
             try {
 
-                ds = new SQLDataSource(httpHeaders, request, url);
+                ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
                 JsonObject obj = ds.getObject(id);
                 if (obj == null) {

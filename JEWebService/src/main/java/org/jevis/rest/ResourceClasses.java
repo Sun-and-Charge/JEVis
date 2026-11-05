@@ -30,11 +30,11 @@ import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.JEVisClassHelper;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -100,7 +100,7 @@ public class ResourceClasses {
             @Context Request request,
             @Context UriInfo url) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             return getClassResponse(null);
         } catch (JEVisException jex) {
@@ -135,7 +135,7 @@ public class ResourceClasses {
             @PathParam("name") String name) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             return getClassResponse(name);
 
@@ -175,7 +175,7 @@ public class ResourceClasses {
             @PathParam("name") String name) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (!ds.getUserManager().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).entity("Only system administrators can delete classes.").build();
@@ -270,7 +270,7 @@ public class ResourceClasses {
             String input) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (!ds.getUserManager().isSysAdmin()) {
                 return textResponse(Response.Status.FORBIDDEN, "Only system administrators can change classes.");
@@ -397,7 +397,7 @@ public class ResourceClasses {
             @PathParam("name") String name
     ) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (classIconFiles == null) {
                 classIconFiles = listClassIconFiles(Config.getClassDir());
@@ -468,7 +468,7 @@ public class ResourceClasses {
             @PathParam("name") String name, byte[] imageBytes) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (!ds.getUserManager().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();

@@ -25,8 +25,8 @@ import org.jevis.iso.add.*;
 import org.jevis.iso.classes.*;
 import org.joda.time.DateTime;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.*;
 
 /**
@@ -54,7 +54,7 @@ public class AssetRegister {
     ) throws Exception {
         SQLDataSource ds = null;
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
             ISO50001 iso = new ISO50001(ds);

@@ -20,6 +20,7 @@
  */
 package org.jevis.rest;
 
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -249,6 +250,8 @@ public class Main {
 
         final ResourceConfig rc = new ResourceConfig().packages("org.jevis.rest", "org.jevis.iso.rest", "org.jevis.web");
         rc.setApplicationName("JEWebservice");
+        /* Jersey 3 no longer reads JSON providers from META-INF/services, Jersey 2 did */
+        rc.register(JacksonJsonProvider.class);
         rc.register(MultiPartFeature.class);
         rc.register(GZipEncoder.class);
         rc.register(EncodingFilter.class);

@@ -37,10 +37,10 @@ import org.jevis.commons.ws.sql.auth.AuthService;
 import org.jevis.commons.ws.sql.auth.PasswordResetPolicy;
 import org.jevis.commons.ws.sql.auth.PasswordResetService;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,7 +168,7 @@ public class ResourceAuth {
         try {
             if (isThrottled()) return tooManyAttempts();
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             if (!AuthService.isAvailable(ds)) return notAvailable();
             JsonLoginResult result = AuthService.login(ds, text(json, "username"), text(json, "password"),
                     json.path("remember").asBoolean(false), clientInfo(httpHeaders));
@@ -192,7 +192,7 @@ public class ResourceAuth {
         try {
             if (isThrottled()) return tooManyAttempts();
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             JsonLoginResult result = AuthService.completeMfa(ds, text(json, "mfaToken"), text(json, "code"),
                     json.path("remember").asBoolean(false), clientInfo(httpHeaders));
             return loginResponse(result);
@@ -216,7 +216,7 @@ public class ResourceAuth {
     public Response refresh(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
         try {
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             return loginResponse(AuthService.refresh(ds, text(json, "refreshToken"), clientInfo(httpHeaders)));
         } catch (BadRequestException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
@@ -236,7 +236,7 @@ public class ResourceAuth {
     public Response logout(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
         try {
             JsonNode json = body == null || body.trim().isEmpty() ? MAPPER.createObjectNode() : parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             AuthService.logout(ds, bearerToken(httpHeaders), text(json, "refreshToken"));
             return Response.noContent().build();
         } catch (BadRequestException ex) {
@@ -255,7 +255,7 @@ public class ResourceAuth {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createHandoff(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (ds.getAuthMethod() == SQLDataSource.AuthMethod.API_KEY) {
                 return Response.status(Response.Status.FORBIDDEN).entity("Not allowed for API keys").build();
             }
@@ -284,7 +284,7 @@ public class ResourceAuth {
         try {
             if (isThrottled()) return tooManyAttempts();
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             return loginResponse(AuthService.redeemHandoff(ds, text(json, "code"), clientInfo(httpHeaders)));
         } catch (BadRequestException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
@@ -304,7 +304,7 @@ public class ResourceAuth {
     public Response changePassword(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
         try {
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!isInteractive(ds)) {
                 return Response.status(Response.Status.FORBIDDEN).entity("Not allowed for this login type").build();
             }
@@ -356,7 +356,7 @@ public class ResourceAuth {
                 logger.warn("Too many password reset requests from {}", remoteAddress());
                 return Response.status(429).entity("Too many requests, try again later").build();
             }
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             PasswordResetService.requestReset(ds, login.trim(), clientInfo(httpHeaders));
             return message(RESET_REQUESTED_MESSAGE);
         } catch (BadRequestException ex) {
@@ -386,7 +386,7 @@ public class ResourceAuth {
             if (!PasswordResetPolicy.isValidPassword(newPassword)) {
                 return Response.status(Response.Status.BAD_REQUEST).entity("The new password must have at least " + MIN_PASSWORD_LENGTH + " characters").build();
             }
-            ds = new SQLDataSource(httpHeaders, request, url, false);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
             if (!PasswordResetService.isAvailable(ds)) {
                 return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("The password reset is not available").build();
             }
@@ -417,7 +417,7 @@ public class ResourceAuth {
     @Produces(MediaType.APPLICATION_JSON)
     public Response me(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             JEVisUserSQL user = ds.getCurrentUser();
             Map<String, Object> answer = new LinkedHashMap<>();
             answer.put("id", user.getUserID());
@@ -443,7 +443,7 @@ public class ResourceAuth {
     @Produces(MediaType.APPLICATION_JSON)
     public Response mfaStatus(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             return json(AuthService.getMfaStatus(ds, ds.getCurrentUser()));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
@@ -467,10 +467,10 @@ public class ResourceAuth {
             String mfaToken = text(json, "mfaToken");
             if (mfaToken != null) {
                 /* enrollment during login, the password was checked in the first login step */
-                ds = new SQLDataSource(httpHeaders, request, url, false);
+                ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
                 user = AuthService.userFromMfaToken(ds, mfaToken);
             } else {
-                ds = new SQLDataSource(httpHeaders, request, url);
+                ds = new SQLDataSource(httpHeaders::getRequestHeader);
                 if (!isInteractive(ds)) {
                     return Response.status(Response.Status.FORBIDDEN).entity("Not allowed for this login type").build();
                 }
@@ -506,10 +506,10 @@ public class ResourceAuth {
             JEVisUserSQL user;
             String mfaToken = text(json, "mfaToken");
             if (mfaToken != null) {
-                ds = new SQLDataSource(httpHeaders, request, url, false);
+                ds = new SQLDataSource(httpHeaders::getRequestHeader, false);
                 user = AuthService.userFromMfaToken(ds, mfaToken);
             } else {
-                ds = new SQLDataSource(httpHeaders, request, url);
+                ds = new SQLDataSource(httpHeaders::getRequestHeader);
                 if (!isInteractive(ds)) {
                     return Response.status(Response.Status.FORBIDDEN).entity("Not allowed for this login type").build();
                 }
@@ -546,7 +546,7 @@ public class ResourceAuth {
     public Response mfaDisable(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
         try {
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!isInteractive(ds)) {
                 return Response.status(Response.Status.FORBIDDEN).entity("Not allowed for this login type").build();
             }
@@ -578,7 +578,7 @@ public class ResourceAuth {
     @Path("/mfa/{userId}")
     public Response mfaReset(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, @PathParam("userId") long userId) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!isInteractive(ds) || !ds.getCurrentUser().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }
@@ -602,7 +602,7 @@ public class ResourceAuth {
     @Produces(MediaType.APPLICATION_JSON)
     public Response listApiKeys(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!isInteractive(ds) || !ds.getCurrentUser().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }
@@ -625,7 +625,7 @@ public class ResourceAuth {
     public Response createApiKey(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
         try {
             JsonNode json = parse(body);
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!isInteractive(ds) || !ds.getCurrentUser().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }
@@ -654,7 +654,7 @@ public class ResourceAuth {
     @Path("/apikeys/{id}")
     public Response revokeApiKey(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, @PathParam("id") String keyId) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!isInteractive(ds) || !ds.getCurrentUser().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }

@@ -28,8 +28,8 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.commons.ws.json.JsonI18nClass;
 import org.jevis.commons.ws.sql.Config;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

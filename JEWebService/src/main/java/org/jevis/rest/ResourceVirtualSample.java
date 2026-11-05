@@ -40,11 +40,11 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Response.Status;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +112,7 @@ public class ResourceVirtualSample {
 
         try {
             logger.error("Object/att: {}/{} from/until: {}/{} mM:aM: {}/{} ", id, attribute, start, end, manipulationMode, aggregationPeriod);
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
             Benchmark benchmark = new Benchmark();
             JsonObject obj = this.ds.getObject(id);
             if (obj == null) {
