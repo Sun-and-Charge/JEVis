@@ -1,0 +1,67 @@
+{
+  "app": { "name": "JEVis", "skip": "Zum Inhalt springen" },
+  "login": {
+    "title": "Anmelden",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "remember": "Angemeldet bleiben",
+    "submit": "Anmelden",
+    "forgot": "Passwort vergessen?",
+    "failed": "Benutzername oder Passwort ist falsch.",
+    "locked": "Zu viele Fehlversuche. Bitte später erneut versuchen.",
+    "unavailable": "Die Anmeldung ist auf diesem Server nicht verfügbar.",
+    "error": "Die Anmeldung ist fehlgeschlagen. Bitte später erneut versuchen.",
+    "expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "mfaTitle": "Bestätigungscode",
+    "mfaText": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App oder einen Wiederherstellungscode ein.",
+    "mfaCode": "Code",
+    "mfaSubmit": "Bestätigen",
+    "mfaFailed": "Der Code ist nicht gültig.",
+    "mfaEnrollment": "Für Ihr Konto ist die Zwei-Faktor-Anmeldung vorgeschrieben. Bitte richten Sie sie zuerst im Control Center ein.",
+    "back": "Zurück"
+  },
+  "forgot": {
+    "title": "Passwort vergessen",
+    "text": "Geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein. Wenn das Konto existiert und eine E-Mail-Adresse hinterlegt ist, erhalten Sie einen Code.",
+    "login": "Benutzername oder E-Mail-Adresse",
+    "send": "Code anfordern",
+    "sent": "Falls das Konto existiert, wurde ein Code verschickt.",
+    "code": "Code aus der E-Mail",
+    "newPassword": "Neues Passwort",
+    "repeat": "Neues Passwort wiederholen",
+    "reset": "Passwort setzen",
+    "done": "Das Passwort wurde geändert. Sie können sich jetzt anmelden.",
+    "toLogin": "Zur Anmeldung"
+  },
+  "password": {
+    "title": "Passwort ändern",
+    "mustChange": "Bitte vergeben Sie ein neues Passwort.",
+    "current": "Aktuelles Passwort",
+    "submit": "Passwort ändern",
+    "wrongCurrent": "Das aktuelle Passwort ist nicht korrekt.",
+    "tooShort": "Das Passwort muss mindestens 8 Zeichen haben.",
+    "mismatch": "Die Passwörter stimmen nicht überein.",
+    "changed": "Das Passwort wurde geändert."
+  },
+  "nav": {
+    "sites": "Standorte",
+    "analyses": "Analysen",
+    "dashboards": "Dashboards",
+    "other": "Weitere",
+    "empty": "Keine Analysen oder Dashboards freigegeben.",
+    "loading": "Lade …",
+    "error": "Die Navigation konnte nicht geladen werden."
+  },
+  "header": { "logout": "Abmelden", "changePassword": "Passwort ändern", "language": "Sprache", "menu": "Menü" },
+  "home": {
+    "title": "Willkommen",
+    "text": "Wählen Sie links eine Analyse oder ein Dashboard.",
+    "count": "{sites} Standorte · {analyses} Analysen · {dashboards} Dashboards"
+  },
+  "placeholder": {
+    "analysis": "Die Analyse-Ansicht folgt im nächsten Schritt (W2).",
+    "dashboard": "Die Dashboard-Ansicht folgt im übernächsten Schritt (W3).",
+    "openInCC": "Bis dahin öffnen Sie dieses Objekt im Control Center (ID {id})."
+  },
+  "notFound": { "title": "Seite nicht gefunden", "home": "Zur Startseite" }
+}

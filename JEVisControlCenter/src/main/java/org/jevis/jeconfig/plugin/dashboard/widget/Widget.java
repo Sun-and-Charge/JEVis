@@ -49,11 +49,11 @@ import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
+import org.jevis.jeconfig.plugin.dashboard.WidgetMoveResizeSupport;
 import org.jevis.jeconfig.plugin.dashboard.config2.JsonNames;
 import org.jevis.jeconfig.plugin.dashboard.config2.Size;
 import org.jevis.jeconfig.plugin.dashboard.config2.WidgetPojo;
 import org.jevis.jeconfig.plugin.dashboard.datahandler.DataModelDataHandler;
-import org.jevis.jeconfig.tool.DragResizeMod;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
@@ -74,7 +74,7 @@ import java.util.List;
  * </ul>
  *
  * <p>The widget overlay stack (from bottom to top): content → alert → edit/drag overlay.
- * Drag-and-resize is wired automatically via {@link DragResizeMod}.
+ * Moving and resizing with the mouse is wired automatically via {@link WidgetMoveResizeSupport}.
  */
 public abstract class Widget extends Region {
     private static final Logger logger = LogManager.getLogger(Widget.class);
@@ -90,7 +90,8 @@ public abstract class Widget extends Region {
     private final ProgressIndicator progressIndicator = new ProgressIndicator();
     private final Label label = new Label();
     private final Tooltip tt = new Tooltip("");
-    private final DragResizeMod.OnDragResizeEventListener onDragResizeEventListener = DragResizeMod.defaultListener;
+    /* every widget has its own move/resize state */
+    private final WidgetMoveResizeSupport moveResizeSupport = new WidgetMoveResizeSupport(this);
     public WidgetPojo config;
     public Size previewSize = new Size(28, 28);
     protected DataModelDataHandler sampleHandler;
@@ -144,8 +145,7 @@ public abstract class Widget extends Region {
                 this.editPane
                 //this.loadingPane
         );
-        onDragResizeEventListener.setDashBoardPane(control.getDashboardPane());
-        DragResizeMod.makeResizable(this, onDragResizeEventListener);
+        moveResizeSupport.install();
 
         this.layoutYProperty().addListener((observable, oldValue, newValue) -> {
             this.config.setyPosition(newValue.doubleValue());
@@ -267,7 +267,7 @@ public abstract class Widget extends Region {
 
     public void setEditable(boolean editable) {
 //        logger.debug("Widget setEditable {}", editable);
-        onDragResizeEventListener.resizeableProperty().setValue(editable);
+        moveResizeSupport.setEnabled(editable);
         this.editPane.setVisible(editable);
         this.editable.setValue(editable);
     }

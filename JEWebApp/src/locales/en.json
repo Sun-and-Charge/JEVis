@@ -1,0 +1,67 @@
+{
+  "app": { "name": "JEVis", "skip": "Skip to content" },
+  "login": {
+    "title": "Sign in",
+    "username": "User name",
+    "password": "Password",
+    "remember": "Keep me signed in",
+    "submit": "Sign in",
+    "forgot": "Forgot your password?",
+    "failed": "The user name or password is wrong.",
+    "locked": "Too many failed attempts. Please try again later.",
+    "unavailable": "Sign-in is not available on this server.",
+    "error": "Sign-in failed. Please try again later.",
+    "expired": "Your session has expired. Please sign in again.",
+    "mfaTitle": "Verification code",
+    "mfaText": "Enter the 6-digit code from your authenticator app or a recovery code.",
+    "mfaCode": "Code",
+    "mfaSubmit": "Verify",
+    "mfaFailed": "The code is not valid.",
+    "mfaEnrollment": "Two-factor sign-in is required for your account. Please set it up in the Control Center first.",
+    "back": "Back"
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "text": "Enter your user name or e-mail address. If the account exists and has an e-mail address, you will receive a code.",
+    "login": "User name or e-mail address",
+    "send": "Request code",
+    "sent": "If the account exists, a code was sent.",
+    "code": "Code from the e-mail",
+    "newPassword": "New password",
+    "repeat": "Repeat new password",
+    "reset": "Set password",
+    "done": "The password was changed. You can sign in now.",
+    "toLogin": "To sign-in"
+  },
+  "password": {
+    "title": "Change password",
+    "mustChange": "Please choose a new password.",
+    "current": "Current password",
+    "submit": "Change password",
+    "wrongCurrent": "The current password is not correct.",
+    "tooShort": "The password must have at least 8 characters.",
+    "mismatch": "The passwords do not match.",
+    "changed": "The password was changed."
+  },
+  "nav": {
+    "sites": "Sites",
+    "analyses": "Analyses",
+    "dashboards": "Dashboards",
+    "other": "Other",
+    "empty": "No analyses or dashboards shared with you.",
+    "loading": "Loading …",
+    "error": "The navigation could not be loaded."
+  },
+  "header": { "logout": "Sign out", "changePassword": "Change password", "language": "Language", "menu": "Menu" },
+  "home": {
+    "title": "Welcome",
+    "text": "Choose an analysis or a dashboard on the left.",
+    "count": "{sites} sites · {analyses} analyses · {dashboards} dashboards"
+  },
+  "placeholder": {
+    "analysis": "The analysis view follows in the next step (W2).",
+    "dashboard": "The dashboard view follows in the step after that (W3).",
+    "openInCC": "Until then, open this object in the Control Center (ID {id})."
+  },
+  "notFound": { "title": "Page not found", "home": "To the start page" }
+}

@@ -32,7 +32,6 @@ import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
@@ -50,9 +49,9 @@ import org.jevis.jeconfig.*;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.plugin.RegisterTableRow;
+import org.jevis.jeconfig.application.table.TableColumnMenu;
 import org.jevis.jeconfig.application.table.TableColumnStateStore;
 import org.jevis.jeconfig.plugin.TablePlugin;
-import org.jevis.jeconfig.plugin.charts.TableViewContextMenuHelper;
 import org.jevis.jeconfig.plugin.equipment.JEVisClassTab;
 import org.jevis.jeconfig.plugin.meters.MeterPlugin;
 import org.joda.time.DateTime;
@@ -461,15 +460,8 @@ public class BaseDataPlugin extends TablePlugin {
                         JEVisClassTab tab = new JEVisClassTab();
                         List<JEVisObject> listObjects = allBaseData.get(typeOfBaseData);
 
-                        TableViewContextMenuHelper contextMenuHelper = new TableViewContextMenuHelper(tableView);
-
-                        if (contextMenuHelper.getTableHeaderRow() != null) {
-                            contextMenuHelper.getTableHeaderRow().setOnMouseClicked(event -> {
-                                if (event.getButton() == MouseButton.SECONDARY) {
-                                    contextMenuHelper.showContextMenu();
-                                }
-                            });
-                        }
+                        /* column menu on the "+" button, on a right click on the header and with Ctrl+Shift+Space */
+                        TableColumnMenu.install(tableView);
 
                         try {
                             tab.setClassName(typeOfBaseData);

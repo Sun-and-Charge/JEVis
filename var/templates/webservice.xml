@@ -14,6 +14,9 @@
         <i18ndir>/home/jevis/jevis/var/i18n</i18ndir>
         <filedir>/home/jevis/jevis/var/files/</filedir>
         <classdir>/home/jevis/jevis/var/classes/</classdir>
+        <!-- optional: start page (sunandcharge-app-web) served at / and /web/, and the built web app at /app/ -->
+        <!-- <webpage>/home/jevis/sunandcharge-app-web</webpage> -->
+        <!-- <webapp>/home/jevis/jevis/JEWebApp/dist</webapp> -->
         <jeccversion>3.9.12</jeccversion>
         <auth>
             <!-- legacy HTTP Basic auth for old clients, switch off once all JECC/launcher/services are updated -->

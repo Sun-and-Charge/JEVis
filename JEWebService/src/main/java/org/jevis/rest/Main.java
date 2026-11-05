@@ -41,6 +41,7 @@ import org.jevis.commons.ws.sql.*;
 import org.jevis.commons.ws.sql.archive.ArchiveService;
 import org.jevis.commons.ws.sql.auth.AuthService;
 import org.jevis.commons.ws.sql.userlog.UserLogService;
+import org.jevis.web.WebAppHttpHandler;
 import org.joda.time.DateTime;
 
 import javax.security.sasl.AuthenticationException;
@@ -282,6 +283,10 @@ public class Main {
             server.getServerConfiguration().addHttpHandler(new StaticHttpHandler(
                     Config.getWebDir()), "/web");
         }
+        if (Config.getWebAppDir() != null && !Config.getWebAppDir().isEmpty()) {
+            logger.info("Init web app: " + Config.getWebAppDir());
+            server.getServerConfiguration().addHttpHandler(new WebAppHttpHandler(Config.getWebAppDir()), "/app");
+        }
 
 
         MimeType.add("msix", "application/msix");
@@ -289,6 +294,11 @@ public class Main {
         MimeType.add("msixbundle", "application/msixbundle");
         MimeType.add("appxbundle", "application/appxbundle");
         MimeType.add("appinstaller", "application/appinstaller");
+        /* fonts and manifest of the web app */
+        MimeType.add("ttf", "font/ttf");
+        MimeType.add("woff", "font/woff");
+        MimeType.add("woff2", "font/woff2");
+        MimeType.add("webmanifest", "application/manifest+json");
 
         CompressionConfig compressionConfig =
                 server.getListener("grizzly").getCompressionConfig();

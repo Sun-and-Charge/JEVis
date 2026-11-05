@@ -28,7 +28,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -42,9 +41,9 @@ import org.jevis.jeconfig.application.Chart.ChartType;
 import org.jevis.jeconfig.application.Chart.Charts.Chart;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 import org.jevis.jeconfig.application.Chart.data.ValueWithDateTime;
+import org.jevis.jeconfig.application.table.TableColumnMenu;
 import org.jevis.jeconfig.application.tools.TableViewUtils;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
-import org.jevis.jeconfig.plugin.charts.TableViewContextMenuHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +59,6 @@ public class TableHeader extends TableView<TableEntry> {
     private Label periodLabel;
     private TableColumn<TableEntry, String> dateCol;
     private TableColumn<TableEntry, String> noteCol;
-    private TableViewContextMenuHelper contextMenuHelper;
     private List<XYChartSerie> xyChartSerieList;
 
     public TableHeader(ChartModel chartModel, Chart chart) {
@@ -279,14 +277,8 @@ public class TableHeader extends TableView<TableEntry> {
 
                 getColumns().addAll(colorCol, nameCol, periodCol, value, dateCol, noteCol, minCol, maxCol, avgCol, enPICol, sumCol);
                 setTableMenuButtonVisible(true);
-                contextMenuHelper = new TableViewContextMenuHelper(this);
-                if (contextMenuHelper.getTableHeaderRow() != null) {
-                    contextMenuHelper.getTableHeaderRow().setOnMouseClicked(event -> {
-                        if (event.getButton() == MouseButton.SECONDARY) {
-                            contextMenuHelper.showContextMenu();
-                        }
-                    });
-                }
+                /* column menu on the "+" button, on a right click on the header and with Ctrl+Shift+Space */
+                TableColumnMenu.install(this);
 
                 widthProperty().addListener((observable, oldValue, newValue) -> {
                     Platform.runLater(this::updateColumnCaptionWidths);

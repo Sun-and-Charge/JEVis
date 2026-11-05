@@ -6,26 +6,15 @@ This document lists what was checked and the issues that still need a decision o
 ## Open issues
 
 1. **Eclipse Milo (OPC UA) is EPL 2.0 only.** `org.eclipse.milo:sdk-client`, `sdk-core`, `stack-client`,
-   `stack-core` 0.6.16 are licensed under EPL 2.0 without the "Secondary License" (GPL) designation:
-   checked in the license file and the source headers (`SPDX-License-Identifier: EPL-2.0`), also on the
-   current main branch. EPL 2.0 without that designation is not compatible with the GPL. Milo is used by
-   `DataCollector/OPCUA-Driver`, `DataCollector/loytec-xml-dl` and the OPC UA browser of the Control Center,
-   which is distributed as one jar with all dependencies.
-   Options:
-    - ask the Milo project to add GPL-2.0-or-later as Secondary License (Eclipse projects can do this);
-    - move OPC UA into a separate program that talks to JEVis over the REST API and is not distributed
-      as part of the GPL work;
-    - use a GPL-compatible OPC UA stack.
-2. **Code taken from the web.** Checked, attribution is not enough for:
-    - `JEVisControlCenter/.../tool/DragResizeMod.java` (moving and resizing dashboard widgets), based on
-      github.com/varren/JavaFX-Resizable-Draggable-Node. That repository has no license at all (no license
-      file, nothing in README or source), so all rights stay with the author.
-    - `JEVisControlCenter/.../plugin/charts/TableViewContextMenuHelper.java` (column menu of tables), the
-      generalised class from the StackOverflow answer by Balage1551 (2016, based on Roland's answer from
-      2015), licensed CC BY-SA 3.0. Only CC BY-SA 4.0 is compatible with GPLv3.
-
-   Both need to be rewritten independently, or the authors asked for a GPL-compatible license.
-3. **GPLv3 only** (deferred). The original Envidatec headers say "in version 3", not "or later". Moving to
+   `stack-core` 0.6.16 are licensed under EPL 2.0 without the "Secondary License" (GPL) designation
+   (checked in the license file and the source headers, also on the current main branch), so they are not
+   compatible with the GPL. Milo is used by `DataCollector/OPCUA-Driver`, `DataCollector/loytec-xml-dl` and
+   the OPC UA browser of the Control Center.
+   No GPL-compatible Java OPC UA stack covers what JEVis needs (above all HistoryRead raw and processed):
+   Apache PLC4X has no HistoryRead and needs Java 21, the OPC Foundation Java stack is GPL-2.0-only.
+   **Decided 2026-11-05:** replace Milo by a separate program `opcua-bridge` written in Go on gopcua (MIT),
+   which JEVis calls as a process (JSON over stdin/stdout). Planned after web phase W1.
+2. **GPLv3 only** (deferred). The original Envidatec headers say "in version 3", not "or later". Moving to
    a later GPL version would need the consent of the copyright holders.
 
 ## Done
@@ -74,10 +63,21 @@ This document lists what was checked and the issues that still need a decision o
 - **`javax.activation:activation` 1.1 (CDDL 1.0 only):** excluded from `com.sun.mail:javax.mail`, replaced by
   `com.sun.activation:jakarta.activation` 1.2.2 (EDL 1.0). The JAXB annotation API of JECommons is
   `jakarta.xml.bind:jakarta.xml.bind-api` 2.3.3 (EDL 1.0).
+- **Code taken from the web:** `tool/DragResizeMod.java` (from a GitHub repository without any license) and
+  `plugin/charts/TableViewContextMenuHelper.java` (StackOverflow answer under CC BY-SA 3.0, not compatible
+  with GPLv3) were removed. Their functions were rewritten independently from a behaviour description,
+  without access to the old code or its sources: moving and resizing of dashboard widgets
+  (`plugin/dashboard/WidgetMoveResizeSupport`, `WidgetFrame`, `WidgetHandle`, with unit tests) and the
+  column menu of tables (`application/table/TableColumnMenu`).
 - **Credentials in example configs:** `Notifier/JENotifier/JENotifierConfig.xml` and `JENotifierConfig2.xml`
   use placeholders. Also removed: an unused method with the login of another server in a comment
   (`Configuration.getDefaultServer`), an obsolete NetBeans action file and four `*.java1~` backup files.
   The old passwords are still in the git history; change them if those servers are still in use.
+
+- **Web app (`JEWebApp`):** GPL-3.0-only. The bundled npm packages (Vue, vue-router, Pinia, vue-i18n and
+  their parts) are MIT; `npm run build` writes their license texts and the Montserrat font license (OFL 1.1) to
+  `dist/THIRD-PARTY-LICENSES.txt`. Dependencies are installed with `--before` (at least two weeks old) and
+  pinned in `package-lock.json`.
 
 ### Dependencies checked and compatible
 

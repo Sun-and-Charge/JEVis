@@ -386,7 +386,7 @@ public class DashBoardPane extends Pane {
             lastGridHeight = h;
             lastXInterval = xi;
             lastYInterval = yi;
-            /* the fine grid is only used for snapping (DragResizeMod), it has no visible lines */
+            /* the fine grid is only used for snapping (WidgetMoveResizeSupport), it has no visible lines */
             createGrid(xi / 4, yi / 4, null, xGridsFine, yGridsFine);
             createGrid(xi, yi, visibleGrid, xGrids, yGrids);
         }
