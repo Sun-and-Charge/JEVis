@@ -67,6 +67,7 @@ import org.jevis.jeconfig.dialog.HiddenConfig;
 import org.jevis.jeconfig.tool.Exceptions;
 import org.jevis.jeconfig.tool.WelcomePage;
 import org.jevis.jeconfig.ws.CertificateImporter;
+import org.jevis.jeconfig.ws.UserTrustStore;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -728,6 +729,8 @@ public class JEConfig extends Application {
         }
 
         _primaryStage = primaryStage;
+        /* certificates accepted earlier by this user, before the first connection to the server */
+        UserTrustStore.install();
         loadFonts();
         initGUI(primaryStage);
     }

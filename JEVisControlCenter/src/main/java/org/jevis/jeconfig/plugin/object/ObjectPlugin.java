@@ -214,6 +214,18 @@ public class ObjectPlugin implements Plugin {
         return viewPane;
     }
 
+    /**
+     * @return true for a user that is not Sys Admin and has no entry point into the tree (no read rights yet)
+     */
+    private boolean hasNoVisibleObjects() {
+        try {
+            return !ds.getCurrentUser().isSysAdmin() && ds.getRootObjects().stream().noneMatch(java.util.Objects::nonNull);
+        } catch (Exception e) {
+            logger.debug("Could not check the root objects", e);
+            return false;
+        }
+    }
+
     public void initGUI() {
         tree = JEVisTreeFactory.buildBasicDefault(ds, true);
         tree.setId("objecttree");
@@ -266,6 +278,15 @@ public class ObjectPlugin implements Plugin {
         treeLoadingPane.setContent(left);
         editorLoadingPane.setContent(_editor.getView());
         left.getChildren().addAll(tree, searchBar);
+        if (hasNoVisibleObjects()) {
+            /* a user without read rights only sees the recycle bin; say why (OpenJEVis #1211) */
+            Label noRights = new Label(I18n.getInstance().getString("permission.tree.norights"));
+            noRights.setWrapText(true);
+            noRights.setPadding(new javafx.geometry.Insets(12));
+            noRights.setStyle("-fx-font-weight: bold;");
+            noRights.setMaxWidth(Double.MAX_VALUE);
+            left.getChildren().add(0, noRights);
+        }
 
         SplitPane sp = new SplitPane();
         sp.setDividerPositions(.3d);

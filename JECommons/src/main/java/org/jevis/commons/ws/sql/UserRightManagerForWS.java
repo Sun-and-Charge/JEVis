@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+  Copyright (C) 2026 Sun and Charge Germany GmbH
 
   This file is part of JECommons.
 
@@ -22,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisException;
+import org.jevis.commons.ws.json.JsonEffectiveRights;
 import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.json.JsonRelationship;
 
@@ -377,7 +379,7 @@ public class UserRightManagerForWS {
         }
     }
 
-    public final List<String> exceptionClass = Arrays.asList("Data Notes", "User Data");
+    public final List<String> exceptionClass = PermissionExplainer.CREATE_EXCEPTION_CLASSES;
 
     /**
      * Returns {@code true} if the current user may create a child of type
@@ -582,6 +584,59 @@ public class UserRightManagerForWS {
         this.exeGIDS.clear();
         this.writeGIDS.clear();
         this.createGIDS.clear();
+    }
+
+    /**
+     * Collects the owner groups of an object with the same queries {@link #canRead(JsonObject)} and
+     * {@link #canWrite(JsonObject)} (create, delete, execute) use (OpenJEVis #1211).
+     * Call it before anything loads the request-scoped relationship cache, like the checks of a normal request.
+     *
+     * @param object the object
+     * @return the owner groups
+     */
+    public PermissionExplainer.ObjectOwners getOwners(JsonObject object) {
+        return PermissionExplainer.ObjectOwners.of(object.getId(), object.getisPublic(),
+                this.ds.getGroupOwnerRelationships(object.getId()),
+                this.ds.getRelationships(object.getId(), JEVisConstants.ObjectRelationship.OWNER));
+    }
+
+    /**
+     * Returns the memberships of any user from the membership cache the permission checks use (OpenJEVis #1211).
+     *
+     * @param userID the user's object ID
+     * @return the membership relationships; empty if none
+     * @throws Exception if the cache cannot be loaded
+     */
+    public List<JsonRelationship> getMemberships(long userID) throws Exception {
+        return CachedAccessControl.getInstance(this.ds, this.isSSO).getUserMemberships(userID);
+    }
+
+    /**
+     * Returns all users known to the membership cache (OpenJEVis #1211).
+     *
+     * @return the users
+     * @throws Exception if the cache cannot be loaded
+     */
+    public Collection<JEVisUserSQL> getAllUsers() throws Exception {
+        Map<String, JEVisUserSQL> users = CachedAccessControl.getInstance(this.ds, this.isSSO).getUsers();
+        return users != null ? new ArrayList<>(users.values()) : new ArrayList<>();
+    }
+
+    /**
+     * Explains the effective rights of any user on an object with the rules of this class (OpenJEVis #1211).
+     * The result for the current user matches {@link #canRead(JsonObject)}, {@link #canWrite(JsonObject)},
+     * {@link #canCreate(JsonObject)}, {@link #canDelete(JsonObject)} and {@link #canExecute(JsonObject)}.
+     *
+     * @param user   the user to explain
+     * @param owners the owner groups of the object, see {@link #getOwners(JsonObject)}
+     * @param roles  the role index, or {@code null}
+     * @param names  resolves group and role names
+     * @return the effective rights with their sources
+     * @throws Exception if the membership cache cannot be loaded
+     */
+    public JsonEffectiveRights explain(JEVisUserSQL user, PermissionExplainer.ObjectOwners owners,
+                                       PermissionExplainer.RoleIndex roles, java.util.function.Function<Long, String> names) throws Exception {
+        return PermissionExplainer.explain(user, owners, getMemberships(user.getUserID()), roles, names);
     }
 
     /**

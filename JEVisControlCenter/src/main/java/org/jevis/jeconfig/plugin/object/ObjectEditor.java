@@ -218,6 +218,9 @@ public class ObjectEditor {
                     }
                     installedExtensions.add(new MemberExtension(obj));
                     installedExtensions.add(new PermissionExtension(obj));
+                    /* read-only effective rights view (OpenJEVis #1211) */
+                    installedExtensions.add(new EffectiveRightsExtension(obj));
+                    installedExtensions.add(new UserRightsExtension(obj));
                     installedExtensions.add(new RootExtension(obj));
                     installedExtensions.add(new LinkExtension(obj));
 

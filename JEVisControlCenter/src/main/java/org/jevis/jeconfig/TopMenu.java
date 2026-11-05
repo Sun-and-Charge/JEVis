@@ -66,6 +66,7 @@ import org.jevis.jeconfig.tool.PasswordDialog;
 import org.jevis.jeconfig.tool.PatchNotesPage;
 import org.jevis.jeconfig.tool.TrianglePerformanceTest;
 import org.jevis.jeconfig.tool.dwdbrowser.DWDBrowser;
+import org.jevis.jeconfig.tool.permission.PermissionMenu;
 import org.joda.time.DateTime;
 
 import java.io.File;
@@ -302,6 +303,7 @@ public class TopMenu extends MenuBar {
         MenuItem driverImport = new MenuItem(I18n.getInstance().getString("menu.system.driver"));
 
         system.getItems().add(driverImport);
+        system.getItems().add(PermissionMenu.systemItem(JEConfig.getDataSource()));
         if (JEConfig.getExpert()) {
             MenuItem benchmark = new MenuItem("Benchmark");
             benchmark.setOnAction(event -> {

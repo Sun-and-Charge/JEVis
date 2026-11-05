@@ -1193,6 +1193,78 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     }
 
     /**
+     * Reads the effective rights of the users on an object (OpenJEVis #1211, "Wer darf was?").
+     * Sys Admins and users with write right get all users with at least one right, other users only their own row.
+     *
+     * @return the rights, or {@code null} if the webservice has no permissions endpoint (older version)
+     * @throws JEVisException with code 403 if the current user cannot read the object, 404 if it does not exist
+     */
+    public JsonObjectPermissions getObjectPermissions(long objectId) throws JEVisException {
+        return getPermissions(REQUEST.API_PATH_V1 + "permissions/object/" + objectId, JsonObjectPermissions.class);
+    }
+
+    /**
+     * Reads the group memberships and roles of a user and, if {@code objectId} is given, his effective rights on that
+     * object (OpenJEVis #1211). Sys Admins can read every user, other users only themselves.
+     *
+     * @return the rights, or {@code null} if the webservice has no permissions endpoint (older version)
+     * @throws JEVisException with code 403 if not allowed, 404 if the user or object does not exist
+     */
+    public JsonUserPermissions getUserPermissions(long userId, Long objectId) throws JEVisException {
+        String resource = REQUEST.API_PATH_V1 + "permissions/user/" + userId + (objectId != null ? "?object=" + objectId : "");
+        return getPermissions(resource, JsonUserPermissions.class);
+    }
+
+    private <T> T getPermissions(String resource, Class<T> type) throws JEVisException {
+        HttpURLConnection conn = null;
+        try {
+            conn = this.con.getGetConnection(resource);
+            int code = conn.getResponseCode();
+            if (code == HttpURLConnection.HTTP_BAD_METHOD) {
+                return null;
+            }
+            if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+                /* the endpoint answers "Object not found" or "User not found", an older webservice has no endpoint */
+                String message = readErrorMessage(conn);
+                if (message != null && message.endsWith(" not found") && message.length() < 40) {
+                    throw new JEVisException(message, code);
+                }
+                return null;
+            }
+            if (code != HttpURLConnection.HTTP_OK) {
+                String message = readErrorMessage(conn);
+                throw new JEVisException("Could not read the rights: HTTP " + code + (message != null && !message.isEmpty() ? " " + message : ""), code);
+            }
+            InputStream in = conn.getInputStream();
+            if ("gzip".equals(conn.getContentEncoding())) {
+                in = new java.util.zip.GZIPInputStream(in);
+            }
+            try (InputStream stream = in) {
+                return this.objectMapper.readValue(stream, type);
+            }
+        } catch (IOException ex) {
+            throw new JEVisException(ex.getMessage(), 402, ex);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+    }
+
+    private static String readErrorMessage(HttpURLConnection conn) {
+        try (InputStream err = conn.getErrorStream()) {
+            if (err == null) return null;
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = err.read(buffer)) != -1 && out.size() < 4096) {
+                out.write(buffer, 0, read);
+            }
+            return new String(out.toByteArray(), java.nio.charset.StandardCharsets.UTF_8).trim();
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    /**
      * Authenticates using an SSO token (e.g. Microsoft/OAuth bearer token) and initialises a
      * session-based connection. The session key is stored in {@link HTTPConnection} for
      * subsequent requests.
