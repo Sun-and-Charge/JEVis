@@ -39,7 +39,8 @@ It is a fork of the OpenJEVis project, originally developed by Envidatec GmbH. S
 
 - Java 25 for building and for the server (web service and services), for example Azul Zulu 25
 - Java 8 with JavaFX for the Control Center (for example Zulu or Liberica "FX" builds); Maven uses it as a
-  toolchain, see [docs/toolchains-example.xml](docs/toolchains-example.xml)
+  toolchain, see [docs/toolchains-example.xml](docs/toolchains-example.xml) and the setup guide
+  [docs/BUILD-JAVA-8-AND-25.md](docs/BUILD-JAVA-8-AND-25.md)
 - Maven 3.9+
 - MySQL (5.7 or newer recommended)
 - LibreOffice 5+ (only for reports)
