@@ -107,6 +107,7 @@ public class Config {
     private static String latestJECCVersion = "0";
     private static String latestJavaVersion = "0";
     private static String webDir = "";
+    private static String webAppDir = "";
     private static String installerDir = "/var/www/html/installer";
     /** API key required for self-registration requests. Set by {@link #readConfigurationFile}. */
     public static String registrationKey = "";
@@ -201,6 +202,11 @@ public class Config {
     /** @return the path to the optional embedded web application directory. */
     public static String getWebDir() {
         return webDir;
+    }
+
+    /** @return the directory of the built web app (JEWebApp/dist), served at /app; empty if not configured. */
+    public static String getWebAppDir() {
+        return webAppDir;
     }
 
     /** @return the list of allowed CORS origins (may be empty). */
@@ -350,6 +356,7 @@ public class Config {
                     registrationKey = getParameter(config, "webservice.registration.apikey", UUID.randomUUID().toString());
 
                     webDir = getParameter(config, "webservice.webpage", "");
+                    webAppDir = getParameter(config, "webservice.webapp", "");
                     installerDir = getParameter(config, "webservice.installer", "");
                     cors.addAll(Arrays.asList(getParameter(config, "webservice.cors", "").split(";")));
 

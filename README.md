@@ -26,6 +26,7 @@ It is a fork of the OpenJEVis project, originally developed by Envidatec GmbH. S
 | `JECommons` | Common functions shared by all modules, including i18n resources |
 | `JEWebService` | REST web service (server) |
 | `JEVisControlCenter` | JavaFX desktop application for configuration and analysis |
+| `JEWebApp` | Web app (Vue/TypeScript) for analyses and dashboards in the browser, served by the web service at `/app/`, see [JEWebApp/README.md](JEWebApp/README.md) |
 | `DataCollector` | Data collection service (`JEDataCollector`) and its data source drivers and parsers |
 | `JEDataProcessor` | Data cleaning and processing service |
 | `JECalc` | Calculation service |

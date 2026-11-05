@@ -74,6 +74,11 @@ This document lists what was checked and the issues that still need a decision o
   (`Configuration.getDefaultServer`), an obsolete NetBeans action file and four `*.java1~` backup files.
   The old passwords are still in the git history; change them if those servers are still in use.
 
+- **Web app (`JEWebApp`):** GPL-3.0-only. The bundled npm packages (Vue, vue-router, Pinia, vue-i18n and
+  their parts) are MIT; `npm run build` writes their license texts and the Montserrat font license (OFL 1.1) to
+  `dist/THIRD-PARTY-LICENSES.txt`. Dependencies are installed with `--before` (at least two weeks old) and
+  pinned in `package-lock.json`.
+
 ### Dependencies checked and compatible
 
 The generated license list (Help > Licenses) also contains these licenses, which are compatible:
