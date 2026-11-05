@@ -40,10 +40,6 @@ import org.joda.time.format.DateTimeFormat;
 import tech.units.indriya.AbstractUnit;
 
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -103,28 +99,24 @@ public class SQLDataSource {
      * Creates a new data source and authenticates the caller using the
      * {@code Authorization} or {@code session} HTTP header.
      *
-     * @param httpHeaders incoming request headers (used for auth)
-     * @param request     the JAX-RS request context
-     * @param url         the request URI info
+     * @param headers incoming request headers (used for auth), e.g. {@code httpHeaders::getRequestHeader}
      * @throws AuthenticationException if authentication fails
      * @throws JEVisException          if the database connection cannot be established
      */
-    public SQLDataSource(HttpHeaders httpHeaders, Request request, UriInfo url) throws AuthenticationException, JEVisException {
-        this(httpHeaders, request, url, true);
+    public SQLDataSource(RequestHeaders headers) throws AuthenticationException, JEVisException {
+        this(headers, true);
     }
 
     /**
      * Creates a new data source, optionally skipping authentication.
      *
-     * @param httpHeaders incoming request headers
-     * @param request     the JAX-RS request context
-     * @param url         the request URI info
-     * @param needLogin   {@code true} to enforce authentication; {@code false}
-     *                    to skip it (e.g., for public endpoints)
+     * @param headers   incoming request headers
+     * @param needLogin {@code true} to enforce authentication; {@code false}
+     *                  to skip it (e.g., for public endpoints)
      * @throws AuthenticationException if {@code needLogin} is true and auth fails
      * @throws JEVisException          if the database connection cannot be established
      */
-    public SQLDataSource(HttpHeaders httpHeaders, Request request, UriInfo url, boolean needLogin) throws AuthenticationException, JEVisException {
+    public SQLDataSource(RequestHeaders headers, boolean needLogin) throws AuthenticationException, JEVisException {
 
         boolean success = false;
         Connection conn = null;
@@ -138,7 +130,7 @@ public class SQLDataSource {
 
                 this.lTable = new LoginTable(this);
                 this.rTable = new RelationshipTable(this);
-                if (needLogin) jevisLogin(httpHeaders);
+                if (needLogin) jevisLogin(headers);
                 this.oTable = new ObjectTable(this);
                 this.aTable = new AttributeTable(this);
                 this.sTable = new SampleTable(this);
@@ -439,14 +431,12 @@ public class SQLDataSource {
         this.user = user;
     }
 
-    private void jevisLogin(HttpHeaders httpHeaders) throws AuthenticationException {
+    private void jevisLogin(RequestHeaders headers) throws AuthenticationException {
 
+        String session = headers.first("session");
+        String auth = headers.first("authorization");
 
-        boolean isSession = httpHeaders.getRequestHeader("session") != null && !httpHeaders.getRequestHeader("session").isEmpty();
-        boolean isAuth = httpHeaders.getRequestHeader("authorization") != null && !httpHeaders.getRequestHeader("authorization").isEmpty();
-
-        if (isSession) {
-            String session = httpHeaders.getRequestHeader("session").get(0);
+        if (session != null) {
             logger.debug("Login with Session: {}  ", session);
             try {
                 CachedAccessControl cac = CachedAccessControl.getInstance(this, true);
@@ -467,12 +457,6 @@ public class SQLDataSource {
         }
 
 
-        if (!isAuth) {
-            throw new AuthenticationException("Authorization header is missing");
-        }
-
-
-        String auth = httpHeaders.getRequestHeader("authorization").get(0);
         if (auth == null || auth.trim().isEmpty()) {
             throw new AuthenticationException("Authorization header is missing");
         }
@@ -498,7 +482,7 @@ public class SQLDataSource {
         /* limit 2: the password itself may contain ':' */
         String[] dauth = decodeS.split(":", 2);
         if (dauth.length != 2) {
-            throw ErrorBuilder.ErrorBuilder(Response.Status.BAD_REQUEST.getStatusCode(), 2002, "The HTML authorization header is not correct format");
+            throw new AuthenticationException("The authorization header has not the correct format");
         }
         logger.debug("Basic login for user: {}", dauth[0]);
         this.user = AuthService.authenticateBasic(this, dauth[0], dauth[1]);

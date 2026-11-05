@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of Notifier.
  * <p>
@@ -24,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.*;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 
 /**
@@ -37,7 +37,6 @@ public class Certificate {
      * @throws Exception
      */
     static public void doTrustToCertificates() throws Exception {
-        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {

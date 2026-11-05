@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -34,6 +35,7 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisFile;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.JEVisFileImp;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.joda.time.DateTime;
 
@@ -182,7 +184,7 @@ public class FileHTML implements AttributeEditor {
                 Tooltip tooltip = new Tooltip();
                 try {
                     tooltip.setText(_attribute.getType().getDescription());
-                    tooltip.setGraphic(JEConfig.getImage("1393862576_info_blue.png", 30, 30));
+                    tooltip.setGraphic(JEConfig.getSVGImage(Icon.INFO, 30, 30));
 //                    _field.getArea().setTooltip(tooltip);
                 } catch (JEVisException ex) {
                     logger.fatal(ex);

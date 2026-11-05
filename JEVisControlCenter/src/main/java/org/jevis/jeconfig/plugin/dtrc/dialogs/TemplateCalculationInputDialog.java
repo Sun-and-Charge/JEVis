@@ -55,7 +55,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TemplateCalculationInputDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(TemplateCalculationInputDialog.class);
-    private final String ICON = "1404313956_evolution-tasks.png";
     private final AlphanumComparator ac = new AlphanumComparator();
     private Response response = Response.CANCEL;
 

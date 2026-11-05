@@ -31,8 +31,8 @@ import org.jevis.commons.ws.sql.userlog.UserLogService;
 import org.jevis.commons.ws.sql.userlog.UserLogUtil;
 
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.List;
 
 /**
@@ -62,7 +62,7 @@ public class ResourceUserLog {
                         @QueryParam("limit") Integer limit) {
         SQLDataSource ds = null;
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             JEVisUserSQL current = ds.getCurrentUser();
             Long userId = user;
             if (!current.isSysAdmin()) {
@@ -109,7 +109,7 @@ public class ResourceUserLog {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Only USER_LOGIN and USER_LOGOUT can be logged by a client").build();
             }
             String details = json.hasNonNull("details") ? UserLogUtil.truncate(json.get("details").asText(), MAX_CLIENT_DETAILS) : null;
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             /* client events are logged for all users, also Sys Admins, like the old Control Center log */
             UserLogService.log(ds, ds.getCurrentUser(), action, null, details);
             return Response.noContent().build();

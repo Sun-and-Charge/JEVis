@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.report.JEVisFileWithSample;
 import org.jevis.commons.utils.FileNames;
 import org.jevis.jeconfig.GlobalToolBar;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.PDFModel;
@@ -65,11 +67,11 @@ public class PDFViewerDialog {
     private static final Logger logger = LogManager.getLogger(PDFViewerDialog.class);
     private final int iconSize = 32;
     private final SimpleDoubleProperty zoomFactor = new SimpleDoubleProperty(0.3);
-    private final ImageView rightImage = JEConfig.getImage("right.png", 20, 20);
-    private final ImageView leftImage = JEConfig.getImage("left.png", 20, 20);
+    private final ImageView rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);
+    private final ImageView leftImage = JEConfig.getImage(Icon.PNG_CHEVRON_LEFT, 20, 20);
     private final JFXComboBox<JEVisFileWithSample> fileComboBox = new JFXComboBox<>(FXCollections.observableArrayList());
     private final Map<JEVisFile, JEVisSample> sampleMap = new HashMap<>();
-    private final ImageView pdfIcon = JEConfig.getImage("pdf_24_2133056.png", iconSize, iconSize);
+    private final ImageView pdfIcon = JEConfig.getImage(Icon.PNG_PDF, iconSize, iconSize);
     private Stage stage;
     private PDFModel model;
     private Label fileName;
@@ -165,7 +167,7 @@ public class PDFViewerDialog {
             }
         });
 
-        ToggleButton printButton = new ToggleButton("", JEConfig.getImage("Print_1493286.png", iconSize, iconSize));
+        ToggleButton printButton = new ToggleButton("", JEConfig.getSVGImage(Icon.PRINT, iconSize, iconSize));
         Tooltip printTooltip = new Tooltip(I18n.getInstance().getString("plugin.reports.toolbar.tooltip.print"));
         printButton.setTooltip(printTooltip);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(printButton);
@@ -184,8 +186,8 @@ public class PDFViewerDialog {
         });
 
         Separator separator = new Separator(Orientation.VERTICAL);
-        ToggleButton zoomIn = new ToggleButton("", JEConfig.getImage("zoomIn_32.png", this.iconSize, this.iconSize));
-        ToggleButton zoomOut = new ToggleButton("", JEConfig.getImage("zoomOut_32.png", this.iconSize, this.iconSize));
+        ToggleButton zoomIn = new ToggleButton("", JEConfig.getSVGImage(Icon.ZOOM_IN, this.iconSize, this.iconSize));
+        ToggleButton zoomOut = new ToggleButton("", JEConfig.getSVGImage(Icon.ZOOM_OUT, this.iconSize, this.iconSize));
 
         zoomIn.setOnAction(event -> zoomFactor.set(zoomFactor.get() + 0.05));
         zoomOut.setOnAction(event -> zoomFactor.set(zoomFactor.get() - 0.05));

@@ -57,6 +57,7 @@ import org.jevis.commons.datetime.PeriodHelper;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.UnitManager;
 import org.jevis.commons.utils.CalcMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
@@ -595,7 +596,7 @@ public class ValueWidget extends Widget implements DataModelWidget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/ValueWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_GAUGE, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 

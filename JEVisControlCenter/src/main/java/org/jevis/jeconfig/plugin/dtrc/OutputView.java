@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -1087,7 +1088,7 @@ public class OutputView extends Tab {
 
                 JFXButton targetButton = new JFXButton(I18n
                         .getInstance().getString("plugin.object.attribute.target.button"),
-                        JEConfig.getImage("folders_explorer.png", 18, 18));
+                        JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
                 targetButton.wrapTextProperty().setValue(true);
                 targetButton.setOnAction(getTargetButtonActionEventEventHandler(templateOutput, targetButton));
                 setButtonText(templateOutput, targetButton);

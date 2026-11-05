@@ -43,6 +43,7 @@ import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.utils.AlphanumComparator;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.AnalysesComboBox;
 import org.jevis.jeconfig.application.Chart.ChartTools;
@@ -340,7 +341,7 @@ public class LinkerWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/LinkWidget2.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_LINK, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 }

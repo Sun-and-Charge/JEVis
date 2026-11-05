@@ -26,12 +26,12 @@ import org.jevis.commons.ws.json.JsonAttribute;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.*;
 import java.util.List;
 
 /**
@@ -56,7 +56,7 @@ public class ResourceAllAttribute {
 
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

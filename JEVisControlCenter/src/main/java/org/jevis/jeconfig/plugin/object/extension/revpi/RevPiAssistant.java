@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -217,7 +218,7 @@ public class RevPiAssistant {
     }
 
     private JFXButton buildTargetButton() {
-        final JFXButton button = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getImage("folders_explorer.png", 18, 18));
+        final JFXButton button = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         button.wrapTextProperty().setValue(true);
         button.setOnAction(actionEvent -> {
 
@@ -275,7 +276,7 @@ public class RevPiAssistant {
                             return null;
                         }
                     };
-                    JEConfig.getStatusBar().addTask(RevPiAssistant.class.getName(), task, JEConfig.getImage("if_dashboard_46791.png"), true);
+                    JEConfig.getStatusBar().addTask(RevPiAssistant.class.getName(), task, JEConfig.getImage(Icon.PNG_DASHBOARD), true);
 
 
                 }

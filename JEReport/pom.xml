@@ -65,8 +65,8 @@
             <version>2.14.0</version>
         </dependency>
         <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jodconverter</groupId>

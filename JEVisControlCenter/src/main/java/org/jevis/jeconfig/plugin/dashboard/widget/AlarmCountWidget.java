@@ -40,6 +40,7 @@ import org.jevis.commons.json.JsonAlarm;
 import org.jevis.commons.json.JsonTools;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.utils.AlphanumComparator;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config2.AlarmCountNode;
@@ -282,6 +283,6 @@ public class AlarmCountWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/ValueWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_GAUGE, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 }

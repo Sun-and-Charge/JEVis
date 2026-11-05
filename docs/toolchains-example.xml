@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven toolchains for building JEVis.
+
+  Maven itself runs on JDK 25 (JAVA_HOME). The JEVis Control Center still needs JavaFX 8 and is compiled and
+  tested with a JDK 8 that contains JavaFX (e.g. Zulu 8 FX), selected through this toolchain.
+
+  Copy this file to ~/.m2/toolchains.xml and adjust the path, or pass it per build:
+      mvn -t docs/toolchains-example.xml verify
+-->
+<toolchains>
+    <toolchain>
+        <type>jdk</type>
+        <provides>
+            <version>1.8</version>
+            <vendor>zulu</vendor>
+        </provides>
+        <configuration>
+            <jdkHome>C:\Program Files\Zulu\zulu-8</jdkHome>
+        </configuration>
+    </toolchain>
+</toolchains>

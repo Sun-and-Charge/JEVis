@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -159,11 +160,11 @@ public class MapViewPlugin implements Plugin {
 
             //load basic stuff
             double iconSize = 20;
-            ToggleButton newB = new ToggleButton("", JEConfig.getImage("list-add.png", iconSize, iconSize));
+            ToggleButton newB = new ToggleButton("", JEConfig.getSVGImage(Icon.PLUS, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(newB);
-            ToggleButton save = new ToggleButton("", JEConfig.getImage("save.gif", iconSize, iconSize));
+            ToggleButton save = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(save);
-            ToggleButton delete = new ToggleButton("", JEConfig.getImage("list-remove.png", iconSize, iconSize));
+            ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.MINUS, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(delete);
             Separator sep1 = new Separator();
             save.setDisable(true);

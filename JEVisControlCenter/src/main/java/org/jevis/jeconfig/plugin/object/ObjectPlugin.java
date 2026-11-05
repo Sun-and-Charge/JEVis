@@ -433,7 +433,7 @@ public class ObjectPlugin implements Plugin {
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(addTable);
             GlobalToolBar.BuildEventhandler(ObjectPlugin.this, addTable, Constants.Plugin.Command.ADD_TABLE);
 
-            ToggleButton editTable = new ToggleButton("", JEConfig.getImage("edit_table.png", iconSize, iconSize));
+            ToggleButton editTable = new ToggleButton("", JEConfig.getSVGImage(Icon.EDIT, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(editTable);
             GlobalToolBar.BuildEventhandler(ObjectPlugin.this, editTable, Constants.Plugin.Command.EDIT_TABLE);
 
@@ -568,7 +568,7 @@ public class ObjectPlugin implements Plugin {
                 }
             });
 
-            ToggleButton expandTree = new ToggleButton("", JEConfig.getImage("create_wizard.png", iconSize, iconSize));
+            ToggleButton expandTree = new ToggleButton("", JEConfig.getSVGImage(Icon.EXPAND_TREE, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(expandTree);
             GlobalToolBar.BuildEventhandler(ObjectPlugin.this, expandTree, Constants.Plugin.Command.EXPAND);
 

@@ -14,7 +14,6 @@
         <i18ndir>/home/jevis/jevis/var/i18n</i18ndir>
         <filedir>/home/jevis/jevis/var/files/</filedir>
         <classdir>/home/jevis/jevis/var/classes/</classdir>
-        <freemarkerdir>/home/jevis/jevis/var/freemarker/</freemarkerdir>
         <jeccversion>3.9.12</jeccversion>
         <auth>
             <!-- legacy HTTP Basic auth for old clients, switch off once all JECC/launcher/services are updated -->

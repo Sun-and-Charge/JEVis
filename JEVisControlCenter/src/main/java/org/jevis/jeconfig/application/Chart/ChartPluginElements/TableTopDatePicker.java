@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -31,6 +32,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import org.jevis.api.JEVisException;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.joda.time.DateTime;
@@ -70,8 +72,8 @@ public class TableTopDatePicker extends HBox {
         selectionBox.setCellFactory(cellFactory);
         selectionBox.setButtonCell(cellFactory.call(null));
 
-        leftImage = JEConfig.getImage("left.png", 20, 20);
-        rightImage = JEConfig.getImage("right.png", 20, 20);
+        leftImage = JEConfig.getImage(Icon.PNG_CHEVRON_LEFT, 20, 20);
+        rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);
         Separator sep1 = new Separator(Orientation.VERTICAL);
         Separator sep2 = new Separator(Orientation.VERTICAL);
 

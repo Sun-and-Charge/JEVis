@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -32,6 +33,7 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.tool.PasswordDialog;
 import org.joda.time.DateTime;
@@ -119,7 +121,7 @@ public class PasswordEditor implements AttributeEditor {
     private void buildTextField() {
         if (_setPW == null) {
             _setPW = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.password.button"),
-                    JEConfig.getImage("1415303685_lock-s1.png", 18, 18));
+                    JEConfig.getSVGImage(Icon.LOCK, 18, 18));
             _setPW.setDisable(_readOnly);
             _setPW.setOnAction(new EventHandler<ActionEvent>() {
 

@@ -45,10 +45,18 @@ REALPATHENV=`realpath etc/jevis.env`
 echo "source $REALPATHENV" >> ~/.profile
 source ~/.profile
 
+# the web service and the services need Java 25 (JAVA_HOME in etc/jevis.env)
+JAVA_MAJOR=$(java -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*/\1/')
+if ! [ "${JAVA_MAJOR}" -ge 25 ] 2>/dev/null; then
+	echo "ERROR: Java 25 is needed, found: $(java -version 2>&1 | head -1). Set JAVA_HOME in etc/jevis.env"
+	exit 1
+fi
+
 echo -e "\nUpdate and Build JEVis this can take a few minutes "
 cd ${JEVIS_HOME}
 git pull
-mvn clean install $?
+# the server does not need the Control Center (it needs JavaFX 8 and a JDK 8 toolchain)
+mvn clean install -pl '!JEVisControlCenter'
 
 
 echo "Generate config files:"

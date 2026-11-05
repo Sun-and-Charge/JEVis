@@ -47,6 +47,7 @@ import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.resource.ImageConverter;
@@ -67,7 +68,7 @@ import java.util.Map;
  */
 public class NewObjectDialog {
     private static final Logger logger = LogManager.getLogger(NewObjectDialog.class);
-    public static String ICON = "1403104602_brick_add.png";
+    public static String ICON = Icon.NEW_OBJECT;
 
     private int createCount = 1;
     private JEVisClass createClass;
@@ -93,7 +94,7 @@ public class NewObjectDialog {
         dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.new.title"));
         dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.new.header"));
         dialog.getDialogPane().getButtonTypes().setAll();
-        dialog.setGraphic(ResourceLoader.getImage(ICON, 50, 50));
+        dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         dialog.setResizable(true);
         VBox vBox = new VBox();
         vBox.setPadding(new Insets(8));

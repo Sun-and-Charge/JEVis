@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.object.ValueFormat;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.application.tools.ColorHelper;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -247,7 +248,7 @@ public class TableWidget extends Widget implements DataModelWidget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/TableWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_TABLE, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
     @Override

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -78,7 +79,7 @@ import java.util.stream.Collectors;
 public class ReportWizardDialog {
     private static final Logger logger = LogManager.getLogger(ReportWizardDialog.class);
 
-    public static final Image taskImage = JEConfig.getImage("Report.png");
+    public static final Image taskImage = JEConfig.getImage(Icon.PNG_REPORT);
 
     //public static String ICON = "Startup Wizard_18228.png";
     private JEVisDataSource ds;

@@ -22,10 +22,10 @@ package org.jevis.rest;
 import org.glassfish.grizzly.http.util.MimeType;
 import org.jevis.commons.ws.sql.Config;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.*;
 import java.io.File;
 import java.nio.file.Files;
 

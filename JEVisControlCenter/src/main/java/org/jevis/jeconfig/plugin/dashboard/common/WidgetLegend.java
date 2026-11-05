@@ -30,6 +30,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -39,6 +40,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartType;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
@@ -83,7 +85,7 @@ public class WidgetLegend extends Legend {
 
         Label alertLabel = new Label();
         alertLabel.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        ImageView alertImage = JEConfig.getImage("Warning-icon.png", 12d, 12d);
+        Region alertImage = JEConfig.getSVGImage(Icon.Warning, 12d, 12d, Icon.CSS_WARNING);
         alertLabel.setGraphic(alertImage);
         alertLabel.setTooltip(new Tooltip(alertText));
 
@@ -144,7 +146,7 @@ public class WidgetLegend extends Legend {
 
         Label alertLabel = new Label();
         alertLabel.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        ImageView alertImage = JEConfig.getImage("Warning-icon.png", 12d, 12d);
+        Region alertImage = JEConfig.getSVGImage(Icon.Warning, 12d, 12d, Icon.CSS_WARNING);
         alertLabel.setGraphic(alertImage);
         alertLabel.setTooltip(new Tooltip(alertText));
 

@@ -42,7 +42,6 @@ import org.jevis.jeconfig.plugin.action.ActionPlugin;
 import org.jevis.jeconfig.plugin.appointment.AppointmentPlugin;
 import org.jevis.jeconfig.plugin.alarms.AlarmPlugin;
 import org.jevis.jeconfig.plugin.basedata.BaseDataPlugin;
-import org.jevis.jeconfig.plugin.browser.ISO50001Plugin;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
 import org.jevis.jeconfig.plugin.dashboard.DashBordPlugIn;
 import org.jevis.jeconfig.plugin.dtrc.TRCPlugin;
@@ -104,7 +103,6 @@ public class PluginManager {
 
 
 //        plugins.add(new SCADAPlugin(_ds));
-        plugins.add(new ISO50001Plugin(this._ds, I18n.getInstance().getString("plugin.iso50001.title")));
         plugins.add(new org.jevis.jeconfig.plugin.classes.ClassPlugin(this._ds, I18n.getInstance().getString("plugin.classes.title")));
         plugins.add(new org.jevis.jeconfig.plugin.unit.UnitPlugin(this._ds, I18n.getInstance().getString("plugin.units.title")));
         plugins.add(new MapViewPlugin(this._ds, I18n.getInstance().getString("plugin.map.title")));
@@ -179,7 +177,6 @@ public class PluginManager {
                         new MeterPlugin(this._ds, I18n.getInstance().getString("plugin.meters.title")),
                         new BaseDataPlugin(this._ds, I18n.getInstance().getString("plugin.basedata.title")),
                         new EquipmentPlugin(this._ds, I18n.getInstance().getString("plugin.equipment.title")),
-                        new ISO50001Plugin(this._ds, I18n.getInstance().getString("plugin.iso50001.title")),
                         new AccountingPlugin(this._ds, I18n.getInstance().getString("plugin.accounting.title")),
                         new ActionPlugin(this._ds, I18n.getInstance().getString("plugin.action.name")),
                         new AppointmentPlugin(this._ds, I18n.getInstance().getString("plugin.appointments.name")),
@@ -220,8 +217,6 @@ public class PluginManager {
                                     enabledPlugins.add(new BaseDataPlugin(this._ds, I18n.getInstance().getString("plugin.basedata.title")));
                                 } else if (plugObj.getJEVisClassName().equals(EquipmentPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new EquipmentPlugin(this._ds, I18n.getInstance().getString("plugin.equipment.title")));
-                                } else if (plugObj.getJEVisClassName().equals(ISO50001Plugin.PLUGIN_NAME)) {
-                                    enabledPlugins.add(new ISO50001Plugin(this._ds, I18n.getInstance().getString("plugin.iso50001.title")));
                                 } else if (plugObj.getJEVisClassName().equals(AccountingPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new AccountingPlugin(this._ds, I18n.getInstance().getString("plugin.accounting.title")));
                                 } else if (plugObj.getJEVisClassName().equals(ActionPlugin.PLUGIN_NAME)) {

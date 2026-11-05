@@ -93,10 +93,10 @@ public class ReportPlugin implements Plugin {
     private boolean multipleDirectories;
     private final PDFModel model = new PDFModel();
     private final SimpleDoubleProperty zoomFactor = new SimpleDoubleProperty(0.3);
-    //private final ImageView rightImage = JEConfig.getImage("right.png", 20, 20);
-    //private final ImageView leftImage = JEConfig.getImage("left.png", 20, 20);
-    private final ToggleButton prevButton = new ToggleButton("", JEConfig.getImage("arrow_left.png", iconSize, iconSize));
-    private final ToggleButton nextButton = new ToggleButton("", JEConfig.getImage("arrow_right.png", iconSize, iconSize));
+    //private final ImageView rightImage = JEConfig.getSVGImage(Icon.CHEVRON_RIGHT, 20, 20);
+    //private final ImageView leftImage = JEConfig.getSVGImage(Icon.CHEVRON_LEFT, 20, 20);
+    private final ToggleButton prevButton = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_LEFT, iconSize, iconSize));
+    private final ToggleButton nextButton = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_RIGHT, iconSize, iconSize));
     private boolean newReport = false;
     private final AlphanumComparator alphanumComparator = new AlphanumComparator();
     private final ObservableList<JEVisObject> reports = FXCollections.observableArrayList();
@@ -363,7 +363,7 @@ public class ReportPlugin implements Plugin {
                 });
                 loadFile.setOnFailed(event -> logger.error("Could not load report for ts {}", newValue, loadFile.getException()));
                 JEConfig.getStatusBar().addTask(ReportPlugin.class.getName() + ".file", loadFile,
-                        (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
+                        JEConfig.getImage(Icon.PNG_REPORT), true);
             }
         });
 
@@ -637,7 +637,7 @@ public class ReportPlugin implements Plugin {
                                     return null;
                                 }
                             };
-                            JEConfig.getStatusBar().addTask(ReportPlugin.class.getName(), loadLastReport, (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
+                            JEConfig.getStatusBar().addTask(ReportPlugin.class.getName(), loadLastReport, JEConfig.getImage(Icon.PNG_REPORT), true);
 
                             /* only the list is built here, the files are downloaded when one is opened or saved */
                             List<String> names = new ArrayList<>();
@@ -687,15 +687,15 @@ public class ReportPlugin implements Plugin {
                     }
                 }
                 if (!hasActiveLoadTask.get()) {
-                    JEConfig.getStatusBar().addTask(ReportPlugin.class.getName(), loadOtherFilesInBackground, (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
+                    JEConfig.getStatusBar().addTask(ReportPlugin.class.getName(), loadOtherFilesInBackground, JEConfig.getImage(Icon.PNG_REPORT), true);
                 } else {
                     Thread.sleep(500);
-                    JEConfig.getStatusBar().addTask("Waiting", this, (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
+                    JEConfig.getStatusBar().addTask("Waiting", this, JEConfig.getImage(Icon.PNG_REPORT), true);
                 }
                 return null;
             }
         };
-        JEConfig.getStatusBar().addTask("Waiting", checkForActiveLoading, (JEConfig.getImage("Report.png", Plugin.IconSize, Plugin.IconSize)).getImage(), true);
+        JEConfig.getStatusBar().addTask("Waiting", checkForActiveLoading, JEConfig.getImage(Icon.PNG_REPORT), true);
     }
 
     private void setupCellFactory(ListView<JEVisObject> listView) {

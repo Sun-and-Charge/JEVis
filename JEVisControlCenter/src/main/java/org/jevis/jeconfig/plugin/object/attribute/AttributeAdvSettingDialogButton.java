@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -23,6 +24,7 @@ import com.jfoenix.controls.JFXButton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.sample.SampleEditor;
 
@@ -36,9 +38,9 @@ public class AttributeAdvSettingDialogButton extends JFXButton {
 
     public AttributeAdvSettingDialogButton(JEVisAttribute attribute) {
         try {
-//            setGraphic(JEConfig.getImage("1394566386_Graph.png", height, height));
+//            setGraphic(JEConfig.getSVGImage(Icon.GRAPH, height, height));
 //            setGraphic(JEConfig.getImage("if_table_gear_64761.png", height, height));
-            setGraphic(JEConfig.getImage("if_settings_115801.png", height, height));
+            setGraphic(JEConfig.getSVGImage(Icon.SETTINGS, height, height));
 //            setText("...");
             setStyle("-fx-padding: 0 2 0 2;-fx-background-insets: 0;-fx-background-radius: 0;-fx-background-color: transparent;");
 

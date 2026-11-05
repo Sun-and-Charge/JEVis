@@ -308,15 +308,15 @@ public class TablePlugin implements Plugin {
                         } else {
                             RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
 
-                            JFXButton manSampleButton = new JFXButton("", JEConfig.getImage("if_textfield_add_64870.png", tableIconSize, tableIconSize));
+                            JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, tableIconSize, tableIconSize));
                             manSampleButton.setDisable(true);
                             manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
                             JFXButton treeButton = new JFXButton("",
-                                    JEConfig.getImage("folders_explorer.png", tableIconSize, tableIconSize));
+                                    JEConfig.getSVGImage(Icon.FOLDER_OPEN, tableIconSize, tableIconSize));
                             treeButton.wrapTextProperty().setValue(true);
 
                             JFXButton gotoButton = new JFXButton("",
-                                    JEConfig.getImage("1476393792_Gnome-Go-Jump-32.png", tableIconSize, tableIconSize));//icon
+                                    JEConfig.getSVGImage(Icon.GO_TO_SOURCE, tableIconSize, tableIconSize));//icon
                             gotoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip")));
 
                             AnalysisLinkButton analysisLinkButton = null;
@@ -615,9 +615,9 @@ public class TablePlugin implements Plugin {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            JFXButton downloadButton = new JFXButton("", JEConfig.getImage("698925-icon-92-inbox-download-48.png", tableIconSize, tableIconSize));
-                            JFXButton previewButton = new JFXButton("", JEConfig.getImage("eye_visible.png", tableIconSize, tableIconSize));
-                            JFXButton uploadButton = new JFXButton("", JEConfig.getImage("1429894158_698394-icon-130-cloud-upload-48.png", tableIconSize, tableIconSize));
+                            JFXButton downloadButton = new JFXButton("", JEConfig.getSVGImage(Icon.FILE_DOWNLOAD, tableIconSize, tableIconSize));
+                            JFXButton previewButton = new JFXButton("", JEConfig.getSVGImage(Icon.PREVIEW, tableIconSize, tableIconSize));
+                            JFXButton uploadButton = new JFXButton("", JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, tableIconSize, tableIconSize));
 
                             downloadButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.download")));
                             previewButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.preview")));
@@ -768,7 +768,7 @@ public class TablePlugin implements Plugin {
                             return null;
                         }
                     };
-                    JEConfig.getStatusBar().addTask(MeterPlugin.PLUGIN_NAME, clearCacheTask, JEConfig.getImage("measurement_instrument.png"), true);
+                    JEConfig.getStatusBar().addTask(MeterPlugin.PLUGIN_NAME, clearCacheTask, JEConfig.getImage(Icon.PNG_GAUGE), true);
 
 
                 } catch (Exception ex) {

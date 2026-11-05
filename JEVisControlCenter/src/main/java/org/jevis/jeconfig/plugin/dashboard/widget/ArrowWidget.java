@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,6 +33,7 @@ import javafx.scene.transform.Rotate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config2.ArrowConfig;
@@ -182,7 +184,7 @@ public class ArrowWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/ArrowWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_ARROW_WIDGET, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
     private void updateArrow() {

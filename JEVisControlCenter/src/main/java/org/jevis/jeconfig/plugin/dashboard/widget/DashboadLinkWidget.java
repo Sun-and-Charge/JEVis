@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -39,6 +40,7 @@ import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.AlphanumComparator;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashBordPlugIn;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -68,7 +70,7 @@ public class DashboadLinkWidget extends Widget {
     private DataModelDataHandler sampleHandler;
     public static ObjectMapper objectMapper = new ObjectMapper();
 
-    JFXButton linkButton = new JFXButton("", JEConfig.getImage("if_dashboard_46791.png", 20, 20));
+    JFXButton linkButton = new JFXButton("", JEConfig.getSVGImage(Icon.DASHBOARD, 20, 20));
     private TimeFrame selectedTimeFrame;
     private Interval lastInterval = null;
     private JEVisObject linkedDashboardObj;
@@ -304,7 +306,7 @@ public class DashboadLinkWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/LinkWidget2.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_LINK, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 }

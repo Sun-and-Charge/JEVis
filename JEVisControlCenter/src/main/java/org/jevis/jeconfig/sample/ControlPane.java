@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -45,6 +46,7 @@ import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.CommonMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.AggregationPeriodBox;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.ProcessorBox;
@@ -69,7 +71,7 @@ public class ControlPane extends GridPane {
     private final JFXDatePicker endDate = new JFXDatePicker();
     private final JFXButton cancel = new JFXButton(I18n.getInstance().getString("attribute.editor.cancel"));
 
-    private final JFXButton reloadButton = new JFXButton("", JEConfig.getImage("1403018303_Refresh.png", 12, 12));
+    private final JFXButton reloadButton = new JFXButton("", JEConfig.getSVGImage(Icon.REFRESH, 12, 12));
     private final Tooltip reloadTooltip = new Tooltip(I18n.getInstance().getString("plugin.alarms.reload.progress.tooltip"));
     private final Label timeHeader = new Label(I18n.getInstance().getString("attribute.editor.timerange"));
     private final Label processorHeader = new Label(I18n.getInstance().getString("attribute.editor.dataprocessing"));
@@ -321,7 +323,7 @@ public class ControlPane extends GridPane {
                 }
             });
 
-            JEConfig.getStatusBar().addTask(this.getClass().getName(), futureTask, JEConfig.getImage("1415314386_Graph.png"), true);
+            JEConfig.getStatusBar().addTask(this.getClass().getName(), futureTask, JEConfig.getImage(Icon.PNG_CHART), true);
             try {
                 sampleList = futureTask.get();
             } catch (Exception ex) {

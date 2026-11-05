@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -79,7 +80,7 @@ public class TRCPlugin implements Plugin {
     protected final String title;
     protected final AlphanumComparator alphanumComparator = new AlphanumComparator();
     protected final JFXTextField filterInput = new JFXTextField();
-    private final Image taskImage = JEConfig.getImage("measurement_instrument.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_GAUGE);
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.TRCPlugin");
     private final BorderPane borderPane = new BorderPane();
     private final ToolBar toolBar = new ToolBar();
@@ -496,7 +497,7 @@ public class TRCPlugin implements Plugin {
 //                        return null;
 //                    }
 //                };
-//                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage("measurement_instrument.png"), true);
+//                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage(Icon.PNG_GAUGE), true);
 
                 break;
             case Constants.Plugin.Command.ADD_TABLE:
@@ -633,7 +634,7 @@ public class TRCPlugin implements Plugin {
     }
 
     private JFXButton buildAddFormulaButton() {
-        JFXButton addFormulaButton = new JFXButton("", ResourceLoader.getImage("list-add.png", 15, 15));
+        JFXButton addFormulaButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
 
         addFormulaButton.setOnAction(event -> {
             TemplateFormula templateFormula = new TemplateFormula();
@@ -673,7 +674,7 @@ public class TRCPlugin implements Plugin {
     }
 
     private JFXButton buildAddInputButton() {
-        JFXButton addInputButton = new JFXButton("", ResourceLoader.getImage("list-add.png", 15, 15));
+        JFXButton addInputButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
 
         addInputButton.setOnAction(event -> {
             TemplateInput templateInput = new TemplateInput();
@@ -693,7 +694,7 @@ public class TRCPlugin implements Plugin {
     }
 
     private JFXButton buildAddOutputButton() {
-        JFXButton addOutputButton = new JFXButton("", ResourceLoader.getImage("list-add.png", 15, 15));
+        JFXButton addOutputButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
 
         addOutputButton.setOnAction(event -> {
             TemplateOutput templateOutput = new TemplateOutput();

@@ -30,10 +30,10 @@ import org.jevis.commons.ws.sql.CachedAccessControl;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +77,7 @@ public class ResourceRelationship {
 
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             jsonRelationships = ds.getUserManager().filterRelationships(ds.getRelationships());
             return Response.ok(jsonRelationships).build();
 
@@ -117,7 +117,7 @@ public class ResourceRelationship {
             String input) throws Exception {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 //            JsonRelationship json = (new Gson()).fromJson(input, JsonRelationship.class);
             JsonRelationship json = OBJECT_MAPPER.readValue(input, JsonRelationship.class);
             JsonObject fromObj = ds.getObject(json.getFrom());
@@ -169,7 +169,7 @@ public class ResourceRelationship {
             @DefaultValue("-1") @QueryParam("type") int type) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (from == -1 || to == -1 || type == -1) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
@@ -226,7 +226,7 @@ public class ResourceRelationship {
             @PathParam("id") long id) {
 
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
 //            List<JsonRelationship> jsonRelationships = ds.getUserManager().filterRelationships(ds.getRelationshipTable().getAllForObject(id));
             List<JsonRelationship> jsonRelationships = ds.getRelationshipTable().getAllForObject(id);

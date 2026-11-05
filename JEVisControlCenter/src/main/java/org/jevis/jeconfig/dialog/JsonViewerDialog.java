@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -46,6 +47,7 @@ import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.report.JEVisFileWithSample;
 import org.jevis.jeconfig.GlobalToolBar;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 
@@ -61,11 +63,11 @@ import java.util.Map;
 public class JsonViewerDialog {
     private static final Logger logger = LogManager.getLogger(JsonViewerDialog.class);
     private final int iconSize = 32;
-    private final ImageView rightImage = JEConfig.getImage("right.png", 20, 20);
-    private final ImageView leftImage = JEConfig.getImage("left.png", 20, 20);
+    private final ImageView rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);
+    private final ImageView leftImage = JEConfig.getImage(Icon.PNG_CHEVRON_LEFT, 20, 20);
     private final JFXComboBox<JEVisFileWithSample> fileComboBox = new JFXComboBox<>(FXCollections.observableArrayList());
     private final Map<JEVisFile, JEVisSample> sampleMap = new HashMap<>();
-    private final ImageView jsonIcon = JEConfig.getImage("json_icon.png", iconSize, iconSize);
+    private final ImageView jsonIcon = JEConfig.getImage(Icon.PNG_JSON, iconSize, iconSize);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private Stage stage;
     private Label fileName;
@@ -160,7 +162,7 @@ public class JsonViewerDialog {
             }
         });
 
-        ToggleButton printButton = new ToggleButton("", JEConfig.getImage("Print_1493286.png", iconSize, iconSize));
+        ToggleButton printButton = new ToggleButton("", JEConfig.getSVGImage(Icon.PRINT, iconSize, iconSize));
         Tooltip printTooltip = new Tooltip(I18n.getInstance().getString("dialog.jsonviewer.tooltip.print"));
         printButton.setTooltip(printTooltip);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(printButton);

@@ -36,6 +36,7 @@ import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.control.ColorPickerAdv;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -192,8 +193,8 @@ public class WidgetColumnFactory {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            JFXButton downButton = new JFXButton("", JEConfig.getImage("1395085233_arrow_return_right_down.png", 15, 15));
-                            JFXButton upButton = new JFXButton("", JEConfig.getImage("1395085229_arrow_return_right_up.png", 15, 15));
+                            JFXButton downButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 15, 15));
+                            JFXButton upButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_UP, 15, 15));
 
                             upButton.setOnAction(event -> {
                                 if (table.getSelectionModel().getSelectedItems().contains(item)) {
@@ -314,7 +315,7 @@ public class WidgetColumnFactory {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            JFXButton button = new JFXButton("", JEConfig.getImage("Service Manager.png", 15, 15));
+                            JFXButton button = new JFXButton("", JEConfig.getSVGImage(Icon.SETTINGS, 15, 15));
 
                             button.setOnAction(event -> {
                                 item.openConfig();

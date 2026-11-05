@@ -39,6 +39,8 @@ import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisUnit;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.JEVisUnitImp;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -72,9 +74,9 @@ public class SimpleTreeUnitChooser {
 //        stage.initStyle(StageStyle.UNDECORATED);
         stage.setResizable(true);
 
-        ImageView imageView = ResourceLoader.getImage("1405444584_measure.png", 65, 65);
+        ImageView imageView = ResourceLoader.getImage(Icon.PNG_SI_UNIT, 65, 65);
 
-        Node header = DialogHeader.getDialogHeader("1405444584_measure.png", I18n.getInstance().getString("plugin.units.baseunit.header"));
+        Node header = DialogHeader.getDialogHeader(Icon.PNG_SI_UNIT, I18n.getInstance().getString("plugin.units.baseunit.header"));
 
         stage.getIcons().add(imageView.getImage());
 

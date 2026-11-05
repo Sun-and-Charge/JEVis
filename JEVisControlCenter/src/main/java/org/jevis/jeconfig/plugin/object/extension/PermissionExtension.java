@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.relationship.RelationsManagment;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.jeconfig.Constants;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.ConfirmDialog;
 import org.jevis.jeconfig.dialog.InfoDialog;
@@ -178,7 +180,7 @@ public class PermissionExtension implements ObjectEditorExtension {
                 groupBox.getChildren().addAll(usericon, nameLabel);
 
                 JFXButton remove = new JFXButton();
-                remove.setGraphic(JEConfig.getImage("list-remove.png", 17, 17));
+                remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 17, 17));
                 remove.setOnAction(t -> {
 
                     try {
@@ -210,7 +212,7 @@ public class PermissionExtension implements ObjectEditorExtension {
 
                 JFXButton forAllChildren = new JFXButton();
                 forAllChildren.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.permissions.include_children")));
-                forAllChildren.setGraphic(JEConfig.getImage("1417642712_sitemap.png", 17, 17));
+                forAllChildren.setGraphic(JEConfig.getSVGImage(Icon.TREE, 17, 17));
                 forAllChildren.setOnAction(t -> {
 
                     try {
@@ -478,7 +480,7 @@ public class PermissionExtension implements ObjectEditorExtension {
             groupsCBox.getSelectionModel().selectFirst();
         });
 
-        newB.setGraphic(JEConfig.getImage("list-add.png", 17, 17));
+        newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 17, 17));
         newB.setOnAction(t -> {
             try {
                 JEVisObject groupObj = groupsCBox.getSelectionModel().getSelectedItem();

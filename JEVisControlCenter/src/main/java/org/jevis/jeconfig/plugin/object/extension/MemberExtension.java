@@ -50,6 +50,7 @@ import org.jevis.commons.permission.SiteSharing;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.relationship.RelationsManagment;
 import org.jevis.jeconfig.Constants;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.object.ObjectEditorExtension;
 import org.jevis.jeconfig.tool.ImageConverter;
@@ -269,7 +270,7 @@ public class MemberExtension implements ObjectEditorExtension {
             HBox control = new HBox(0.5);
 
             JFXButton remove = new JFXButton();
-            remove.setGraphic(JEConfig.getImage("list-remove.png", 17, 17));
+            remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 17, 17));
 
             //if the currentUser has a group which has delete right on the userObj he can delete it
             if (RelationsManagment.canDeleteMembership(aRelationship)) {
@@ -410,7 +411,7 @@ public class MemberExtension implements ObjectEditorExtension {
             users.getSelectionModel().selectFirst();
         });
 
-        newB.setGraphic(JEConfig.getImage("list-add.png", 17, 17));
+        newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 17, 17));
         newB.setOnAction(t -> {
             try {
                 JEVisObject userObj = users.getSelectionModel().getSelectedItem();

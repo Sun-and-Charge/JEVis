@@ -35,6 +35,7 @@ import javafx.stage.StageStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisDataSource;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeFactory;
@@ -73,7 +74,7 @@ public class MapSelectionDialog {
         VBox root = new VBox();
 
         DialogHeader header = new DialogHeader();
-        Node headerNode = DialogHeader.getDialogHeader(ICON, "Selection Dialog");
+        Node headerNode = DialogHeader.getDialogHeader(JEConfig.getSVGImage(ICON, 64, 64), "Selection Dialog");
 
         Separator sep = new Separator(Orientation.HORIZONTAL);
 
@@ -133,7 +134,7 @@ public class MapSelectionDialog {
     private Response _response = Response.CANCEL;
 
     private final JEVisDataSource _ds;
-    private final String ICON = "1404313956_evolution-tasks.png";
+    private final String ICON = Icon.SELECTION;
     private Map<String, MapPlugin.DataModel> data = new HashMap<>();
     private Stage stage;
     private boolean init = true;

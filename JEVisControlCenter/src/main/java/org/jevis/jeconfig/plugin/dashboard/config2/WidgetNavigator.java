@@ -106,7 +106,7 @@ public class WidgetNavigator {
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(table);
 
-        Node header = DialogHeader.getDialogHeader("if_table_gear_64761.png", I18n.getInstance().getString("dashboard.navigator.setting.title"));
+        Node header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.TUNE, 64, 64), I18n.getInstance().getString("dashboard.navigator.setting.title"));
         Node contentPane = buildGeneralSetting();
         BorderPane topBorderPane = new BorderPane();
         topBorderPane.setTop(header);
@@ -163,8 +163,8 @@ public class WidgetNavigator {
         timeFactoryBox.selectValue(control.getActiveDashboard().getTimeFrame());
         //timeFactoryBox.selectValue(control.getActiveTimeFrame());
 
-        JFXButton backgroundButton = new JFXButton("", JEConfig.getImage("if_32_171485.png", this.iconSize, this.iconSize));
-        JFXButton removeBGIcon = new JFXButton("", JEConfig.getImage("if_trash_(delete)_16x16_10030.gif", this.iconSize, this.iconSize));
+        JFXButton backgroundButton = new JFXButton("", JEConfig.getSVGImage(Icon.BACKGROUND, this.iconSize, this.iconSize));
+        JFXButton removeBGIcon = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
         ColorPickerAdv pickerAdv = new ColorPickerAdv();
         pickerAdv.setValue(control.getActiveDashboard().getBackgroundColor());
         /* the button has no height before layout, so follow its height instead of copying 0 */

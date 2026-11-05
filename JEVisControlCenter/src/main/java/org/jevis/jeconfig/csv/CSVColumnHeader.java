@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -47,6 +48,7 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisUnit;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.filter.JEVisTreeFilter;
@@ -595,7 +597,7 @@ public class CSVColumnHeader {
         });
 
         HBox boxFormate = new HBox(5);
-        ImageView help = JEConfig.getImage("1404161580_help_blue.png", 22, 22);
+        ImageView help = JEConfig.getImage(Icon.PNG_UNKNOWN, 22, 22);
         boxFormate.getChildren().setAll(format, help);
 
         help.setStyle("-fx-background-color: \n"
@@ -719,7 +721,7 @@ public class CSVColumnHeader {
     }
 
     private JFXButton buildTargetButton(JEVisAttribute preselectedTarget) {
-        final JFXButton button = new JFXButton(I18n.getInstance().getString("csv.import_target"));//, JEConfig.getImage("1404843819_node-tree.png", 15, 15));
+        final JFXButton button = new JFXButton(I18n.getInstance().getString("csv.import_target"));//, JEConfig.getSVGImage(Icon.TREE, 15, 15));
         if (preselectedTarget != null) {
             _target = preselectedTarget;
             button.setText(preselectedTarget.getObject().getName());

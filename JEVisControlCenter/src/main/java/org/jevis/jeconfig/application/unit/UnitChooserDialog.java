@@ -45,6 +45,8 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisType;
 import org.jevis.api.JEVisUnit;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -172,7 +174,7 @@ public class UnitChooserDialog {
         Label topTitle = new Label(titleLong);
         topTitle.getStyleClass().add("dialog-header-title");
 
-        ImageView imageView = ResourceLoader.getImage("1405368933_kruler.png", 65, 65);
+        ImageView imageView = ResourceLoader.getImage(Icon.PNG_UNIT, 65, 65);
 
         VBox vboxLeft = new VBox();
         VBox vboxRight = new VBox();

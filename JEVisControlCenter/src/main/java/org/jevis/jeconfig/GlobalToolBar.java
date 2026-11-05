@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -47,7 +48,7 @@ public class GlobalToolBar {
     }
 
     public static ToggleButton buildHelpButton(double width, double height) {
-        ToggleButton toggleButton = new ToggleButton("", JEConfig.getImage("1404161580_help_blue.png", height, width));
+        ToggleButton toggleButton = new ToggleButton("", JEConfig.getSVGImage(Icon.HELP, height, width));
         toggleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.toolbar.tip.help")));
         return toggleButton;
     }

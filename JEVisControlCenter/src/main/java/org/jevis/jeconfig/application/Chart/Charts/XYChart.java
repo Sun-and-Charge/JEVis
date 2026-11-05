@@ -59,6 +59,7 @@ import org.jevis.commons.unit.ChartUnits.QuantityUnits;
 import org.jevis.commons.unit.UnitManager;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.commons.utils.CommonMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartElements.*;
 import org.jevis.jeconfig.application.Chart.ChartType;
@@ -90,7 +91,7 @@ import java.util.stream.Collectors;
 import static org.jevis.commons.dataprocessing.ManipulationMode.RUNNING_MEAN;
 
 public class XYChart implements Chart {
-    public static final Image taskImage = JEConfig.getImage("Analysis.png");
+    public static final Image taskImage = JEConfig.getImage(Icon.PNG_CHART);
     private static final Logger logger = LogManager.getLogger(XYChart.class);
     public static String JOB_NAME = "Create series";
     final JEVisDataSource ds;

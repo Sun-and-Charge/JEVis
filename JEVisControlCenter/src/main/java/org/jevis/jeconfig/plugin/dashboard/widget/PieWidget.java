@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.UnitManager;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.application.tools.ColorHelper;
@@ -317,7 +318,7 @@ public class PieWidget extends Widget implements DataModelWidget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/DonutWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_DONUT, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
     public void applyColors(List<Color> colors) {

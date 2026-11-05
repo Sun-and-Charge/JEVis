@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -18,6 +19,8 @@
  */
 package org.jevis.jeconfig.application.unit;
 
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -41,10 +44,10 @@ public class UnitGraphic {
     private final ContextMenu _menu;
     private final UnitTree _tree;
     private Tooltip _tip;
-    private static final Image ICON_QUANTITY = new Image(UnitGraphic.class.getResourceAsStream("/icons/" + "quntity.png"));
-    private static final Image ICON_SIUNIT = new Image(UnitGraphic.class.getResourceAsStream("/icons/" + "siunit.png"));
-    private static final Image ICON_NONSIUNIT = new Image(UnitGraphic.class.getResourceAsStream("/icons/" + "nonsiunit.png"));
-    private static final Image ICON_LABEL = new Image(UnitGraphic.class.getResourceAsStream("/icons/" + "label.png"));
+    private static final Image ICON_QUANTITY = new Image(UnitGraphic.class.getResourceAsStream(Icon.PNG_QUANTITY));
+    private static final Image ICON_SIUNIT = new Image(UnitGraphic.class.getResourceAsStream(Icon.PNG_SI_UNIT));
+    private static final Image ICON_NONSIUNIT = new Image(UnitGraphic.class.getResourceAsStream(Icon.PNG_UNIT));
+    private static final Image ICON_LABEL = new Image(UnitGraphic.class.getResourceAsStream(Icon.PNG_LABEL));
 
     private ImageView _icon;
 

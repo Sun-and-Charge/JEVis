@@ -56,6 +56,7 @@ import org.jevis.commons.datasource.DataSourceLoader;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.ws.json.JsonLoginResult;
 import org.jevis.jeapi.ws.JEVisDataSourceWS;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.ParameterHelper;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -923,7 +924,7 @@ public class FXLogin extends AnchorPane {
                     //notificationPane.setStyle("-fx-focus-color: transparent;");
                     //notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
 
-                    ImageView image = new ImageView(new Image(FXLogin.class.getResourceAsStream("/icons/update.png")));
+                    ImageView image = new ImageView(new Image(FXLogin.class.getResourceAsStream(Icon.PNG_UPDATE)));
                     image.fitHeightProperty().set(32);
                     image.fitWidthProperty().set(32);
 
@@ -1057,8 +1058,8 @@ public class FXLogin extends AnchorPane {
         root.getChildren().setAll(titel, grid, buttons, bottomSpacer);
         root.setPadding(new Insets(10));
 
-//        JFXButton configureServer = new JFXButton("", JEConfig.getImage("Service Manager.png", 16, 16));
-        JFXButton configureServer = new JFXButton("", ResourceLoader.getImage("Service Manager.png", 16, 16));
+//        JFXButton configureServer = new JFXButton("", JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
+        JFXButton configureServer = new JFXButton("", JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
 
         PopOver serverConfigPop = new PopOver(root);
         serverConfigPop.setArrowLocation(PopOver.ArrowLocation.LEFT_CENTER);

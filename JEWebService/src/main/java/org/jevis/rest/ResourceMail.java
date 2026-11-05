@@ -35,8 +35,8 @@ import org.jevis.commons.ws.sql.mail.ServerMail;
 
 import javax.mail.MessagingException;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.*;
 
 /**
@@ -67,7 +67,7 @@ public class ResourceMail {
     @Produces(MediaType.APPLICATION_JSON)
     public Response send(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url, String body) {
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (ds.getAuthMethod() == SQLDataSource.AuthMethod.API_KEY) {
                 return Response.status(Response.Status.FORBIDDEN).entity("Not allowed for API keys").build();
             }

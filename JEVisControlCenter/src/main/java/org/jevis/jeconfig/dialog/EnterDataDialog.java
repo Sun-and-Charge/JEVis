@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -55,6 +56,7 @@ import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.unit.UnitManager;
 import org.jevis.commons.utils.CommonMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.control.DataTypeBox;
@@ -80,7 +82,6 @@ import java.util.stream.Collectors;
 public class EnterDataDialog extends Dialog implements EventTarget {
     public static final String CONVERSION_TO_DIFFERENTIAL_ATTRIBUTE_NAME = "Conversion to Differential";
     private static final Logger logger = LogManager.getLogger(EnterDataDialog.class);
-    public static String ICON = "Startup Wizard_18228.png";
     private final JEVisDataSource ds;
     private final ObjectRelations objectRelations;
     private final JFXTextField doubleField = new JFXTextField();
@@ -101,7 +102,7 @@ public class EnterDataDialog extends Dialog implements EventTarget {
     private final JFXTextField searchIdField = new JFXTextField();
     private final JFXButton treeButton = new JFXButton(I18n
             .getInstance().getString("plugin.object.attribute.target.button"),
-            JEConfig.getImage("folders_explorer.png", 18, 18));
+            JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
     private final Label targetLabel = new Label();
     private final YearBox yearBox = new YearBox();
     private final DayBox dayBox = new DayBox();

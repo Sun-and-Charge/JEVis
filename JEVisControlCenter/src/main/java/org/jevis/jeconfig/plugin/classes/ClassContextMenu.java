@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  *
  * This file is part of JEConfig.
  *
@@ -27,6 +28,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 import org.jevis.api.JEVisClass;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.tool.ImageConverter;
 
@@ -55,7 +57,7 @@ public class ClassContextMenu extends ContextMenu {
     }
 
     public Menu buildMenuExport() {
-        Menu addMenu = new Menu(I18n.getInstance().getString("plugin.classes.contextmenu.export"), JEConfig.getImage("save.gif", 20, 20));
+        Menu addMenu = new Menu(I18n.getInstance().getString("plugin.classes.contextmenu.export"), JEConfig.getSVGImage(Icon.SAVE, 20, 20));
         addMenu.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -77,7 +79,7 @@ public class ClassContextMenu extends ContextMenu {
     }
 
     public Menu buildMenuNew() {
-        Menu addMenu = new Menu(I18n.getInstance().getString("plugin.classes.contextmenu.new"), JEConfig.getImage("list-add.png", 20, 20));
+        Menu addMenu = new Menu(I18n.getInstance().getString("plugin.classes.contextmenu.new"), JEConfig.getSVGImage(Icon.PLUS, 20, 20));
         addMenu.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -101,7 +103,7 @@ public class ClassContextMenu extends ContextMenu {
         try {
             return ImageConverter.convertToImageView(jclass.getIcon(), 20, 20);
         } catch (Exception ex) {
-            return JEConfig.getImage("1393615831_unknown2.png", 20, 20);
+            return JEConfig.getImage(Icon.PNG_UNKNOWN, 20, 20);
         }
     }
 
@@ -146,7 +148,7 @@ public class ClassContextMenu extends ContextMenu {
 
     private MenuItem buildDelete() {
         MenuItem menu = new MenuItem(I18n.getInstance().getString("plugin.classes.contextmenu.delete"),
-                JEConfig.getImage("list-remove.png", 20, 20));
+                JEConfig.getSVGImage(Icon.MINUS, 20, 20));
         menu.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override

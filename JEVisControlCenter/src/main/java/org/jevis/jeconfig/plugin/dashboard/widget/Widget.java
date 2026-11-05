@@ -45,6 +45,7 @@ import javafx.stage.Modality;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisDataSource;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -283,7 +284,7 @@ public abstract class Widget extends Region {
     private void makeAlertOverlay() {
         this.alertPane.setVisible(false);
         label.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        ImageView alert = JEConfig.getImage("Warning-icon.png", 16d, 16d);
+        Region alert = JEConfig.getSVGImage(Icon.Warning, 16d, 16d, Icon.CSS_WARNING);
         label.setGraphic(alert);
         this.alertPane.getChildren().add(label);
         AnchorPane.setLeftAnchor(alert, 8d);
@@ -310,14 +311,14 @@ public abstract class Widget extends Region {
 
 
         final ContextMenu contextMenu = new ContextMenu();
-        MenuItem delete = new MenuItem("Delete", JEConfig.getImage("if_trash_(delete)_16x16_10030.gif", 18, 18));
+        MenuItem delete = new MenuItem("Delete", JEConfig.getSVGImage(Icon.DELETE, 18, 18));
         delete.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
                 Widget.this.control.removeWidget(Widget.this);
             }
         });
-        MenuItem configItem = new MenuItem("Open Configuration", JEConfig.getImage("Service Manager.png", 18, 18));
+        MenuItem configItem = new MenuItem("Open Configuration", JEConfig.getSVGImage(Icon.SETTINGS, 18, 18));
         configItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -329,7 +330,7 @@ public abstract class Widget extends Region {
             }
         });
 
-        MenuItem layerUPItem = new MenuItem("Layer UP", JEConfig.getImage("arrow_up.png", 18, 18));
+        MenuItem layerUPItem = new MenuItem("Layer UP", JEConfig.getSVGImage(Icon.ARROW_UP, 18, 18));
         layerUPItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -344,7 +345,7 @@ public abstract class Widget extends Region {
         });
 
 
-        MenuItem layerDownItem = new MenuItem("Layer Down", JEConfig.getImage("arrow_down.png", 18, 18));
+        MenuItem layerDownItem = new MenuItem("Layer Down", JEConfig.getSVGImage(Icon.ARROW_DOWN, 18, 18));
         layerDownItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {

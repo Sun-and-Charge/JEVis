@@ -27,10 +27,10 @@ import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.List;
 
 /**
@@ -70,7 +70,7 @@ public class ResourceJobs {
     ) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
             //this.ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             this.ds.preload(SQLDataSource.PRELOAD.ALL_REL);
 

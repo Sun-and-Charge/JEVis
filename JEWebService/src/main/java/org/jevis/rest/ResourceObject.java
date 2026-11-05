@@ -32,10 +32,10 @@ import org.jevis.commons.ws.sql.CachedAccessControl;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -108,7 +108,7 @@ public class ResourceObject {
             @QueryParam("child") long child) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (onlyDeleted) {
                 this.ds.preload(SQLDataSource.PRELOAD.ALL_REL);
@@ -181,7 +181,7 @@ public class ResourceObject {
             @Context HttpHeaders httpHeaders) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             List<JsonRelationship> list = new LinkedList<JsonRelationship>();
 
@@ -225,7 +225,7 @@ public class ResourceObject {
             @PathParam("id") long id) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
 
             JsonObject obj = this.ds.getObject(id);
@@ -285,7 +285,7 @@ public class ResourceObject {
         if (object != null && object.length() > 0) {
             logger.error("postObject: {}", object);
             try {
-                this.ds = new SQLDataSource(httpHeaders, request, url);
+                this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
                 JsonObject json = OBJECT_MAPPER.readValue(object, JsonObject.class);
                 if (this.ds.getJEVisClass(json.getJevisClass()) == null) {
@@ -385,7 +385,7 @@ public class ResourceObject {
 
         try {
             logger.debug("post Object: " + object);
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject json = OBJECT_MAPPER.readValue(object, JsonObject.class);
             JsonObject existingObj = this.ds.getObject(id);
@@ -467,7 +467,7 @@ public class ResourceObject {
             @DefaultValue("-99999") @PathParam("id") long id) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (id == -999) {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Missing id path parameter").build();
@@ -508,7 +508,7 @@ public class ResourceObject {
             @QueryParam("parent") Long parent) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             JsonObject obj = this.ds.getObject(id);
             if (obj == null) {
@@ -553,7 +553,7 @@ public class ResourceObject {
             @Context UriInfo url) {
 
         try {
-            this.ds = new SQLDataSource(httpHeaders, request, url);
+            this.ds = new SQLDataSource(httpHeaders::getRequestHeader);
             if (!this.ds.getUserManager().isSysAdmin()) {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }

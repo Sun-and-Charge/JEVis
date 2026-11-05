@@ -42,6 +42,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.DialogHeader;
@@ -51,7 +53,7 @@ import org.jevis.jeconfig.dialog.DialogHeader;
  */
 public class PasswordDialog {
     private static final Logger logger = LogManager.getLogger(PasswordDialog.class);
-    public static String ICON = "1415303685_lock-128.png";
+    public static String ICON = Icon.LOCK;
 
     private final Label passOldL = new Label(I18n.getInstance().getString("tool.dialog.passworddialog.label.oldpassword"));
     private final Label passL = new Label(I18n.getInstance().getString("tool.dialog.passworddialog.label.newpassword"));
@@ -128,7 +130,7 @@ public class PasswordDialog {
 
         Separator sep = new Separator(Orientation.HORIZONTAL);
         sep.setMinHeight(10);
-        Node header = DialogHeader.getDialogHeader(ICON, I18n.getInstance().getString("tool.dialog.passworddialog.header"));
+        Node header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(ICON, 64, 64), I18n.getInstance().getString("tool.dialog.passworddialog.header"));
 
         root.getChildren().addAll(header, new Separator(Orientation.HORIZONTAL), gp, buttonPanel);
         VBox.setVgrow(buttonPanel, Priority.NEVER);

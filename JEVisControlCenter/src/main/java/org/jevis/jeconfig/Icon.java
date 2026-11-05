@@ -23,9 +23,12 @@ package org.jevis.jeconfig;
 
 public class Icon {
     public static final String CSS_TOOLBAR = "toolbarSVG";
-    public static final String EXCEL = "/icons/MaterialDesignSVG/outlined/Excel.svg";
+    public static final String EXCEL = "/icons/MaterialDesignSVG/outlined/table_view.svg";
 
     public static final String CSS_PLUGIN = "pluginSVG";
+    public static final String CSS_WARNING = "warningSVG";
+    public static final String CSS_VALID = "validSVG";
+    public static final String CSS_INVALID = "invalidSVG";
     public static final String SAVE = "/icons/MaterialDesignSVG/outlined/save.svg";
     public static final String MAIL = "/icons/MaterialDesignSVG/outlined/mail_outline.svg";
     public static final String PLUS_CIRCLE = "/icons/MaterialDesignSVG/outlined/add_circle_outline.svg";
@@ -63,7 +66,7 @@ public class Icon {
     public static final String ZOOM_OUT = "/icons/MaterialDesignSVG/outlined/zoom_out.svg";
     public static final String MAXIMIZE = "/icons/MaterialDesignSVG/outlined/zoom_out_map.svg";
 
-    public static final String SNAP_TO_GRID = "/icons/svg/Snap_to_Grid4.svg";
+    public static final String SNAP_TO_GRID = "/icons/MaterialDesignSVG/outlined/grid_guides.svg";
     public static final String GRID = "/icons/MaterialDesignSVG/outlined/grid_on.svg";
     public static final String VISIBILITY_ON = "/icons/MaterialDesignSVG/outlined/visibility.svg";
     public static final String VISIBILITY_OFF = "/icons/MaterialDesignSVG/outlined/visibility_off.svg";
@@ -153,5 +156,70 @@ public class Icon {
     public static final String DECIMAL_DECREASE= "/icons/MaterialDesignSVG/outlined/decimal_decrease.svg";
 
     public static final String SWITCH = "/icons/MaterialDesignSVG/outlined/sync_alt.svg";
+
+    public static final String NEW_OBJECT = "/icons/MaterialDesignSVG/outlined/add_box.svg";
+    public static final String VALID = "/icons/MaterialDesignSVG/outlined/check_circle.svg";
+    public static final String INVALID = "/icons/MaterialDesignSVG/outlined/cancel.svg";
+    public static final String TASK_LIST = "/icons/MaterialDesignSVG/outlined/list.svg";
+    public static final String CHEVRON_LEFT = "/icons/MaterialDesignSVG/outlined/chevron_left.svg";
+    public static final String CHEVRON_RIGHT = "/icons/MaterialDesignSVG/outlined/chevron_right.svg";
+    public static final String ARROW_LEFT = "/icons/MaterialDesignSVG/outlined/arrow_back.svg";
+    public static final String ARROW_RIGHT = "/icons/MaterialDesignSVG/outlined/arrow_forward.svg";
+    public static final String USER = "/icons/MaterialDesignSVG/outlined/person.svg";
+    public static final String CONNECTED = "/icons/MaterialDesignSVG/outlined/cloud_done.svg";
+    public static final String DISCONNECTED = "/icons/MaterialDesignSVG/outlined/cloud_off.svg";
+    public static final String JSON = "/icons/MaterialDesignSVG/outlined/data_object.svg";
+    public static final String DESIGN = "/icons/MaterialDesignSVG/outlined/design_services.svg";
+    public static final String ROTATE = "/icons/MaterialDesignSVG/outlined/rotate_right.svg";
+    public static final String BACKGROUND = "/icons/MaterialDesignSVG/outlined/wallpaper.svg";
+    public static final String EQUIPMENT = "/icons/MaterialDesignSVG/outlined/precision_manufacturing.svg";
+    public static final String SELECTION = "/icons/MaterialDesignSVG/outlined/checklist.svg";
+    public static final String EXPAND_TREE = "/icons/MaterialDesignSVG/outlined/unfold_more.svg";
+
+    /* Raster versions (official Material Icons outlined PNGs, 24dp@2x) for places that need a javafx.scene.image.Image,
+     * e.g. stage icons, task icons in the status bar, tree cells and widget previews. */
+    public static final String PNG_IMAGE_MISSING = "/icons/MaterialDesignPNG/outlined/outline_broken_image_black_24dp.png";
+    public static final String PNG_IMAGE = "/icons/MaterialDesignPNG/outlined/outline_image_black_24dp.png";
+    public static final String PNG_UNKNOWN = "/icons/MaterialDesignPNG/outlined/outline_help_outline_black_24dp.png";
+    public static final String PNG_SEARCH = "/icons/MaterialDesignPNG/outlined/outline_search_black_24dp.png";
+    public static final String PNG_CHART = "/icons/MaterialDesignPNG/outlined/outline_show_chart_black_24dp.png";
+    public static final String PNG_SYNC = "/icons/MaterialDesignPNG/outlined/outline_sync_black_24dp.png";
+    public static final String PNG_PASTE = "/icons/MaterialDesignPNG/outlined/outline_content_paste_black_24dp.png";
+    public static final String PNG_REPORT = "/icons/MaterialDesignPNG/outlined/outline_description_black_24dp.png";
+    public static final String PNG_ACCOUNTING = "/icons/MaterialDesignPNG/outlined/outline_account_balance_black_24dp.png";
+    public static final String PNG_ALARM = "/icons/MaterialDesignPNG/outlined/outline_notifications_black_24dp.png";
+    public static final String PNG_BASE_DATA = "/icons/MaterialDesignPNG/outlined/outline_dataset_black_24dp.png";
+    public static final String PNG_CONFIG_TOOLS = "/icons/MaterialDesignPNG/outlined/outline_build_black_24dp.png";
+    public static final String PNG_CALCULATOR = "/icons/MaterialDesignPNG/outlined/outline_calculate_black_24dp.png";
+    public static final String PNG_CALENDAR = "/icons/MaterialDesignPNG/outlined/outline_calendar_today_black_24dp.png";
+    public static final String PNG_LABEL = "/icons/MaterialDesignPNG/outlined/outline_label_black_24dp.png";
+    public static final String PNG_EXPAND_MORE = "/icons/MaterialDesignPNG/outlined/outline_expand_more_black_24dp.png";
+    public static final String PNG_DASHBOARD = "/icons/MaterialDesignPNG/outlined/outline_dashboard_black_24dp.png";
+    public static final String PNG_CHECK_ALL = "/icons/MaterialDesignPNG/outlined/outline_done_all_black_24dp.png";
+    public static final String PNG_JSON = "/icons/MaterialDesignPNG/outlined/outline_data_object_black_24dp.png";
+    public static final String PNG_GAUGE = "/icons/MaterialDesignPNG/outlined/outline_speed_black_24dp.png";
+    public static final String PNG_PDF = "/icons/MaterialDesignPNG/outlined/outline_picture_as_pdf_black_24dp.png";
+    public static final String PNG_NOTE = "/icons/MaterialDesignPNG/outlined/outline_sticky_note_2_black_24dp.png";
+    public static final String PNG_SAVE = "/icons/MaterialDesignPNG/outlined/outline_save_black_24dp.png";
+    public static final String PNG_SUM = "/icons/MaterialDesignPNG/outlined/outline_functions_black_24dp.png";
+    public static final String PNG_EQUIPMENT = "/icons/MaterialDesignPNG/outlined/outline_precision_manufacturing_black_24dp.png";
+    public static final String PNG_QUANTITY = "/icons/MaterialDesignPNG/outlined/outline_category_black_24dp.png";
+    public static final String PNG_SI_UNIT = "/icons/MaterialDesignPNG/outlined/outline_straighten_black_24dp.png";
+    public static final String PNG_UNIT = "/icons/MaterialDesignPNG/outlined/outline_square_foot_black_24dp.png";
+    public static final String PNG_ARROW_WIDGET = "/icons/MaterialDesignPNG/outlined/outline_arrow_right_alt_black_24dp.png";
+    public static final String PNG_DONUT = "/icons/MaterialDesignPNG/outlined/outline_donut_large_black_24dp.png";
+    public static final String PNG_LINEAR_GAUGE = "/icons/MaterialDesignPNG/outlined/outline_linear_scale_black_24dp.png";
+    public static final String PNG_LINK = "/icons/MaterialDesignPNG/outlined/outline_link_black_24dp.png";
+    public static final String PNG_TABLE = "/icons/MaterialDesignPNG/outlined/outline_table_chart_black_24dp.png";
+    public static final String PNG_TITLE = "/icons/MaterialDesignPNG/outlined/outline_title_black_24dp.png";
+    public static final String PNG_DATE_RANGE = "/icons/MaterialDesignPNG/outlined/outline_date_range_black_24dp.png";
+    public static final String PNG_UPDATE = "/icons/MaterialDesignPNG/outlined/outline_update_black_24dp.png";
+    public static final String PNG_MOVE = "/icons/MaterialDesignPNG/outlined/outline_drive_file_move_black_24dp.png";
+    public static final String PNG_TABLE_VIEW = "/icons/MaterialDesignPNG/outlined/outline_table_view_black_24dp.png";
+    public static final String PNG_ERROR = "/icons/MaterialDesignPNG/outlined/outline_error_outline_black_24dp.png";
+    public static final String PNG_INFO = "/icons/MaterialDesignPNG/outlined/outline_info_black_24dp.png";
+    public static final String PNG_CHEVRON_LEFT = "/icons/MaterialDesignPNG/outlined/outline_chevron_left_black_24dp.png";
+    public static final String PNG_CHEVRON_RIGHT = "/icons/MaterialDesignPNG/outlined/outline_chevron_right_black_24dp.png";
+    public static final String PNG_WARNING = "/icons/MaterialDesignPNG/outlined/outline_warning_black_24dp.png";
 
 }

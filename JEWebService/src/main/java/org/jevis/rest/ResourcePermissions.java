@@ -27,8 +27,8 @@ import org.jevis.commons.ws.json.*;
 import org.jevis.commons.ws.sql.*;
 
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.util.*;
 import java.util.function.Function;
 
@@ -59,7 +59,7 @@ public class ResourcePermissions {
                                          @PathParam("id") long id) {
         SQLDataSource ds = null;
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             UserRightManagerForWS um = ds.getUserManager();
             JEVisUserSQL current = ds.getCurrentUser();
 
@@ -119,7 +119,7 @@ public class ResourcePermissions {
                                        @QueryParam("object") Long objectId) {
         SQLDataSource ds = null;
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
             UserRightManagerForWS um = ds.getUserManager();
             JEVisUserSQL current = ds.getCurrentUser();
 

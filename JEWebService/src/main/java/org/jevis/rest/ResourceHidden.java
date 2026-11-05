@@ -26,9 +26,9 @@ import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.commons.ws.sql.tables.Service;
 
 import javax.security.sasl.AuthenticationException;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.*;
 
 /**
  * @author Florian Simon <florian.simon@envidatec.com>
@@ -43,7 +43,7 @@ public class ResourceHidden {
                             @Context UriInfo url) {
         SQLDataSource ds = null;
         try {
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (ds.getUserManager().isSysAdmin()) {
                 Service service = new Service(ds);
@@ -72,7 +72,7 @@ public class ResourceHidden {
         try {
             System.gc();
 
-            ds = new SQLDataSource(httpHeaders, request, url);
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             if (ds.getUserManager().isSysAdmin()) {
                 System.gc();

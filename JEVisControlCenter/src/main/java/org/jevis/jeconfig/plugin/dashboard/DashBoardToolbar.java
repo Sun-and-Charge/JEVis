@@ -77,12 +77,12 @@ public class DashBoardToolbar extends ToolBar {
     private final ToggleButton loadDialogButton = new ToggleButton("", this.loadIcon);
     private final ToggleButton showGridButton = new ToggleButton("", JEConfig.getSVGImage(Icon.GRID, this.iconSize, this.iconSize));
     private final ToggleButton treeButton = new ToggleButton("", JEConfig.getSVGImage(Icon.SETTINGS, this.iconSize, this.iconSize));
-    private final ToggleButton settingsButton = new ToggleButton("", JEConfig.getImage("Service Manager.png", this.iconSize, this.iconSize));
+    private final ToggleButton settingsButton = new ToggleButton("", JEConfig.getSVGImage(Icon.SETTINGS, this.iconSize, this.iconSize));
     private final ToggleButton save = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, this.iconSize, this.iconSize));
     private final ToggleButton exportPNG = new ToggleButton("", JEConfig.getSVGImage(Icon.IMAGE, this.iconSize, this.iconSize));
     private final ToggleButton exportPDF = new ToggleButton("", JEConfig.getSVGImage(Icon.PDF, this.iconSize, this.iconSize));
     private final ToggleButton sendMail = new ToggleButton("", JEConfig.getSVGImage(Icon.MAIL, this.iconSize, this.iconSize));
-    //private ToggleButton newButton = new ToggleButton("", JEConfig.getImage("1390343812_folder-open.png", this.iconSize, this.iconSize));
+    //private ToggleButton newButton = new ToggleButton("", JEConfig.getSVGImage(Icon.FOLDER_OPEN, this.iconSize, this.iconSize));
     private final ToggleButton deleteDashboard = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
     private final ToggleButton deleteWidget = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
     private final ToggleButton zoomIn = new ToggleButton("", JEConfig.getSVGImage(Icon.ZOOM_IN, this.iconSize, this.iconSize));

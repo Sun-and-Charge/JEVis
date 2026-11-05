@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -43,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -57,7 +59,7 @@ import java.util.Optional;
 public class LocalNameDialog{
 
     private static final Logger logger = LogManager.getLogger(NewObjectDialog.class);
-    public static String ICON = "translate.png";
+    public static String ICON = Icon.TRANSLATE;
 
     private Response response = Response.CANCEL;
     private JEVisObject object = null;
@@ -89,7 +91,7 @@ public class LocalNameDialog{
         stage.setAlwaysOnTop(true);
         dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.translate.title"));
         dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.translate.header"));
-        dialog.setGraphic(ResourceLoader.getImage(ICON, 50, 50));
+        dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         dialog.getDialogPane().setPrefWidth(500);
         dialog.getDialogPane().setPrefHeight(300);
 

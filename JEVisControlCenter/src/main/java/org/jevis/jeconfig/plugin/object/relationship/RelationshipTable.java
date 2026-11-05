@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -23,6 +24,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
@@ -35,6 +37,7 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisRelationship;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.resource.ImageConverter;
 
@@ -158,11 +161,11 @@ public class RelationshipTable extends TableView {
                                 HBox box = new HBox();
                                 box.setAlignment(Pos.CENTER);
 
-                                ImageView icon = null;
+                                Node icon = null;
                                 if (item == 1) {
-                                    icon = JEConfig.getImage("left.png", 20, 20);
+                                    icon = JEConfig.getSVGImage(Icon.CHEVRON_LEFT, 20, 20);
                                 } else if (item == 2) {
-                                    icon = JEConfig.getImage("right.png", 20, 20);
+                                    icon = JEConfig.getSVGImage(Icon.CHEVRON_RIGHT, 20, 20);
                                 }
 
                                 box.getChildren().setAll(icon);
@@ -191,7 +194,7 @@ public class RelationshipTable extends TableView {
 
                             HBox box = new HBox();
                             box.setAlignment(Pos.BASELINE_LEFT);
-//                            ImageView icon = JEConfig.getImage("right.png", 24, 24);
+//                            ImageView icon = JEConfig.getSVGImage(Icon.CHEVRON_RIGHT, 24, 24);
                             box.getChildren().setAll(new Label(getTypeName(item)));
                             setGraphic(box);
 //                            setStyle("-fx-background-color: " + Constants.Color.LIGHT_GREY2);

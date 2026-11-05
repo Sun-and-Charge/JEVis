@@ -45,6 +45,7 @@ import org.jevis.commons.classes.JC;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.NameFormatter;
 import org.jevis.commons.utils.ObjectHelper;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.TreeSelectionDialog;
@@ -114,7 +115,7 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
         mainRow = new MeterRow(false);
 
         JFXButton addButton = new JFXButton(I18n.getInstance().getString("plugin.energybalance.addsubmeter"),
-                ResourceLoader.getImage("list-add.png", 15, 15));
+                JEConfig.getSVGImage(Icon.PLUS, 15, 15));
         addButton.setOnAction(event -> addSubRow());
         addSubRow();
 
@@ -520,7 +521,7 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
                 signBox.getSelectionModel().select(Sign.MINUS);
                 signBox.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.energybalance.sign")));
                 signBox.valueProperty().addListener((observable, oldValue, newValue) -> updatePreview());
-                JFXButton removeButton = new JFXButton("", ResourceLoader.getImage("list-remove.png", 15, 15));
+                JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.MINUS, 15, 15));
                 removeButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.energybalance.removesubmeter")));
                 removeButton.setOnAction(event -> removeSubRow(this));
                 getChildren().addAll(signBox, selectButton, typeBox, removeButton);

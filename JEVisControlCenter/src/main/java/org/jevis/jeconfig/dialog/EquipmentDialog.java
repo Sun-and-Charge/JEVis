@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.application.I18nWS;
@@ -102,7 +104,7 @@ public class EquipmentDialog extends Dialog {
 
         JFXButton treeButton = new JFXButton(I18n
                 .getInstance().getString("plugin.object.attribute.target.button"),
-                JEConfig.getImage("folders_explorer.png", 18, 18));
+                JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
 
         Label nameLabel = new Label(I18n.getInstance().getString("newobject.name"));
         VBox nameVBox = new VBox(nameLabel);
@@ -131,7 +133,7 @@ public class EquipmentDialog extends Dialog {
         VBox.setVgrow(targetBox, Priority.NEVER);
         VBox.setVgrow(gp, Priority.ALWAYS);
         vBox.setFillWidth(true);
-        vBox.getChildren().setAll(DialogHeader.getDialogHeader("building_equipment.png", I18n.getInstance().getString("plugin.equipment.title")), targetBox, gp, sep1);
+        vBox.getChildren().setAll(DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.EQUIPMENT, 64, 64), I18n.getInstance().getString("plugin.equipment.title")), targetBox, gp, sep1);
         getDialogPane().setContent(vBox);
 
         treeButton.setOnAction(event3 -> {
@@ -251,7 +253,7 @@ public class EquipmentDialog extends Dialog {
         VBox.setVgrow(gp, Priority.ALWAYS);
         VBox.setVgrow(buttonRow, Priority.NEVER);
         vBox.setFillWidth(true);
-        vBox.getChildren().setAll(DialogHeader.getDialogHeader("building_equipment.png", I18n.getInstance().getString("plugin.equipment.title")), targetBox, gp, sep1, buttonRow);
+        vBox.getChildren().setAll(DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.EQUIPMENT, 64, 64), I18n.getInstance().getString("plugin.equipment.title")), targetBox, gp, sep1, buttonRow);
 
         newObject = selectedMeter;
 

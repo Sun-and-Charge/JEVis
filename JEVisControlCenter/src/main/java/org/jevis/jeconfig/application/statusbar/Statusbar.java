@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014-2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisOption;
 import org.jevis.commons.config.CommonOptions;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.dialog.HiddenConfig;
@@ -79,8 +81,8 @@ public class Statusbar extends ToolBar {
     private final Label onlineInfo = new Label("Online");
     private final Label versionLabel = new Label(I18n.getInstance().getString("statusbar.version"));
     private final HBox conBox = new HBox();
-    private final ImageView connectIcon = ResourceLoader.getImage("network-connected.png", this.ICON_SIZE, this.ICON_SIZE);
-    private final ImageView notConnectIcon = ResourceLoader.getImage("network-disconnected.png", this.ICON_SIZE, this.ICON_SIZE);
+    private final Region connectIcon = JEConfig.getSVGImage(Icon.CONNECTED, this.ICON_SIZE, this.ICON_SIZE);
+    private final Region notConnectIcon = JEConfig.getSVGImage(Icon.DISCONNECTED, this.ICON_SIZE, this.ICON_SIZE);
     private JEVisDataSource _ds;
     private final Tooltip tt = new Tooltip(I18n.getInstance().getString("statusbar.connection.lost"));
     private int retryCount = 0;
@@ -89,7 +91,7 @@ public class Statusbar extends ToolBar {
     private final Label messageBox = new Label();
     private final TaskProgressView taskProgressView = new TaskProgressView<>();
     private final JFXPopup popup = new JFXPopup();
-    private final JFXButton showTaskViewButton = new JFXButton("", JEConfig.getImage("TaskList.png", 15, 15));
+    private final JFXButton showTaskViewButton = new JFXButton("", JEConfig.getSVGImage(Icon.TASK_LIST, 15, 15));
     private final Map<String, Image> imageList = new HashMap<>();
     private boolean hideTaskList = false;
     private final Label titleLabel = new Label(I18n.getInstance().getString("statusbar.taskmon.title"));
@@ -125,7 +127,7 @@ public class Statusbar extends ToolBar {
         stackpane.getChildren().addAll(taskProgressView, hideTaskListPane);
 
         BorderPane anchorPane = new BorderPane(stackpane);//taskProgressView);
-        ToggleButton hideButton = new ToggleButton("", JEConfig.getImage("Hide.png", 12, 12));
+        ToggleButton hideButton = new ToggleButton("", JEConfig.getSVGImage(Icon.VISIBILITY_OFF, 12, 12));
         HBox hBox = new HBox(titleLabel, spacer, hideButton);
         hBox.setPadding(new Insets(8));
         hBox.setAlignment(Pos.TOP_RIGHT);
@@ -358,10 +360,10 @@ public class Statusbar extends ToolBar {
         root.setSpacing(10);
         root.setAlignment(Pos.CENTER_LEFT);
 
-        ImageView userIcon = ResourceLoader.getImage("user.png", this.ICON_SIZE, this.ICON_SIZE);
+        Region userIcon = JEConfig.getSVGImage(Icon.USER, this.ICON_SIZE, this.ICON_SIZE);
 
 //        Label userLabel = new Label("User:");
-        ImageView notification = ResourceLoader.getImage("note_3.png", this.ICON_SIZE, this.ICON_SIZE);
+        Region notification = JEConfig.getSVGImage(Icon.ALARM, this.ICON_SIZE, this.ICON_SIZE);
 
         this.conBox.getChildren().setAll(this.connectIcon);
 

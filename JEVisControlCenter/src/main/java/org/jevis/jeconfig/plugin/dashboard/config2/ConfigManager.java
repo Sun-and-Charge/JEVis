@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -30,6 +31,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -361,7 +363,7 @@ public class ConfigManager {
     }
 
     public ObjectProperty<Image> getBackgroundImage(JEVisObject analysisObject) {
-        ObjectProperty<Image> imageBoardBackground = new SimpleObjectProperty<>(Image.class, "Dash Board Color", JEConfig.getImage("transPixel.png"));
+        ObjectProperty<Image> imageBoardBackground = new SimpleObjectProperty<>(Image.class, "Dash Board Color", new WritableImage(1, 1));
         if (analysisObject == null) {
             return null;
         }
@@ -376,7 +378,7 @@ public class ConfigManager {
                 try {
 //                    logger.error("getBackgroundImage: {}", analysisObject);
 //                    if (analysisObject == null) {
-//                        return JEConfig.getImage("transPixel.png");
+//                        return new WritableImage(1, 1);
 //                    }
                     JEVisAttribute bgFile = analysisObject.getAttribute(DashBordPlugIn.ATTRIBUTE_BACKGROUND);
                     if (bgFile != null && bgFile.hasSample()) {

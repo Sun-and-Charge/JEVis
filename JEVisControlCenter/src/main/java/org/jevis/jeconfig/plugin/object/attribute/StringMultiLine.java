@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -33,6 +34,7 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisSample;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.object.extension.GenericAttributeExtension;
 import org.joda.time.DateTime;
@@ -150,7 +152,7 @@ public class StringMultiLine implements AttributeEditor {
                 Tooltip tooltip = new Tooltip();
                 try {
                     tooltip.setText(_attribute.getType().getDescription());
-                    tooltip.setGraphic(JEConfig.getImage("1393862576_info_blue.png", 30, 30));
+                    tooltip.setGraphic(JEConfig.getSVGImage(Icon.INFO, 30, 30));
                     _field.setTooltip(tooltip);
                 } catch (JEVisException ex) {
                     logger.fatal(ex);
@@ -163,7 +165,7 @@ public class StringMultiLine implements AttributeEditor {
             try {
                 if (_attribute.getType().getValidity() == JEVisConstants.Validity.AT_DATE) {
                     JFXButton chartView = new JFXButton();
-                    chartView.setGraphic(JEConfig.getImage("1394566386_Graph.png", 20, 20));
+                    chartView.setGraphic(JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
                     chartView.setStyle("-fx-padding: 0 2 0 2;-fx-background-insets: 0;-fx-background-radius: 0;-fx-background-color: transparent;");
 
                     chartView.setMaxHeight(_field.getHeight());

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  *
  * This file is part of JEConfig.
  *
@@ -27,6 +28,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 
 /**
@@ -37,12 +39,12 @@ public class CSVCellGraphic {
 
     HBox root = new HBox(5);
     Label textLabel = new Label("");
-    public static String ICON_INVALID = "1404237042_Error.png";
-    public static String ICON_VALID = "1404237035_Valid.png";
+    public static String ICON_INVALID = Icon.INVALID;
+    public static String ICON_VALID = Icon.VALID;
 
     //TODO maybe load an icon only once
-    ImageView iconValid = JEConfig.getImage(ICON_VALID, 20, 20);
-    ImageView iconInVlaid = JEConfig.getImage(ICON_INVALID, 20, 20);
+    Region iconValid = JEConfig.getSVGImage(ICON_VALID, 20, 20, Icon.CSS_VALID);
+    Region iconInVlaid = JEConfig.getSVGImage(ICON_INVALID, 20, 20, Icon.CSS_INVALID);
     Tooltip tooltip = new Tooltip();
 
     public CSVCellGraphic(String text) {

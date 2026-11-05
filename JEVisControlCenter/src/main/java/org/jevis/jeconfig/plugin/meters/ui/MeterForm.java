@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -27,6 +28,7 @@ import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.plugin.meters.data.MeterData;
@@ -55,7 +57,7 @@ public class MeterForm extends Dialog {
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(false);
         stage.setResizable(true);
-        stage.getIcons().add(JEConfig.getImage("1393354629_Config-Tools.png"));
+        stage.getIcons().add(JEConfig.getImage(Icon.PNG_CONFIG_TOOLS));
         stage.setTitle(I18n.getInstance().getString("jevistree.widget.column.settings"));
 
         tabs = new ArrayList<>();

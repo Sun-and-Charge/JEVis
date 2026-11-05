@@ -25,12 +25,12 @@ import org.jevis.commons.ws.json.JsonFile;
 import org.jevis.commons.ws.sql.Config;
 import org.joda.time.DateTime;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.*;
+import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;

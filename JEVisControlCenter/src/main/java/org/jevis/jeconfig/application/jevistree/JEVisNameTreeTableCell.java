@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -46,15 +47,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JEVisNameTreeTableCell extends TreeTableCell<JEVisTreeRow, JEVisTreeRow> {
-    public static final Image UNKNOWN_ICON = ResourceLoader.getImage("1393615831_unknown2.png");
+    public static final Image UNKNOWN_ICON = ResourceLoader.getImage(Icon.PNG_UNKNOWN);
     private static final Logger logger = LogManager.getLogger(ColumnFactory.class);
-    private static final Image ATTRIBUTE_ICON = ResourceLoader.getImage("graphic-design.png");
+    private static final Image ATTRIBUTE_ICON = ResourceLoader.getImage(Icon.PNG_LABEL);
     private static final Map<String, Image> classIconCache = new HashMap<>();
     final HBox hbox = new HBox();
     final VBox vbox = new VBox();
     final Label nameLabel = new Label();
     final Region spaceBetween = new Region();
-    final ImageView icon = ResourceLoader.getImage("1393615831_unknown2.png", 18, 18);
+    final ImageView icon = ResourceLoader.getImage(Icon.PNG_UNKNOWN, 18, 18);
 
     public JEVisNameTreeTableCell() {
         hbox.setStyle("-fx-background-color: transparent;");
@@ -109,7 +110,7 @@ public class JEVisNameTreeTableCell extends TreeTableCell<JEVisTreeRow, JEVisTre
                                 if (jevisTree.getCalculationIDs().get(jeVisObject.getID()) != null) {
                                     {
                                         if (!classIconCache.containsKey("Fake_Virtual_DataPoints")) {
-                                            classIconCache.put("Fake_Virtual_DataPoints", JEConfig.getImage("virt_data.png"));
+                                            classIconCache.put("Fake_Virtual_DataPoints", JEConfig.getImage(Icon.PNG_CALCULATOR));
                                         }
                                         icon.setImage(classIconCache.get("Fake_Virtual_DataPoints"));
                                     }

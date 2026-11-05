@@ -117,7 +117,7 @@ public class AlarmPlugin implements Plugin {
     private final BorderPane borderPane = new BorderPane();
     private final ToolBar toolBar = new ToolBar();
     private final int iconSize = 20;
-    private final Image checkAllImage = ResourceLoader.getImage("jetxee-check-sign-and-cross-sign-3.png");
+    private final Image checkAllImage = ResourceLoader.getImage(Icon.PNG_CHECK_ALL);
     private final DateHelper dateHelper = new DateHelper(DateHelper.TransformType.PREVIEW);
     private final SimpleBooleanProperty hasAlarms = new SimpleBooleanProperty(false);
     private final ObservableMap<DateTime, Boolean> activeAlarms = FXCollections.observableHashMap();
@@ -125,7 +125,7 @@ public class AlarmPlugin implements Plugin {
     private final Pagination pagination = new Pagination();
     private final SimpleIntegerProperty showCheckedAlarms = new SimpleIntegerProperty(this, "showCheckedAlarms", 0);
     private final List<Future<?>> futures = new ArrayList<>();
-    private final Image taskImage = JEConfig.getImage("alarm_icon.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_ALARM);
 
     private final Comparator<AlarmRow> alarmRowComparator = new Comparator<AlarmRow>() {
         @Override
@@ -761,8 +761,8 @@ public class AlarmPlugin implements Plugin {
                             setGraphic(null);
                             setText(null);
                         } else {
-                            ImageView checked = JEConfig.getImage("1404237035_Valid.png", iconSize, iconSize);
-                            ImageView notChecked = JEConfig.getImage("1404237042_Error.png", iconSize, iconSize);
+                            Region checked = JEConfig.getSVGImage(Icon.VALID, iconSize, iconSize, Icon.CSS_VALID);
+                            Region notChecked = JEConfig.getSVGImage(Icon.INVALID, iconSize, iconSize, Icon.CSS_INVALID);
 
                             ToggleButton checkedButton = new ToggleButton("");
                             if (item) {

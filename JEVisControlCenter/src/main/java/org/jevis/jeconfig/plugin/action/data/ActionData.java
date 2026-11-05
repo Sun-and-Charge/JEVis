@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -35,6 +36,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.JEVisFileImp;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.gson.GsonBuilder;
 import org.jevis.jeconfig.plugin.action.ActionPlugin;
@@ -262,7 +264,7 @@ public class ActionData {
                     return null;
                 }
             };
-            Image widgetTaskIcon = JEConfig.getImage("if_dashboard_46791.png");
+            Image widgetTaskIcon = JEConfig.getImage(Icon.PNG_DASHBOARD);
             JEConfig.getStatusBar().addTask(ActionPlugin.class.getName(), task, widgetTaskIcon, true);
 
 

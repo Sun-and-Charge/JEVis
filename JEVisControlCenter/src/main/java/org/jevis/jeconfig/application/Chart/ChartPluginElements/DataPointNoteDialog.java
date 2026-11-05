@@ -1,5 +1,12 @@
 /**
  * Copyright (c) 2016 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ * <p>
+ * Based on de.gsi.chart.plugins.DataPointTooltip of chartfx 8.1.5 (https://github.com/GSI-CS-CO/chart-fx),
+ * licensed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+ * <p>
+ * Modified for JEVis (data notes, alarms, table view of the selected data point).
+ * The modifications are Copyright (C) JEVis contributors and Copyright (C) 2026 Sun and Charge Germany GmbH,
+ * licensed under the GNU General Public License version 3, see <https://github.com/Sun-and-Charge/JEVis>.
  */
 
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
