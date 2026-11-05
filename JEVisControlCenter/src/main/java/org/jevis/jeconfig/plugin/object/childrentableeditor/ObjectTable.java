@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -44,7 +45,7 @@ import org.jevis.commons.utils.FileNames;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.jevistree.methods.CommonMethods;
-import org.jevis.jeconfig.plugin.charts.TableViewContextMenuHelper;
+import org.jevis.jeconfig.application.table.TableColumnMenu;
 import org.jevis.jeconfig.sample.SampleEditor;
 import org.joda.time.DateTime;
 
@@ -88,7 +89,7 @@ public class ObjectTable {
         ObservableList<TableData> tableData = FXCollections.observableArrayList();
 
         tableView.setTableMenuButtonVisible(true);
-        TableViewContextMenuHelper contextMenuHelper = new TableViewContextMenuHelper(tableView);
+        TableColumnMenu columnMenu = TableColumnMenu.install(tableView);
 
         xlsxButton.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
@@ -134,7 +135,7 @@ public class ObjectTable {
                         logger.error("Could not open sample editor for row:col {}:{}, object {}:{} and attribute {}", row, col, tableData.getObject().getName(), attributeName, e);
                     }
                 } else if (click.getButton() == MouseButton.SECONDARY) {
-                    contextMenuHelper.showContextMenu();
+                    columnMenu.show();
                 }
             }
         });
