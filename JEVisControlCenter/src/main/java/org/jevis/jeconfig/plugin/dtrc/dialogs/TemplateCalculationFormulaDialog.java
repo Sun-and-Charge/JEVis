@@ -52,7 +52,6 @@ import java.util.List;
 
 public class TemplateCalculationFormulaDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(TemplateCalculationFormulaDialog.class);
-    private final String ICON = "1404313956_evolution-tasks.png";
     private final AlphanumComparator ac = new AlphanumComparator();
     private FilteredList<JEVisObject> filteredList;
     private Response response = Response.CANCEL;

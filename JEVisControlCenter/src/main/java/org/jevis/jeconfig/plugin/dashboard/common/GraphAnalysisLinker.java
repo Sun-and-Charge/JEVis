@@ -30,6 +30,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.AnalysisRequest;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
@@ -49,7 +50,7 @@ public class GraphAnalysisLinker {
     private ManipulationMode manipulationMode;
     private Interval interval;
     boolean targetIsreachable = false;
-    JFXButton button = new JFXButton("", JEConfig.getImage("1415314386_Graph.png", 20, 20));
+    JFXButton button = new JFXButton("", JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
 
     public GraphAnalysisLinker(JEVisDataSource dataSource) {
         button.setStyle("-fx-background-color: transparent;");

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -61,7 +62,7 @@ import java.util.regex.Pattern;
 
 public class ReportSheet extends Tab {
     private static final Logger logger = LogManager.getLogger(ReportSheet.class);
-    private final Image imgMarkAll = ResourceLoader.getImage("jetxee-check-sign-and-cross-sign-3.png");
+    private final Image imgMarkAll = ResourceLoader.getImage(Icon.PNG_CHECK_ALL);
     private final Tooltip tooltipMarkAll = new Tooltip(I18n.getInstance().getString("plugin.graph.dialog.changesettings.tooltip.forall"));
     private final GridPane gridPane = new GridPane();
     private final JEVisDataSource ds;

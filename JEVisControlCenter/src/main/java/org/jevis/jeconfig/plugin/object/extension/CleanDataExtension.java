@@ -49,6 +49,7 @@ import org.jevis.commons.json.JsonLimitsConfig;
 import org.jevis.commons.object.ValueFormat;
 import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.commons.utils.CommonMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.control.AnalysisLinkButton;
@@ -779,7 +780,7 @@ public class CleanDataExtension implements ObjectEditorExtension {
         pForm.activateProgressBar(set);
         pForm.getDialogStage().show();
 
-        JEConfig.getStatusBar().addTask(CleanDataExtension.class.getName(), set, JEConfig.getImage("1476369770_Sync.png"), true);
+        JEConfig.getStatusBar().addTask(CleanDataExtension.class.getName(), set, JEConfig.getImage(Icon.PNG_SYNC), true);
 
         Task<Void> waitTask = new Task<Void>() {
             @Override
@@ -797,7 +798,7 @@ public class CleanDataExtension implements ObjectEditorExtension {
         };
 
         if (!JEConfig.getStatusBar().getTaskList().containsValue(org.jevis.jeconfig.application.jevistree.methods.CommonMethods.WAIT_FOR_TIMEZONE)) {
-            JEConfig.getStatusBar().addTask(org.jevis.jeconfig.application.jevistree.methods.CommonMethods.WAIT_FOR_TIMEZONE, waitTask, JEConfig.getImage("1476369770_Sync.png"), true);
+            JEConfig.getStatusBar().addTask(org.jevis.jeconfig.application.jevistree.methods.CommonMethods.WAIT_FOR_TIMEZONE, waitTask, JEConfig.getImage(Icon.PNG_SYNC), true);
         }
 
     }

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -42,6 +43,7 @@ import org.jevis.api.JEVisClassRelationship;
 import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisException;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.tool.ImageConverter;
 
@@ -100,7 +102,7 @@ public class ValidParentEditor {
                                               gb.add(classBox, 0, ++x);
                                               JFXButton remove = new JFXButton();
                                               remove.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
-                                              remove.setGraphic(JEConfig.getImage("list-remove.png", 20, 20));
+                                              remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 20, 20));
                                               gb.add(remove, 1, x);
 
                                               remove.setOnAction(new EventHandler<ActionEvent>() {
@@ -128,7 +130,7 @@ public class ValidParentEditor {
 
                                   final JFXButton newB = new JFXButton();
 
-                                  newB.setGraphic(JEConfig.getImage("list-add.png", 20, 20));
+                                  newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 20, 20));
                                   newB.setDisable(true);
 
                                   //TODO: replace with Tree selection dialog

@@ -20,13 +20,13 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.Font;
+import com.lowagie.text.Image;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
@@ -202,8 +202,8 @@ public class ChartExportPDF {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
 
-        Font CUSTOM_FONT_HEADER = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD | Font.UNDERLINE);
-        Font CUSTOM_FONT_TEXT = new Font(Font.FontFamily.TIMES_ROMAN, 11);
+        Font CUSTOM_FONT_HEADER = new Font(Font.TIMES_ROMAN, 16, Font.BOLD | Font.UNDERLINE);
+        Font CUSTOM_FONT_TEXT = new Font(Font.TIMES_ROMAN, 11);
 
         Paragraph headerParagraph = new Paragraph(title);
         headerParagraph.setFont(CUSTOM_FONT_HEADER);

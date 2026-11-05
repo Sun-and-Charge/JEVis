@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -23,6 +24,7 @@ import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisObject;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeItem;
@@ -87,7 +89,7 @@ public class CleanDatas {
         };
 
         if (!JEConfig.getStatusBar().getTaskList().containsValue(CommonMethods.WAIT_FOR_TIMEZONE)) {
-            JEConfig.getStatusBar().addTask(CommonMethods.WAIT_FOR_TIMEZONE, waitTask, JEConfig.getImage("1476369770_Sync.png"), true);
+            JEConfig.getStatusBar().addTask(CommonMethods.WAIT_FOR_TIMEZONE, waitTask, JEConfig.getImage(Icon.PNG_SYNC), true);
         }
     }
 
@@ -110,7 +112,7 @@ public class CleanDatas {
             }
         };
 
-        JEConfig.getStatusBar().addTask(CommonMethods.RECALCULATION, task, JEConfig.getImage("calc.png"), true);
+        JEConfig.getStatusBar().addTask(CommonMethods.RECALCULATION, task, JEConfig.getImage(Icon.PNG_CALCULATOR), true);
 
     }
 }

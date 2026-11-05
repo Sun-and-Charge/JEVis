@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -35,6 +36,7 @@ import javafx.scene.layout.GridPane;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.GlobalToolBar;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.object.ObjectEditorExtension;
 import org.jevis.jeconfig.plugin.object.childrentableeditor.ObjectTable;
@@ -49,8 +51,8 @@ public class ChildrenEditorExtension implements ObjectEditorExtension {
     private JEVisObject parentObject = null;
     private final JFXDatePicker startDatePicker = new JFXDatePicker(LocalDate.now());
     private final JFXDatePicker endDatePicker = new JFXDatePicker(LocalDate.now());
-    private final ToggleButton reloadButton = new ToggleButton("", JEConfig.getImage("1403018303_Refresh.png", iconSize, iconSize));
-    private final ToggleButton xlsxButton = new ToggleButton("", JEConfig.getImage("xlsx_315594.png", iconSize, iconSize));
+    private final ToggleButton reloadButton = new ToggleButton("", JEConfig.getSVGImage(Icon.REFRESH, iconSize, iconSize));
+    private final ToggleButton xlsxButton = new ToggleButton("", JEConfig.getSVGImage(Icon.EXCEL, iconSize, iconSize));
     private final Label columnLabel = new Label(I18n.getInstance().getString("searchbar.filter") + " " + I18n.getInstance().getString("plugin.dtrc.dialog.columnlabel"));
     private final Label includeLabel = new Label(I18n.getInstance().getString("plugin.object.childreneditor.includelabel"));
     private final Label excludeLabel = new Label(I18n.getInstance().getString("plugin.object.childreneditor.excludelabel"));

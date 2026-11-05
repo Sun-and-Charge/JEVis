@@ -54,7 +54,6 @@ public class SelectTargetDialog extends Dialog {
     public static final String VALUE = "Value";
     private final SelectionMode selectionMode;
     private final JEVisTreeFilter basicFilter;
-    private final String ICON = "1404313956_evolution-tasks.png";
     private final JEVisDataSource ds;
     private final List<UserSelection> userSelections;
     private JEVisDataSource _ds;

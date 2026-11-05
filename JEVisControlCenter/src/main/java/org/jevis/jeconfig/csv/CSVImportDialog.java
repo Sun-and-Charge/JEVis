@@ -50,6 +50,7 @@ import org.controlsfx.control.NotificationPane;
 import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -71,7 +72,7 @@ import java.util.concurrent.Executors;
 public class CSVImportDialog {
     private static final Logger logger = LogManager.getLogger(CSVImportDialog.class);
 
-    public static String ICON = "1403727005_gnome-mime-application-vnd.lotus-1-2-3.png";
+    public static String ICON = Icon.PNG_TABLE_VIEW;
     final JFXButton ok = new JFXButton(I18n.getInstance().getString("csv.ok"));
     final JFXButton automatic = new JFXButton(I18n.getInstance().getString("csv.automatic"));
     final JFXButton fileButton = new JFXButton(I18n.getInstance().getString("csv.file_select"));
@@ -435,13 +436,13 @@ public class CSVImportDialog {
             pForm.activateProgressBar(importTask);
             importTask.setOnSucceeded(event -> {
                 pForm.getDialogStage().close();
-                showNotification(importTask.getValue() + " " + I18n.getInstance().getString("csv.import.dialog.success.message"), JEConfig.getImage("1404237035_Valid.png", 24, 24));
+                showNotification(importTask.getValue() + " " + I18n.getInstance().getString("csv.import.dialog.success.message"), JEConfig.getSVGImage(Icon.VALID, 24, 24, Icon.CSS_VALID));
             });
             importTask.setOnFailed(event -> {
                 pForm.getDialogStage().close();
                 String message = importTask.getException() != null ? importTask.getException().getMessage()
                         : I18n.getInstance().getString("csv.import.dialog.failed.message");
-                showNotification(message, JEConfig.getImage("1401136217_exclamation-diamond_red.png", 24, 24));
+                showNotification(message, JEConfig.getSVGImage(Icon.ERROR, 24, 24));
             });
             importTask.setOnRunning(event -> {
                 root.setDisable(true);

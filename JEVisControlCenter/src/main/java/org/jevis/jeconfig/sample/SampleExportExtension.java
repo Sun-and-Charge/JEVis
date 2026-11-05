@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -69,7 +70,6 @@ import java.util.List;
 public class SampleExportExtension implements SampleEditorExtension {
     private static final Logger logger = LogManager.getLogger(SampleExportExtension.class);
     private final static String TITLE = "Export";
-    public static String ICON = "1415654364_stock_export.png";
     final JFXButton ok = new JFXButton("OK");
     private final BorderPane _view = new BorderPane();
     Label lLineSep = new Label("Field Seperator:");

@@ -20,13 +20,13 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.common;
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.*;
+import com.lowagie.text.Font;
+import com.lowagie.text.Image;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
@@ -126,8 +126,8 @@ public class DashboardExport {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100);
 
-        Font CUSTOM_FONT_HEADER = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL | Font.UNDERLINE);
-        Font CUSTOM_FONT_TEXT = new Font(Font.FontFamily.HELVETICA, 8);
+        Font CUSTOM_FONT_HEADER = new Font(Font.HELVETICA, 12, Font.NORMAL | Font.UNDERLINE);
+        Font CUSTOM_FONT_TEXT = new Font(Font.HELVETICA, 8);
 
         Paragraph headerParagraph = new Paragraph(title, CUSTOM_FONT_HEADER);
         headerParagraph.setAlignment(Paragraph.ALIGN_LEFT);
@@ -195,7 +195,7 @@ public class DashboardExport {
 //                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
 //                ImageIO.write(SwingFXUtils.fromFXImage(wImage, null), "png", byteOutput);
 //                logger.info("Convert 1 Done");
-////                com.itextpdf.text.Image graph = com.itextpdf.text.Image.getInstance(byteOutput.toByteArray());
+////                com.lowagie.text.Image graph = com.lowagie.text.Image.getInstance(byteOutput.toByteArray());
 //                logger.info("Convert 2 Done");
 ////                Document document = new Document();
 ////                logger.info("Document start");

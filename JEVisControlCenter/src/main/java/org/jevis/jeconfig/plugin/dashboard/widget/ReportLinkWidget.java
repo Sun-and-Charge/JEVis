@@ -38,6 +38,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.utils.AlphanumComparator;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config2.ReportLinkerNode;
@@ -63,7 +64,7 @@ public class ReportLinkWidget extends Widget {
     private static final Logger logger = LogManager.getLogger(ReportLinkWidget.class);
     private final ObjectMapper mapper = new ObjectMapper();
     private final AnchorPane anchorPane = new AnchorPane();
-    private final JFXButton linkButton = new JFXButton("", JEConfig.getImage("Report.png", 20, 20));
+    private final JFXButton linkButton = new JFXButton("", JEConfig.getSVGImage(Icon.REPORT, 20, 20));
     private ReportLinkerNode linkerNode = new ReportLinkerNode();
     private JEVisObject linkedReportObj;
 
@@ -231,7 +232,7 @@ public class ReportLinkWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/LinkWidget2.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_LINK, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 }

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -44,6 +45,7 @@ import javafx.scene.paint.Color;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 
@@ -58,8 +60,8 @@ public class GaugePojo {
 
     private final double iconSize = 20;
 
-    private final JFXButton jfxButtonDelete = new JFXButton("", JEConfig.getImage("if_trash_(delete)_16x16_10030.gif", this.iconSize, this.iconSize));
-    private final JFXButton jfxButtonAdd = new JFXButton("", JEConfig.getImage("list-add.png", this.iconSize, this.iconSize));
+    private final JFXButton jfxButtonDelete = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
+    private final JFXButton jfxButtonAdd = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, this.iconSize, this.iconSize));
 
     int gaugeWidgetID = -1;
 

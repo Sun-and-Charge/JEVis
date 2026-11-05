@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -34,6 +35,7 @@ import javafx.scene.text.Font;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
 import org.jevis.jeconfig.plugin.dashboard.config2.Size;
@@ -51,7 +53,7 @@ public class TitleWidget extends Widget {
 
     private static final Logger logger = LogManager.getLogger(TitleWidget.class);
     public static String WIDGET_ID = "Title";
-    public static Image ICON = JEConfig.getImage("widget/TitleWidget.png");
+    public static Image ICON = JEConfig.getImage(Icon.PNG_TITLE);
     private final Label label = new Label();
     private AnchorPane anchorPane = new AnchorPane();
 
@@ -169,7 +171,7 @@ public class TitleWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/TitleWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_TITLE, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 }

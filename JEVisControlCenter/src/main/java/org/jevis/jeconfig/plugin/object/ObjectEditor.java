@@ -40,6 +40,7 @@ import org.controlsfx.control.HiddenSidesPane;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisType;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
@@ -303,14 +304,14 @@ public class ObjectEditor {
                         _lastOpenEditor = installedExtensions.get(0).getTitle();
                     }
 
-                    JFXButton helpButton = new JFXButton("", JEConfig.getImage("1400874302_question_blue.png", 34, 34));
+                    JFXButton helpButton = new JFXButton("", JEConfig.getSVGImage(Icon.HELP, 34, 34));
                     helpButton.setStyle("-fx-padding: 0 2 0 2;-fx-background-insets: 0;-fx-background-radius: 0;-fx-background-color: transparent;");
 
                     //Header
-                    ImageView classIcon;
+                    Node classIcon;
                     try {
                         if (tree.getCalculationIDs().get(obj.getID()) != null) {
-                            ImageView iv = new ImageView(JEConfig.getImage("virt_data.png"));
+                            ImageView iv = new ImageView(JEConfig.getImage(Icon.PNG_CALCULATOR));
                             iv.fitHeightProperty().setValue(60);
                             iv.fitWidthProperty().setValue(60);
                             iv.setSmooth(true);
@@ -319,7 +320,7 @@ public class ObjectEditor {
                             classIcon = ImageConverter.convertToImageView(obj.getJEVisClass().getIcon(), 60, 60);
                         }
                     } catch (Exception ex) {
-                        classIcon = JEConfig.getImage("1390343812_folder-open.png", 20, 20);
+                        classIcon = JEConfig.getSVGImage(Icon.FOLDER_OPEN, 20, 20);
                     }
 
                     GridPane header = new GridPane();

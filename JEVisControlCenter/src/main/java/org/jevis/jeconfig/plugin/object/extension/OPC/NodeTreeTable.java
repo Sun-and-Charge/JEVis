@@ -49,6 +49,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.jevis.api.*;
 import org.jevis.commons.dataprocessing.CleanDataObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
@@ -95,7 +96,7 @@ public class NodeTreeTable {
     private final JFXButton importDataStructureJFXButton;
     private final JFXButton selectTargetJFXButton;
     private final ObservableList<Node> nodeObservableList = FXCollections.observableArrayList();
-    private final Image taskIcon = JEConfig.getImage("if_dashboard_46791.png");
+    private final Image taskIcon = JEConfig.getImage(Icon.PNG_DASHBOARD);
     private final JEVisObject trendRoot;
     private final String opcUARootFolder;
     private final String backNetRootFolder;
@@ -710,7 +711,7 @@ public class NodeTreeTable {
 
 
     private JFXButton buildTargetButton() {
-        final JFXButton button = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getImage("folders_explorer.png", 18, 18));
+        final JFXButton button = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         button.wrapTextProperty().setValue(true);
         button.setOnAction(new EventHandler<ActionEvent>() {
 

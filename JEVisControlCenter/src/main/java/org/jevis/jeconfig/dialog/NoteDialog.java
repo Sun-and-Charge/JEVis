@@ -43,6 +43,7 @@ import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.UnitManager;
 import org.jevis.commons.utils.AlphanumComparator;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.SelectionTable.ValueFieldTableCellForNotes;
 import org.jevis.jeconfig.application.Chart.data.RowNote;
@@ -56,7 +57,7 @@ import java.text.NumberFormat;
 import java.util.Map;
 
 public class NoteDialog extends Dialog<ButtonType> {
-    private final Image imgExpand = ResourceLoader.getImage("if_ExpandMore.png");
+    private final Image imgExpand = ResourceLoader.getImage(Icon.PNG_EXPAND_MORE);
     private final Map<String, RowNote> noteMap;
     private final ObservableList<RowNote> observableList = FXCollections.observableArrayList();
     private final NumberFormat nf;

@@ -190,7 +190,7 @@ public class JEVisTreeContextMenu extends ContextMenu {
             });
 
             Task<Void> exportTask = exportMaster.exportToFileTask(file, objects);
-            JEConfig.getStatusBar().addTask("Tree Exporter", exportTask, JEConfig.getImage("save.gif"), true);
+            JEConfig.getStatusBar().addTask("Tree Exporter", exportTask, JEConfig.getImage(Icon.PNG_SAVE), true);
 
         }
     }
@@ -206,7 +206,7 @@ public class JEVisTreeContextMenu extends ContextMenu {
             try {
                 TreeExporter exportMaster = new TreeExporter();
                 Task<Void> exportTask = exportMaster.importFromFile(selectedFile, obj);
-                JEConfig.getStatusBar().addTask("Tree Importer", exportTask, JEConfig.getImage("save.gif"), true);
+                JEConfig.getStatusBar().addTask("Tree Importer", exportTask, JEConfig.getImage(Icon.PNG_SAVE), true);
                 //List<DimpexObject> objects = DimpEX.readFile(selectedFile);
                 //DimpEX.importALL(obj.getDataSource(), objects, obj);
             } catch (Exception ex) {
@@ -762,7 +762,7 @@ public class JEVisTreeContextMenu extends ContextMenu {
         try {
             return ImageConverter.convertToImageView(jclass.getIcon(), 20, 20);
         } catch (Exception ex) {
-            return ResourceLoader.getImage("1393615831_unknown2.png", 20, 20);
+            return ResourceLoader.getImage(Icon.PNG_UNKNOWN, 20, 20);
         }
     }
 

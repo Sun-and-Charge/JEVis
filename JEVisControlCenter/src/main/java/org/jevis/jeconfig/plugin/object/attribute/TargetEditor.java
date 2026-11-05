@@ -38,6 +38,7 @@ import org.jevis.api.*;
 import org.jevis.commons.classes.JC;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.object.plugin.TargetHelper;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.TreeSelectionDialog;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
@@ -122,11 +123,11 @@ public class TargetEditor implements AttributeEditor {
     private void init() {
         _treeButton = new JFXButton(I18n
                 .getInstance().getString("plugin.object.attribute.target.button"),
-                JEConfig.getImage("folders_explorer.png", 18, 18));
+                JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         _treeButton.wrapTextProperty().setValue(true);
 
         JFXButton gotoButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.goto"),
-                JEConfig.getImage("1476393792_Gnome-Go-Jump-32.png", 18, 18));//icon
+                JEConfig.getSVGImage(Icon.GO_TO_SOURCE, 18, 18));//icon
         gotoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip")));
 
         Region rightSpacer = new Region();

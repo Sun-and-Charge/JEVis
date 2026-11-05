@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -44,7 +45,7 @@ public class AnalysisLinkButton extends JFXButton {
     }
 
     public AnalysisLinkButton(JEVisAttribute attribute) {
-        super("", JEConfig.getImage("1415314386_Graph.png", 20, 20));
+        super("", JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
         initStyle();
         init(attribute);
     }

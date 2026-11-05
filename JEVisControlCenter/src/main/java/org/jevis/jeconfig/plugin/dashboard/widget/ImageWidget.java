@@ -41,6 +41,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.TreeHelper;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -279,7 +280,7 @@ public class ImageWidget extends Widget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/ImageWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_IMAGE, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 

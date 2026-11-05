@@ -138,7 +138,7 @@ public class ChartPlugin implements Plugin {
     private final BorderPane border = new BorderPane(sp);
 
     private final HashMap<Integer, Chart> allCharts = new HashMap<>();
-    private final Image taskImage = JEConfig.getImage("Analysis.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_CHART);
     private final DataSettings dataSettings;
     Map<Chart, List<ChartDataRow>> dataRowMap = new TreeMap<Chart, List<ChartDataRow>>() {
         @Override

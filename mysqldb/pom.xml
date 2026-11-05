@@ -45,7 +45,9 @@
                         <schema>jevis</schema>
                     </schemas>
                     <encoding>UTF-8</encoding>
-                    <cleanOnValidationError>true</cleanOnValidationError>
+                    <!-- never true: a changed migration (V3 was cleaned of ISO standard text) would wipe the database,
+                         run flyway:repair instead -->
+                    <cleanOnValidationError>false</cleanOnValidationError>
                 </configuration>
                 <executions>
                     <execution>

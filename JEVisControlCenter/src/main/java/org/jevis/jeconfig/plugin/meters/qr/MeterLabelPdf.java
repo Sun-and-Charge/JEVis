@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -19,12 +20,17 @@
  */
 package org.jevis.jeconfig.plugin.meters.qr;
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-import com.itextpdf.text.pdf.qrcode.EncodeHintType;
-import com.itextpdf.text.pdf.qrcode.ErrorCorrectionLevel;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
 import org.jevis.commons.i18n.I18n;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -59,7 +65,7 @@ public class MeterLabelPdf {
         BaseFont bold = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
         nameFont = new Font(bold, 8);
         textFont = new Font(regular, 7);
-        pathFont = new Font(regular, 6, Font.NORMAL, BaseColor.DARK_GRAY);
+        pathFont = new Font(regular, 6, Font.NORMAL, Color.DARK_GRAY);
     }
 
     private static float mm(float millimeters) {
@@ -92,13 +98,9 @@ public class MeterLabelPdf {
     }
 
     private void drawLabel(PdfContentByte cb, MeterQrCode code, float x, float y) throws DocumentException {
-        Map<EncodeHintType, Object> hints = new HashMap<>();
-        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
-        BarcodeQRCode qr = new BarcodeQRCode(code.getPayload(), 1, 1, hints);
-        float modules = qr.getBarcodeSize().getWidth();
-        PdfTemplate template = cb.createTemplate(QR_SIZE, QR_SIZE);
-        qr.placeBarcode(template, BaseColor.BLACK, QR_SIZE / modules);
         float qrY = y + (LABEL_HEIGHT - QR_SIZE) / 2;
+        PdfTemplate template = cb.createTemplate(QR_SIZE, QR_SIZE);
+        drawQrCode(template, code.getPayload());
         cb.addTemplate(template, x + PADDING, qrY);
 
         float textLeft = x + PADDING + QR_SIZE + GAP;
@@ -112,6 +114,32 @@ public class MeterLabelPdf {
         column.addElement(paragraph("ID " + code.getMeterId(), textFont));
         if (!code.getPath().isEmpty()) column.addElement(paragraph(code.getPath(), pathFont));
         column.go();
+    }
+
+    /**
+     * Draws the QR code as vector squares filling the template, without quiet zone (the label padding is the quiet zone).
+     */
+    private static void drawQrCode(PdfTemplate template, String payload) throws DocumentException {
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+        hints.put(EncodeHintType.MARGIN, 0);
+        BitMatrix matrix;
+        try {
+            matrix = new QRCodeWriter().encode(payload, BarcodeFormat.QR_CODE, 0, 0, hints);
+        } catch (WriterException e) {
+            throw new DocumentException(e);
+        }
+        float module = template.getWidth() / matrix.getWidth();
+        template.setColorFill(Color.BLACK);
+        for (int row = 0; row < matrix.getHeight(); row++) {
+            for (int col = 0; col < matrix.getWidth(); col++) {
+                if (matrix.get(col, row)) {
+                    /* PDF y axis points up, the matrix rows go down */
+                    template.rectangle(col * module, template.getHeight() - (row + 1) * module, module, module);
+                }
+            }
+        }
+        template.fill();
     }
 
     private static Paragraph paragraph(String text, Font font) {

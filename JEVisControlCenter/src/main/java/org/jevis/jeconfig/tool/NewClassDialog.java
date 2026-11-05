@@ -47,6 +47,8 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -57,7 +59,7 @@ import org.jevis.jeconfig.application.tools.WindowSize;
 public class NewClassDialog {
     private static final Logger logger = LogManager.getLogger(NewClassDialog.class);
     //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
-    public static String ICON_QUESTION = "1400874302_question_blue.png";
+    public static String ICON_QUESTION = Icon.PNG_UNKNOWN;
 
     final JFXCheckBox iherit = new JFXCheckBox("Inherit:");
 
@@ -272,7 +274,7 @@ public class NewClassDialog {
         Label topTitle = new Label(titleLong);
         topTitle.getStyleClass().add("dialog-header-title");
 
-        ImageView imageView = ResourceLoader.getImage("1402083924_Project.png", 65, 65);
+        Region imageView = JEConfig.getSVGImage(Icon.CLASS, 65, 65);
 
         VBox vboxLeft = new VBox();
         VBox vboxRight = new VBox();

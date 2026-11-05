@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -29,16 +30,17 @@ import javafx.util.Callback;
 import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisException;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ImageTreeCell extends TreeCell<JEVisTreeViewItem> {
-    public static final Image UNKNOWN_ICON = ResourceLoader.getImage("1393615831_unknown2.png");
-    private static final Image ATTRIBUTE_ICON = ResourceLoader.getImage("graphic-design.png");
+    public static final Image UNKNOWN_ICON = ResourceLoader.getImage(Icon.PNG_UNKNOWN);
+    private static final Image ATTRIBUTE_ICON = ResourceLoader.getImage(Icon.PNG_LABEL);
 
-    private static final Image CALCULATION_DATA = ResourceLoader.getImage("virt_data.png");
+    private static final Image CALCULATION_DATA = ResourceLoader.getImage(Icon.PNG_CALCULATOR);
     private final static Map<String, Image> classIconCache = new HashMap<>();
 
     public ImageTreeCell() {

@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.object.ValueFormat;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.ImageViewerDialog;
 import org.jevis.jeconfig.dialog.PDFViewerDialog;
@@ -863,7 +864,7 @@ public class SampleTable extends TableView<TableSample> {
                             } catch (JEVisException e) {
                                 e.printStackTrace();
                             }
-                            JFXButton downloadButton = new JFXButton(fileName, JEConfig.getImage("save.gif", 14, 14));
+                            JFXButton downloadButton = new JFXButton(fileName, JEConfig.getSVGImage(Icon.SAVE, 14, 14));
 
                             downloadButton.setOnAction(event -> {
 
@@ -889,7 +890,7 @@ public class SampleTable extends TableView<TableSample> {
 
                             HBox hBox = new HBox(downloadButton);
                             if (isPDF) {
-                                JFXButton pdfButton = new JFXButton("", JEConfig.getImage("pdf_24_2133056.png", 14, 14));
+                                JFXButton pdfButton = new JFXButton("", JEConfig.getSVGImage(Icon.PDF, 14, 14));
                                 hBox.getChildren().add(pdfButton);
                                 pdfButton.setOnAction(event -> {
                                     PDFViewerDialog pdfViewerDialog = new PDFViewerDialog();
@@ -902,7 +903,7 @@ public class SampleTable extends TableView<TableSample> {
                             }
 
                             if (isImage) {
-                                JFXButton imageButton = new JFXButton("", JEConfig.getImage("export-image.png", 18, 18));
+                                JFXButton imageButton = new JFXButton("", JEConfig.getSVGImage(Icon.IMAGE, 18, 18));
                                 hBox.getChildren().add(imageButton);
                                 imageButton.setOnAction(event -> {
                                     ImageViewerDialog imageViewerDialog = new ImageViewerDialog();
@@ -992,7 +993,7 @@ public class SampleTable extends TableView<TableSample> {
 
                             JFXButton expand = new JFXButton(null);
                             expand.setBackground(new Background(new BackgroundImage(
-                                    JEConfig.getImage("if_ExpandMore.png"),
+                                    JEConfig.getImage(Icon.PNG_EXPAND_MORE),
                                     BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
                                     new BackgroundSize(expand.getWidth(), expand.getHeight(),
                                             true, true, true, false))));

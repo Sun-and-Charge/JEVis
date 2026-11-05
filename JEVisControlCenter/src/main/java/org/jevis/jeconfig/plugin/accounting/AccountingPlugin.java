@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -109,7 +110,7 @@ public class AccountingPlugin extends TablePlugin {
     public static String PLUGIN_NAME = "Accounting Plugin";
     private final PseudoClass header = PseudoClass.getPseudoClass("section-header");
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.AccountingPlugin");
-    private final Image taskImage = JEConfig.getImage("accounting.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_ACCOUNTING);
     private final ToolBar toolBar = new ToolBar();
     private final AccountingDirectories accountingDirectories;
     private final AccountingTemplateHandler ath = new AccountingTemplateHandler();
@@ -1201,7 +1202,7 @@ public class AccountingPlugin extends TablePlugin {
                         return null;
                     }
                 };
-                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage("accounting.png"), true);
+                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage(Icon.PNG_ACCOUNTING), true);
                 break;
             case Constants.Plugin.Command.ADD_TABLE:
                 break;

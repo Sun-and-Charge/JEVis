@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.GlobalToolBar;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.plugin.dashboard.DashBordPlugIn;
@@ -41,8 +43,8 @@ public class ToolBarIntervalSelector extends HBox {
 
     private static final Logger logger = LogManager.getLogger(ToolBarIntervalSelector.class);
     private final Double iconSize = 20d;
-    protected final ToggleButton prevButton = new ToggleButton("", JEConfig.getImage("arrow_left.png", iconSize, iconSize));
-    protected final ToggleButton nextButton = new ToggleButton("", JEConfig.getImage("arrow_right.png", iconSize, iconSize));
+    protected final ToggleButton prevButton = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_LEFT, iconSize, iconSize));
+    protected final ToggleButton nextButton = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_RIGHT, iconSize, iconSize));
     protected final TimeFactoryBox timeFactoryBox = new TimeFactoryBox(false);
     protected TimeFrameEditor timeFrameEditor;
     private final JFXButton dateButton = new JFXButton("");

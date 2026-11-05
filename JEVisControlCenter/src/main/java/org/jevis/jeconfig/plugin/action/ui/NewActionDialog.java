@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2019 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -44,6 +45,8 @@ import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.resource.ImageConverter;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 
@@ -55,7 +58,7 @@ import java.util.List;
 public class NewActionDialog {
     private static final Logger logger = LogManager.getLogger(NewActionDialog.class);
 
-    public static String ICON = "1403104602_brick_add.png";
+    public static String ICON = Icon.NEW_OBJECT;
 
     private JEVisObject selectedParent;
     private String createName = "No Name";
@@ -80,7 +83,7 @@ public class NewActionDialog {
         dialog.setTitle(I18n.getInstance().getString("dialog.actionplugin.title"));
         dialog.setHeaderText(I18n.getInstance().getString("dialog.actionplugin.header"));
         dialog.getDialogPane().getButtonTypes().setAll();
-        dialog.setGraphic(ResourceLoader.getImage(ICON, 50, 50));
+        dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         VBox root = new VBox();
 
         dialog.getDialogPane().setContent(root);

@@ -844,7 +844,7 @@ public class ToolBarFunctions {
                     }
                 };
 
-                JEConfig.getStatusBar().addTask(ToolBarView.class.getName(), task, JEConfig.getImage("sumabove.png"), true);
+                JEConfig.getStatusBar().addTask(ToolBarView.class.getName(), task, JEConfig.getImage(Icon.PNG_SUM), true);
             }
         });
     }

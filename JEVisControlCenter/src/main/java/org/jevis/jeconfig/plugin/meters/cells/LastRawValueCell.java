@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.EnterDataDialog;
 import org.jevis.jeconfig.plugin.meters.event.PrecisionEvent;
@@ -58,7 +59,7 @@ public class LastRawValueCell<T> implements Callback<TableColumn<T, LastRawValue
             /* Cells are reused for different rows, so the controls and the precision listener are created once per
                cell and always work on the current item. */
             private final Label label = new Label();
-            private final JFXButton manSampleButton = new JFXButton("", JEConfig.getImage("if_textfield_add_64870.png", 18, 18));
+            private final JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 18, 18));
             private final HBox hBox;
 
             {

@@ -44,6 +44,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -54,7 +55,7 @@ import org.jevis.jeconfig.application.tools.WindowSize;
 public class ConfirmDialog {
 
     //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
-    public static String ICON_QUESTION = "1400874302_question_blue.png";
+    public static String ICON_QUESTION = Icon.PNG_UNKNOWN;
 
     private Response response = Response.CANCEL;
 

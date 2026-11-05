@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -42,6 +43,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisRelationship;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.Constants;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.filter.JEVisTreeFilter;
@@ -174,7 +176,7 @@ public class RootExtension implements ObjectEditorExtension {
                 groupBox.getChildren().addAll(usericon, nameLabel);
 
                 JFXButton remove = new JFXButton();
-                remove.setGraphic(JEConfig.getImage("list-remove.png", 17, 17));
+                remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 17, 17));
                 remove.setOnAction(t -> {
 
                     try {
@@ -234,7 +236,7 @@ public class RootExtension implements ObjectEditorExtension {
         HBox addNewBox = new HBox(5);
 
         JFXButton newB = new JFXButton();
-        newB.setGraphic(JEConfig.getImage("list-add.png", 17, 17));
+        newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 17, 17));
 
         newB.setOnAction(t -> {
             try {

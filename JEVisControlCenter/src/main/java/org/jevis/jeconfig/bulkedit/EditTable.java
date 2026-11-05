@@ -41,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
 import org.jevis.api.*;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -169,7 +170,7 @@ public class EditTable {
         hBoxTop.setSpacing(10);
         //hBoxTop.setPadding(new Insets(3, 3, 3, 3));
         Label lClass = new Label("Class:");
-        JFXButton help = new JFXButton("Help", JEConfig.getImage("quick_help_icon.png", 22, 22));
+        JFXButton help = new JFXButton("Help", JEConfig.getSVGImage(Icon.HELP, 22, 22));
         Separator sep1 = new Separator();
         hBoxTop.getChildren().addAll(lClass, classComboBox, sep1, help);
         root.setTop(hBoxTop);

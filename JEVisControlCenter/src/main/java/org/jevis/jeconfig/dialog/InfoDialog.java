@@ -40,6 +40,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -52,7 +53,7 @@ import org.jevis.jeconfig.application.tools.WindowSize;
 public class InfoDialog {
 
     //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
-    public static String ICON = "1404337146_info.png";
+    public static String ICON = Icon.PNG_INFO;
 
     /**
      *

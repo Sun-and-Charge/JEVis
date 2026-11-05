@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -45,6 +46,7 @@ import org.jevis.commons.dataprocessing.CleanDataObject;
 import org.jevis.commons.dataprocessing.VirtualSample;
 import org.jevis.commons.dataprocessing.processor.workflow.PeriodRule;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.DataPointNoteDialog;
@@ -174,7 +176,7 @@ public class SampleTableExtension implements SampleEditorExtension {
         });
         saveButton.setDefaultButton(true);
 
-        JFXButton addNewSample = new JFXButton(null, JEConfig.getImage("list-add.png", 17, 17));
+        JFXButton addNewSample = new JFXButton(null, JEConfig.getSVGImage(Icon.PLUS, 17, 17));
         addNewSample.setDisable(!canWrite);
 
         addNewSample.setOnAction(event -> {

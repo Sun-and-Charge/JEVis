@@ -63,6 +63,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.datetime.WorkDays;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.object.plugin.TargetHelper;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.dashboard.common.DashboardExport;
@@ -114,7 +115,7 @@ public class DashboardControl {
     private final JEVisDataSource jevisDataSource;
     private final ObservableList<Widget> widgetList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
     private final DashboardUpdateScheduler updateScheduler = new DashboardUpdateScheduler(this);
-    private final Image widgetTaskIcon = JEConfig.getImage("if_dashboard_46791.png");
+    private final Image widgetTaskIcon = JEConfig.getImage(Icon.PNG_DASHBOARD);
     private final WidgetNavigator widgetNavigator;
     public BooleanProperty highlightProperty = new SimpleBooleanProperty(false);
     public BooleanProperty showGridProperty = new SimpleBooleanProperty(false);

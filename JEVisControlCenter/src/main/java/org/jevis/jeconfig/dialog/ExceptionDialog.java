@@ -46,6 +46,7 @@ import javafx.stage.StageStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.application.ApplicationInfo;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -65,7 +66,7 @@ public class ExceptionDialog {
 
     private static final Logger logger = LogManager.getLogger(ExceptionDialog.class);
     //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
-    public static String ICON_WARNING = "1401136217_exclamation-diamond_red.png";
+    public static String ICON_WARNING = Icon.PNG_ERROR;
 
     private static final String MAIL_TO = "service@sunandcharge.com";
     private static final String MAIL_SUBJECT = "Error Report";

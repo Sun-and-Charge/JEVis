@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2019 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -45,6 +46,8 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.classes.JC;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.resource.ImageConverter;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 
@@ -56,7 +59,7 @@ import java.util.List;
 public class NewNonconformitiesDialog {
     private static final Logger logger = LogManager.getLogger(NewNonconformitiesDialog.class);
 
-    public static String ICON = "1403104602_brick_add.png";
+    public static String ICON = Icon.NEW_OBJECT;
 
     private JEVisObject selectedParent;
     private String createName = "No Name";
@@ -81,7 +84,7 @@ public class NewNonconformitiesDialog {
         dialog.setTitle(I18n.getInstance().getString("dialog.analyses.title"));
         dialog.setHeaderText(I18n.getInstance().getString("dialog.analyses.header"));
         dialog.getDialogPane().getButtonTypes().setAll();
-        dialog.setGraphic(ResourceLoader.getImage(ICON, 50, 50));
+        dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         VBox root = new VBox();
 
         dialog.getDialogPane().setContent(root);

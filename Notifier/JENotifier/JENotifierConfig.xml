@@ -4,10 +4,10 @@
 dbHost="localhost"
 dbPort="13306"
 dbUser="jevis"
-dbPassword="jevistest"
+dbPassword="CHANGE_ME"
 dbSchema="jevis"
 jevisUsername="Sys Admin"
-jevisUserPW="JEV34Env"
+jevisUserPW="CHANGE_ME"
 debugLevel="INFO"
 />
 
@@ -19,7 +19,7 @@ numberThread="10"
 ServicePort="5120"/>
 
 <Notifier
-pathOfJar="/home/jb/NetBeansProjects/Notifier-EP/target/"
+pathOfJar="/home/jevis/jevis/Notifier/Notifier-EP/target/"
 nameOfJar="Notifier-EP-1.0-SNAPSHOT.jar"
 nameOfDriverClass="org.jevis.jenotifier.notifier.Email.EmailNotificationDriver;
 org.jevis.jenotifier.notifier.AppPush.PushNotificationDriver;

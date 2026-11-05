@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -36,6 +37,7 @@ import org.jevis.api.JEVisUnit;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.commons.unit.UnitManager;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.UnitDialog;
 import tech.units.indriya.AbstractUnit;
@@ -107,7 +109,7 @@ public class FavUnitList extends JFXComboBox<JEVisUnit> {
                             setTextAlignment(TextAlignment.LEFT);
 
                             if (isOtherUnit(unitItem)) {
-                                setGraphic(JEConfig.getImage("1404843819_node-tree.png", 18, 18));
+                                setGraphic(JEConfig.getSVGImage(Icon.TREE, 18, 18));
                                 setTooltip(new Tooltip(I18n.getInstance().getString("favunitlist.select.tooltip")));
                                 //setText("Other...");
                             } else {

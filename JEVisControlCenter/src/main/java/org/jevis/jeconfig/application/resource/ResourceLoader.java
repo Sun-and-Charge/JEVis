@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  *
  * This file is part of JEApplication.
  *
@@ -19,6 +20,7 @@
  */
 package org.jevis.jeconfig.application.resource;
 
+import org.jevis.jeconfig.Icon;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -34,9 +36,12 @@ public class ResourceLoader {
 
     public static Image getImage(String icon) {
         try {
+            if (icon.startsWith("/icons/")) {
+                return new Image(ResourceLoader.class.getResourceAsStream(icon));
+            }
             return new Image(ResourceLoader.class.getResourceAsStream("/icons/" + icon));
         } catch (Exception ex) {
-            return new Image(ResourceLoader.class.getResourceAsStream("/icons/1393355905_image-missing.png"));
+            return new Image(ResourceLoader.class.getResourceAsStream(Icon.PNG_IMAGE_MISSING));
         }
     }
 

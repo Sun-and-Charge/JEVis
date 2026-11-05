@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -30,6 +31,7 @@ import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisEvent;
 import org.jevis.api.JEVisEventListener;
 import org.jevis.api.JEVisException;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.tool.ImageConverter;
 
@@ -106,8 +108,8 @@ public class ClassGraphic {
             if (item != null) {
                 return ImageConverter.convertToImageView(item.getIcon(), 20, 20);//20
             } else {
-                return JEConfig.getImage("1393615831_unknown2.png", 20, 20);
-//                return JEConfig.getImage("1390343812_folder-open.png", 20, 20);
+                return JEConfig.getImage(Icon.PNG_UNKNOWN, 20, 20);
+//                return JEConfig.getSVGImage(Icon.FOLDER_OPEN, 20, 20);
             }
 
         } catch (Exception ex) {

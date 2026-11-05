@@ -34,6 +34,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.jevis.api.JEVisDataSource;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.DialogHeader;
@@ -84,7 +86,7 @@ public class Wizard {
         Separator separator = new Separator(Orientation.HORIZONTAL);
         this.bottomContent.getChildren().addAll(separator, buttonBox);
 
-        this.rootPane.setTop(DialogHeader.getDialogHeader("if_dashboard_46791.png", "dashboard Wizard"));
+        this.rootPane.setTop(DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.DASHBOARD, 64, 64), "dashboard Wizard"));
         this.rootPane.setCenter(this.contentPane);
         this.rootPane.setBottom(this.bottomContent);
 

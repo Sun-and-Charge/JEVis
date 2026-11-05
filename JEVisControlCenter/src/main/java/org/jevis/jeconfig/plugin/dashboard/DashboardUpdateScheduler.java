@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -25,6 +26,7 @@ import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.dashboard.widget.TimeFrameWidget;
 import org.jevis.jeconfig.plugin.dashboard.widget.ValueWidget;
@@ -55,7 +57,7 @@ class DashboardUpdateScheduler {
 
     private final DashboardControl control;
     private final Timer updateTimer = new Timer("dashboard-update-timer", true);
-    private final Image widgetTaskIcon = JEConfig.getImage("if_dashboard_46791.png");
+    private final Image widgetTaskIcon = JEConfig.getImage(Icon.PNG_DASHBOARD);
 
     private TimerTask updateTask;
     private boolean isUpdateRunning = false;

@@ -248,7 +248,7 @@ public class Main {
         }
 
 
-        final ResourceConfig rc = new ResourceConfig().packages("org.jevis.rest", "org.jevis.iso.rest", "org.jevis.web");
+        final ResourceConfig rc = new ResourceConfig().packages("org.jevis.rest", "org.jevis.web");
         rc.setApplicationName("JEWebservice");
         /* Jersey 3 no longer reads JSON providers from META-INF/services, Jersey 2 did */
         rc.register(JacksonJsonProvider.class);

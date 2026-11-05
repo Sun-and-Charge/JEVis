@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.UnitManager;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -73,7 +74,7 @@ public class LabelElement extends MoveableNode implements SCADAElement {
     private final HBox view = new HBox(8);
     private final Label label = new Label();
     private final Label text = new Label();
-    private final ImageView warningImage = JEConfig.getImage("Warning-icon.png", 15, 15);
+    private final ImageView warningImage = JEConfig.getImage(Icon.PNG_WARNING, 15, 15);
     private ScadaElementData data = new ScadaElementData();
     private final SCADAAnalysis analysis;
 
@@ -421,7 +422,7 @@ public class LabelElement extends MoveableNode implements SCADAElement {
         ConfigSheet ct = new ConfigSheet();
         configDia.getDialogPane().setContent(ct.getSheet(userConfig));
         WindowSize.apply(configDia, 500, 500, 400, 300);
-        configDia.setGraphic(ResourceLoader.getImage("1394482166_blueprint_tool.png", 50, 50));
+        configDia.setGraphic(JEConfig.getSVGImage(Icon.DESIGN, 50, 50));
 
         ButtonType buttonTypeOk = new ButtonType(I18n.getInstance().getString("plugin.scada.element.config.ok"), ButtonBar.ButtonData.OK_DONE);
 

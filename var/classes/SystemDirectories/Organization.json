@@ -24,11 +24,6 @@
       "type": 3
     },
     {
-      "start": "ISO 50001 Directory",
-      "end": "Organization",
-      "type": 3
-    },
-    {
       "start": "Monitored Object Directory",
       "end": "Organization",
       "type": 3

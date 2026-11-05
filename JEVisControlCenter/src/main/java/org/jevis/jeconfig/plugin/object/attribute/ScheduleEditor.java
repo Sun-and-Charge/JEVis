@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -43,6 +44,7 @@ import org.jevis.api.JEVisException;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.json.JsonScheduler;
 import org.jevis.commons.json.JsonSchedulerRule;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 
 import java.time.LocalTime;
@@ -598,7 +600,7 @@ public class ScheduleEditor implements AttributeEditor {
         }
 
         JFXButton jfxButtonAddRule = new JFXButton();
-        jfxButtonAddRule.setGraphic(JEConfig.getImage("list-add.png", 16, 16));
+        jfxButtonAddRule.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 16, 16));
         jfxButtonAddRule.setOnAction(event -> {
             JsonSchedulerRule newRule = new JsonSchedulerRule();
             int max = 0;
@@ -622,7 +624,7 @@ public class ScheduleEditor implements AttributeEditor {
         });
 
         JFXButton jfxButtonDeleteRule = new JFXButton();
-        jfxButtonDeleteRule.setGraphic(JEConfig.getImage("if_trash_(delete)_16x16_10030.gif", 16, 16));
+        jfxButtonDeleteRule.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 16, 16));
         jfxButtonDeleteRule.setOnAction(event -> {
             int index = tabPane.getSelectionModel().getSelectedIndex();
             inputValue.getRules().remove(index);

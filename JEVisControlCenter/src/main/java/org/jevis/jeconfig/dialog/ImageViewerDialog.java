@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.report.JEVisFileWithSample;
 import org.jevis.commons.utils.FileNames;
 import org.jevis.jeconfig.GlobalToolBar;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 
@@ -68,9 +70,9 @@ public class ImageViewerDialog {
     private final ImageView imageView = new ImageView();
     private final JFXComboBox<JEVisFileWithSample> fileComboBox = new JFXComboBox<>(FXCollections.observableArrayList());
     private final Map<JEVisFile, JEVisSample> sampleMap = new HashMap<>();
-    private final ImageView imageIcon = JEConfig.getImage("1390344346_3d_objects.png", iconSize, iconSize);
-    private final ImageView rightImage = JEConfig.getImage("right.png", 20, 20);
-    private final ImageView leftImage = JEConfig.getImage("left.png", 20, 20);
+    private final ImageView imageIcon = JEConfig.getImage(Icon.PNG_IMAGE, iconSize, iconSize);
+    private final ImageView rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);
+    private final ImageView leftImage = JEConfig.getImage(Icon.PNG_CHEVRON_LEFT, 20, 20);
     private Stage stage;
     private Label fileName;
     private final BorderPane bp = new BorderPane();
@@ -140,7 +142,7 @@ public class ImageViewerDialog {
         HBox headerBox = new HBox();
         headerBox.setSpacing(4);
 
-        ToggleButton saveButton = new ToggleButton("", JEConfig.getImage("save.gif", iconSize, iconSize));
+        ToggleButton saveButton = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, iconSize, iconSize));
         Tooltip pdfTooltip = new Tooltip(I18n.getInstance().getString("sampleeditor.confirmationdialog.save"));
         saveButton.setTooltip(pdfTooltip);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(saveButton);
@@ -164,7 +166,7 @@ public class ImageViewerDialog {
             }
         });
 
-        ToggleButton printButton = new ToggleButton("", JEConfig.getImage("Print_1493286.png", iconSize, iconSize));
+        ToggleButton printButton = new ToggleButton("", JEConfig.getSVGImage(Icon.PRINT, iconSize, iconSize));
         Tooltip printTooltip = new Tooltip(I18n.getInstance().getString("plugin.reports.toolbar.tooltip.print"));
         printButton.setTooltip(printTooltip);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(printButton);
@@ -205,7 +207,7 @@ public class ImageViewerDialog {
             }
         });
 
-        ToggleButton rotateButton = new ToggleButton("", JEConfig.getImage("Rotate.png", iconSize, iconSize));
+        ToggleButton rotateButton = new ToggleButton("", JEConfig.getSVGImage(Icon.ROTATE, iconSize, iconSize));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(rotateButton);
         rotateButton.setOnAction(event -> imageView.setRotate(imageView.getRotate() + 90));
 

@@ -104,7 +104,6 @@ public class Config {
     private static File i18nDir;
     private static File fileDir;
     private static File classDir;
-    private static File freemarkerDir;
     private static String latestJECCVersion = "0";
     private static String latestJavaVersion = "0";
     private static String webDir = "";
@@ -198,10 +197,6 @@ public class Config {
         return keyType;
     }
 
-    /** @return the directory containing Freemarker templates. */
-    public static File getFreemarkerDir() {
-        return freemarkerDir;
-    }
 
     /** @return the path to the optional embedded web application directory. */
     public static String getWebDir() {
@@ -345,7 +340,6 @@ public class Config {
                     i18nDir = new File(getParameter(config, "webservice.i18ndir", homeDir + "/jevis/var/i18n/").replaceAll("%$", ""));
                     fileDir = new File(getParameter(config, "webservice.filedir", homeDir + "/jevis/var/files/").replaceAll("%$", ""));
                     classDir = new File(getParameter(config, "webservice.classdir", homeDir + "/jevis/var/classes/").replaceAll("%$", ""));
-                    freemarkerDir = new File(getParameter(config, "webservice.freemarkerdir", homeDir + "/jevis/var/freemarker/").replaceAll("%$", ""));
 
                     //Workaround solution for the registration service
                     getJECCVersion();

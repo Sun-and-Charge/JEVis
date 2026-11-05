@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2018 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -48,6 +49,7 @@ import org.jevis.commons.json.JsonScheduler;
 import org.jevis.commons.json.JsonTools;
 import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.unit.UnitManager;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
@@ -320,10 +322,10 @@ public class AlarmEditor implements AttributeEditor {
         HBox limitDataBox = new HBox();
         JFXButton treeButton = new JFXButton(I18n
                 .getInstance().getString("plugin.object.attribute.target.button"),
-                JEConfig.getImage("folders_explorer.png", 18, 18));
+                JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
 
         JFXButton gotoButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.goto"),
-                JEConfig.getImage("1476393792_Gnome-Go-Jump-32.png", 18, 18));//icon
+                JEConfig.getSVGImage(Icon.GO_TO_SOURCE, 18, 18));//icon
         gotoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip")));
 
         Region rightSpacer = new Region();

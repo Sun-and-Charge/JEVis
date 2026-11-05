@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -42,6 +43,7 @@ import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.ObjectRelations;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.control.ColorPickerAdv;
 import org.jevis.jeconfig.plugin.dashboard.DashboardControl;
@@ -84,11 +86,11 @@ public class SideConfigPanel extends GridPane {
     private final JFXTextField heightText = new JFXTextField();
     private final JFXTextField xPosText = new JFXTextField();
     private final JFXTextField yPosText = new JFXTextField();
-    private final JFXButton leftButton = new JFXButton("", JEConfig.getImage("arrow_left.png", iconSize, iconSize));
-    private final JFXButton rightButton = new JFXButton("", JEConfig.getImage("arrow_right.png", iconSize, iconSize));
-    private final JFXButton downButton = new JFXButton("", JEConfig.getImage("arrow_down.png", iconSize, iconSize));
-    private final JFXButton upButton = new JFXButton("", JEConfig.getImage("arrow_up.png", iconSize, iconSize));
-    private final JFXButton switchSide = new JFXButton("", JEConfig.getImage("Arrow_BothDirections.png", 20, 20));
+    private final JFXButton leftButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_LEFT, iconSize, iconSize));
+    private final JFXButton rightButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_RIGHT, iconSize, iconSize));
+    private final JFXButton downButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_DOWN, iconSize, iconSize));
+    private final JFXButton upButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_UP, iconSize, iconSize));
+    private final JFXButton switchSide = new JFXButton("", JEConfig.getSVGImage(Icon.SWAP, 20, 20));
     private final JFXButton equalizeDataModelButton = new JFXButton(I18n.getInstance().getString("plugin.dashboard.edit.general.equalizeDataModel"));
     private final JFXComboBox<Pos> alignmentBox = new JFXComboBox<>(FXCollections.observableArrayList(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT, Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT));
     private final JFXTextField titleText = new JFXTextField();

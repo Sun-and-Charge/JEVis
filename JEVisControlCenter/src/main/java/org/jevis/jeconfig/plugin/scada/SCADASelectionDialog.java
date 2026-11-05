@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -35,6 +36,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
+import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeFactory;
@@ -52,7 +55,7 @@ public class SCADASelectionDialog extends Dialog {
     //    private VBox root = new VBox();
     private final JFXButton ok = new JFXButton("OK");
     private final JFXButton clear = new JFXButton("Clear");
-    private final String ICON = "1404313956_evolution-tasks.png";
+    private final String ICON = Icon.SELECTION;
     private final JEVisDataSource _ds;
     private Response response = Response.CANCEL;
     private JEVisTree tree;
@@ -80,7 +83,7 @@ public class SCADASelectionDialog extends Dialog {
     private VBox build(JEVisDataSource ds, String title, List<UserSelection> uselection) {
         VBox root = new VBox(0);
 //        root.setPadding(new Insets(10));
-        Node header = DialogHeader.getDialogHeader(ICON, title);
+        Node header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(ICON, 64, 64), title);
         HBox buttonPanel = new HBox(8);
         VBox content = new VBox();
 

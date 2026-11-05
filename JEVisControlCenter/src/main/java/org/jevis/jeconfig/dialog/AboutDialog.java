@@ -39,6 +39,7 @@ import javafx.stage.StageStyle;
 import org.jevis.commons.application.ApplicationInfo;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.JEVisDates;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -61,7 +62,7 @@ import java.nio.file.attribute.FileTime;
  */
 public class AboutDialog {
 
-    public static String ICON_TASKBAR = "1400874302_question_blue.png";
+    public static String ICON_TASKBAR = Icon.PNG_UNKNOWN;
 
     /**
      * Show an simple About Dialog with the license notice of JEVis.

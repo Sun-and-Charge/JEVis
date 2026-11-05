@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014-2015 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -47,9 +48,9 @@ public class Configuration {
     private JEVisOption options;
     private List<JEVisOption> configuration;
 
-    private String _loginIcon = "/icons/logo_coffee_klein.png";
+    private String _loginIcon = "/icons/suc_login_banner.png";
     private String _welcomeURL = "https://github.com/Sun-and-Charge/JEVis";
-    private String _watermark = "/icons/logo_JEVis_OPEN_Ohne_Schatten_long_v0_10.png";
+    private String _watermark = "/icons/suc_logo.png";
     //    private final String _defaultServerURL = "user:password@server:3306/jevis";
     private File lastPath = null;
     private File lastFile = null;
@@ -90,16 +91,6 @@ public class Configuration {
      */
     public boolean getShowServer() {
         return false;
-    }
-
-    /**
-     * Returns the default Server URL for the Login dialog
-     *
-     * @return
-     */
-    public String getDefaultServer() {
-        //"jevis:Taexu3Eesesieth3eid1@lthneo.kaust.edu.sa:3306/jevis";//user:password@server:3306/jevis";
-        return "jevis:jevistest@coffee-project.eu:13306/jevis";
     }
 
     /**

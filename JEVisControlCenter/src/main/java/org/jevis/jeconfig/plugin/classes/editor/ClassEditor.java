@@ -55,6 +55,7 @@ import org.jevis.commons.constants.DisplayType;
 import org.jevis.commons.constants.GUIConstants;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.Constants;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.ExceptionDialog;
 import org.jevis.jeconfig.plugin.classes.ClassHelper;
@@ -401,17 +402,17 @@ public class ClassEditor {
 
                 final int index = i;
                 JFXButton up = new JFXButton();
-                up.setGraphic(JEConfig.getImage("1395085229_arrow_return_right_up.png", 20, 20));
+                up.setGraphic(JEConfig.getSVGImage(Icon.ARROW_UP, 20, 20));
                 up.setDisable(!editable || index == 0 || types.get(index - 1).isInherited());
                 up.setOnAction(t -> swapPosition(type, types.get(index - 1)));
 
                 JFXButton down = new JFXButton();
-                down.setGraphic(JEConfig.getImage("1395085233_arrow_return_right_down.png", 20, 20));
+                down.setGraphic(JEConfig.getSVGImage(Icon.ARROW_DOWN, 20, 20));
                 down.setDisable(!editable || index == types.size() - 1 || types.get(index + 1).isInherited());
                 down.setOnAction(t -> swapPosition(type, types.get(index + 1)));
 
                 JFXButton remove = new JFXButton();
-                remove.setGraphic(JEConfig.getImage("list-remove.png", 20, 20));
+                remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 20, 20));
                 remove.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.classes.editor.type.remove.tooltip")));
                 remove.setOnAction(t -> {
                     /* persisted with the save action of the plugin */
@@ -462,7 +463,7 @@ public class ClassEditor {
 //        final ChoiceBox pTypeBox = buildPrimitiveTypeBox(null);
 
         JFXButton newB = new JFXButton();
-        newB.setGraphic(JEConfig.getImage("list-add.png", 20, 20));
+        newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 20, 20));
         newB.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent t) {
@@ -695,14 +696,14 @@ public class ClassEditor {
         try {
 //            logger.info("getIcon for :" + jclass);
             if (jclass.getIcon() == null) {
-                return JEConfig.getImage("1393615831_unknown2.png", 30, 30);
+                return JEConfig.getImage(Icon.PNG_UNKNOWN, 30, 30);
             }
 
             return ImageConverter.convertToImageView(jclass.getIcon(), 30, 30);
         } catch (Exception ex) {
             logger.info("Error while geeting class icon: " + ex);
             ex.printStackTrace();
-            return JEConfig.getImage("1393615831_unknown2.png", 30, 30);
+            return JEConfig.getImage(Icon.PNG_UNKNOWN, 30, 30);
         }
 
     }

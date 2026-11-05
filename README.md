@@ -78,6 +78,18 @@ mvn -t docs/toolchains-example.xml clean install -P jevisserver
 from `var/templates` in `etc/` and optionally installs the web service as a systemd service.
 The service start scripts are in `bin/`.
 
+### Updating the database of an existing server
+
+The migration `V3__Create_Base_Classes.sql` was changed (the classes of the removed ISO 50001 module and the
+standard text in them were taken out). Flyway therefore reports a checksum mismatch for V3 on databases that
+were created before. Run `flyway:repair` once, then migrate as usual:
+
+```bash
+cd mysqldb
+mvn flyway:repair
+mvn flyway:migrate
+```
+
 ## License
 
 JEVis is free software licensed under the

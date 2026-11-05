@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -25,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.classes.ClassHelper;
 import org.jevis.commons.dataprocessing.CleanDataObject;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.jevistree.JEVisTree;
 import org.jevis.jeconfig.application.jevistree.JEVisTreeItem;
@@ -92,7 +94,7 @@ public class CreateAlarms {
             }
         };
 
-        JEConfig.getStatusBar().addTask(CreateAlarms.class.toString(), task, JEConfig.getImage("alarm_icon.png"), true);
+        JEConfig.getStatusBar().addTask(CreateAlarms.class.toString(), task, JEConfig.getImage(Icon.PNG_ALARM), true);
 
     }
 

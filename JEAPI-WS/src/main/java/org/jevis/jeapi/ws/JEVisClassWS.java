@@ -190,7 +190,7 @@ public class JEVisClassWS implements JEVisClass {
             } catch (Exception ex) {
                 logger.info("Could not load icon: /1472562626_unknown.png");
                 try {
-                    image = ImageIO.read(JEVisClassWS.class.getResourceAsStream("/icons/1393355905_image-missing.png"));
+                    image = ImageIO.read(JEVisClassWS.class.getResourceAsStream("/icons/MaterialDesignPNG/outlined/outline_broken_image_black_24dp.png"));
                 } catch (Exception ex2) {
                     logger.error("Could not load fallback icon", ex2);
                 }

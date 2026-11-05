@@ -286,7 +286,7 @@ public class JEConfig extends Application {
                 else return new Image(JEConfig.class.getResourceAsStream("/icons/" + icon));
             } catch (Exception ex) {
                 logger.error("Could not load icon: " + "/icons/" + icon + ": ", ex);
-                return new Image(JEConfig.class.getResourceAsStream("/icons/1393355905_image-missing.png"));
+                return new Image(JEConfig.class.getResourceAsStream(Icon.PNG_IMAGE_MISSING));
             }
         } else return null;
 
@@ -607,7 +607,7 @@ public class JEConfig extends Application {
                             return null;
                         }
                     };
-                    statusBar.addTask("JEVisCC", preloadCalender, getImage("date.png"), true);
+                    statusBar.addTask("JEVisCC", preloadCalender, getImage(Icon.PNG_CALENDAR), true);
 
                     logger.info("Time to start: {}ms", ((new Date()).getTime() - start.getTime()));
                 });

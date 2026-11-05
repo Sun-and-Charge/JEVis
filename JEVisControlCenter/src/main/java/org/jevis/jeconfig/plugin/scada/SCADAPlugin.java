@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -325,34 +326,34 @@ public class SCADAPlugin implements Plugin {
         double iconSize = 20;
 
 //        HBox updateBox = new HBox();
-//        ToggleButton start = new ToggleButton("", JEConfig.getImage("folders_explorer.png", iconSize, iconSize));
+//        ToggleButton start = new ToggleButton("", JEConfig.getSVGImage(Icon.FOLDER_OPEN, iconSize, iconSize));
 //        GlobalToolBar.changeBackgroundOnHoverUsingBinding(start);
 //
-//        ToggleButton pause = new ToggleButton("", JEConfig.getImage("folders_explorer.png", iconSize, iconSize));
+//        ToggleButton pause = new ToggleButton("", JEConfig.getSVGImage(Icon.FOLDER_OPEN, iconSize, iconSize));
 //        GlobalToolBar.changeBackgroundOnHoverUsingBinding(pause);
 
-        ToggleButton treeButton = new ToggleButton("", JEConfig.getImage("Data.png", iconSize, iconSize));
+        ToggleButton treeButton = new ToggleButton("", JEConfig.getSVGImage(Icon.TREE, iconSize, iconSize));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(treeButton);
 
-        ToggleButton save = new ToggleButton("", JEConfig.getImage("save.gif", iconSize, iconSize));
+        ToggleButton save = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, iconSize, iconSize));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(save);
 
 
-        ToggleButton delete = new ToggleButton("", JEConfig.getImage("if_trash_(delete)_16x16_10030.gif", iconSize, iconSize));
+        ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, iconSize, iconSize));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(delete);
 
 
-        final ImageView lockIcon = JEConfig.getImage("if_lock_blue_68757.png", iconSize, iconSize);
-        final ImageView unlockIcon = JEConfig.getImage("if_lock-unlock_blue_68758.png", iconSize, iconSize);
+        final Region lockIcon = JEConfig.getSVGImage(Icon.LOCK, iconSize, iconSize);
+        final Region unlockIcon = JEConfig.getSVGImage(Icon.UNLOCK, iconSize, iconSize);
         final ToggleButton unlockB = new ToggleButton("", unlockIcon);
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(unlockB);
         lockProperty.bindBidirectional(unlockB.selectedProperty());
 //        lockProperty.setValue(Boolean.TRUE);
 
-        ToggleButton backgroundButton = new ToggleButton("", JEConfig.getImage("if_32_171485.png", iconSize, iconSize));
+        ToggleButton backgroundButton = new ToggleButton("", JEConfig.getSVGImage(Icon.BACKGROUND, iconSize, iconSize));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(backgroundButton);
 
-        ToggleButton newAnalyses = new ToggleButton("", JEConfig.getImage("1390343812_folder-open.png", iconSize, iconSize));
+        ToggleButton newAnalyses = new ToggleButton("", JEConfig.getSVGImage(Icon.FOLDER_OPEN, iconSize, iconSize));
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(newAnalyses);
 
 

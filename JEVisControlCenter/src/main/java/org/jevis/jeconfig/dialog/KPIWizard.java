@@ -39,6 +39,7 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.commons.utils.CommonMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.control.KPIVariable;
@@ -91,7 +92,7 @@ public class KPIWizard extends Dialog {
         name.setPromptText("Enter Name for created Folder Structure");
         JFXTextArea formula = new JFXTextArea();
         formula.setPromptText("Enter formula (Var1, Var2, ... VarX)");
-        JFXButton add = new JFXButton("", ResourceLoader.getImage("list-add.png", 15, 15));
+        JFXButton add = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
         FlowPane variablePane = new FlowPane();
         variablePane.setHgap(6);
         variablePane.setVgap(6);

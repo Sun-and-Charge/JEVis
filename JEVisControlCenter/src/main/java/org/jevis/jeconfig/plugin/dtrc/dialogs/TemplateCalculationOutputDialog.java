@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -46,7 +47,6 @@ import java.math.BigDecimal;
 
 public class TemplateCalculationOutputDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(TemplateCalculationOutputDialog.class);
-    private final String ICON = "1404313956_evolution-tasks.png";
     private final AlphanumComparator ac = new AlphanumComparator();
     private final JEVisDataSource ds;
     private final TemplateOutput templateOutput;

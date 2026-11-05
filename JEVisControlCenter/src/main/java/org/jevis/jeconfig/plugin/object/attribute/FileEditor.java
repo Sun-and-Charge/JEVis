@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -41,6 +42,7 @@ import org.jevis.api.JEVisSample;
 import org.jevis.commons.JEVisFileImp;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.FileNames;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.ImageViewerDialog;
 import org.jevis.jeconfig.dialog.JsonViewerDialog;
@@ -116,9 +118,9 @@ public class FileEditor implements AttributeEditor {
     private void init() {
 
         _downloadButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.file.download")
-                , JEConfig.getImage("698925-icon-92-inbox-download-48.png", 18, 18));
+                , JEConfig.getSVGImage(Icon.FILE_DOWNLOAD, 18, 18));
         uploadButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.file.upload"),
-                JEConfig.getImage("1429894158_698394-icon-130-cloud-upload-48.png", 18, 18));
+                JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, 18, 18));
 
         boolean isPDF = false;
         boolean isImage = false;
@@ -164,7 +166,7 @@ public class FileEditor implements AttributeEditor {
         box.getChildren().setAll(uploadButton, _downloadButton, rightSpacer);
 
         if (isPDF) {
-            JFXButton pdfButton = new JFXButton("", JEConfig.getImage("pdf_24_2133056.png", 18, 18));
+            JFXButton pdfButton = new JFXButton("", JEConfig.getSVGImage(Icon.PDF, 18, 18));
             box.getChildren().add(2, pdfButton);
             pdfButton.setOnAction(event -> {
                 PDFViewerDialog pdfViewerDialog = new PDFViewerDialog();
@@ -180,7 +182,7 @@ public class FileEditor implements AttributeEditor {
         }
 
         if (isImage) {
-            JFXButton imageButton = new JFXButton("", JEConfig.getImage("export-image.png", 18, 18));
+            JFXButton imageButton = new JFXButton("", JEConfig.getSVGImage(Icon.IMAGE, 18, 18));
             box.getChildren().add(2, imageButton);
             imageButton.setOnAction(event -> {
                 ImageViewerDialog imageViewerDialog = new ImageViewerDialog();
@@ -196,7 +198,7 @@ public class FileEditor implements AttributeEditor {
         }
 
         if (isJson) {
-            JFXButton jsonButton = new JFXButton("", JEConfig.getImage("json_icon.png", 18, 18));
+            JFXButton jsonButton = new JFXButton("", JEConfig.getSVGImage(Icon.JSON, 18, 18));
             box.getChildren().add(2, jsonButton);
             jsonButton.setOnAction(event -> {
                 JsonViewerDialog jsonViewerDialog = new JsonViewerDialog();

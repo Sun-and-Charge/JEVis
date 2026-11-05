@@ -93,7 +93,7 @@ public class NotesPlugin implements Plugin {
     private final int iconSize = 20;
     private final DateHelper dateHelper = new DateHelper(DateHelper.TransformType.PREVIEW);
     private final List<Task<List<NotesRow>>> runningUpdateTaskList = new ArrayList<>();
-    private final Image taskImage = JEConfig.getImage("rodentia-icons_text-x-playlist.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_NOTE);
 
     private final TableView<NotesRow> tableView = new TableView<>();
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance(I18n.getInstance().getLocale());

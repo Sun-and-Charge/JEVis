@@ -91,6 +91,19 @@
     -fx-background-color: -pluginSVG-background-color;
 }
 
+/* status icons keep their meaning by colour (the old raster icons were coloured) */
+.warningSVG {
+    -fx-background-color: #f4b400;
+}
+
+.validSVG {
+    -fx-background-color: #2e8b3d;
+}
+
+.invalidSVG {
+    -fx-background-color: #d32f2f;
+}
+
 .ToolBarDatePicker.jfx-date-picker {
     -jfx-default-color: -ToolBarDatePicker-default-color;
 }
@@ -271,7 +284,7 @@
 .search-box .button,
 .search-box .button:hover {
     -fx-background-color: null;
-    -fx-background-image: url("/icons/1394564949_search_48.png");
+    -fx-background-image: url("/icons/MaterialDesignPNG/outlined/outline_search_black_24dp.png");
 }
 
 .combo-box-popup .list-cell {

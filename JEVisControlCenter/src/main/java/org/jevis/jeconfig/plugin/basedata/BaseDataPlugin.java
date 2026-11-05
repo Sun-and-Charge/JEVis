@@ -71,7 +71,7 @@ public class BaseDataPlugin extends TablePlugin {
     private static final Logger logger = LogManager.getLogger(BaseDataPlugin.class);
     private static final double EDITOR_MAX_HEIGHT = 50;
     public static String PLUGIN_NAME = "Base Data Plugin";
-    private final Image taskImage = JEConfig.getImage("building_equipment.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_EQUIPMENT);
     private final ToolBar toolBar = new ToolBar();
     private boolean initialized = false;
     private JEVisClass baseDataClass;
@@ -164,7 +164,7 @@ public class BaseDataPlugin extends TablePlugin {
                                     } else {
                                         RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
                                         JEVisAttribute att = registerTableRow.getAttributeMap().get(type);
-                                        JFXButton manSampleButton = new JFXButton("", JEConfig.getImage("if_textfield_add_64870.png", tableIconSize, tableIconSize));
+                                        JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, tableIconSize, tableIconSize));
                                         manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
 
                                         if (att != null) {
@@ -419,7 +419,7 @@ public class BaseDataPlugin extends TablePlugin {
                         return null;
                     }
                 };
-                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage("base_data.png"), true);
+                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage(Icon.PNG_BASE_DATA), true);
 
                 break;
             case Constants.Plugin.Command.ADD_TABLE:
@@ -693,7 +693,7 @@ public class BaseDataPlugin extends TablePlugin {
                 return null;
             }
         };
-        JEConfig.getStatusBar().addTask(PLUGIN_NAME, loadTask, JEConfig.getImage("base_data.png"), true);
+        JEConfig.getStatusBar().addTask(PLUGIN_NAME, loadTask, JEConfig.getImage(Icon.PNG_BASE_DATA), true);
 
     }
 

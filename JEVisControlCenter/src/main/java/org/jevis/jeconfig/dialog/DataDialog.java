@@ -51,6 +51,7 @@ import org.jevis.commons.datetime.PeriodHelper;
 import org.jevis.commons.datetime.WorkDays;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.AlphanumComparator;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -66,7 +67,6 @@ import java.util.List;
 
 public class DataDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(DataDialog.class);
-    private final String ICON = "1404313956_evolution-tasks.png";
     private final AlphanumComparator ac = new AlphanumComparator();
     private final JEVisAttribute attribute;
     private final DateTimeFormatter dateTimeFormat;
@@ -234,7 +234,7 @@ public class DataDialog extends Dialog {
             }
         });
 
-        JFXButton addButton = new JFXButton("", JEConfig.getImage("list-add.png", ICON_SIZE, ICON_SIZE));
+        JFXButton addButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, ICON_SIZE, ICON_SIZE));
         addButton.setOnAction(actionEvent -> {
             int currentPageIndex = pagination.getCurrentPageIndex();
             List<DataSample> selectedItems = tableView.getSelectionModel().getSelectedItems();
@@ -256,7 +256,7 @@ public class DataDialog extends Dialog {
             createPage(currentPageIndex);
         });
 
-        JFXButton removeButton = new JFXButton("", JEConfig.getImage("list-remove.png", ICON_SIZE, ICON_SIZE));
+        JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.MINUS, ICON_SIZE, ICON_SIZE));
         removeButton.prefWidthProperty().bind(addButton.widthProperty());
         removeButton.setOnAction(actionEvent -> {
             int currentPageIndex = pagination.getCurrentPageIndex();

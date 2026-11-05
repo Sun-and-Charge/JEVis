@@ -36,6 +36,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.application.tools.WindowSize;
@@ -76,7 +77,7 @@ public class RemoveSharePermissonsDialog {
         topTitle.getStyleClass().add("dialog-header-title");
 
         //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
-        String ICON_QUESTION = "1400874302_question_blue.png";
+        String ICON_QUESTION = Icon.PNG_UNKNOWN;
         ImageView imageView = ResourceLoader.getImage(ICON_QUESTION, 65, 65);
 
         stage.getIcons().add(imageView.getImage());

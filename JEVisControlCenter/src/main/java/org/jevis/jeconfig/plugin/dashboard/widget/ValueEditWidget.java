@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -38,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.application.tools.ColorHelper;
@@ -69,8 +71,7 @@ public class ValueEditWidget extends Widget implements DataModelWidget {
     private Limit limit;
     private Interval lastInterval = null;
     private EnterDataDialog enterDataDialog = null;
-    private final ImageView imageView = JEConfig.getImage("add_table.png", 18, 18);
-    private final JFXButton addButton = new JFXButton("", JEConfig.getImage("AddValue.png", 34, 34));
+    private final JFXButton addButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 34, 34));
     private final boolean forceLastValue = true;
     private JEVisSample lastSample = null;
     private Boolean customWorkday = true;
@@ -325,7 +326,7 @@ public class ValueEditWidget extends Widget implements DataModelWidget {
 
     @Override
     public ImageView getImagePreview() {
-        return JEConfig.getImage("widget/ValueWidget.png", this.previewSize.getHeight(), this.previewSize.getWidth());
+        return JEConfig.getImage(Icon.PNG_GAUGE, this.previewSize.getHeight(), this.previewSize.getWidth());
     }
 
 

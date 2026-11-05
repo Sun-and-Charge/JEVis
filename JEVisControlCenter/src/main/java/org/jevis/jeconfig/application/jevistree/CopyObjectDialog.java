@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEApplication.
  * <p>
@@ -39,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.resource.ResourceLoader;
@@ -56,7 +58,7 @@ import java.util.List;
 public class CopyObjectDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(CopyObjectDialog.class);
 
-    public static String ICON = "1403555565_stock_folder-move.png";
+    public static String ICON = Icon.PNG_MOVE;
 
     private final JFXTextField nameField = new JFXTextField();
     private boolean recursionAllowed = false;

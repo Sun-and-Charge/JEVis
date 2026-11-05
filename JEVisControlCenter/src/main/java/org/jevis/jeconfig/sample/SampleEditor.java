@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -41,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.CommonMethods;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.jevistree.methods.DataMethods;
@@ -59,7 +61,7 @@ import java.util.List;
  */
 public class SampleEditor {
     private static final Logger logger = LogManager.getLogger(SampleEditor.class);
-    public static String ICON = "1415314386_Graph.png";
+    public static String ICON = Icon.GRAPH;
 
     private final List<SampleEditorExtension> extensions = new ArrayList<>();
     private JEVisAttribute _attribute;
@@ -109,7 +111,7 @@ public class SampleEditor {
             logger.error("Could not get class", e);
         }
 
-        header = DialogHeader.getDialogHeader(ICON, headerString);
+        header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(ICON, 64, 64), headerString);
 
         stage.setTitle(I18n.getInstance().getString("attribute.editor.title"));
         stage.initModality(Modality.NONE);
@@ -136,7 +138,7 @@ public class SampleEditor {
 
 
         JFXButton config = new JFXButton();
-        config.setGraphic(JEConfig.getImage("Service Manager.png", 16, 16));
+        config.setGraphic(JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
 
 
         SampleTableExtension sampleTableExtension = new SampleTableExtension(attribute, stage);

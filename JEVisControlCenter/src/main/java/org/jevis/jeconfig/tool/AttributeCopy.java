@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -37,6 +38,7 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisUnit;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.application.I18nWS;
@@ -123,7 +125,7 @@ public class AttributeCopy {
                                     return null;
                                 }
                             };
-                            JEConfig.getStatusBar().addTask(CONFIG_NAME, task, JEConfig.getImage("17_Paste_48x48.png"), true);
+                            JEConfig.getStatusBar().addTask(CONFIG_NAME, task, JEConfig.getImage(Icon.PNG_PASTE), true);
 
 
                         }
@@ -160,7 +162,7 @@ public class AttributeCopy {
         gridLayout.setPadding(new Insets(10, 10, 10, 10));
         gridLayout.setVgap(10);
 
-        Node header = DialogHeader.getDialogHeader("paintbrush_1055018.png", I18n.getInstance().getString("dialog.attributecopy.paste"));
+        Node header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.PASTE_PROPERTIES, 64, 64), I18n.getInstance().getString("dialog.attributecopy.paste"));
 
         Region spacer = new Region();
         spacer.setMinWidth(20);
@@ -237,7 +239,7 @@ public class AttributeCopy {
         gridLayout.setPadding(new Insets(10, 10, 10, 10));
         gridLayout.setVgap(10);
 
-        Node header = DialogHeader.getDialogHeader("paintbrush_1055018.png", I18n.getInstance().getString("dialog.attributecopy.copy"));
+        Node header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.PASTE_PROPERTIES, 64, 64), I18n.getInstance().getString("dialog.attributecopy.copy"));
         Label message = new Label(I18n.getInstance().getString("dialog.attributecopy.copyquestion"));
 
         Region spacer = new Region();

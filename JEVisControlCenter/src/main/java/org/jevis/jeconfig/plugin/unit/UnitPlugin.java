@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2009 - 2014 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEConfig.
  * <p>
@@ -164,33 +165,33 @@ public class UnitPlugin implements Plugin {
             toolBar.setId("ObjectPlugin.Toolbar");
 
             double iconSize = 20;
-            ToggleButton newB = new ToggleButton("", JEConfig.getImage("list-add.png", iconSize, iconSize));
+            ToggleButton newB = new ToggleButton("", JEConfig.getSVGImage(Icon.PLUS, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(newB);
 //            GlobalToolBar.BuildEventhandler(UnitPlugin.this, newB, Constants.Plugin.Command.NEW);
 
-            ToggleButton save = new ToggleButton("", JEConfig.getImage("save.gif", iconSize, iconSize));
+            ToggleButton save = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(save);
 //            GlobalToolBar.BuildEventhandler(UnitPlugin.this, save, Constants.Plugin.Command.SAVE);
 
-            ToggleButton delete = new ToggleButton("", JEConfig.getImage("list-remove.png", iconSize, iconSize));
+            ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.MINUS, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(delete);
 //            GlobalToolBar.BuildEventhandler(UnitPlugin.this, delete, Constants.Plugin.Command.DELETE);
 
             Separator sep1 = new Separator();
 
-            ToggleButton reload = new ToggleButton("", JEConfig.getImage("1403018303_Refresh.png", iconSize, iconSize));
+            ToggleButton reload = new ToggleButton("", JEConfig.getSVGImage(Icon.REFRESH, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(reload);
 //            GlobalToolBar.BuildEventhandler(UnitPlugin.this, reload, Constants.Plugin.Command.RELOAD);
 
-            ToggleButton addTable = new ToggleButton("", JEConfig.getImage("add_table.png", iconSize, iconSize));
+            ToggleButton addTable = new ToggleButton("", JEConfig.getSVGImage(Icon.TABLE_PLUS, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(addTable);
             GlobalToolBar.BuildEventhandler(UnitPlugin.this, addTable, Constants.Plugin.Command.ADD_TABLE);
 
-            ToggleButton editTable = new ToggleButton("", JEConfig.getImage("edit_table.png", iconSize, iconSize));
+            ToggleButton editTable = new ToggleButton("", JEConfig.getSVGImage(Icon.EDIT, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(editTable);
             GlobalToolBar.BuildEventhandler(UnitPlugin.this, editTable, Constants.Plugin.Command.EDIT_TABLE);
 
-            ToggleButton createWizard = new ToggleButton("", JEConfig.getImage("create_wizard.png", iconSize, iconSize));
+            ToggleButton createWizard = new ToggleButton("", JEConfig.getSVGImage(Icon.WIZARD_WAND, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(createWizard);
             GlobalToolBar.BuildEventhandler(UnitPlugin.this, createWizard, Constants.Plugin.Command.CREATE_WIZARD);
 

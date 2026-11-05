@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -180,7 +181,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
         row++;
 
         JFXButton targetButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"),
-                JEConfig.getImage("folders_explorer.png", 18, 18));
+                JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         targetButton.wrapTextProperty().setValue(true);
         targetButton.setDisable(true);
 
@@ -393,7 +394,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
                 }
             };
 
-            JEConfig.getStatusBar().addTask("DWD Import", importData, JEConfig.getImage("save.gif"), true);
+            JEConfig.getStatusBar().addTask("DWD Import", importData, JEConfig.getImage(Icon.PNG_SAVE), true);
         });
 
         cancelButton.setOnAction(actionEvent -> close());

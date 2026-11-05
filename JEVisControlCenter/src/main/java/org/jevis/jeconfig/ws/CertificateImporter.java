@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,6 +27,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 
 public class CertificateImporter {
 
@@ -46,8 +48,10 @@ public class CertificateImporter {
 
     public boolean needSSLDownload(URL destinationURL) {
         try {
-            HttpsURLConnection conn = (HttpsURLConnection) destinationURL.openConnection();
-            conn.connect();
+            URLConnection connection = destinationURL.openConnection();
+            /* plain http: no certificate to check */
+            if (!(connection instanceof HttpsURLConnection)) return false;
+            connection.connect();
             return false;
         } catch (SSLHandshakeException sslEx) {
             logger.warn("SSL Error: {}", sslEx.getMessage());

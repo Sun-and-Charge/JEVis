@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -32,6 +33,7 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisSample;
 import org.jevis.api.JEVisUnit;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.plugin.unit.SamplingRateUI;
 import org.jevis.jeconfig.plugin.unit.UnitSelectUI;
@@ -104,8 +106,8 @@ public class AttributeUnitExtension implements SampleEditorExtension {
             SamplingRateUI iuRate = new SamplingRateUI(att.getInputSampleRate());
             SamplingRateUI ouRate = new SamplingRateUI(att.getDisplaySampleRate());
 
-            JFXButton applyToRight = new JFXButton("", JEConfig.getImage("right.png", 12, 12));
-            JFXButton applyToLeft = new JFXButton("", JEConfig.getImage("left.png", 12, 12));
+            JFXButton applyToRight = new JFXButton("", JEConfig.getSVGImage(Icon.CHEVRON_RIGHT, 12, 12));
+            JFXButton applyToLeft = new JFXButton("", JEConfig.getSVGImage(Icon.CHEVRON_LEFT, 12, 12));
 
             applyToRight.setOnAction(event -> {
                 try {

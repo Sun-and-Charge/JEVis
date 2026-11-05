@@ -69,7 +69,7 @@ public class EquipmentPlugin extends TablePlugin {
     private static final double EDITOR_MAX_HEIGHT = 50;
     public static String PLUGIN_NAME = "Equipment Plugin";
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.EquipmentPlugin");
-    private final Image taskImage = JEConfig.getImage("building_equipment.png");
+    private final Image taskImage = JEConfig.getImage(Icon.PNG_EQUIPMENT);
     private final BorderPane borderPane = new BorderPane();
     private final ToolBar toolBar = new ToolBar();
     private final ToggleButton replaceButton = new ToggleButton("", JEConfig.getSVGImage(Icon.SWAP, toolBarIconSize, toolBarIconSize));
@@ -457,7 +457,7 @@ public class EquipmentPlugin extends TablePlugin {
                         return null;
                     }
                 };
-                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage("building_equipment.png"), true);
+                JEConfig.getStatusBar().addTask(PLUGIN_NAME, clearCacheTask, JEConfig.getImage(Icon.PNG_EQUIPMENT), true);
 
                 break;
             case Constants.Plugin.Command.ADD_TABLE:
@@ -691,7 +691,7 @@ public class EquipmentPlugin extends TablePlugin {
                 return null;
             }
         };
-        JEConfig.getStatusBar().addTask(PLUGIN_NAME, loadTask, JEConfig.getImage("building_equipment.png"), true);
+        JEConfig.getStatusBar().addTask(PLUGIN_NAME, loadTask, JEConfig.getImage(Icon.PNG_EQUIPMENT), true);
 
     }
 
