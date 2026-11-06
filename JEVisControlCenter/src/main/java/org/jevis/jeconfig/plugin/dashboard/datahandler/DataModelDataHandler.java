@@ -417,7 +417,8 @@ public class DataModelDataHandler {
     }
 
     public JsonNode toJsonNode() {
-        return analysisHandler.toJsonNode(dataModel);
+        /* the rows of a widget keep their aggregation and manipulation (lost on every save since 24f9cce4b) */
+        return analysisHandler.toJsonNode(dataModel, true);
     }
 
     public Map<String, JEVisAttribute> getAttributeMap() {
