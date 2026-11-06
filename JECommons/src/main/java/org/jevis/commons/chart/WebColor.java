@@ -145,6 +145,56 @@ public final class WebColor {
         }
     }
 
+    /**
+     * Parses a color like {@link #toHex(String)} but keeps the alpha channel.
+     *
+     * @return {@code "#rrggbb"} for opaque colors, {@code "rgba(r,g,b,a)"} otherwise ({@code "transparent"} is
+     * {@code "rgba(0,0,0,0)"})
+     * @throws IllegalArgumentException if the string is no valid color
+     */
+    public static String toCss(String color) {
+        if (color == null) throw new NullPointerException("color");
+        String hex = toHex(color);
+        double alpha = alpha(color.trim().toLowerCase(Locale.ROOT));
+        if (alpha >= 1d) return hex;
+        int rgb = Integer.parseInt(hex.substring(1), 16);
+        String a = java.math.BigDecimal.valueOf(Math.round(Math.max(0d, alpha) * 1000d), 3).stripTrailingZeros().toPlainString();
+        return "rgba(" + (rgb >> 16 & 0xff) + "," + (rgb >> 8 & 0xff) + "," + (rgb & 0xff) + "," + a + ")";
+    }
+
+    /**
+     * Like {@link #toCss(String)} but returns {@code fallback} instead of throwing (also for {@code null}).
+     */
+    public static String toCss(String color, String fallback) {
+        try {
+            return toCss(color);
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private static double alpha(String c) {
+        if ("transparent".equals(c)) return 0d;
+        if (c.startsWith("rgba") || c.startsWith("hsla")) {
+            int open = c.indexOf('(');
+            int close = c.lastIndexOf(')');
+            String[] parts = c.substring(open + 1, close).split(",");
+            if (parts.length < 4) return 1d;
+            String part = parts[3].trim();
+            double value = part.endsWith("%") ? Double.parseDouble(part.substring(0, part.length() - 1)) / 100d
+                    : Double.parseDouble(part);
+            return Math.max(0d, Math.min(1d, value));
+        }
+        String hex;
+        if (c.startsWith("#")) hex = c.substring(1);
+        else if (c.startsWith("0x")) hex = c.substring(2);
+        else if (NAMED.containsKey(c)) return 1d;
+        else hex = c;
+        if (hex.length() == 4) return Integer.parseInt(hex.substring(3, 4), 16) * 17 / 255d;
+        if (hex.length() == 8) return Integer.parseInt(hex.substring(6, 8), 16) / 255d;
+        return 1d;
+    }
+
     private static String parseRgbFunction(String c) {
         int open = c.indexOf('(');
         int close = c.lastIndexOf(')');

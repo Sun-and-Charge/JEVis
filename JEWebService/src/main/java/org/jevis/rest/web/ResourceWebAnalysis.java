@@ -213,31 +213,38 @@ public class ResourceWebAnalysis {
 
         List<Map<String, Object>> charts = new ArrayList<>();
         for (ChartDefinition chart : definition.getCharts()) {
-            Map<String, Object> c = new LinkedHashMap<>();
-            c.put("id", chart.getId());
-            c.put("name", chart.getName());
-            c.put("type", chart.getType() != null ? chart.getType().name() : null);
-            c.put("minFractionDigits", chart.getMinFractionDigits());
-            c.put("maxFractionDigits", chart.getMaxFractionDigits());
-            c.put("height", finite(chart.getHeight()));
-            c.put("orientation", chart.getOrientation());
-            c.put("fixYAxisToZero", chart.isFixYAxisToZero());
-            c.put("xAxisTitle", chart.getXAxisTitle());
-            c.put("yAxisTitle", chart.getYAxisTitle());
-            c.put("groupingInterval", finite(chart.getGroupingInterval()));
-            c.put("colorMapping", chart.getColorMapping());
-            List<Map<String, Object>> rows = new ArrayList<>();
-            for (RowDefinition row : chart.getRows()) {
-                rows.add(rowConfigJson(row));
-            }
-            c.put("rows", rows);
-            charts.add(c);
+            charts.add(chartConfigJson(chart));
         }
         result.put("charts", charts);
         return result;
     }
 
-    private static Map<String, Object> rowConfigJson(RowDefinition row) {
+    /**
+     * @return the configuration of one chart (also used for the Chart widgets of dashboards)
+     */
+    static Map<String, Object> chartConfigJson(ChartDefinition chart) {
+        Map<String, Object> c = new LinkedHashMap<>();
+        c.put("id", chart.getId());
+        c.put("name", chart.getName());
+        c.put("type", chart.getType() != null ? chart.getType().name() : null);
+        c.put("minFractionDigits", chart.getMinFractionDigits());
+        c.put("maxFractionDigits", chart.getMaxFractionDigits());
+        c.put("height", finite(chart.getHeight()));
+        c.put("orientation", chart.getOrientation());
+        c.put("fixYAxisToZero", chart.isFixYAxisToZero());
+        c.put("xAxisTitle", chart.getXAxisTitle());
+        c.put("yAxisTitle", chart.getYAxisTitle());
+        c.put("groupingInterval", finite(chart.getGroupingInterval()));
+        c.put("colorMapping", chart.getColorMapping());
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (RowDefinition row : chart.getRows()) {
+            rows.add(rowConfigJson(row));
+        }
+        c.put("rows", rows);
+        return c;
+    }
+
+    static Map<String, Object> rowConfigJson(RowDefinition row) {
         boolean readable = Boolean.TRUE.equals(row.getReadable());
         Map<String, Object> r = new LinkedHashMap<>();
         r.put("key", row.getKey());
@@ -274,7 +281,7 @@ public class ResourceWebAnalysis {
         return result;
     }
 
-    private static Map<String, Object> rowDataJson(RowResult row) {
+    static Map<String, Object> rowDataJson(RowResult row) {
         Map<String, Object> r = new LinkedHashMap<>();
         r.put("key", row.getKey());
         r.put("status", row.getStatus() != null ? row.getStatus().name() : RowStatus.ERROR.name());
@@ -315,7 +322,7 @@ public class ResourceWebAnalysis {
     /**
      * @return the value or {@code null} for NaN and infinity (not valid in JSON)
      */
-    private static Double finite(Double value) {
+    static Double finite(Double value) {
         return value == null || value.isNaN() || value.isInfinite() ? null : value;
     }
 }

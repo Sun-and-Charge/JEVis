@@ -15,7 +15,7 @@ export const router = createRouter({
         { path: '', name: 'home', component: () => import('./views/HomeView.vue') },
         { path: 'password', name: 'password', component: () => import('./views/ChangePasswordView.vue') },
         { path: 'analyses/:id(\\d+)', name: 'analysis', component: () => import('./views/AnalysisView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
-        { path: 'dashboards/:id(\\d+)', name: 'dashboard', component: () => import('./views/PlaceholderView.vue'), props: (r) => ({ kind: 'dashboard', id: Number(r.params.id) }) },
+        { path: 'dashboards/:id(\\d+)', name: 'dashboard', component: () => import('./views/DashboardView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
         { path: ':pathMatch(.*)*', name: 'notFound', component: () => import('./views/NotFoundView.vue') },
       ],
     },

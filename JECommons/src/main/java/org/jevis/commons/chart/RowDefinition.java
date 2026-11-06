@@ -20,6 +20,8 @@
 package org.jevis.commons.chart;
 
 import org.jevis.api.JEVisUnit;
+import org.jevis.commons.dataprocessing.AggregationPeriod;
+import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.commons.unit.UnitManager;
 
@@ -46,6 +48,9 @@ public class RowDefinition {
     private String intervalStart;
     private String intervalEnd;
     private String css = "";
+    /* stored by older Control Center versions per row; only dashboards use them (analyses take the tool bar) */
+    private AggregationPeriod aggregation;
+    private ManipulationMode manipulation;
     /* resolved when the analysis is read with a data source */
     private Boolean readable;
     private String objectName;
@@ -242,6 +247,30 @@ public class RowDefinition {
 
     public void setCss(String css) {
         this.css = css;
+    }
+
+    /**
+     * @return the aggregation stored with the row ({@code aggregationPeriod}), {@code null} if none; analyses ignore
+     * it (the tool bar decides), dashboard widgets use it like {@code DataModelDataHandler}
+     */
+    public AggregationPeriod getAggregation() {
+        return aggregation;
+    }
+
+    public void setAggregation(AggregationPeriod aggregation) {
+        this.aggregation = aggregation;
+    }
+
+    /**
+     * @return the manipulation stored with the row ({@code manipulationMode}), {@code null} if none, see
+     * {@link #getAggregation()}
+     */
+    public ManipulationMode getManipulation() {
+        return manipulation;
+    }
+
+    public void setManipulation(ManipulationMode manipulation) {
+        this.manipulation = manipulation;
     }
 
     /**

@@ -3,7 +3,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { localName } from '../api/navigation'
+import { localName, startDashboardFor } from '../api/navigation'
 import LanguageSwitch from '../components/LanguageSwitch.vue'
 import NavTree from '../components/NavTree.vue'
 import { useAuthStore } from '../stores/auth'
@@ -17,8 +17,12 @@ const route = useRoute()
 const menuOpen = ref(false)
 const userMenuOpen = ref(false)
 
-onMounted(() => {
-  if (!nav.data) nav.load()
+/* after login (the shell is mounted once per session): the user's start dashboard instead of the home page */
+onMounted(async () => {
+  if (nav.data) return
+  await nav.load()
+  const start = startDashboardFor(nav.data, route.name)
+  if (start != null) router.replace({ name: 'dashboard', params: { id: start } })
 })
 
 /* session ended (logout or expired token) while the app is open */

@@ -58,11 +58,6 @@
     "text": "Choose an analysis or a dashboard on the left.",
     "count": "{sites} sites · {analyses} analyses · {dashboards} dashboards"
   },
-  "placeholder": {
-    "analysis": "The analysis view follows in the next step (W2).",
-    "dashboard": "The dashboard view follows in the step after that (W3).",
-    "openInCC": "Until then, open this object in the Control Center (ID {id})."
-  },
   "analysis": {
     "loading": "Loading analysis …",
     "loadError": "The analysis could not be loaded.",
@@ -146,6 +141,38 @@
       "csvLabel": "Save the values of {name} as CSV"
     },
     "count": "Count"
+  },
+  "dashboard": {
+    "loading": "Loading dashboard …",
+    "loadError": "The dashboard could not be loaded.",
+    "notFound": "This dashboard does not exist or is not shared with you.",
+    "noWidgets": "This dashboard has no widgets.",
+    "timeBar": "Time frame of the dashboard",
+    "readOnly": "Read only in the web app",
+    "openLink": "Open",
+    "reportLater": "Reports cannot be opened in the web app yet.",
+    "linkNoAccess": "The target is not shared with you.",
+    "zoom": { "label": "Zoom", "in": "Zoom in", "out": "Zoom out", "reset": "Reset zoom" },
+    "table": {
+      "name": "Name",
+      "value": "Value",
+      "unit": "Unit"
+    },
+    "timeFrames": {
+      "P1D": "Day",
+      "P1W": "Week",
+      "P1M": "Month",
+      "P1Y": "Year",
+      "P3Y": "Last 3 years",
+      "P5Y": "Last 5 years",
+      "P10Y": "Last 10 years",
+      "PT24H": "Last 24 hours",
+      "P7D": "Last 7 days",
+      "P30D": "Last 30 days",
+      "P365D": "Last 365 days",
+      "PALL": "Complete period",
+      "CUSTOM": "Custom"
+    }
   },
   "notFound": { "title": "Page not found", "home": "To the start page" }
 }

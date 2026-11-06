@@ -113,8 +113,8 @@ public class RowDataLoader {
                     row.unit = new JEVisUnitImp(sumUnit.getFormula(), sumUnit.getLabel(), String.valueOf(sumUnit.getPrefix()));
                 }
             }
-            if (chartType == AnalysisChartType.TABLE_H) {
-                /* TableChartH: xyChartSerie.getSingleRow().setAbsolute(true) */
+            if (chartType == AnalysisChartType.TABLE_H || settings.isAbsolute()) {
+                /* TableChartH: xyChartSerie.getSingleRow().setAbsolute(true); dashboard widgets: setAutoAggregation(true) */
                 row.absolute = true;
             }
 
@@ -129,6 +129,13 @@ public class RowDataLoader {
             }
 
             List<ChartSample> samples = row.getSamples();
+            if (settings.isLastSampleOnly() && samples.size() > 1) {
+                /* DataModelDataHandler.update: a forced interval of zero length keeps the newest sample */
+                samples = new ArrayList<>(samples.subList(samples.size() - 1, samples.size()));
+            }
+            result.setCount(row.count != null ? Integer.valueOf(row.count) : Integer.valueOf(samples.size()));
+            result.setLastTimestamp(row.newest != null ? row.newest
+                    : (samples.isEmpty() ? null : samples.get(samples.size() - 1).getTimestamp()));
             result.setCalculation(row.calculation);
             result.setSamples(samples);
             if (samples.isEmpty()) {
@@ -150,6 +157,22 @@ public class RowDataLoader {
             result.setStats(null);
         }
         return result;
+    }
+
+    /**
+     * Resolves the data attribute of a row like {@code ChartDataRow.getAttribute()}: "Value" of the clean data or
+     * data object (for a clean data row the clean data's own attribute).
+     *
+     * @return the attribute or {@code null} if the object is not readable or no data object
+     */
+    public JEVisAttribute resolveAttribute(RowDefinition definition) {
+        try {
+            JEVisObject object = ds.getObject(definition.getObjectId());
+            return object != null ? AnalysisReader.resolveValueAttribute(object) : null;
+        } catch (Exception e) {
+            logger.debug("Could not resolve attribute of row {}", definition.getKey(), e);
+            return null;
+        }
     }
 
     /**
@@ -176,6 +199,10 @@ public class RowDataLoader {
         private DateTime start;
         private DateTime end;
         private Period period;
+        /* timestamp of the newest sample before the absolute mode reduces the samples */
+        private DateTime newest;
+        /* number of samples before the absolute mode reduces them */
+        private Integer count;
 
         Row(RowDefinition definition, JEVisObject selected, EvaluationSettings settings, DayFilter dayFilter) throws JEVisException {
             this.definition = definition;
@@ -260,6 +287,8 @@ public class RowDataLoader {
                     samples = applyDayFilter(samples);
 
                     if (absolute && !samples.isEmpty()) {
+                        newest = samples.get(samples.size() - 1).getTimestamp();
+                        count = samples.size();
                         Double manipulatedData = getManipulatedData(samples);
                         ChartSample virtualSample = new ChartSample(samples.get(0).getTimestamp(), manipulatedData, null);
                         samples = new ArrayList<>();

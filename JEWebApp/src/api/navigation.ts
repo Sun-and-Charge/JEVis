@@ -20,6 +20,8 @@ export interface Navigation {
   user: { id: number; name: string; sysAdmin: boolean }
   sites: NavSite[]
   other: { analyses: NavItem[]; dashboards: NavItem[] }
+  /** the user's start dashboard (if readable), opened after login */
+  startDashboard?: number | null
 }
 
 export interface SiteNode {
@@ -47,4 +49,10 @@ export function buildSiteTree(sites: NavSite[]): SiteNode[] {
 /** Total number of analyses and dashboards of a site including its sub-sites. */
 export function itemCount(node: SiteNode): number {
   return node.site.analyses.length + node.site.dashboards.length + node.children.reduce((sum, child) => sum + itemCount(child), 0)
+}
+
+/** Id of the start dashboard to open instead of the home page, or null (only right after login / reload on home). */
+export function startDashboardFor(nav: Pick<Navigation, 'startDashboard'> | null, routeName: unknown): number | null {
+  const id = nav?.startDashboard
+  return routeName === 'home' && typeof id === 'number' && id > 0 ? id : null
 }

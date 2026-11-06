@@ -72,6 +72,26 @@ export class HttpClient {
     return (text ? JSON.parse(text) : undefined) as T
   }
 
+  /**
+   * Binary download (images) with the Bearer token; an <img src> cannot send the header. Same 401 handling as
+   * {@link request}. The browser cache may be used (the server sends `Cache-Control: private`).
+   */
+  async getBlob(path: string, retry = true): Promise<Blob> {
+    const headers: Record<string, string> = {}
+    const token = this.hooks.accessToken()
+    if (token) headers.Authorization = `Bearer ${token}`
+    const response = await this.fetchFn(API + path, { method: 'GET', headers, credentials: 'omit' })
+    if (response.status === 401 && retry && token) {
+      if (await this.refreshOnce()) return this.getBlob(path, false)
+      this.hooks.onUnauthorized()
+    }
+    if (!response.ok) {
+      if (response.status === 401 && !retry) this.hooks.onUnauthorized()
+      throw new HttpError(response.status, '')
+    }
+    return response.blob()
+  }
+
   private refreshOnce(): Promise<boolean> {
     if (!this.refreshing) {
       this.refreshing = this.hooks.refresh().finally(() => {
