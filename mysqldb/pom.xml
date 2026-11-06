@@ -15,7 +15,7 @@
     <properties>
         <flyway.version>3.2.1</flyway.version>
         <mysql.driver.version>8.0.16</mysql.driver.version>
-        <database.driver>com.mysql.jdbc.Driver</database.driver>
+        <database.driver>com.mysql.cj.jdbc.Driver</database.driver>
         <database.url>jdbc:mysql://localhost:3306/jevis?autoreconnect=true</database.url>
         <database.username>jevis</database.username>
         <database.password>jevispw</database.password>
@@ -50,12 +50,12 @@
                     <cleanOnValidationError>false</cleanOnValidationError>
                 </configuration>
                 <executions>
+                    <!-- migrate only: no clean (it dropped all tables of the configured database on every build) and no
+                         baseline (V1 is empty, migrate creates the metadata table of a new database itself) -->
                     <execution>
                         <id>flyway database migration</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>clean</goal>
-                            <goal>baseline</goal>
                             <goal>migrate</goal>
                             <goal>info</goal>
                         </goals>

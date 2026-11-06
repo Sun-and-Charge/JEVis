@@ -54,8 +54,8 @@
     </modules>
 
     <profiles>
-        <!-- Adds the database migrations. Note: building mysqldb runs Flyway clean + migrate against
-             the database configured in mysqldb/pom.xml. -->
+        <!-- Adds the database migrations. Note: building mysqldb runs Flyway migrate against the database
+             configured in mysqldb/pom.xml (never clean). -->
         <profile>
             <id>jevisserver</id>
             <modules>
