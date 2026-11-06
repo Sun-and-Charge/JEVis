@@ -1,0 +1,309 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Shared layout of the appointment and maintenance lists (view only). */
+
+.mod-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.mod-head h1 {
+  margin: 0;
+}
+
+.mod-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: none;
+}
+
+.mod-filters .control {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mod-filters .control label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.mod-filters .search {
+  flex: 1 1 14rem;
+}
+
+.mod-filters select,
+.mod-filters input[type='search'] {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  max-width: 100%;
+}
+
+.mod-filters input[type='search']:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+/* segmented status filter (radio buttons) */
+.mod-seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  height: 2.25rem;
+}
+
+.mod-seg label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink) !important;
+  cursor: pointer;
+}
+
+.mod-seg label + label {
+  border-left: 1px solid var(--line);
+}
+
+.mod-seg input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.mod-seg label:has(input:checked) {
+  background: var(--blueberry);
+  color: #fff !important;
+}
+
+.mod-seg label:has(input:focus-visible) {
+  outline: 3px solid var(--sun);
+  outline-offset: -3px;
+}
+
+.mod-count {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.mod-table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.mod-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.mod-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0.55rem 0.6rem;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+}
+
+.mod-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.mod-table td.nowrap {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* state marker on the left edge of a row / card (the badge carries the same information as text) */
+.mod-row > :first-child,
+.mod-card {
+  box-shadow: inset 4px 0 0 transparent;
+}
+
+.mod-row.is-overdue > :first-child,
+.mod-card.is-overdue {
+  box-shadow: inset 4px 0 0 var(--error);
+}
+
+.mod-row.is-overdue {
+  background: var(--error-bg);
+}
+
+.mod-row.is-dueSoon > :first-child,
+.mod-row.is-inProgress > :first-child,
+.mod-card.is-dueSoon,
+.mod-card.is-inProgress {
+  box-shadow: inset 4px 0 0 var(--sun);
+}
+
+.mod-row.is-dueSoon,
+.mod-row.is-inProgress {
+  background: #fffbe0;
+}
+
+.mod-row.is-done,
+.mod-card.is-done {
+  color: var(--muted);
+}
+
+.mod-toggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--blueberry);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.mod-toggle .chevron {
+  display: inline-block;
+  width: 0.8em;
+  transition: transform 0.15s;
+}
+
+.mod-toggle[aria-expanded='true'] .chevron {
+  transform: rotate(90deg);
+}
+
+.mod-detail > td {
+  background: var(--bg);
+  padding: 0.75rem 1rem 0.9rem 1.6rem;
+}
+
+.mod-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.mod-badge.is-overdue {
+  background: var(--error);
+  border-color: var(--error);
+  color: #fff;
+}
+
+.mod-badge.is-dueSoon,
+.mod-badge.is-inProgress {
+  background: var(--sun);
+  border-color: var(--sun);
+  color: var(--blueberry);
+}
+
+.mod-badge.is-done {
+  background: var(--ok-bg);
+  border-color: var(--ok-bg);
+  color: var(--ok);
+}
+
+.mod-badge.is-unknown {
+  border-style: dashed;
+}
+
+.mod-dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.35rem 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.mod-dl dt {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.mod-dl dd {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.mod-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.mod-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem 0.75rem 1.1rem;
+}
+
+.mod-card h2 {
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+  overflow-wrap: anywhere;
+}
+
+.mod-card .mod-dl {
+  margin-bottom: 0.5rem;
+}
+
+.mod-card .mod-details {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+  .mod-filters .control,
+  .mod-filters .search {
+    flex: 1 1 100%;
+  }
+
+  .mod-seg {
+    width: 100%;
+  }
+
+  .mod-seg label {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .mod-filters select {
+    width: 100%;
+  }
+}

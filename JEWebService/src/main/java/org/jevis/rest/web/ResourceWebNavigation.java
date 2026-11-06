@@ -85,6 +85,7 @@ public class ResourceWebNavigation {
             me.put("sysAdmin", user.isSysAdmin());
             result.put("user", me);
             result.put("startDashboard", startDashboard(ds, user.getUserID(), readable));
+            result.put("modules", ResourceWebModules.moduleCounts(readable));
             return Response.ok(MAPPER.writeValueAsString(result)).type(MediaType.APPLICATION_JSON)
                     .header("Cache-Control", "no-store").build();
         } catch (AuthenticationException ex) {
@@ -227,7 +228,7 @@ public class ResourceWebNavigation {
         return null;
     }
 
-    private static Map<String, Object> entry(JsonObject object) {
+    static Map<String, Object> entry(JsonObject object) {
         Map<String, Object> entry = new LinkedHashMap<>();
         entry.put("id", object.getId());
         entry.put("name", object.getName());

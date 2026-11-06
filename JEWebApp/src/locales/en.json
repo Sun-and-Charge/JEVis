@@ -174,5 +174,84 @@
       "CUSTOM": "Custom"
     }
   },
+  "modules": {
+    "title": "Modules",
+    "appointments": "Appointments",
+    "maintenance": "Maintenance",
+    "loadError": "The entries could not be loaded.",
+    "retry": "Try again",
+    "filters": "Filters",
+    "status": "Status",
+    "site": "Site",
+    "allSites": "All sites",
+    "noSite": "Without site",
+    "search": "Search",
+    "searchPlaceholder": "Title, description, object …",
+    "count": "{shown} of {total} entries",
+    "details": "Details",
+    "showDetails": "Show details of “{title}”",
+    "description": "Description",
+    "recipients": "Recipients",
+    "recipientsHidden": "none visible | 1 more without read right | {n} more without read right",
+    "noRecipients": "None",
+    "created": "Created",
+    "createdBy": "{date} by {user}",
+    "lastMail": "Last e-mail",
+    "directory": "Folder",
+    "none": "–",
+    "readOnly": "View only – entries are edited in the Control Center."
+  },
+  "appointments": {
+    "title": "Appointments",
+    "loading": "Loading appointments …",
+    "empty": "No appointments for this selection.",
+    "today": "As of {date}",
+    "filter": { "open": "Open", "done": "Done", "all": "All" },
+    "col": {
+      "title": "Title",
+      "due": "Due",
+      "recurrence": "Recurrence",
+      "reminder": "Reminder",
+      "status": "Status",
+      "site": "Site",
+      "linkedObject": "Linked object",
+      "lastMail": "Last e-mail"
+    },
+    "state": { "overdue": "Overdue", "dueSoon": "Due soon", "open": "Open", "done": "Done", "unknown": "Not readable" },
+    "recurrence": { "NONE": "Once", "MONTHLY": "Monthly", "QUARTERLY": "Quarterly", "YEARLY": "Yearly" },
+    "reminderDays": "on the due day | 1 day before | {n} days before",
+    "reminderOn": "on {date}",
+    "nextDue": "Next due",
+    "lastDone": "Last done",
+    "noAccess": "No read right (ID {id})"
+  },
+  "maintenance": {
+    "title": "Maintenance",
+    "loading": "Loading maintenance messages …",
+    "empty": "No maintenance messages for this selection.",
+    "type": "Type",
+    "allTypes": "All types",
+    "filter": { "active": "Active", "done": "Done", "all": "All" },
+    "col": {
+      "type": "Type",
+      "title": "Title",
+      "period": "Period",
+      "duration": "Duration",
+      "status": "Status",
+      "impact": "Impact",
+      "site": "Site"
+    },
+    "types": { "MAINTENANCE": "Maintenance", "KNOWN_ISSUE": "Known issue" },
+    "state": { "planned": "Planned", "inProgress": "In progress", "done": "Done", "unknown": "Not readable" },
+    "informRequested": "Information requested",
+    "doneAt": "Done on"
+  },
+  "banner": {
+    "region": "Maintenance notices",
+    "period": "Period",
+    "impact": "Impact",
+    "details": "Details",
+    "dismiss": "Hide notice “{title}”"
+  },
   "notFound": { "title": "Page not found", "home": "To the start page" }
 }
