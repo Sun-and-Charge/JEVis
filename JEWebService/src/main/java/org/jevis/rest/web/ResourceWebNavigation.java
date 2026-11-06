@@ -32,6 +32,7 @@ import org.jevis.api.JEVisConstants;
 import org.jevis.commons.ws.json.JsonI18n;
 import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.json.JsonRelationship;
+import org.jevis.commons.ws.json.JsonSample;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.JEVisUserSQL;
 import org.jevis.commons.ws.sql.SQLDataSource;
@@ -54,6 +55,9 @@ public class ResourceWebNavigation {
     static final String CLASS_BUILDING = "Building";
     static final String CLASS_ANALYSIS = "Analysis";
     static final String CLASS_DASHBOARD = "Dashboard Analysis";
+    static final String CLASS_DASHBOARD_COLLECTION = "Dashboard Collection";
+    static final String ATTRIBUTE_START_DASHBOARD = "Start dashboard";
+    static final String ATTRIBUTE_DASHBOARDS = "Dashboards";
 
     private static final Logger logger = LogManager.getLogger(ResourceWebNavigation.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -80,6 +84,7 @@ public class ResourceWebNavigation {
             me.put("name", user.getAccountName());
             me.put("sysAdmin", user.isSysAdmin());
             result.put("user", me);
+            result.put("startDashboard", startDashboard(ds, user.getUserID(), readable));
             return Response.ok(MAPPER.writeValueAsString(result)).type(MediaType.APPLICATION_JSON)
                     .header("Cache-Control", "no-store").build();
         } catch (AuthenticationException ex) {
@@ -143,6 +148,66 @@ public class ResourceWebNavigation {
         result.put("sites", new ArrayList<>(sites.values()));
         result.put("other", other);
         return result;
+    }
+
+    /**
+     * The start dashboard of the user ({@code DashboardControl.getUserSelectedDashboard}): the attribute "Start
+     * dashboard" of the user, if readable; for a Dashboard Collection its first readable dashboard (attribute
+     * "Dashboards").
+     */
+    private static Long startDashboard(SQLDataSource ds, long userId, Collection<JsonObject> readable) {
+        try {
+            JsonSample sample = ds.getLastSample(userId, ATTRIBUTE_START_DASHBOARD);
+            if (sample == null) return null;
+            Map<Long, JsonObject> readableById = new HashMap<>();
+            for (JsonObject object : readable) readableById.put(object.getId(), object);
+            return startDashboard(sample.getValue(), readableById, collectionId -> {
+                try {
+                    JsonSample dashboards = ds.getLastSample(collectionId, ATTRIBUTE_DASHBOARDS);
+                    return dashboards != null ? dashboards.getValue() : null;
+                } catch (Exception e) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            logger.warn("Could not read the start dashboard of user {}", userId, e);
+            return null;
+        }
+    }
+
+    /**
+     * @param target                 value of "Start dashboard" (object id, optionally with ":attribute")
+     * @param readableById           the objects the user may read
+     * @param dashboardsOfCollection value of "Dashboards" of a collection (comma separated ids)
+     * @return the id of the start dashboard or {@code null}
+     */
+    static Long startDashboard(String target, Map<Long, JsonObject> readableById,
+                               java.util.function.Function<Long, String> dashboardsOfCollection) {
+        Long id = firstId(target);
+        JsonObject object = id != null ? readableById.get(id) : null;
+        if (object == null) return null;
+        if (CLASS_DASHBOARD.equals(object.getJevisClass())) return id;
+        if (CLASS_DASHBOARD_COLLECTION.equals(object.getJevisClass())) {
+            String list = dashboardsOfCollection.apply(id);
+            if (list == null) return null;
+            for (String part : list.split(",")) {
+                Long dashboardId = firstId(part);
+                JsonObject dashboard = dashboardId != null ? readableById.get(dashboardId) : null;
+                if (dashboard != null && CLASS_DASHBOARD.equals(dashboard.getJevisClass())) return dashboardId;
+            }
+        }
+        return null;
+    }
+
+    private static Long firstId(String value) {
+        if (value == null) return null;
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("^\\s*(\\d+)").matcher(value);
+        if (!matcher.find()) return null;
+        try {
+            return Long.parseLong(matcher.group(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private static boolean isSite(JsonObject object) {

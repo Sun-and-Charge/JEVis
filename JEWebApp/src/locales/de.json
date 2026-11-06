@@ -58,11 +58,6 @@
     "text": "Wählen Sie links eine Analyse oder ein Dashboard.",
     "count": "{sites} Standorte · {analyses} Analysen · {dashboards} Dashboards"
   },
-  "placeholder": {
-    "analysis": "Die Analyse-Ansicht folgt im nächsten Schritt (W2).",
-    "dashboard": "Die Dashboard-Ansicht folgt im übernächsten Schritt (W3).",
-    "openInCC": "Bis dahin öffnen Sie dieses Objekt im Control Center (ID {id})."
-  },
   "analysis": {
     "loading": "Analyse wird geladen …",
     "loadError": "Die Analyse konnte nicht geladen werden.",
@@ -146,6 +141,38 @@
       "csvLabel": "Werte von {name} als CSV speichern"
     },
     "count": "Anzahl"
+  },
+  "dashboard": {
+    "loading": "Dashboard wird geladen …",
+    "loadError": "Das Dashboard konnte nicht geladen werden.",
+    "notFound": "Dieses Dashboard gibt es nicht oder es ist nicht für Sie freigegeben.",
+    "noWidgets": "Dieses Dashboard hat keine Widgets.",
+    "timeBar": "Zeitraum des Dashboards",
+    "readOnly": "In der Web-App nur lesbar",
+    "openLink": "Öffnen",
+    "reportLater": "Berichte können in der Web-App noch nicht geöffnet werden.",
+    "linkNoAccess": "Das Ziel ist nicht für Sie freigegeben.",
+    "zoom": { "label": "Zoom", "in": "Vergrößern", "out": "Verkleinern", "reset": "Zoom zurücksetzen" },
+    "table": {
+      "name": "Name",
+      "value": "Wert",
+      "unit": "Einheit"
+    },
+    "timeFrames": {
+      "P1D": "Tag",
+      "P1W": "Woche",
+      "P1M": "Monat",
+      "P1Y": "Jahr",
+      "P3Y": "Letzte 3 Jahre",
+      "P5Y": "Letzte 5 Jahre",
+      "P10Y": "Letzte 10 Jahre",
+      "PT24H": "Letzte 24 Stunden",
+      "P7D": "Letzte 7 Tage",
+      "P30D": "Letzte 30 Tage",
+      "P365D": "Letzte 365 Tage",
+      "PALL": "Gesamter Zeitraum",
+      "CUSTOM": "Benutzerdefiniert"
+    }
   },
   "notFound": { "title": "Seite nicht gefunden", "home": "Zur Startseite" }
 }

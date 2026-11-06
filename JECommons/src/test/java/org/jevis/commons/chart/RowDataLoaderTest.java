@@ -129,6 +129,34 @@ public class RowDataLoaderTest {
     }
 
     @Test
+    public void absoluteModeOfTheSettingsKeepsNewestTimestampAndCount() throws Exception {
+        data(ds, 330, "Meter", "Data", unit("kWh"), samples(START, 15, 1, 2, 3, 4));
+        RowResult result = loader.load(row("k", 330, "kWh"), null, RANGE, null, settings().setAbsolute(true));
+        assertEquals(RowStatus.OK, result.getStatus());
+        assertEquals(1, result.getSamples().size());
+        assertEquals(10d, (Double) result.getSamples().get(0).getValue(), DELTA);
+        assertEquals(START.plusMinutes(45).getMillis(), result.getLastTimestamp().getMillis());
+        assertEquals(Integer.valueOf(4), result.getCount());
+    }
+
+    @Test
+    public void lastSampleOnlyKeepsTheNewestSample() throws Exception {
+        data(ds, 331, "Meter", "Data", unit("kWh"), samples(START, 15, 1, 2, 3));
+        RowResult result = loader.load(row("k", 331, "kWh"), AnalysisChartType.LINE, RANGE, null, settings().setLastSampleOnly(true));
+        assertEquals(1, result.getSamples().size());
+        assertEquals(3d, (Double) result.getSamples().get(0).getValue(), DELTA);
+        assertEquals(1, result.getStats().getCount());
+        assertEquals(Integer.valueOf(1), result.getCount());
+    }
+
+    @Test
+    public void resolvesTheDataAttribute() throws Exception {
+        DataFake data = data(ds, 332, "Meter", "Data", unit("kWh"), samples(START, 15, 1));
+        assertSame(data.value, loader.resolveAttribute(row("k", 332, "kWh")));
+        assertNull(loader.resolveAttribute(row("k", 997, "kWh")));
+    }
+
+    @Test
     public void absoluteModeForHorizontalTables() throws Exception {
         data(ds, 305, "Meter", "Data", unit("kWh"), samples(START, 15, 1, 2, 3));
         RowResult sum = loader.load(row("k", 305, "kWh"), AnalysisChartType.TABLE_H, RANGE, null, settings());

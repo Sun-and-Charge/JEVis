@@ -40,6 +40,8 @@ public class EvaluationSettings {
     private boolean customWorkDay = true;
     private Locale holidayLocale;
     private DateTime now;
+    private boolean absolute = false;
+    private boolean lastSampleOnly = false;
 
     public TimeFrame getTimeFrame() {
         return timeFrame;
@@ -140,5 +142,52 @@ public class EvaluationSettings {
     public EvaluationSettings setNow(DateTime now) {
         this.now = now;
         return this;
+    }
+
+    /**
+     * @return the absolute mode of the Control Center's {@code ChartDataRow} (one value for the whole time frame:
+     * sum for quantities, the calculation over the time frame for calculated rows, the manipulation result otherwise),
+     * as used by the dashboard widgets ({@code DataModelDataHandler.setAutoAggregation(true)}); rows of
+     * {@link AnalysisChartType#TABLE_H} charts are always absolute
+     */
+    public boolean isAbsolute() {
+        return absolute;
+    }
+
+    public EvaluationSettings setAbsolute(boolean absolute) {
+        this.absolute = absolute;
+        return this;
+    }
+
+    /**
+     * @return {@code true} to keep only the newest sample of a row (dashboard widgets with a fixed time frame of zero
+     * length such as {@code LASTVALUE}, see {@code DataModelDataHandler.update})
+     */
+    public boolean isLastSampleOnly() {
+        return lastSampleOnly;
+    }
+
+    public EvaluationSettings setLastSampleOnly(boolean lastSampleOnly) {
+        this.lastSampleOnly = lastSampleOnly;
+        return this;
+    }
+
+    /**
+     * @return a copy of these settings (to change e.g. the aggregation for one row)
+     */
+    public EvaluationSettings copy() {
+        EvaluationSettings copy = new EvaluationSettings();
+        copy.timeFrame = timeFrame;
+        copy.from = from;
+        copy.to = to;
+        copy.aggregation = aggregation;
+        copy.manipulation = manipulation;
+        copy.zone = zone;
+        copy.customWorkDay = customWorkDay;
+        copy.holidayLocale = holidayLocale;
+        copy.now = now;
+        copy.absolute = absolute;
+        copy.lastSampleOnly = lastSampleOnly;
+        return copy;
     }
 }

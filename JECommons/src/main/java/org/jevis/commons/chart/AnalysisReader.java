@@ -25,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
+import org.jevis.commons.dataprocessing.AggregationPeriod;
+import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.json.JsonAnalysisDataRow;
 import org.jevis.commons.json.JsonChartDataModel;
 import org.jevis.commons.json.JsonChartSetting;
@@ -204,6 +206,9 @@ public class AnalysisReader {
         row.setIntervalStart(text(rowNode, "intervalStart", null));
         row.setIntervalEnd(text(rowNode, "intervalEnd", null));
         row.setIntervalEnabled(bool(rowNode, "intervalEnabled", false));
+        /* written by older Control Center versions (ChartData is read with Jackson, so the stored values apply) */
+        if (has(rowNode, "aggregationPeriod")) row.setAggregation(AggregationPeriod.parseAggregation(rowNode.get("aggregationPeriod").asText()));
+        if (has(rowNode, "manipulationMode")) row.setManipulation(ManipulationMode.parseManipulation(rowNode.get("manipulationMode").asText()));
         return row;
     }
 
@@ -515,6 +520,8 @@ public class AnalysisReader {
         row.setIntervalStart(source.getIntervalStart());
         row.setIntervalEnd(source.getIntervalEnd());
         row.setCss(source.getCss());
+        row.setAggregation(source.getAggregation());
+        row.setManipulation(source.getManipulation());
         return row;
     }
 

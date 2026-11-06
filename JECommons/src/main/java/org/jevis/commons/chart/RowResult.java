@@ -19,6 +19,8 @@
  */
 package org.jevis.commons.chart;
 
+import org.joda.time.DateTime;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +37,10 @@ public class RowResult {
     private List<ChartSample> samples = new ArrayList<>();
     private RowStatistics stats;
     private Double pieValue;
+    private DateTime lastTimestamp;
+    private Object value;
+    private String text;
+    private Integer count;
 
     public RowResult() {
     }
@@ -134,5 +140,51 @@ public class RowResult {
 
     public void setPieValue(Double pieValue) {
         this.pieValue = pieValue;
+    }
+
+    /**
+     * @return the time of the newest sample of the row in the time frame (before the absolute mode reduces the samples
+     * to one value), {@code null} without samples
+     */
+    public DateTime getLastTimestamp() {
+        return lastTimestamp;
+    }
+
+    public void setLastTimestamp(DateTime lastTimestamp) {
+        this.lastTimestamp = lastTimestamp;
+    }
+
+    /**
+     * @return one value for the row (dashboard widgets), {@code null} if not computed or no data
+     */
+    public Object getValue() {
+        return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
+    /**
+     * @return one text for the row (dashboard "String Value" widgets), {@code null} if not computed or no data
+     */
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    /**
+     * @return the number of samples of the row in the time frame (before the absolute mode reduces them to one value),
+     * {@code null} if not loaded
+     */
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 }
