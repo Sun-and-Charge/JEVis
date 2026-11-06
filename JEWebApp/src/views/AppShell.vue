@@ -235,11 +235,24 @@ async function logout() {
 .content {
   overflow: auto;
   padding: 1.5rem;
+  /* wide content (charts, tables) must not widen the grid column */
+  min-width: 0;
 }
 
 @media (max-width: 800px) {
   .shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* fits 390 px wide phones */
+  .top {
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    min-width: 0;
+  }
+
+  .brand img {
+    height: 26px;
   }
 
   .menu-btn {

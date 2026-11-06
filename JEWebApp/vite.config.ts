@@ -38,6 +38,8 @@ export default defineConfig({
     outDir: 'dist',
     // no source maps in the shipped build
     sourcemap: false,
+    // the analysis view (lazy loaded) contains the needed parts of Apache ECharts (~680 kB, ~230 kB gzip)
+    chunkSizeWarningLimit: 800,
   },
   test: {
     environment: 'jsdom',
