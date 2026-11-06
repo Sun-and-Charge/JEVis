@@ -96,6 +96,11 @@ public class TreeExporter {
     private final String SAMPLE_VALUE = "v";
 
     private final ObjectMapper mapper = new ObjectMapper();
+    /**
+     * When true, ids that are not part of the archive are never looked up on the target server. For imports into
+     * another server, where an old id can belong to an unrelated object; unknown references stay unresolved.
+     */
+    private boolean strictReferences = false;
 
     public TreeExporter() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -185,6 +190,14 @@ public class TreeExporter {
      * @param parent the JEVis object that will be the parent of all imported root objects
      * @return a Task that performs the import; must be submitted to a thread or executor
      */
+    /**
+     * @param strictReferences true: references to objects outside the archive are not resolved by their old id on
+     *                         the target server (use for imports into another server)
+     */
+    public void setStrictReferences(boolean strictReferences) {
+        this.strictReferences = strictReferences;
+    }
+
     public Task<Void> importFromFile(File file, JEVisObject parent) {
         final ProcessReport report = new ProcessReport("Import", file);
         return new Task<Void>() {
@@ -760,7 +773,7 @@ public class TreeExporter {
                     long oldId = jSample.get(SAMPLE_VALUE).asLong();
 
                     JEVisObject resolved = createdObjects.get(oldId);
-                    if (resolved == null) {
+                    if (resolved == null && !strictReferences) {
                         try {
                             resolved = jeVisAttribute.getObject().getDataSource().getObject(oldId);
                         } catch (Exception ignored) {
@@ -1165,7 +1178,7 @@ public class TreeExporter {
             return remappedObject.getID() + ":" + attributeName;
         }
 
-        JEVisObject existingObject = targetAttribute
+        JEVisObject existingObject = strictReferences ? null : targetAttribute
                 .getObject()
                 .getDataSource()
                 .getObject(objectId);
@@ -1936,7 +1949,7 @@ public class TreeExporter {
 
         // The ID belongs to this archive but was not created. A lookup by the old ID on the
         // target server cannot resolve it and only produces a misleading HTTP 404 response.
-        if (archiveObjectIds.contains(oldId)) {
+        if (archiveObjectIds.contains(oldId) || strictReferences) {
             resolvedIds.put(oldId, -1L);
             return -1L;
         }
@@ -2046,7 +2059,7 @@ public class TreeExporter {
      */
     private JEVisObject resolveObject(JEVisDataSource ds, Map<Long, JEVisObject> createdObjects, long oldId) {
         JEVisObject obj = createdObjects.get(oldId);
-        if (obj != null) return obj;
+        if (obj != null || strictReferences) return obj;
         try {
             return ds.getObject(oldId);
         } catch (Exception ignored) {
