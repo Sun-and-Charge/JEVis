@@ -82,15 +82,27 @@ The service start scripts are in `bin/`.
 
 ### Updating the database of an existing server
 
-The migration `V3__Create_Base_Classes.sql` was changed (the classes of the removed ISO 50001 module and the
-standard text in them were taken out). Flyway therefore reports a checksum mismatch for V3 on databases that
-were created before. Run `flyway:repair` once, then migrate as usual:
+Two migrations were changed after they had been released:
+- `V3__Create_Base_Classes.sql`: the classes of the removed ISO 50001 module and the standard text in them were
+  taken out;
+- `V15__Drop_Duplicate_Sample_Index.sql`: it used MariaDB-only syntax and now also runs on MySQL.
+
+Flyway therefore reports a checksum mismatch ("Validate failed. Migration Checksum mismatch for migration 3")
+on databases that were created before. Back up the database first, then run `flyway:repair` once and migrate
+as usual. `repair` only corrects the checksums in the table `schema_version`, it does not change any data:
 
 ```bash
+mysqldump --single-transaction jevis > jevis-backup.sql
 cd mysqldb
+mvn flyway:info      # shows applied and pending migrations
 mvn flyway:repair
 mvn flyway:migrate
+mvn flyway:info      # all migrations "Success"
 ```
+
+The database connection is set in `mysqldb/pom.xml` (`database.url`, `database.username`,
+`database.password`) or on the command line, e.g. `-Ddatabase.password=...`. The migrations run on MySQL 8
+and MariaDB 10.11. Never run `mvn flyway:clean`: it drops all tables of the database.
 
 ## License
 
