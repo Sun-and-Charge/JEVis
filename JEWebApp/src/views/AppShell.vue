@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { localName, startDashboardFor } from '../api/navigation'
 import LanguageSwitch from '../components/LanguageSwitch.vue'
+import MaintenanceBanner from '../components/MaintenanceBanner.vue'
 import NavTree from '../components/NavTree.vue'
 import { useAuthStore } from '../stores/auth'
 import { useNavigationStore } from '../stores/navigation'
@@ -72,6 +73,18 @@ async function logout() {
       <p v-if="nav.loading" class="side-info">{{ t('nav.loading') }}</p>
       <p v-else-if="nav.failed" class="side-info">{{ t('nav.error') }}</p>
       <template v-else-if="nav.data">
+        <ul v-if="nav.modules.appointments || nav.modules.maintenance" class="modules" :aria-label="t('modules.title')">
+          <li v-if="nav.modules.appointments">
+            <RouterLink :to="{ name: 'appointments' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.appointments') }}</span><span class="module-count">{{ nav.modules.appointments }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="nav.modules.maintenance">
+            <RouterLink :to="{ name: 'maintenance' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.maintenance') }}</span><span class="module-count">{{ nav.modules.maintenance }}</span>
+            </RouterLink>
+          </li>
+        </ul>
         <ul class="tree">
           <NavTree v-for="node in nav.tree" :key="node.site.id" :node="node" @navigate="menuOpen = false" />
         </ul>
@@ -96,11 +109,12 @@ async function logout() {
             {{ localName(a, locale) }}
           </RouterLink>
         </div>
-        <p v-if="!nav.counts.analyses && !nav.counts.dashboards" class="side-info">{{ t('nav.empty') }}</p>
+        <p v-if="!nav.counts.analyses && !nav.counts.dashboards && !nav.modules.appointments && !nav.modules.maintenance" class="side-info">{{ t('nav.empty') }}</p>
       </template>
     </nav>
 
     <main id="main" class="content" tabindex="-1">
+      <MaintenanceBanner v-if="nav.data" />
       <RouterView />
     </main>
   </div>
@@ -234,6 +248,39 @@ async function logout() {
 .other-item.router-link-active {
   background: var(--sun);
   color: var(--blueberry);
+}
+
+.modules {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0 0 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.module-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  font-weight: 600;
+}
+
+.module-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.module-count {
+  min-width: 1.6rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.module-item.router-link-active .module-count {
+  background: var(--blueberry);
+  color: var(--sun);
 }
 
 .content {

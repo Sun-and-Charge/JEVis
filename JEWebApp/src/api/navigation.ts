@@ -22,6 +22,19 @@ export interface Navigation {
   other: { analyses: NavItem[]; dashboards: NavItem[] }
   /** the user's start dashboard (if readable), opened after login */
   startDashboard?: number | null
+  /** number of readable appointments / maintenance entries (W4.1); missing on older servers */
+  modules?: Partial<ModuleCounts> | null
+}
+
+export interface ModuleCounts {
+  appointments: number
+  maintenance: number
+}
+
+/** Module counts with missing values as 0 (the menu shows only modules with entries). */
+export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCounts {
+  const n = (v: unknown) => (typeof v === 'number' && v > 0 ? v : 0)
+  return { appointments: n(nav?.modules?.appointments), maintenance: n(nav?.modules?.maintenance) }
 }
 
 export interface SiteNode {

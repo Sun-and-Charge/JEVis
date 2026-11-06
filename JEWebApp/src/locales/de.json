@@ -174,5 +174,84 @@
       "CUSTOM": "Benutzerdefiniert"
     }
   },
+  "modules": {
+    "title": "Module",
+    "appointments": "Termine",
+    "maintenance": "Wartung",
+    "loadError": "Die Einträge konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "filters": "Filter",
+    "status": "Status",
+    "site": "Standort",
+    "allSites": "Alle Standorte",
+    "noSite": "Ohne Standort",
+    "search": "Suche",
+    "searchPlaceholder": "Titel, Beschreibung, Objekt …",
+    "count": "{shown} von {total} Einträgen",
+    "details": "Details",
+    "showDetails": "Details zu „{title}“ anzeigen",
+    "description": "Beschreibung",
+    "recipients": "Empfänger",
+    "recipientsHidden": "keine sichtbar | 1 weiterer ohne Leserecht | {n} weitere ohne Leserecht",
+    "noRecipients": "Keine",
+    "created": "Angelegt",
+    "createdBy": "{date} von {user}",
+    "lastMail": "Letzte E-Mail",
+    "directory": "Ordner",
+    "none": "–",
+    "readOnly": "Nur Ansicht – Einträge werden im Control Center bearbeitet."
+  },
+  "appointments": {
+    "title": "Termine",
+    "loading": "Termine werden geladen …",
+    "empty": "Keine Termine für diese Auswahl.",
+    "today": "Stand: {date}",
+    "filter": { "open": "Offen", "done": "Erledigt", "all": "Alle" },
+    "col": {
+      "title": "Titel",
+      "due": "Fällig",
+      "recurrence": "Wiederholung",
+      "reminder": "Erinnerung",
+      "status": "Status",
+      "site": "Standort",
+      "linkedObject": "Verknüpftes Objekt",
+      "lastMail": "Letzte E-Mail"
+    },
+    "state": { "overdue": "Überfällig", "dueSoon": "Bald fällig", "open": "Offen", "done": "Erledigt", "unknown": "Nicht lesbar" },
+    "recurrence": { "NONE": "Einmalig", "MONTHLY": "Monatlich", "QUARTERLY": "Vierteljährlich", "YEARLY": "Jährlich" },
+    "reminderDays": "am Fälligkeitstag | 1 Tag vorher | {n} Tage vorher",
+    "reminderOn": "am {date}",
+    "nextDue": "Danach fällig",
+    "lastDone": "Zuletzt erledigt",
+    "noAccess": "Kein Leserecht (ID {id})"
+  },
+  "maintenance": {
+    "title": "Wartung",
+    "loading": "Wartungsmeldungen werden geladen …",
+    "empty": "Keine Wartungsmeldungen für diese Auswahl.",
+    "type": "Art",
+    "allTypes": "Alle Arten",
+    "filter": { "active": "Aktiv", "done": "Erledigt", "all": "Alle" },
+    "col": {
+      "type": "Art",
+      "title": "Titel",
+      "period": "Zeitraum",
+      "duration": "Dauer",
+      "status": "Status",
+      "impact": "Auswirkung",
+      "site": "Standort"
+    },
+    "types": { "MAINTENANCE": "Wartung", "KNOWN_ISSUE": "Bekanntes Problem" },
+    "state": { "planned": "Geplant", "inProgress": "Läuft", "done": "Erledigt", "unknown": "Nicht lesbar" },
+    "informRequested": "Information angefordert",
+    "doneAt": "Erledigt am"
+  },
+  "banner": {
+    "region": "Wartungshinweise",
+    "period": "Zeitraum",
+    "impact": "Auswirkung",
+    "details": "Details",
+    "dismiss": "Hinweis „{title}“ ausblenden"
+  },
   "notFound": { "title": "Seite nicht gefunden", "home": "Zur Startseite" }
 }

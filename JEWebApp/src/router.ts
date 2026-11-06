@@ -16,6 +16,8 @@ export const router = createRouter({
         { path: 'password', name: 'password', component: () => import('./views/ChangePasswordView.vue') },
         { path: 'analyses/:id(\\d+)', name: 'analysis', component: () => import('./views/AnalysisView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
         { path: 'dashboards/:id(\\d+)', name: 'dashboard', component: () => import('./views/DashboardView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
+        { path: 'appointments', name: 'appointments', component: () => import('./views/AppointmentsView.vue') },
+        { path: 'maintenance', name: 'maintenance', component: () => import('./views/MaintenanceView.vue') },
         { path: ':pathMatch(.*)*', name: 'notFound', component: () => import('./views/NotFoundView.vue') },
       ],
     },

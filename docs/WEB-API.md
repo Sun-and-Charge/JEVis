@@ -310,3 +310,75 @@ Monday to Sunday, `P1M`, `P1Y`, `P3Y`/`P5Y`/`P10Y` the last 3/5/10 full years (t
 only 5 years, fixed here), all except `P1D` with the workday of the dashboard's building (a workday over midnight
 starts the day before); `PT24H`, `P7D`, `P30D`, `P365D` end at the reference date; custom periods are resolved by
 `DateHelper` (for a widget with "fixed time frame": for now instead of the reference date).
+
+## Appointments and maintenance (W4.1)
+
+View only. Entries are objects of class "Appointment" / "Maintenance Message" (JSON in their attribute "Data",
+see `org.jevis.commons.appointment.Appointment` and `org.jevis.commons.maintenance.MaintenanceEntry`) in
+"Appointment Directory" / "Maintenance Directory" folders. Only entries the user may read are returned.
+
+### `GET /web/appointments`
+
+```json
+{
+  "today": "2026-11-06",
+  "appointments": [
+    {
+      "id": 3001, "name": "Calibration main meter",
+      "site": { "id": 1001, "name": "Plant", "names": {} },
+      "directory": { "id": 3000, "name": "Appointments" },
+      "title": "Calibration main meter", "description": "…",
+      "due": "2026-11-02T09:00", "nextDue": "2027-11-02T09:00",
+      "recurrence": "YEARLY", "anchorDay": 2, "reminderDays": 3, "reminderDay": "2026-10-30",
+      "status": "OPEN", "overdue": true, "dueSoon": false, "lastDone": null,
+      "linkedObject": { "id": 2001, "name": "Main meter", "readable": true },
+      "recipients": { "count": 2, "names": ["Energy team"] },
+      "lastMail": "2026-10-31T00:33:51",
+      "created": "2026-10-31T00:31:49", "createdBy": "Admin"
+    }
+  ]
+}
+```
+
+- Times are local date-times of the server (`yyyy-MM-ddTHH:mm`) as stored in the entries; `today` is the server's
+  date used for `overdue`/`dueSoon` (`AppointmentLogic.isOverdue`/`isDueSoon`).
+- `site`: nearest readable organisation or building above the entry (as in the navigation), `null` if none.
+- `directory`: the folder the entry lies in, `null` if the user may not read it.
+- Order: by `due` (entries without due date last), then title.
+- `recurrence`: `NONE, MONTHLY, QUARTERLY, YEARLY` (`Appointment.Recurrence`);
+  `nextDue`: the due date after this one for recurring entries (`AppointmentLogic.nextDue`), else `null`.
+- `linkedObject`: `null` if none; without read right only `{ "id", "readable": false }`.
+- `recipients.names`: names of the recipients (users/groups) the user may read; `count` = all recipients.
+- `lastMail`: from the attribute "Mail State" (`MailState`), `null` if none.
+- Entries whose JSON cannot be read are listed with `title` = object name and `status: null` (all other entry
+  fields `null`, `overdue`/`dueSoon`/`active` `false`; also for maintenance).
+
+### `GET /web/maintenance`
+
+```json
+{
+  "now": "2026-11-06T10:15",
+  "entries": [
+    {
+      "id": 3101, "name": "Server update",
+      "site": null, "directory": { "id": 3100, "name": "Maintenance" },
+      "type": "MAINTENANCE", "title": "Server update", "description": "…", "impact": "…",
+      "start": "2026-11-06T18:00", "end": "2026-11-06T18:30", "durationMinutes": 30,
+      "status": "PLANNED", "active": true,
+      "recipients": { "count": 1, "names": [] },
+      "informRequested": "2026-10-31T00:32:52", "doneAt": null, "lastMail": "…",
+      "created": "…", "createdBy": "Admin"
+    }
+  ]
+}
+```
+
+- `type`: `MAINTENANCE` or `KNOWN_ISSUE`; `status`: `PLANNED, IN_PROGRESS, DONE`; `end` = `start` + duration
+  (`null` without duration); `active` = status `PLANNED` or `IN_PROGRESS` (shown as banner in the web app).
+- `site`, `directory`, `recipients`, `lastMail` as for appointments. Order: by `start` descending (newest first,
+  entries without start last), then title.
+
+### Navigation
+
+`GET /web/navigation` additionally answers `"modules": { "appointments": n, "maintenance": n }` (number of readable
+entries) so the menu only shows modules with entries.

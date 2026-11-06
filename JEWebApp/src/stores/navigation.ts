@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Sun and Charge Germany GmbH */
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { buildSiteTree, type Navigation } from '../api/navigation'
+import { buildSiteTree, moduleCounts, type Navigation } from '../api/navigation'
 import { useAuthStore } from './auth'
 
 export const useNavigationStore = defineStore('navigation', () => {
@@ -21,6 +21,9 @@ export const useNavigationStore = defineStore('navigation', () => {
     }
   })
 
+  /** readable appointments / maintenance entries: the menu shows only modules with entries */
+  const modules = computed(() => moduleCounts(data.value))
+
   async function load(): Promise<void> {
     loading.value = true
     failed.value = false
@@ -37,5 +40,5 @@ export const useNavigationStore = defineStore('navigation', () => {
     data.value = null
   }
 
-  return { data, tree, counts, loading, failed, load, reset }
+  return { data, tree, counts, modules, loading, failed, load, reset }
 })
