@@ -88,6 +88,19 @@ public class AnalysisHandler {
      * @return a JSON object node representing the full analysis configuration
      */
     public JsonNode toJsonNode(DataModel dataModel) {
+        return toJsonNode(dataModel, false);
+    }
+
+    /**
+     * Serialises a {@link DataModel} to a Jackson {@link JsonNode}.
+     *
+     * @param dataModel          the model to serialise
+     * @param withRowAggregation true to keep aggregation and manipulation of each data row. Analyses don't save them
+     *                           (they come from the toolbar or a favorite, OpenJEVis #2358), dashboard widgets do: their
+     *                           rows keep the aggregation set in the widget configuration.
+     * @return a JSON object node representing the full analysis configuration
+     */
+    public JsonNode toJsonNode(DataModel dataModel, boolean withRowAggregation) {
 
         ObjectNode dataHandlerNode = JsonNodeFactory.instance.objectNode();
 
@@ -128,7 +141,15 @@ public class AnalysisHandler {
                     chartDataNode.put("chartType", chartData.getChartType().toString());
                 }
 
-                /* aggregation and manipulation are not part of the analysis, they come from the toolbar or a favorite */
+                /* aggregation and manipulation are not part of an analysis (toolbar or favorite), but of a dashboard widget */
+                if (withRowAggregation) {
+                    if (chartData.getAggregationPeriod() != null) {
+                        chartDataNode.put("aggregationPeriod", chartData.getAggregationPeriod().toString());
+                    }
+                    if (chartData.getManipulationMode() != null) {
+                        chartDataNode.put("manipulationMode", chartData.getManipulationMode().toString());
+                    }
+                }
 
                 chartDataNode.put("decimalDigits", chartData.getDecimalDigits());
 
