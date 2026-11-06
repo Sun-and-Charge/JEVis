@@ -63,5 +63,89 @@
     "dashboard": "Die Dashboard-Ansicht folgt im übernächsten Schritt (W3).",
     "openInCC": "Bis dahin öffnen Sie dieses Objekt im Control Center (ID {id})."
   },
+  "analysis": {
+    "loading": "Analyse wird geladen …",
+    "loadError": "Die Analyse konnte nicht geladen werden.",
+    "notFound": "Diese Analyse gibt es nicht oder sie ist für Sie nicht freigegeben.",
+    "dataError": "Die Daten konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "updating": "Daten werden geladen …",
+    "noCharts": "Diese Analyse enthält keine Diagramme.",
+    "settings": "Einstellungen der Analyse",
+    "timeFrame": "Zeitraum",
+    "from": "Von",
+    "to": "Bis",
+    "aggregation": "Aggregation",
+    "manipulation": "Bearbeitung",
+    "previous": "Vorheriger Zeitraum",
+    "next": "Nächster Zeitraum",
+    "range": "Angezeigter Zeitraum",
+    "timeFrames": {
+      "TODAY": "Heute",
+      "YESTERDAY": "Gestern",
+      "LAST_7_DAYS": "Letzte 7 Tage",
+      "THIS_WEEK": "Diese Woche",
+      "LAST_WEEK": "Letzte Woche",
+      "LAST_30_DAYS": "Letzte 30 Tage",
+      "THIS_MONTH": "Dieser Monat",
+      "LAST_MONTH": "Letzter Monat",
+      "THIS_YEAR": "Dieses Jahr",
+      "LAST_YEAR": "Letztes Jahr",
+      "THE_YEAR_BEFORE_LAST": "Vorletztes Jahr",
+      "CUSTOM": "Benutzerdefiniert"
+    },
+    "aggregations": {
+      "NONE": "Keine",
+      "MINUTELY": "Minütlich",
+      "QUARTER_HOURLY": "Viertelstündlich",
+      "HOURLY": "Stündlich",
+      "DAILY": "Täglich",
+      "WEEKLY": "Wöchentlich",
+      "MONTHLY": "Monatlich",
+      "QUARTERLY": "Quartalsweise",
+      "YEARLY": "Jährlich"
+    },
+    "manipulations": {
+      "NONE": "Keine",
+      "AVERAGE": "Mittelwert",
+      "SUM": "Summe",
+      "MIN": "Minimum",
+      "MAX": "Maximum",
+      "MEDIAN": "Median",
+      "RUNNING_MEAN": "Gleitender Mittelwert",
+      "CENTRIC_RUNNING_MEAN": "Zentrierter gleitender Mittelwert",
+      "SORTED_MIN": "Sortiert aufsteigend",
+      "SORTED_MAX": "Sortiert absteigend",
+      "CUMULATE": "Kumuliert"
+    },
+    "state": {
+      "noData": "Keine Daten",
+      "noPermission": "Keine Berechtigung",
+      "error": "Fehler",
+      "noAccess": "(kein Zugriff)"
+    },
+    "summary": {
+      "caption": "Kennzahlen von {name}",
+      "name": "Datenreihe",
+      "min": "Minimum",
+      "max": "Maximum",
+      "avg": "Mittelwert",
+      "sum": "Summe",
+      "unit": "Einheit"
+    },
+    "table": {
+      "time": "Zeit",
+      "caption": "Werte von {name}",
+      "limited": "Angezeigt werden die ersten {shown} von {total} Zeitpunkten. Der CSV-Export enthält alle Werte.",
+      "empty": "Keine Werte im gewählten Zeitraum."
+    },
+    "export": {
+      "png": "PNG",
+      "csv": "CSV",
+      "pngLabel": "{name} als Bild (PNG) speichern",
+      "csvLabel": "Werte von {name} als CSV speichern"
+    },
+    "count": "Anzahl"
+  },
   "notFound": { "title": "Seite nicht gefunden", "home": "Zur Startseite" }
 }

@@ -63,5 +63,89 @@
     "dashboard": "The dashboard view follows in the step after that (W3).",
     "openInCC": "Until then, open this object in the Control Center (ID {id})."
   },
+  "analysis": {
+    "loading": "Loading analysis …",
+    "loadError": "The analysis could not be loaded.",
+    "notFound": "This analysis does not exist or is not shared with you.",
+    "dataError": "The data could not be loaded.",
+    "retry": "Try again",
+    "updating": "Loading data …",
+    "noCharts": "This analysis has no charts.",
+    "settings": "Analysis settings",
+    "timeFrame": "Time frame",
+    "from": "From",
+    "to": "To",
+    "aggregation": "Aggregation",
+    "manipulation": "Manipulation",
+    "previous": "Previous period",
+    "next": "Next period",
+    "range": "Period shown",
+    "timeFrames": {
+      "TODAY": "Today",
+      "YESTERDAY": "Yesterday",
+      "LAST_7_DAYS": "Last 7 days",
+      "THIS_WEEK": "This week",
+      "LAST_WEEK": "Last week",
+      "LAST_30_DAYS": "Last 30 days",
+      "THIS_MONTH": "This month",
+      "LAST_MONTH": "Last month",
+      "THIS_YEAR": "This year",
+      "LAST_YEAR": "Last year",
+      "THE_YEAR_BEFORE_LAST": "The year before last",
+      "CUSTOM": "Custom"
+    },
+    "aggregations": {
+      "NONE": "None",
+      "MINUTELY": "Per minute",
+      "QUARTER_HOURLY": "Quarter-hourly",
+      "HOURLY": "Hourly",
+      "DAILY": "Daily",
+      "WEEKLY": "Weekly",
+      "MONTHLY": "Monthly",
+      "QUARTERLY": "Quarterly",
+      "YEARLY": "Yearly"
+    },
+    "manipulations": {
+      "NONE": "None",
+      "AVERAGE": "Average",
+      "SUM": "Sum",
+      "MIN": "Minimum",
+      "MAX": "Maximum",
+      "MEDIAN": "Median",
+      "RUNNING_MEAN": "Running mean",
+      "CENTRIC_RUNNING_MEAN": "Centred running mean",
+      "SORTED_MIN": "Sorted ascending",
+      "SORTED_MAX": "Sorted descending",
+      "CUMULATE": "Cumulative"
+    },
+    "state": {
+      "noData": "No data",
+      "noPermission": "No permission",
+      "error": "Error",
+      "noAccess": "(no access)"
+    },
+    "summary": {
+      "caption": "Key figures of {name}",
+      "name": "Data row",
+      "min": "Minimum",
+      "max": "Maximum",
+      "avg": "Average",
+      "sum": "Sum",
+      "unit": "Unit"
+    },
+    "table": {
+      "time": "Time",
+      "caption": "Values of {name}",
+      "limited": "Showing the first {shown} of {total} timestamps. The CSV export contains all values.",
+      "empty": "No values in the selected period."
+    },
+    "export": {
+      "png": "PNG",
+      "csv": "CSV",
+      "pngLabel": "Save {name} as image (PNG)",
+      "csvLabel": "Save the values of {name} as CSV"
+    },
+    "count": "Count"
+  },
   "notFound": { "title": "Page not found", "home": "To the start page" }
 }

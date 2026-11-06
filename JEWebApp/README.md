@@ -4,8 +4,13 @@ The web version of the JEVis Control Center's view plugins (analyses, dashboards
 Vue 3 + TypeScript + Vite. The built app is served by JEWebService at `/app/`; it uses the REST API of the
 same server (`/JEWebService/v1`), so no CORS setup is needed.
 
-Status (phase W1): login (incl. two-factor code, "remember me", forgot/change password), navigation by
-organisation and building, language switch (de/en). Analyses (W2) and dashboards (W3) follow.
+Status: login (incl. two-factor code, "remember me", forgot/change password), navigation by organisation and
+building, language switch (de/en) (phase W1); analyses with time frame, aggregation and manipulation, all chart
+types of the Control Center (Apache ECharts), summary tables, PNG/CSV export (phase W2). Dashboards (W3) follow.
+
+The analysis view (`src/views/AnalysisView.vue`) keeps its settings in the URL (`?tf=LAST_MONTH&agg=DAILY&man=NONE`,
+with `tf=CUSTOM` also `from`/`to` as ISO 8601). The mapping of the API answer to charts, tables and CSV is in plain
+TypeScript modules under `src/analysis/` (tested in `tests/analysis.test.ts`).
 
 ## Requirements
 
