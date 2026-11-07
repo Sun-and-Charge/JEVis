@@ -382,3 +382,138 @@ see `org.jevis.commons.appointment.Appointment` and `org.jevis.commons.maintenan
 
 `GET /web/navigation` additionally answers `"modules": { "appointments": n, "maintenance": n }` (number of readable
 entries) so the menu only shows modules with entries.
+
+## Action plans, nonconformities, legal register (W4.2)
+
+View only. A plan object ("Action Plan v2", "NonconformityPlan", "Index of Legal Provisions") holds the plan
+settings; its items ("Action", "Nonconformity", "Obligation") keep their content as JSON in the file attribute
+"Data" (latest sample, written by the Control Center with Gson; keys with spaces, legacy spellings like
+`Desciption`, `EnpI`, `No`/`Nr`). Items marked `"Deleted": true` are not returned. Only plans and items the
+user may read are returned. Dates are ISO 8601 with offset as stored (`null` if not set).
+
+### `GET /web/actionplans`
+
+```json
+{
+  "today": "2026-11-06",
+  "plans": [
+    {
+      "id": 4001, "name": "Action plan", "site": { "id": 1001, "name": "Plant", "names": {} },
+      "prefix": "AP", "statuses": ["Offen", "Erledigt"], "fields": ["Produktion"], "seus": ["Lighting"],
+      "media": [ { "id": "Strom", "name": "Strom", "co2": 0.366 } ],
+      "actions": [
+        {
+          "id": 4101, "no": 3, "number": "AP 003",
+          "title": "…", "description": "…", "note": "…", "fromUser": "…", "responsible": "…", "distributor": "…",
+          "createDate": "…", "plannedDate": "…", "doneDate": "…",
+          "status": "Offen", "field": "Produktion", "medium": "Strom", "mediumName": "Strom", "seu": "",
+          "correction": "…", "followAction": "…", "alternativeMeasures": "…",
+          "affectedProcessNote": "…", "energyFlowNote": "…", "evaluationNote": "…",
+          "npv": { "interestRate": 10.0, "investment": 1000.0, "saving": 300.0, "runningCost": 0.0, "inflation": 3.1,
+                   "years": 5, "duration": 3, "result": 123.4, "profitabilityIndex": 1.12, "resultOverX": 1.0,
+                   "profitabilityIndexOverX": 1.0, "sumDeposits": 1500.0, "sumPayouts": 1000.0, "sumNet": 500.0,
+                   "yearRows": [ { "year": 1, "deposit": 309.3, "cost": 0.0, "net": 309.3, "discounted": 281.2 } ] },
+          "consumption": { "before": 100.0, "after": 80.0, "diff": 20.0, "unit": "kWh", "objectId": 2001,
+                           "beforeFrom": "…", "beforeUntil": "…", "afterFrom": "…", "afterUntil": "…" },
+          "enpi": { "…": "same fields as consumption" },
+          "checkList": { "processDocument": false, "…": "booleans as stored, plus newEnPI (text)" },
+          "daysSinceDone": 120, "savingsSinceDone": 6.58, "attachments": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `number` = `prefix` + no (3 digits) like the Control Center; `mediumName` = name of the medium id in `media`
+  (old plans with a `;` list: name = id, CO₂ factor 0.4).
+- `npv`: the stored inputs; `yearRows` and all results are computed from them like `NPVData.updateResults`
+  (`deposit = saving·(1+inflation)^y`, `cost = runningCost·(1+inflation)^y`, `net`, `discounted = net/(1+rate)^y`;
+  `result = -investment + Σ discounted`, `…OverX` over the first `duration` years, `sumDeposits` = Σ deposit,
+  `sumPayouts` = investment + Σ cost, `sumNet`). The results stored in the file are not used: the Control Center only
+  recomputes them when an input is edited, so they can be outdated. (The stored keys "Sum Investment"/"Sum Payout"
+  hold the deposits/payouts.)
+- `consumption`/`enpi`: stored values (not recomputed); `unit` from the data object (attribute `Unit` or the display
+  unit of `Value`), `null` if not readable; `null` if not set.
+- `daysSinceDone` (from `doneDate` to `today`, `null` without done date), `savingsSinceDone` =
+  `daysSinceDone · consumption.diff / 365` like the Control Center. The figures above the list (sums, gross,
+  per medium, CO₂ = `co2 · kWh / 1000`, savings since a date, count per status) are computed in the browser from
+  the filtered actions.
+- `attachments`: number of readable attachments (see below).
+
+- `statuses`: the plan's "Custom Status" list plus every status used by its actions (the Control Center also adds
+  its translated "done" status; the server does not know the language). `mediumName` falls back to the stored
+  medium value if the id is not in `media`. Numbers that are NaN/Infinity are `null`; `npv`, `consumption`,
+  `enpi` are `null` if not stored.
+- `checkList` keys: `processDocument, workInstruction, testInstruction, drawing, other, additionalAction,
+  affectsOthers, consumptionDocumented, targetReached, documentCorrectionText, documentCorrection, additionalMeter`
+  (booleans) and `newEnPI` (text).
+- Items whose "Data" file is missing or unreadable are left out (as in the Control Center), as are plans, items and
+  files in the recycle bin.
+
+### `GET /web/nonconformities`
+
+```json
+{
+  "plans": [
+    {
+      "id": 4201, "name": "Nonconformities", "site": null, "prefix": "NC",
+      "media": ["Strom", "Gas"], "fields": ["…"], "seus": ["…"],
+      "items": [
+        {
+          "id": 4301, "nr": 1, "number": "NC 001", "title": "…", "creator": "…", "responsible": "…",
+          "description": "…", "cause": "…", "immediateMeasures": "…", "correctiveActions": "…", "action": "…",
+          "medium": "Strom", "fields": ["…"], "seu": "…",
+          "createDate": "…", "plannedDate": "…", "doneDate": null, "open": true, "overdue": false,
+          "checkList": { "immediateActionRequired": true, "…": "booleans as stored" },
+          "warnings": ["IMMEDIATE_MEASURES_MISSING"], "attachments": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `open` = no done date; `overdue` = open and planned date before today.
+- `warnings` (checks of the Control Center): `IMMEDIATE_MEASURES_MISSING` (immediate action required but no
+  measures), `DONE_WITHOUT_ACTION`, `DONE_IN_FUTURE`.
+
+- `number`: prefix + number with 3 digits (the Control Center shows the number without padding).
+- `checkList` keys: `immediateActionRequired, effectOnOngoingProcesses, routinelyAffected, employeeTrained,
+  documentsChangesNeeded, processInstructions, workInstructions, testInstructions, design, model, miscellaneous,
+  metrics`. `warnings` lists every check that applies (the Control Center shows the first one).
+
+### `GET /web/legal`
+
+```json
+{
+  "plans": [
+    {
+      "id": 4401, "name": "Legal register", "site": null, "categories": ["…"], "scopes": ["…"],
+      "obligations": [
+        {
+          "id": 4501, "uuid": "…", "nr": 72, "title": "…", "designation": "…", "description": "…",
+          "importance": "…", "link": "https://…", "category": "…", "scope": "…", "relevant": true,
+          "issueDate": "…", "currentVersionDate": "…", "examinationDate": "…", "attachments": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `link` only if it is an `http(s)` URL, otherwise `null`.
+
+### Attachments
+
+- `GET /web/objects/{id}/attachments` → `[{ "id": 4601, "name": "offer.pdf", "size": 12345, "date": "…" }]`: the
+  "File" child objects of a readable item (latest sample of their attribute "File").
+- Only for items of class Action, Nonconformity or Obligation (others: 404); `size` is `null` if the stored file is
+  missing; `date` is the sample time (ISO 8601). Tag values of old plans may be `;` lists (e.g. `field`), the web
+  app matches each part.
+- `GET /web/files/{id}` → the file (content type from the name, `Content-Disposition: attachment`,
+  `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`); 404 if missing or not readable.
+
+### Navigation
+
+`modules` additionally holds `actionPlans`, `nonconformities` and `legal` (number of readable plans).

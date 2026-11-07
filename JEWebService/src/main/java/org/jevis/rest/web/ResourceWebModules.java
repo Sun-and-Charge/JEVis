@@ -132,10 +132,11 @@ public class ResourceWebModules {
         Map<String, Object> modules = new LinkedHashMap<>();
         modules.put("appointments", appointments);
         modules.put("maintenance", maintenance);
+        modules.putAll(ResourceWebIso.moduleCounts(readable));
         return modules;
     }
 
-    private static Lookup lookup(SQLDataSource ds) throws Exception {
+    static Lookup lookup(SQLDataSource ds) throws Exception {
         List<JsonObject> all = ds.getObjects();
         List<JsonObject> readable = ds.getUserManager().filterList(all);
         Map<Long, Long> parents = new HashMap<>();
@@ -287,6 +288,7 @@ public class ResourceWebModules {
         private final Set<Long> readableIds = new HashSet<>();
         private final List<JsonObject> readable;
         private final Map<Long, Long> parents;
+        private Map<Long, List<JsonObject>> readableChildren;
 
         /**
          * @param all      all objects (to walk up the parents)
@@ -298,6 +300,45 @@ public class ResourceWebModules {
             for (JsonObject object : readable) readableIds.add(object.getId());
             this.readable = new ArrayList<>(readable);
             this.parents = parents;
+        }
+
+        /**
+         * @return the object if it exists and the user may read it, else null
+         */
+        JsonObject readable(Long id) {
+            return id != null && readableIds.contains(id) ? byId.get(id) : null;
+        }
+
+        /**
+         * @return the object (readable or not, for walking up the parents) or null
+         */
+        JsonObject object(Long id) {
+            return id != null ? byId.get(id) : null;
+        }
+
+        /**
+         * @return the parent id of the object or null
+         */
+        Long parent(long id) {
+            return parents.get(id);
+        }
+
+        /**
+         * @return the readable children of the object whose class is one of the given classes
+         */
+        List<JsonObject> readableChildren(long id, Collection<String> classNames) {
+            if (readableChildren == null) {
+                readableChildren = new HashMap<>();
+                for (JsonObject object : readable) {
+                    Long parent = parents.get(object.getId());
+                    if (parent != null) readableChildren.computeIfAbsent(parent, k -> new ArrayList<>()).add(object);
+                }
+            }
+            List<JsonObject> result = new ArrayList<>();
+            for (JsonObject object : readableChildren.getOrDefault(id, Collections.emptyList())) {
+                if (classNames.contains(object.getJevisClass())) result.add(object);
+            }
+            return result;
         }
 
         List<JsonObject> readableOfClass(String className) {

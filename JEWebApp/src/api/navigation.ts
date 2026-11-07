@@ -22,19 +22,34 @@ export interface Navigation {
   other: { analyses: NavItem[]; dashboards: NavItem[] }
   /** the user's start dashboard (if readable), opened after login */
   startDashboard?: number | null
-  /** number of readable appointments / maintenance entries (W4.1); missing on older servers */
+  /** number of readable appointments / maintenance entries (W4.1) and plans (W4.2); missing on older servers */
   modules?: Partial<ModuleCounts> | null
 }
 
 export interface ModuleCounts {
   appointments: number
   maintenance: number
+  actionPlans: number
+  nonconformities: number
+  legal: number
 }
 
 /** Module counts with missing values as 0 (the menu shows only modules with entries). */
 export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCounts {
   const n = (v: unknown) => (typeof v === 'number' && v > 0 ? v : 0)
-  return { appointments: n(nav?.modules?.appointments), maintenance: n(nav?.modules?.maintenance) }
+  const m = nav?.modules
+  return {
+    appointments: n(m?.appointments),
+    maintenance: n(m?.maintenance),
+    actionPlans: n(m?.actionPlans),
+    nonconformities: n(m?.nonconformities),
+    legal: n(m?.legal),
+  }
+}
+
+/** True if the menu shows at least one module. */
+export function hasModules(counts: ModuleCounts): boolean {
+  return Object.values(counts).some((n) => n > 0)
 }
 
 export interface SiteNode {

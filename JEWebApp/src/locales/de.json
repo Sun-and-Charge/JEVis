@@ -199,7 +199,10 @@
     "lastMail": "Letzte E-Mail",
     "directory": "Ordner",
     "none": "–",
-    "readOnly": "Nur Ansicht – Einträge werden im Control Center bearbeitet."
+    "readOnly": "Nur Ansicht – Einträge werden im Control Center bearbeitet.",
+    "actionPlans": "Aktionsplan",
+    "nonconformities": "Abweichungen",
+    "legal": "Rechtskataster"
   },
   "appointments": {
     "title": "Termine",
@@ -245,6 +248,227 @@
     "state": { "planned": "Geplant", "inProgress": "Läuft", "done": "Erledigt", "unknown": "Nicht lesbar" },
     "informRequested": "Information angefordert",
     "doneAt": "Erledigt am"
+  },
+  "iso": {
+    "readOnly": "Nur Ansicht – Einträge werden im Control Center bearbeitet.",
+    "loading": "Einträge werden geladen …",
+    "noPlans": "Keine Pläne vorhanden.",
+    "tableCaption": "Einträge",
+    "yes": "Ja",
+    "no": "Nein",
+    "externalLink": "(externer Link, öffnet in neuem Fenster)",
+    "col": {
+      "plan": "Plan",
+      "attachments": "Anhänge"
+    },
+    "filter": {
+      "plan": "Plan",
+      "allPlans": "Alle Pläne (Übersicht)",
+      "all": "Alle",
+      "dateField": "Datumsfeld",
+      "from": "Von",
+      "until": "Bis",
+      "clearDates": "Zeitraum zurücksetzen",
+      "searchPlaceholder": "Titel, Beschreibung, Verantwortlich …"
+    },
+    "columns": {
+      "title": "Spalten",
+      "reset": "Standardspalten"
+    },
+    "section": {
+      "general": "Allgemein",
+      "details": "Details",
+      "capital": "Kapitalwert",
+      "checkList": "Checkliste",
+      "attachments": "Anhänge"
+    },
+    "attachments": {
+      "loading": "Anhänge werden geladen …",
+      "error": "Die Anhänge konnten nicht geladen werden.",
+      "none": "Keine Anhänge.",
+      "download": "„{name}“ herunterladen",
+      "downloading": "Wird heruntergeladen …",
+      "downloadError": "Download fehlgeschlagen."
+    },
+    "stats": {
+      "title": "Kennzahlen der angezeigten Maßnahmen",
+      "investment": "Summe Investition",
+      "savings": "Summe Einsparung/Jahr",
+      "gross": "Brutto",
+      "consumption": "Verbrauchsänderung/Jahr",
+      "sinceDone": "Einsparung seit Umsetzung",
+      "sinceDate": "Einsparung seit {date}",
+      "energyNet": "Energie netto",
+      "energyGross": "Energie brutto",
+      "co2": "CO₂ ({since})",
+      "statuses": "Anzahl je Status",
+      "perMedium": "Je Medium",
+      "mediumChange": "Änderung/Jahr",
+      "mediumCo2Year": "CO₂/Jahr",
+      "mediumSinceNet": "{since} netto",
+      "mediumSinceGross": "brutto",
+      "mediumCo2Net": "CO₂ netto",
+      "mediumCo2Gross": "CO₂ brutto"
+    },
+    "npv": {
+      "investment": "Investition",
+      "saving": "Einsparung/Jahr",
+      "runningCost": "Betriebskosten/Jahr",
+      "interestRate": "Zinssatz",
+      "inflation": "Preissteigerung",
+      "years": "Betrachtungszeitraum (Jahre)",
+      "duration": "Nutzungsdauer (Jahre)",
+      "result": "Kapitalwert",
+      "profitabilityIndex": "Rentabilitätsindex",
+      "resultOverX": "Kapitalwert über Nutzungsdauer",
+      "profitabilityIndexOverX": "Rentabilitätsindex über Nutzungsdauer",
+      "sumDeposits": "Summe Einzahlungen",
+      "sumPayouts": "Summe Auszahlungen",
+      "sumNet": "Summe netto",
+      "yearTable": "Jahreswerte",
+      "year": "Jahr",
+      "deposit": "Einsparung",
+      "cost": "Betriebskosten",
+      "net": "Nettobetrag",
+      "discounted": "Abgezinst",
+      "total": "Summe"
+    },
+    "actions": {
+      "empty": "Keine Maßnahmen für diese Auswahl.",
+      "consumption": "Verbrauch",
+      "enpi": "EnPI",
+      "measure": "Wert",
+      "value": "Wert",
+      "period": "Zeitraum",
+      "before": "Vorher",
+      "after": "Nachher",
+      "diff": "Verbesserung/Jahr",
+      "col": {
+        "number": "Nr.",
+        "responsible": "Verantwortlich",
+        "createDate": "Erstellt",
+        "title": "Titel",
+        "medium": "Medium",
+        "status": "Status",
+        "doneDate": "Abgeschlossen",
+        "plannedDate": "Umsetzung geplant",
+        "investment": "Investition",
+        "saving": "Einsparung/Jahr",
+        "consumptionDiff": "Verbrauchsänderung/Jahr",
+        "field": "Bereich",
+        "seu": "SEU",
+        "fromUser": "Erfasst von",
+        "distributor": "Verteiler",
+        "description": "Beschreibung",
+        "note": "Notiz",
+        "enpiDiff": "EnPI-Änderung",
+        "npvResult": "Kapitalwert",
+        "profitabilityIndex": "Rentabilitätsindex",
+        "savingsSinceDone": "Einsparung seit Umsetzung",
+        "daysSinceDone": "Tage seit Umsetzung"
+      },
+      "notes": {
+        "correction": "Korrektur",
+        "followAction": "Folgemaßnahme",
+        "alternativeMeasures": "Alternative Maßnahmen",
+        "affectedProcess": "Betroffene Prozesse",
+        "energyFlow": "Energiefluss",
+        "evaluation": "Bewertung"
+      },
+      "check": {
+        "processDocument": "Prozessanweisungen",
+        "workInstruction": "Arbeitsanweisungen",
+        "testInstruction": "Prüfanweisungen",
+        "drawing": "Zeichnungen",
+        "other": "Sonstige",
+        "additionalAction": "Zusätzliche Maßnahme notwendig?",
+        "affectsOthers": "Sind vor- oder nachgelagerte Prozesse betroffen?",
+        "consumptionDocumented": "Wird der Energieverbrauch gemessen und dokumentiert?",
+        "targetReached": "Wurde das Ziel der Maßnahme erreicht?",
+        "newEnPI": "Neuer EnPI",
+        "documentCorrection": "Müssen Unterlagen geändert werden?",
+        "documentCorrectionText": "Falls nein, Korrekturmaßnahme notwendig?",
+        "additionalMeter": "Zusätzliche Messtechnik notwendig?"
+      }
+    },
+    "nc": {
+      "empty": "Keine Abweichungen für diese Auswahl.",
+      "filter": {
+        "all": "Alle",
+        "open": "Offen",
+        "closed": "Abgeschlossen"
+      },
+      "state": {
+        "open": "Offen",
+        "overdue": "Überfällig",
+        "closed": "Abgeschlossen"
+      },
+      "warning": {
+        "IMMEDIATE_MEASURES_MISSING": "Sofortmaßnahme erforderlich, aber keine Sofortmaßnahmen eingetragen",
+        "DONE_WITHOUT_ACTION": "Abgeschlossen ohne Maßnahme",
+        "DONE_IN_FUTURE": "Abschlussdatum liegt in der Zukunft"
+      },
+      "col": {
+        "number": "Nr.",
+        "title": "Titel",
+        "creator": "Ersteller",
+        "responsible": "Verantwortlich",
+        "medium": "Medium",
+        "fields": "Bereich",
+        "createDate": "Erstellt",
+        "plannedDate": "Geplant",
+        "doneDate": "Abgeschlossen",
+        "state": "Status",
+        "seu": "SEU",
+        "description": "Beschreibung",
+        "cause": "Ursache",
+        "immediateMeasures": "Sofortmaßnahmen",
+        "correctiveActions": "Korrekturmaßnahmen",
+        "action": "Maßnahme",
+        "warnings": "Hinweise"
+      },
+      "check": {
+        "immediateActionRequired": "Müssen Sofortmaßnahmen ergriffen werden?",
+        "effectOnOngoingProcesses": "Sind damit Auswirkungen auf laufende Prozesse verbunden?",
+        "routinelyAffected": "Ist die Routine betroffen?",
+        "employeeTrained": "Wurde der Mitarbeiter geschult?",
+        "documentsChangesNeeded": "Müssen Dokumente / Kennzahlen geändert werden?",
+        "processInstructions": "Prozessanweisungen",
+        "workInstructions": "Arbeitsanweisungen",
+        "testInstructions": "Prüfanweisungen",
+        "design": "Zeichnungen",
+        "model": "Muster",
+        "miscellaneous": "Sonstiges",
+        "metrics": "Kennzahlen"
+      }
+    },
+    "legal": {
+      "empty": "Keine Rechtsvorschriften für diese Auswahl.",
+      "filter": {
+        "all": "Alle",
+        "relevant": "Relevant",
+        "notRelevant": "Nicht relevant"
+      },
+      "relevance": {
+        "yes": "Relevant",
+        "no": "Nicht relevant",
+        "unknown": "–"
+      },
+      "col": {
+        "nr": "Nr.",
+        "title": "Titel",
+        "designation": "Bezeichnung",
+        "issueDate": "Ausgabedatum",
+        "currentVersionDate": "Aktuelle Fassung",
+        "relevant": "Relevanz",
+        "examinationDate": "Prüfdatum",
+        "category": "Kategorie",
+        "scope": "Geltungsbereich",
+        "link": "Link",
+        "description": "Beschreibung",
+        "importance": "Bedeutung für die Organisation"
+      }
+    }
   },
   "banner": {
     "region": "Wartungshinweise",
