@@ -3,7 +3,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { localName, startDashboardFor } from '../api/navigation'
+import { hasModules, localName, startDashboardFor } from '../api/navigation'
 import LanguageSwitch from '../components/LanguageSwitch.vue'
 import MaintenanceBanner from '../components/MaintenanceBanner.vue'
 import NavTree from '../components/NavTree.vue'
@@ -73,7 +73,7 @@ async function logout() {
       <p v-if="nav.loading" class="side-info">{{ t('nav.loading') }}</p>
       <p v-else-if="nav.failed" class="side-info">{{ t('nav.error') }}</p>
       <template v-else-if="nav.data">
-        <ul v-if="nav.modules.appointments || nav.modules.maintenance" class="modules" :aria-label="t('modules.title')">
+        <ul v-if="hasModules(nav.modules)" class="modules" :aria-label="t('modules.title')">
           <li v-if="nav.modules.appointments">
             <RouterLink :to="{ name: 'appointments' }" class="other-item module-item" @click="menuOpen = false">
               <span>{{ t('modules.appointments') }}</span><span class="module-count">{{ nav.modules.appointments }}</span>
@@ -82,6 +82,21 @@ async function logout() {
           <li v-if="nav.modules.maintenance">
             <RouterLink :to="{ name: 'maintenance' }" class="other-item module-item" @click="menuOpen = false">
               <span>{{ t('modules.maintenance') }}</span><span class="module-count">{{ nav.modules.maintenance }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="nav.modules.actionPlans">
+            <RouterLink :to="{ name: 'actionPlans' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.actionPlans') }}</span><span class="module-count">{{ nav.modules.actionPlans }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="nav.modules.nonconformities">
+            <RouterLink :to="{ name: 'nonconformities' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.nonconformities') }}</span><span class="module-count">{{ nav.modules.nonconformities }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="nav.modules.legal">
+            <RouterLink :to="{ name: 'legal' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.legal') }}</span><span class="module-count">{{ nav.modules.legal }}</span>
             </RouterLink>
           </li>
         </ul>
@@ -109,7 +124,7 @@ async function logout() {
             {{ localName(a, locale) }}
           </RouterLink>
         </div>
-        <p v-if="!nav.counts.analyses && !nav.counts.dashboards && !nav.modules.appointments && !nav.modules.maintenance" class="side-info">{{ t('nav.empty') }}</p>
+        <p v-if="!nav.counts.analyses && !nav.counts.dashboards && !hasModules(nav.modules)" class="side-info">{{ t('nav.empty') }}</p>
       </template>
     </nav>
 

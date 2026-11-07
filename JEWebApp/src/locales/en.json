@@ -199,7 +199,10 @@
     "lastMail": "Last e-mail",
     "directory": "Folder",
     "none": "–",
-    "readOnly": "View only – entries are edited in the Control Center."
+    "readOnly": "View only – entries are edited in the Control Center.",
+    "actionPlans": "Action plan",
+    "nonconformities": "Nonconformities",
+    "legal": "Legal register"
   },
   "appointments": {
     "title": "Appointments",
@@ -245,6 +248,227 @@
     "state": { "planned": "Planned", "inProgress": "In progress", "done": "Done", "unknown": "Not readable" },
     "informRequested": "Information requested",
     "doneAt": "Done on"
+  },
+  "iso": {
+    "readOnly": "View only – entries are edited in the Control Center.",
+    "loading": "Loading entries …",
+    "noPlans": "No plans available.",
+    "tableCaption": "Entries",
+    "yes": "Yes",
+    "no": "No",
+    "externalLink": "(external link, opens in a new window)",
+    "col": {
+      "plan": "Plan",
+      "attachments": "Attachments"
+    },
+    "filter": {
+      "plan": "Plan",
+      "allPlans": "All plans (overview)",
+      "all": "All",
+      "dateField": "Date field",
+      "from": "From",
+      "until": "Until",
+      "clearDates": "Clear period",
+      "searchPlaceholder": "Title, description, responsible …"
+    },
+    "columns": {
+      "title": "Columns",
+      "reset": "Default columns"
+    },
+    "section": {
+      "general": "General",
+      "details": "Details",
+      "capital": "Net present value",
+      "checkList": "Check list",
+      "attachments": "Attachments"
+    },
+    "attachments": {
+      "loading": "Loading attachments …",
+      "error": "The attachments could not be loaded.",
+      "none": "No attachments.",
+      "download": "Download “{name}”",
+      "downloading": "Downloading …",
+      "downloadError": "Download failed."
+    },
+    "stats": {
+      "title": "Key figures of the shown actions",
+      "investment": "Total investment",
+      "savings": "Total savings/year",
+      "gross": "Gross",
+      "consumption": "Consumption change/year",
+      "sinceDone": "Savings since implementation",
+      "sinceDate": "Savings since {date}",
+      "energyNet": "Energy net",
+      "energyGross": "Energy gross",
+      "co2": "CO₂ ({since})",
+      "statuses": "Count per status",
+      "perMedium": "Per medium",
+      "mediumChange": "Change/year",
+      "mediumCo2Year": "CO₂/year",
+      "mediumSinceNet": "{since} net",
+      "mediumSinceGross": "gross",
+      "mediumCo2Net": "CO₂ net",
+      "mediumCo2Gross": "CO₂ gross"
+    },
+    "npv": {
+      "investment": "Investment",
+      "saving": "Savings/year",
+      "runningCost": "Running costs/year",
+      "interestRate": "Interest rate",
+      "inflation": "Price increase",
+      "years": "Period (years)",
+      "duration": "Service life (years)",
+      "result": "Net present value",
+      "profitabilityIndex": "Profitability index",
+      "resultOverX": "Net present value over service life",
+      "profitabilityIndexOverX": "Profitability index over service life",
+      "sumDeposits": "Total deposits",
+      "sumPayouts": "Total payouts",
+      "sumNet": "Total net",
+      "yearTable": "Yearly values",
+      "year": "Year",
+      "deposit": "Deposit",
+      "cost": "Running costs",
+      "net": "Net amount",
+      "discounted": "Discounted",
+      "total": "Total"
+    },
+    "actions": {
+      "empty": "No actions for this selection.",
+      "consumption": "Consumption",
+      "enpi": "EnPI",
+      "measure": "Value",
+      "value": "Value",
+      "period": "Period",
+      "before": "Before",
+      "after": "After",
+      "diff": "Improvement/year",
+      "col": {
+        "number": "No.",
+        "responsible": "Responsible",
+        "createDate": "Created",
+        "title": "Title",
+        "medium": "Medium",
+        "status": "Status",
+        "doneDate": "Done",
+        "plannedDate": "Planned",
+        "investment": "Investment",
+        "saving": "Savings/year",
+        "consumptionDiff": "Consumption change/year",
+        "field": "Area",
+        "seu": "SEU",
+        "fromUser": "Reported by",
+        "distributor": "Distribution",
+        "description": "Description",
+        "note": "Note",
+        "enpiDiff": "EnPI change",
+        "npvResult": "Net present value",
+        "profitabilityIndex": "Profitability index",
+        "savingsSinceDone": "Savings since implementation",
+        "daysSinceDone": "Days since implementation"
+      },
+      "notes": {
+        "correction": "Correction",
+        "followAction": "Follow-up action",
+        "alternativeMeasures": "Alternative measures",
+        "affectedProcess": "Affected processes",
+        "energyFlow": "Energy flow",
+        "evaluation": "Evaluation"
+      },
+      "check": {
+        "processDocument": "Process instructions",
+        "workInstruction": "Work instructions",
+        "testInstruction": "Test instructions",
+        "drawing": "Drawing",
+        "other": "Other",
+        "additionalAction": "Additional action necessary?",
+        "affectsOthers": "Are upstream or downstream processes affected?",
+        "consumptionDocumented": "Is the energy consumption measured and documented?",
+        "targetReached": "Was the target of the action reached?",
+        "newEnPI": "New EnPI",
+        "documentCorrection": "Do documents have to be changed?",
+        "documentCorrectionText": "If not, is a corrective action necessary?",
+        "additionalMeter": "Additional measurement technology necessary?"
+      }
+    },
+    "nc": {
+      "empty": "No nonconformities for this selection.",
+      "filter": {
+        "all": "All",
+        "open": "Open",
+        "closed": "Closed"
+      },
+      "state": {
+        "open": "Open",
+        "overdue": "Overdue",
+        "closed": "Closed"
+      },
+      "warning": {
+        "IMMEDIATE_MEASURES_MISSING": "Immediate action required, but no immediate measures entered",
+        "DONE_WITHOUT_ACTION": "Closed without action",
+        "DONE_IN_FUTURE": "Done date lies in the future"
+      },
+      "col": {
+        "number": "No.",
+        "title": "Title",
+        "creator": "Creator",
+        "responsible": "Responsible",
+        "medium": "Medium",
+        "fields": "Area",
+        "createDate": "Created",
+        "plannedDate": "Planned",
+        "doneDate": "Done",
+        "state": "Status",
+        "seu": "SEU",
+        "description": "Description",
+        "cause": "Cause",
+        "immediateMeasures": "Immediate measures",
+        "correctiveActions": "Corrective actions",
+        "action": "Action",
+        "warnings": "Notes"
+      },
+      "check": {
+        "immediateActionRequired": "Immediate Action Required?",
+        "effectOnOngoingProcesses": "Effect on ongoing Processes?",
+        "routinelyAffected": "Routinely Affected?",
+        "employeeTrained": "Employee Trained?",
+        "documentsChangesNeeded": "Documents / Metrics Changes Needed?",
+        "processInstructions": "Process Instructions",
+        "workInstructions": "Work Instructions",
+        "testInstructions": "Test Instructions",
+        "design": "Design",
+        "model": "Model",
+        "miscellaneous": "Miscellaneous",
+        "metrics": "Metrics"
+      }
+    },
+    "legal": {
+      "empty": "No legal provisions for this selection.",
+      "filter": {
+        "all": "All",
+        "relevant": "Relevant",
+        "notRelevant": "Not relevant"
+      },
+      "relevance": {
+        "yes": "Relevant",
+        "no": "Not relevant",
+        "unknown": "–"
+      },
+      "col": {
+        "nr": "No.",
+        "title": "Title",
+        "designation": "Designation",
+        "issueDate": "Issue date",
+        "currentVersionDate": "Current version",
+        "relevant": "Relevance",
+        "examinationDate": "Examination date",
+        "category": "Category",
+        "scope": "Scope",
+        "link": "Link",
+        "description": "Description",
+        "importance": "Importance for the organisation"
+      }
+    }
   },
   "banner": {
     "region": "Maintenance notices",

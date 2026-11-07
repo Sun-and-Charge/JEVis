@@ -1,0 +1,367 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Action plans, nonconformities, legal register (view only); builds on modules.css. */
+
+.iso .read-only {
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.iso .retry {
+  margin-left: 0.5rem;
+}
+
+.iso .seg-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.iso-filters input[type='date'] {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  max-width: 100%;
+}
+
+.iso-filters input[type='date']:focus-visible,
+.iso-filters select:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.iso-clear {
+  height: 2.25rem;
+}
+
+/* count + column chooser */
+.iso-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.iso-toolbar .mod-count {
+  margin: 0;
+}
+
+.iso-columns {
+  position: relative;
+}
+
+.iso-columns > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blueberry);
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  list-style: none;
+}
+
+.iso-columns > summary::-webkit-details-marker {
+  display: none;
+}
+
+.iso-columns > summary::after {
+  content: ' ▾';
+}
+
+.iso-columns > summary:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.iso-columns-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  min-width: 15rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.iso-columns-panel fieldset {
+  border: none;
+  margin: 0 0 0.4rem;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.iso-columns-panel label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* table */
+.iso-table th[aria-sort] {
+  padding: 0;
+}
+
+.iso-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.iso-table th.num .iso-sort {
+  justify-content: flex-end;
+}
+
+.iso-sort:hover {
+  color: var(--blueberry);
+}
+
+.iso-sort:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: -3px;
+}
+
+.iso-sort-mark {
+  font-size: 0.7em;
+  min-width: 0.8em;
+}
+
+.iso-table td.num,
+.iso-mini td.num,
+.iso-mini th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.iso-table td.iso-text {
+  min-width: 8rem;
+  max-width: 28rem;
+  overflow-wrap: anywhere;
+}
+
+.iso-toggle-col {
+  width: 2rem;
+}
+
+.iso-table td.iso-toggle-col {
+  padding-right: 0;
+}
+
+.iso-link {
+  overflow-wrap: anywhere;
+}
+
+.mod-badge.is-relevant {
+  background: var(--blueberry);
+  border-color: var(--blueberry);
+  color: #fff;
+}
+
+/* key figures */
+.iso-stats {
+  margin: 0 0 1rem;
+}
+
+.iso-stats-title {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.iso-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.iso-tile {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sun);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+
+.iso-tile dt {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.iso-tile dd {
+  margin: 0 0 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.iso-tile .iso-big {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--blueberry);
+}
+
+.iso-tile .iso-sub {
+  font-weight: 400;
+  font-size: 0.78rem;
+}
+
+.iso-status-list {
+  list-style: none;
+  margin: 0.2rem 0 0;
+  padding: 0;
+}
+
+.iso-status-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.num-text {
+  font-variant-numeric: tabular-nums;
+}
+
+/* detail panel */
+.iso-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.iso-section {
+  min-width: 0;
+}
+
+.iso-section h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid var(--sun);
+}
+
+.iso-state {
+  margin: 0 0 0.5rem;
+}
+
+.iso-warnings {
+  margin: 0 0 0.6rem;
+  padding: 0.4rem 0.6rem 0.4rem 1.6rem;
+  background: var(--error-bg);
+  color: var(--error);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.iso-npv {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.iso-mini-wrap {
+  overflow-x: auto;
+}
+
+.iso-mini {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  min-width: min(100%, 20rem);
+  background: var(--surface);
+}
+
+.iso-mini caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 0 0 0.25rem;
+}
+
+.iso-mini th,
+.iso-mini td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.iso-mini thead th {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.iso-mini tfoot th,
+.iso-mini tfoot td {
+  font-weight: 600;
+  border-top: 2px solid var(--line);
+}
+
+.iso-check dd.is-yes {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.iso-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.iso-files li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.iso-file {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.iso-error {
+  color: var(--error);
+}
+
+@media (max-width: 640px) {
+  .iso-filters input[type='date'] {
+    width: 100%;
+  }
+
+  .iso-columns-panel {
+    left: 0;
+    right: auto;
+  }
+}

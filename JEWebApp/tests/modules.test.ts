@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Sun and Charge Germany GmbH */
 import { describe, expect, it } from 'vitest'
-import { moduleCounts } from '../src/api/navigation'
+import { hasModules, moduleCounts } from '../src/api/navigation'
 import { DEFAULT_APPOINTMENT_FILTER, dueState, filterAppointments, relevantDue, sortAppointments } from '../src/modules/appointments'
 import { bannerEntries, bannerKey, DISMISSED_STORAGE_KEY, loadDismissed, pruneDismissed, saveDismissed } from '../src/modules/banner'
 import { formatDuration, formatLocal, formatLocalDate, formatPeriod, parseLocal } from '../src/modules/dates'
@@ -233,9 +233,13 @@ describe('maintenance banner', () => {
 
 describe('navigation modules', () => {
   it('reads module counts, missing ones as 0', () => {
-    expect(moduleCounts(null)).toEqual({ appointments: 0, maintenance: 0 })
-    expect(moduleCounts({})).toEqual({ appointments: 0, maintenance: 0 })
-    expect(moduleCounts({ modules: { appointments: 3 } })).toEqual({ appointments: 3, maintenance: 0 })
-    expect(moduleCounts({ modules: { appointments: -1, maintenance: 2 } })).toEqual({ appointments: 0, maintenance: 2 })
+    const none = { appointments: 0, maintenance: 0, actionPlans: 0, nonconformities: 0, legal: 0 }
+    expect(moduleCounts(null)).toEqual(none)
+    expect(moduleCounts({})).toEqual(none)
+    expect(moduleCounts({ modules: { appointments: 3 } })).toEqual({ ...none, appointments: 3 })
+    expect(moduleCounts({ modules: { appointments: -1, maintenance: 2 } })).toEqual({ ...none, maintenance: 2 })
+    expect(moduleCounts({ modules: { actionPlans: 2, nonconformities: 1, legal: 4 } })).toEqual({ ...none, actionPlans: 2, nonconformities: 1, legal: 4 })
+    expect(hasModules(none)).toBe(false)
+    expect(hasModules({ ...none, legal: 1 })).toBe(true)
   })
 })
