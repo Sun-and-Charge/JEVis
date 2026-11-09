@@ -7,6 +7,19 @@
     <version>1.0</version>
     <packaging>jar</packaging>
     <dependencies>
+        <!-- SAAJ is no longer bundled with JDK 11+. Keep the javax.xml.soap
+     namespace used by this driver (Jakarta SOAP 2.x+ uses jakarta.*). -->
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+            <version>1.5.3</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
