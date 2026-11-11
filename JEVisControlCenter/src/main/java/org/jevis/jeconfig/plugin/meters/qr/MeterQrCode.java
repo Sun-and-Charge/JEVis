@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -26,13 +27,12 @@ import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.classes.JC;
+import org.jevis.commons.object.MeterQrPayload;
 import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.jeapi.ws.JEVisDataSourceWS;
 import org.jevis.jeconfig.plugin.meters.data.MeterData;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 /**
  * QR code content and label text of one meter, used by the manual reading app to select the meter.
@@ -41,10 +41,10 @@ import java.net.URLEncoder;
  * {@code jevis:meter?v=1&id=<meterId>[&target=<objectId>:<attribute>][&server=<webservice url>]}
  */
 public class MeterQrCode {
-    public static final String SCHEME = "jevis:meter";
-    public static final int VERSION = 1;
+    public static final String SCHEME = MeterQrPayload.SCHEME;
+    public static final int VERSION = MeterQrPayload.VERSION;
     private static final Logger logger = LogManager.getLogger(MeterQrCode.class);
-    private static final String DEFAULT_TARGET_ATTRIBUTE = "Value";
+    private static final String DEFAULT_TARGET_ATTRIBUTE = MeterQrPayload.DEFAULT_TARGET_ATTRIBUTE;
 
     private final long meterId;
     private final String payload;
@@ -100,29 +100,10 @@ public class MeterQrCode {
     }
 
     /**
-     * Builds the QR code text. Target and server are left out when null or empty.
+     * Builds the QR code text. Target and server are left out when null or empty, see {@link MeterQrPayload}.
      */
     public static String payload(long meterId, Long targetId, String targetAttribute, String server) {
-        StringBuilder sb = new StringBuilder(SCHEME)
-                .append("?v=").append(VERSION)
-                .append("&id=").append(meterId);
-        if (targetId != null && targetAttribute != null && !targetAttribute.isEmpty()) {
-            sb.append("&target=").append(targetId).append(':').append(encode(targetAttribute));
-        }
-        if (server != null && !server.trim().isEmpty()) {
-            String s = server.trim();
-            while (s.endsWith("/")) s = s.substring(0, s.length() - 1);
-            sb.append("&server=").append(encode(s));
-        }
-        return sb.toString();
-    }
-
-    private static String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        return MeterQrPayload.payload(meterId, targetId, targetAttribute, server);
     }
 
     private static String latestValue(JEVisObject object, String attributeName) {

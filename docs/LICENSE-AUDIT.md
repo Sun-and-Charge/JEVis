@@ -57,7 +57,8 @@ This document lists what was checked and the issues that still need a decision o
   unmodified and listed in `bundled-assets.tsv`; paths are constants in `org.jevis.jeconfig.Icon`.
 - **iText 5 (AGPLv3):** replaced by OpenPDF 1.3.43 (LGPL 2.1 / MPL 2.0, last version for Java 8) in the
   Control Center (chart and dashboard PDF export, meter labels) and JEReport (PDF splitting). The QR codes of
-  the meter labels are drawn from a ZXing matrix, since OpenPDF has no QR code support.
+  the meter labels are drawn from a ZXing matrix, since OpenPDF has no QR code support. JEWebService uses the same
+  ZXing `core` 3.5.3 (Apache 2.0, compatible with GPLv3) for the meter QR codes of the web app (SVG).
 - **`org.json:json`:** updated from 20210307 (JSON License, "shall be used for Good, not Evil") to 20260814
   (public domain).
 - **`javax.activation:activation` 1.1 (CDDL 1.0 only):** excluded from `com.sun.mail:javax.mail`, replaced by

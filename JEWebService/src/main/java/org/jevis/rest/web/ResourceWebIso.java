@@ -572,6 +572,13 @@ public class ResourceWebIso {
      * @return {@code attachment; filename="<ASCII>"; filename*=UTF-8''<percent encoded>} (RFC 6266)
      */
     static String contentDisposition(String fileName) {
+        return contentDisposition(fileName, false);
+    }
+
+    /**
+     * @param inline {@code inline} instead of {@code attachment}
+     */
+    static String contentDisposition(String fileName, boolean inline) {
         String safe = safeFileName(fileName);
         StringBuilder ascii = new StringBuilder();
         for (int i = 0; i < safe.length(); i++) {
@@ -584,7 +591,7 @@ public class ResourceWebIso {
         } catch (Exception e) {
             encoded = ascii.toString();
         }
-        return "attachment; filename=\"" + ascii + "\"; filename*=UTF-8''" + encoded;
+        return (inline ? "inline" : "attachment") + "; filename=\"" + ascii + "\"; filename*=UTF-8''" + encoded;
     }
 
     static Response download(byte[] bytes, String fileName) {

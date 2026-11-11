@@ -41,7 +41,8 @@ export function csvField(text: string, separator: string): string {
   return value
 }
 
-function csvNumber(value: number, decimal: string): string {
+/** Number without grouping or exponent, with the decimal separator of the CSV file. */
+export function csvNumber(value: number, decimal: string): string {
   // full precision without exponent notation or grouping
   let text = Number.isInteger(value) ? String(value) : String(+value.toPrecision(15))
   if (/e/i.test(text)) text = value.toFixed(20).replace(/0+$/, '').replace(/\.$/, '')

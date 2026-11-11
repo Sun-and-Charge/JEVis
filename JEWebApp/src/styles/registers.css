@@ -1,0 +1,149 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Meters, base data, equipment (view only); builds on modules.css and iso.css. */
+
+/* tabs = groups */
+.reg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0 0 1rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.reg-tab {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--blueberry);
+  padding: 0.45rem 0.8rem;
+  margin-bottom: -2px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.reg-tab:hover {
+  background: var(--bg);
+}
+
+.reg-tab[aria-selected='true'] {
+  border-bottom-color: var(--sun);
+  color: var(--ink);
+}
+
+.reg-tab:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: -3px;
+}
+
+.reg-tab-count {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-left: 0.25rem;
+}
+
+/* overdue filter: checkbox + year */
+.reg-overdue-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+}
+
+.mod-filters .control .reg-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.reg-check input:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.iso-tile.reg-tile-alert {
+  border-left-color: var(--error);
+}
+
+/* toolbar: CSV export next to the column chooser */
+.reg-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reg-export {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blueberry);
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.reg-export:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.reg-export:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.mod-badge.is-ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-bg);
+  color: var(--ok);
+}
+
+/* detail panel */
+.reg-multiline {
+  white-space: pre-wrap;
+}
+
+.reg-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+.reg-thumb {
+  display: block;
+  max-width: min(100%, 12rem);
+  max-height: 9rem;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.reg-qr-img {
+  display: block;
+  width: 10rem;
+  height: 10rem;
+  padding: 0.4rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.reg-history .reg-exchange td {
+  background: #fffbe0;
+}
+
+.reg-history .mod-badge {
+  margin-right: 0.35rem;
+}

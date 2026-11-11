@@ -133,6 +133,7 @@ public class ResourceWebModules {
         modules.put("appointments", appointments);
         modules.put("maintenance", maintenance);
         modules.putAll(ResourceWebIso.moduleCounts(readable));
+        modules.putAll(ResourceWebRegisters.moduleCounts(readable, ResourceWebRegisters.Classes.fromCache()));
         return modules;
     }
 
@@ -327,6 +328,17 @@ public class ResourceWebModules {
          * @return the readable children of the object whose class is one of the given classes
          */
         List<JsonObject> readableChildren(long id, Collection<String> classNames) {
+            List<JsonObject> result = new ArrayList<>();
+            for (JsonObject object : readableChildren(id)) {
+                if (classNames.contains(object.getJevisClass())) result.add(object);
+            }
+            return result;
+        }
+
+        /**
+         * @return all readable children of the object
+         */
+        List<JsonObject> readableChildren(long id) {
             if (readableChildren == null) {
                 readableChildren = new HashMap<>();
                 for (JsonObject object : readable) {
@@ -334,11 +346,14 @@ public class ResourceWebModules {
                     if (parent != null) readableChildren.computeIfAbsent(parent, k -> new ArrayList<>()).add(object);
                 }
             }
-            List<JsonObject> result = new ArrayList<>();
-            for (JsonObject object : readableChildren.getOrDefault(id, Collections.emptyList())) {
-                if (classNames.contains(object.getJevisClass())) result.add(object);
-            }
-            return result;
+            return readableChildren.getOrDefault(id, Collections.emptyList());
+        }
+
+        /**
+         * @return the objects the user may read
+         */
+        List<JsonObject> readable() {
+            return readable;
         }
 
         List<JsonObject> readableOfClass(String className) {

@@ -604,6 +604,36 @@ public class SampleTable {
 
 
     /**
+     * Returns the most recent samples for the given object/attribute, newest first.
+     *
+     * @param object the owning object ID
+     * @param att    the attribute name
+     * @param limit  the maximum number of samples to return
+     * @return the samples ordered by timestamp descending; empty if none exist
+     * @throws JEVisException if the query fails
+     */
+    public List<JsonSample> getLatestSamples(long object, String att, int limit) throws JEVisException {
+        List<JsonSample> samples = new ArrayList<>();
+        String sql = String.format("select * from %s where %s=? and %s=? order by %s DESC limit %d",
+                TABLE, COLUMN_OBJECT, COLUMN_ATTRIBUTE, COLUMN_TIMESTAMP, Math.max(0, limit));
+
+        try (PreparedStatement ps = _connection.getConnection().prepareStatement(sql)) {
+            ps.setLong(1, object);
+            ps.setString(2, att);
+
+            logger.trace("SQL: {}", ps);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                samples.add(SQLtoJsonFactory.buildSample(rs));
+            }
+            return samples;
+        } catch (SQLException ex) {
+            logger.error(ex);
+            throw new JEVisException("Error while reading samples", 234235, ex);
+        }
+    }
+
+    /**
      * Returns the most recent sample for the given object/attribute.
      *
      * @param object the owning object ID

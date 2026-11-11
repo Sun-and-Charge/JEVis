@@ -816,6 +816,19 @@ public class SQLDataSource {
     }
 
     /**
+     * Returns the most recent samples for the given object and attribute, newest first.
+     *
+     * @param obj       the object ID
+     * @param attribute the attribute name
+     * @param limit     the maximum number of samples to return
+     * @return the samples ordered by timestamp descending
+     * @throws JEVisException if the query fails
+     */
+    public List<JsonSample> getLatestSamples(long obj, String attribute, int limit) throws JEVisException {
+        return getSampleTable().getLatestSamples(obj, attribute, limit);
+    }
+
+    /**
      * Returns all relationships that involve the given object (either as source
      * or target), using the request-scoped cache when available.
      *

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2013 - 2016 Envidatec GmbH <info@envidatec.com>
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEWebService.
  * <p>
@@ -22,7 +23,6 @@ package org.jevis.rest;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.ws.json.JsonI18nClass;
@@ -31,8 +31,8 @@ import org.jevis.commons.ws.sql.Config;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,8 +44,14 @@ import java.util.List;
 public class ResourceI18n {
 
     private static final Logger logger = LogManager.getLogger(ResourceI18n.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private List<JsonI18nClass> files;
+
+    /**
+     * Translations loaded by {@link #cached()}, reloaded after {@link #CACHE_MILLIS}
+     */
+    static final long CACHE_MILLIS = 5 * 60 * 1000L;
+    private static List<JsonI18nClass> cache;
+    private static long cacheTime;
 
     private static List<File> listClassI18nFiles(File dir) {
         List<File> fileTree = new ArrayList<>();
@@ -62,6 +68,37 @@ public class ResourceI18n {
             }
         }
         return fileTree;
+    }
+
+    /**
+     * Reads all translation files ({@code *.json}) below the directory; files that cannot be read are logged and
+     * left out.
+     */
+    public static List<JsonI18nClass> loadAll(File dir) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        List<JsonI18nClass> result = new ArrayList<>();
+        for (File file : listClassI18nFiles(dir)) {
+            try {
+                result.add(mapper.readValue(file, JsonI18nClass.class));
+            } catch (Exception fex) {
+                logger.error("Error while loading i18n file '{}':", file.getName(), fex);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @return the translations of the i18n directory ({@link Config#getI18nDir()}), cached for a few minutes
+     */
+    public static synchronized List<JsonI18nClass> cached() {
+        long now = System.currentTimeMillis();
+        if (cache == null || now - cacheTime > CACHE_MILLIS) {
+            cache = Collections.unmodifiableList(loadAll(Config.getI18nDir()));
+            cacheTime = now;
+        }
+        return cache;
     }
 
     /**
@@ -82,17 +119,7 @@ public class ResourceI18n {
         try {
 
             if (files == null) {
-                files = new ArrayList<>();
-
-                for (File file : listClassI18nFiles(Config.getI18nDir())) {
-                    try {
-                        if (file.getName().endsWith(".json")) {
-                            files.add(loadFile(file));
-                        }
-                    } catch (Exception fex) {
-                        logger.error("Error while loading i18n file '{}':", file.getName(), fex);
-                    }
-                }
+                files = loadAll(Config.getI18nDir());
             }
 
             if (!jclass.isEmpty()) {
@@ -109,10 +136,4 @@ public class ResourceI18n {
         }
     }
 
-    private JsonI18nClass loadFile(File file) throws IOException {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        return objectMapper.readValue(file, JsonI18nClass.class);
-    }
 }
