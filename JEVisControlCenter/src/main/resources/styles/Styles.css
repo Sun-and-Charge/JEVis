@@ -241,6 +241,33 @@
     -fx-background-color: derive(-fx-default-button-background, -8%);
 }
 
+/* JFoenix buttons are flat by default; the removed themes gave every button a background (Standard.css), so
+   without this rule calculator keys, icon buttons etc. had no frame. No text colour here: it would override colours
+   set in code (e.g. the green "check" button of the formula editor). Buttons in tool bars stay flat. */
+.jfx-button {
+    -fx-background-color: -suc-surface-alt;
+    -fx-background-radius: 3;
+    -fx-border-color: -suc-border;
+    -fx-border-radius: 3;
+}
+
+.jfx-button:hover {
+    -fx-background-color: -suc-hover;
+}
+
+.jfx-button:pressed {
+    -fx-background-color: derive(-suc-surface-alt, -10%);
+}
+
+.jfx-button:disabled {
+    -fx-opacity: 0.5;
+}
+
+.tool-bar .jfx-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
 .tag-filter-active {
     -fx-border-color: -suc-accent;
     -fx-border-width: 2;
