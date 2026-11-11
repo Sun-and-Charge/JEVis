@@ -164,7 +164,7 @@ public class MapViewPlugin implements Plugin {
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(newB);
             ToggleButton save = new ToggleButton("", JEConfig.getSVGImage(Icon.SAVE, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(save);
-            ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.MINUS, iconSize, iconSize));
+            ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(delete);
             Separator sep1 = new Separator();
             save.setDisable(true);

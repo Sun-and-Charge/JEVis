@@ -148,7 +148,7 @@ public class ClassContextMenu extends ContextMenu {
 
     private MenuItem buildDelete() {
         MenuItem menu = new MenuItem(I18n.getInstance().getString("plugin.classes.contextmenu.delete"),
-                JEConfig.getSVGImage(Icon.MINUS, 20, 20));
+                JEConfig.getSVGImage(Icon.DELETE, 20, 20));
         menu.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override

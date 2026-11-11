@@ -861,6 +861,11 @@ public class TopMenu extends MenuBar {
             JEConfig.getStage().getScene().getStylesheets().add(stylesString);
             JEConfig.getStage().getScene().getStylesheets().add(chartString);
             JEConfig.getStage().getScene().getStylesheets().add(themeString);
+            /* JavaFX 8 keeps the font that the label inside a menu bar button inherited from the old theme (e.g. the
+               Bridge theme's condensed font after switching back), so the menu bar builds its buttons again */
+            List<Menu> menus = new ArrayList<>(getMenus());
+            getMenus().clear();
+            getMenus().addAll(menus);
         });
 
         activeTheme = themeString;

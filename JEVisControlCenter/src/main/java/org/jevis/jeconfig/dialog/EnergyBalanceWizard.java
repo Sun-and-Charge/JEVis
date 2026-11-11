@@ -521,7 +521,7 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
                 signBox.getSelectionModel().select(Sign.MINUS);
                 signBox.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.energybalance.sign")));
                 signBox.valueProperty().addListener((observable, oldValue, newValue) -> updatePreview());
-                JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.MINUS, 15, 15));
+                JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, 15, 15));
                 removeButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.energybalance.removesubmeter")));
                 removeButton.setOnAction(event -> removeSubRow(this));
                 getChildren().addAll(signBox, selectButton, typeBox, removeButton);

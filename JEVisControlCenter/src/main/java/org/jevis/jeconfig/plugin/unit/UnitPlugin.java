@@ -173,7 +173,7 @@ public class UnitPlugin implements Plugin {
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(save);
 //            GlobalToolBar.BuildEventhandler(UnitPlugin.this, save, Constants.Plugin.Command.SAVE);
 
-            ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.MINUS, iconSize, iconSize));
+            ToggleButton delete = new ToggleButton("", JEConfig.getSVGImage(Icon.DELETE, iconSize, iconSize));
             GlobalToolBar.changeBackgroundOnHoverUsingBinding(delete);
 //            GlobalToolBar.BuildEventhandler(UnitPlugin.this, delete, Constants.Plugin.Command.DELETE);
 
