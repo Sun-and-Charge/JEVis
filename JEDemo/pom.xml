@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jevis</groupId>
+    <artifactId>JEDemo</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <!-- Keeps the public demo organisation current: replays raw data, rolls module due dates forward and creates
+         monthly demo energy invoices. See docs/DEMO.md. -->
+
+    <parent>
+        <groupId>org.jevis</groupId>
+        <artifactId>JEVisCore</artifactId>
+        <version>3.4</version>
+    </parent>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.jevis.jedemo.Launcher</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jevis.api</groupId>
+            <artifactId>jeapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jevis</groupId>
+            <artifactId>JEAPI-WS</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jevis.commons</groupId>
+            <artifactId>JECommons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <!-- writing the demo ZUGFeRD invoices (Apache 2.0, Java 11+). Same exclusions as in JEWebService: PDF rendering
+             (FOP/Batik) and the CII to UBL converter (ph-*) are not needed. -->
+        <dependency>
+            <groupId>org.mustangproject</groupId>
+            <artifactId>library</artifactId>
+            <version>2.26.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>fop-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.helger</groupId>
+                    <artifactId>en16931-cii2ubl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- jakarta.activation for Mustang's PDF export (EDL 1.0 / BSD), same version the web service gets from
+             Jackson; the managed com.sun.activation 1.2.2 of JECommons only has the javax namespace -->
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <!-- Mustang needs Java 11+; the job runs on Java 25 like the web service -->
+        <maven.compiler.release>25</maven.compiler.release>
+    </properties>
+</project>

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+source /etc/jevis/jevis.env
+
+# JEDemo keeps the public demo organisation current (docs/DEMO.md). Needs Java 25.
+# It logs in with the API key of its own service user, JEDEMO_API_KEY in /etc/jevis/jevis.env. JEVIS_API_KEY (the key
+# of the other services) is deliberately not used, so the job never runs with more rights than the demo needs.
+if [ -z "${JEDEMO_API_KEY}" ]; then
+	echo "JEDEMO_API_KEY is not set in /etc/jevis/jevis.env, see docs/DEMO.md" >&2
+	exit 1
+fi
+export JEVIS_API_KEY="${JEDEMO_API_KEY}"
+
+java -Dname=JEDemo -Dlog4j.configurationFile=${JEVIS_HOME}/etc/log4j2_service.xml \
+     -DserviceLogFile=${JEVIS_HOME}/var/log/jedemo.log \
+     -XX:+UseG1GC \
+     -jar ${JEVIS_HOME}/JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar \
+     -c ${JEVIS_HOME}/etc/jevis.xml \
+     -sm service "$@"

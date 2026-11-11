@@ -1,0 +1,153 @@
+{
+  "name": "JEDemo",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "JEDemo",
+      "end": "Service",
+      "type": 0
+    },
+    {
+      "start": "JEDemo",
+      "end": "Service Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Enable",
+      "primitiveType": 4,
+      "guiType": "Check Box",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Cycle Time",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Status",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Max Number Threads",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Organization",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 4,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Excluded Objects",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 5,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Shifted Until",
+      "primitiveType": 0,
+      "guiType": "Date",
+      "guiposition": 6,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Invoice Directory",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 7,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Electricity Row",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 8,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Gas Row",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 9,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Electricity Price",
+      "primitiveType": 1,
+      "guiType": "Number",
+      "guiposition": 10,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Gas Price",
+      "primitiveType": 1,
+      "guiType": "Number",
+      "guiposition": 11,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Electricity Base Price",
+      "primitiveType": 1,
+      "guiType": "Number",
+      "guiposition": 12,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Gas Base Price",
+      "primitiveType": 1,
+      "guiType": "Number",
+      "guiposition": 13,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Replay State",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 14,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
+    }
+  ]
+}
