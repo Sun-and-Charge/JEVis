@@ -161,4 +161,16 @@ public class DateShifterTest {
             // ok
         }
     }
+
+    @Test
+    public void noteTimesKeepTheLocalTimeAcrossDst() {
+        // 2026-10-15 09:00 CEST (+02:00) + 3 weeks = 2026-11-05 09:00 CET (+01:00)
+        long before = java.time.OffsetDateTime.parse("2026-10-15T09:00:00+02:00").toInstant().toEpochMilli();
+        long after = java.time.OffsetDateTime.parse("2026-11-05T09:00:00+01:00").toInstant().toEpochMilli();
+        assertEquals(after, DateShifter.shiftMillis(before, 3));
+        // no DST change in between: exactly n weeks
+        long nov = java.time.OffsetDateTime.parse("2026-11-03T09:15:00.250+01:00").toInstant().toEpochMilli();
+        assertEquals(nov + 2L * 7 * 24 * 3600 * 1000, DateShifter.shiftMillis(nov, 2));
+        assertEquals(nov, DateShifter.shiftMillis(nov, 0));
+    }
 }

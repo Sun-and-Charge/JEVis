@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -179,6 +180,15 @@ public final class DateShifter {
         } catch (DateTimeParseException e) {
             return shiftLocal(text, weeks);
         }
+    }
+
+    /**
+     * Shifts a sample time stamp by whole weeks in Europe/Berlin local time, so a note at 09:00 stays at 09:00 across
+     * DST changes (a local time that does not exist moves forward, an ambiguous one keeps the earlier offset).
+     */
+    public static long shiftMillis(long millis, int weeks) {
+        ZonedDateTime local = Instant.ofEpochMilli(millis).atZone(ReplayPlanner.ZONE);
+        return local.toLocalDateTime().plusWeeks(weeks).atZone(ReplayPlanner.ZONE).toInstant().toEpochMilli();
     }
 
     private static ObjectNode parse(String json) throws IOException {
