@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ibm.icu.text.NumberFormat;
 import com.jfoenix.controls.*;
 import com.udojava.evalex.Expression;
+import org.jevis.commons.calculation.CalcExpressions;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
@@ -827,7 +828,7 @@ public class AccountingPlugin extends TablePlugin {
                         try {
                             Double calculate;
                             try {
-                                calculate = new Expression(formulaString).eval().doubleValue();
+                                calculate = CalcExpressions.create(formulaString).eval().doubleValue();
                             } catch (Expression.ExpressionException e) {
                                 logger.error("Formula evaluation failed: {}", e.getMessage());
                                 calculate = Double.NaN;

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -485,7 +486,7 @@ public class MathStep implements ProcessStep {
     }
 
     private void calcFormula(CleanInterval interval, List<JEVisSample> samples, String formula) throws JEVisException {
-        Expression expression = new Expression(formula);
+        Expression expression = org.jevis.commons.calculation.CalcExpressions.create(formula);
         for (JEVisSample sample : samples) {
             try {
                 expression.setVariable("x", BigDecimal.valueOf(sample.getValueAsDouble()));
