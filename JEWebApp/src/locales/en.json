@@ -202,7 +202,10 @@
     "readOnly": "View only – entries are edited in the Control Center.",
     "actionPlans": "Action plan",
     "nonconformities": "Nonconformities",
-    "legal": "Legal register"
+    "legal": "Legal register",
+    "meters": "Meters",
+    "basedata": "Base data",
+    "equipment": "Equipment"
   },
   "appointments": {
     "title": "Appointments",
@@ -468,6 +471,98 @@
         "description": "Description",
         "importance": "Importance for the organisation"
       }
+    }
+  },
+  "registers": {
+    "readOnly": "View only – objects are edited in the Control Center.",
+    "loading": "Loading objects …",
+    "empty": "No objects available.",
+    "emptyGroup": "This group has no objects.",
+    "noMatch": "No objects match the filters.",
+    "groups": "Groups",
+    "yes": "Yes",
+    "no": "No",
+    "targetHidden": "(no read permission)",
+    "noType": "No type",
+    "searchPlaceholder": {
+      "meters": "Name, serial number, location …",
+      "basedata": "Name, path …",
+      "equipment": "Name, path, manufacturer …"
+    },
+    "col": {
+      "name": "Name",
+      "path": "Path",
+      "medium": "Medium",
+      "last": "Last value",
+      "lastTime": "Last value at",
+      "timestamp": "Timestamp",
+      "unit": "Unit",
+      "verification": "Next verification"
+    },
+    "verification": {
+      "overdue": "overdue",
+      "dueSoon": "due soon",
+      "ok": "valid"
+    },
+    "medium": {
+      "ELECTRICITY": "Electricity",
+      "GAS": "Gas",
+      "WATER": "Water",
+      "HEAT": "Heat",
+      "COLD": "Cooling",
+      "AIR": "Air",
+      "COMPRESSED_AIR": "Compressed air",
+      "NITROGEN": "Nitrogen",
+      "STEAM": "Steam",
+      "OIL": "Oil"
+    },
+    "filter": {
+      "type": "Type",
+      "location": "Location",
+      "verification": "Verification due by end of",
+      "overdue": "Only due",
+      "year": "Year"
+    },
+    "summary": {
+      "title": "Overview",
+      "total": "Meters",
+      "overdue": "Verification due by end of {year}",
+      "perMedium": "Per medium",
+      "perType": "Per type"
+    },
+    "export": {
+      "csv": "CSV",
+      "csvLabel": "Download the visible columns of “{name}” as CSV"
+    },
+    "detail": {
+      "general": "General",
+      "class": "Class",
+      "target": "Data point",
+      "noTarget": "No data point",
+      "values": "Values"
+    },
+    "history": {
+      "values": "Last values",
+      "readings": "Last meter readings",
+      "loading": "Loading history …",
+      "error": "The history could not be loaded.",
+      "empty": "No values available.",
+      "time": "Time",
+      "value": "Value",
+      "note": "Note",
+      "exchange": "Meter exchange"
+    },
+    "file": {
+      "preview": "Preview of {name}",
+      "loading": "Loading preview …",
+      "previewError": "No preview available.",
+      "download": "Download “{name}”"
+    },
+    "qr": {
+      "title": "QR code",
+      "alt": "QR code of meter {name}",
+      "loading": "Loading QR code …",
+      "error": "The QR code could not be loaded."
     }
   },
   "banner": {

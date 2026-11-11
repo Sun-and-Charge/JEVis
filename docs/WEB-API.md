@@ -517,3 +517,94 @@ user may read are returned. Dates are ISO 8601 with offset as stored (`null` if 
 ### Navigation
 
 `modules` additionally holds `actionPlans`, `nonconformities` and `legal` (number of readable plans).
+
+## Meters, base data, equipment (W4.3)
+
+View only. Tables over the native attributes of the objects, like the Control Center's plugins "Meter Plugin",
+"Base Data Plugin" and "Equipment Plugin". Only objects the user may read are returned.
+
+### `GET /web/registers/{kind}?lang=de`
+
+`kind`: `meters`, `basedata`, `equipment`. `lang`: language of class and column names (from `var/i18n`, fallback
+English, then the technical name).
+
+```json
+{
+  "kind": "meters",
+  "today": "2026-11-11",
+  "groups": [
+    {
+      "key": "5001", "name": "Plant", "site": { "id": 1001, "name": "Plant", "names": {} },
+      "columns": [
+        { "key": "Serial Number", "name": "Seriennummer", "type": "TEXT", "unit": null, "position": 12, "visible": true }
+      ],
+      "rows": [
+        {
+          "id": 5101, "name": "Main meter", "className": "Electricity Measurement Instrument",
+          "classLabel": "Stromzähler", "path": "Plant / Meters", "medium": "ELECTRICITY",
+          "values": { "Serial Number": "A-123", "Installation Date": "2015-10-01", "Picture": { "file": "meter.jpg", "image": true } },
+          "target": { "id": 2001, "attribute": "Value", "name": "Main meter data", "readable": true },
+          "last": { "value": 12345.6, "unit": "kWh", "timestamp": "2026-11-10T23:45:00.000+01:00", "decimals": 1 },
+          "verification": { "due": "2026-12-31", "overdue": false }
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `groups` (tabs as in the Control Center):
+  - meters: one per "Measurement Directory" (`name` = its building, else the directory name);
+  - basedata: one per parent folder of the "Base Data" objects (`name` = folder name, with `site`);
+  - equipment: one per equipment class ("Building Equipment" and subclasses; `name` = translated class name).
+- `columns`: meters: union of the attribute types of the meters in the group; equipment: the types of the class;
+  basedata: none (fixed columns name, path, last value, timestamp). Sorted by GUI position. `type`: `TEXT, NUMBER,
+  INTEGER, BOOLEAN, DATE, DATETIME, FILE, TARGET, TEXTAREA`; `unit` for numbers with unit; `visible`: shown by
+  default (meters: the Control Center's default list; equipment: all).
+- `values`: latest sample per attribute key, typed (number, boolean, string, date `yyyy-MM-dd`); file attributes as
+  `{ "file": name, "image": bool }` (download below; `image` from the file name); targets as `{ "id", "attribute",
+  "name", "readable" }`; passwords never; missing or empty values are absent (the key is left out). `values` holds
+  every attribute of the row's class (all columns of the group, not only the visible ones), e.g. `Type`, `Location`.
+  Dates are given as `yyyy-MM-dd` (also for `DATETIME`); values that cannot be converted are given as text.
+- meters:
+  - `medium`: `ELECTRICITY, GAS, WATER, HEAT, AIR, COMPRESSED_AIR, NITROGEN` (the classes "Electricity/Gas/Water/
+    Heat/Air/Compressed-Air/Nitrogen Measurement Instrument" and their subclasses, like the Control Center's
+    `MediumColumn`), `null` for all other meter classes;
+  - `target`: the "Online ID" (`id:Attribute`, first target), `null` if not set; name only if readable;
+  - `last`: latest sample of the target (value, display unit, timestamp, decimals = "Decimal Places" of the meter,
+    else of the target), `null` if none or not readable;
+  - `verification`: always an object for meters (absent for base data and equipment); `due`: attribute
+    "Verification Date" (next due date), `null` if not set; `overdue` = due before `today` (`false` without date).
+  - Groups: also directories without meters; rows sorted by name; meters below meters and in subfolders are part of
+    the group of the directory (only through objects the user may read).
+- basedata: `last` = `{ "value", "unit", "timestamp", "period" }`: latest sample of "Value" with display unit;
+  `period` = attribute "Period" of the object (ISO period, e.g. `P1M` → format the timestamp as month like the
+  Control Center), `null` if not set; `last` is `null` without sample.
+- equipment: `site` of the groups is `null` (a class spans several sites; see `path` of the rows).
+
+### `GET /web/registers/objects/{id}/history?limit=12`
+
+The last samples (newest first) of a base data object's "Value", or of a meter's target (its "Online ID"; attribute
+`Value` if the Online ID names an object only). `{ "unit": "kWh", "samples": [ { "timestamp": "…", "value": 12345.6,
+"note": "Meter Tausch" } ] }`. `limit`: default 12, at most 100. A meter without Online ID answers `{ "unit": null,
+"samples": [] }`; 404 if the object (or the meter's target) is not readable or is no meter/base data object.
+
+### `GET /web/registers/objects/{id}/files/{attribute}`
+
+The latest file of a file attribute (picture, datasheet, verification documentation) of a readable object.
+`{attribute}` is the attribute name, URL-encoded (`Verification%20Documentation`), matched without case; only file
+attributes of readable meters, base data and equipment objects (others: 404). `?inline=true` only for PNG, JPEG,
+GIF, WebP and BMP detected from the bytes (content type image/*, `Content-Disposition: inline`); everything else
+(also SVG) as attachment; nosniff, `Cache-Control: private, no-store`.
+
+### `GET /web/registers/meters/{id}/qr.svg`
+
+The meter's QR code as SVG, same text as the Control Center's labels (`MeterQrCode.payload`: meter id, Online ID
+target, server). The server address is taken from the request (`X-Forwarded-Proto`/`X-Forwarded-Host` behind a
+proxy, else the request URL), e.g. `https://sunandcharge.app:443`. The target is only part of the code if the
+user may read it. `Cache-Control: private, max-age=300`; 404 if the meter is not readable.
+
+### Navigation
+
+`modules` additionally holds `meters`, `basedata`, `equipment` (number of readable objects of the meter classes,
+"Base Data", equipment classes; not in the recycle bin).

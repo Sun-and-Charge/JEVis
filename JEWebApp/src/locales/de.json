@@ -202,7 +202,10 @@
     "readOnly": "Nur Ansicht – Einträge werden im Control Center bearbeitet.",
     "actionPlans": "Aktionsplan",
     "nonconformities": "Abweichungen",
-    "legal": "Rechtskataster"
+    "legal": "Rechtskataster",
+    "meters": "Messstellen",
+    "basedata": "Stammdaten",
+    "equipment": "Anlagen"
   },
   "appointments": {
     "title": "Termine",
@@ -468,6 +471,98 @@
         "description": "Beschreibung",
         "importance": "Bedeutung für die Organisation"
       }
+    }
+  },
+  "registers": {
+    "readOnly": "Nur Ansicht – Objekte werden im Control Center bearbeitet.",
+    "loading": "Objekte werden geladen …",
+    "empty": "Keine Objekte vorhanden.",
+    "emptyGroup": "Diese Gruppe enthält keine Objekte.",
+    "noMatch": "Keine Objekte passen zu den Filtern.",
+    "groups": "Gruppen",
+    "yes": "Ja",
+    "no": "Nein",
+    "targetHidden": "(ohne Leserecht)",
+    "noType": "Ohne Typ",
+    "searchPlaceholder": {
+      "meters": "Name, Seriennummer, Ort …",
+      "basedata": "Name, Pfad …",
+      "equipment": "Name, Pfad, Hersteller …"
+    },
+    "col": {
+      "name": "Name",
+      "path": "Pfad",
+      "medium": "Medium",
+      "last": "Letzter Wert",
+      "lastTime": "Letzter Wert am",
+      "timestamp": "Zeitstempel",
+      "unit": "Einheit",
+      "verification": "Nächste Eichung"
+    },
+    "verification": {
+      "overdue": "überfällig",
+      "dueSoon": "bald fällig",
+      "ok": "gültig"
+    },
+    "medium": {
+      "ELECTRICITY": "Strom",
+      "GAS": "Gas",
+      "WATER": "Wasser",
+      "HEAT": "Wärme",
+      "COLD": "Kälte",
+      "AIR": "Luft",
+      "COMPRESSED_AIR": "Druckluft",
+      "NITROGEN": "Stickstoff",
+      "STEAM": "Dampf",
+      "OIL": "Öl"
+    },
+    "filter": {
+      "type": "Typ",
+      "location": "Ort",
+      "verification": "Eichung fällig bis Ende",
+      "overdue": "Nur fällige",
+      "year": "Jahr"
+    },
+    "summary": {
+      "title": "Übersicht",
+      "total": "Messstellen",
+      "overdue": "Eichung fällig bis Ende {year}",
+      "perMedium": "Je Medium",
+      "perType": "Je Typ"
+    },
+    "export": {
+      "csv": "CSV",
+      "csvLabel": "Sichtbare Spalten von „{name}“ als CSV herunterladen"
+    },
+    "detail": {
+      "general": "Allgemein",
+      "class": "Klasse",
+      "target": "Datenpunkt",
+      "noTarget": "Kein Datenpunkt",
+      "values": "Werte"
+    },
+    "history": {
+      "values": "Letzte Werte",
+      "readings": "Letzte Zählerstände",
+      "loading": "Verlauf wird geladen …",
+      "error": "Der Verlauf konnte nicht geladen werden.",
+      "empty": "Keine Werte vorhanden.",
+      "time": "Zeitpunkt",
+      "value": "Wert",
+      "note": "Notiz",
+      "exchange": "Zählertausch"
+    },
+    "file": {
+      "preview": "Vorschau von {name}",
+      "loading": "Vorschau wird geladen …",
+      "previewError": "Keine Vorschau möglich.",
+      "download": "„{name}“ herunterladen"
+    },
+    "qr": {
+      "title": "QR-Code",
+      "alt": "QR-Code der Messstelle {name}",
+      "loading": "QR-Code wird geladen …",
+      "error": "Der QR-Code konnte nicht geladen werden."
     }
   },
   "banner": {
