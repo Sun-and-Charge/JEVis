@@ -51,9 +51,6 @@
         <Logger name="org.jevis.xmlparser" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="org.jevis.iso" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
         <Logger name="org.jevis.jecalc" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
