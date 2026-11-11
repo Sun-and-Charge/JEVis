@@ -134,6 +134,7 @@ public class ResourceWebModules {
         modules.put("maintenance", maintenance);
         modules.putAll(ResourceWebIso.moduleCounts(readable));
         modules.putAll(ResourceWebRegisters.moduleCounts(readable, ResourceWebRegisters.Classes.fromCache()));
+        modules.putAll(ResourceWebNotes.moduleCounts(readable));
         return modules;
     }
 

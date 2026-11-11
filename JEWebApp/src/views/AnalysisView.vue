@@ -11,10 +11,11 @@ import type { OptionContext } from '../analysis/options'
 import { browserTimeZone, dataRequest, settingsFromQuery, settingsToQuery, shiftRange, type AnalysisSettings } from '../analysis/settings'
 import AnalysisChart from '../components/analysis/AnalysisChart.vue'
 import AnalysisToolbar from '../components/analysis/AnalysisToolbar.vue'
+import { i18nTagName } from '../notes/notes'
 import { useAuthStore } from '../stores/auth'
 
 const props = defineProps<{ id: number }>()
-const { t, locale } = useI18n()
+const { t, te, locale } = useI18n()
 const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -90,7 +91,9 @@ const ctx = computed<OptionContext>(() => ({
     noPermission: t('analysis.state.noPermission'),
     error: t('analysis.state.error'),
     count: t('analysis.count'),
+    note: t('notes.note'),
   },
+  tagName: i18nTagName(t, te),
 }))
 
 const charts = computed<ChartView[]>(() => (config.value ? buildChartViews(config.value, data.value, t('analysis.state.noAccess')) : []))

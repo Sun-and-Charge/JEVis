@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Sun and Charge Germany GmbH */
-import type { AnalysisChartConfig, AnalysisConfig, AnalysisData, AnalysisRowData, RowStats, Sample } from '../api/analysis'
+import type { AnalysisChartConfig, AnalysisConfig, AnalysisData, AnalysisRowData, RowNote, RowStats, Sample } from '../api/analysis'
 import { decimalsFor, type Decimals } from './format'
+import { rowNotes } from './notes'
 
 /** Row types that can be drawn in one chart with a time axis. */
 export type XyType = 'LINE' | 'AREA' | 'STACKED_AREA' | 'COLUMN' | 'STACKED_COLUMN' | 'SCATTER' | 'LOGICAL' | 'BUBBLE'
@@ -31,6 +32,8 @@ export interface RowView {
   bubbleType: string
   /** value of a pie slice computed by the server (pie rows come without samples) */
   pieValue: number | null
+  /** notes of the row (markers on the curve); empty or missing without notes */
+  notes?: RowNote[]
 }
 
 export interface ChartView {
@@ -150,6 +153,7 @@ export function buildChartViews(config: AnalysisConfig, data: AnalysisData | nul
         readable,
         bubbleType: row.bubbleType ?? 'NONE',
         pieValue: state === 'OK' && typeof d?.pieValue === 'number' ? d.pieValue : null,
+        notes: readable ? rowNotes(d?.notes) : [],
       }
     })
     return {

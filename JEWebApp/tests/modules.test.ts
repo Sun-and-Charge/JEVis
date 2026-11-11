@@ -233,7 +233,7 @@ describe('maintenance banner', () => {
 
 describe('navigation modules', () => {
   it('reads module counts, missing ones as 0', () => {
-    const none = { appointments: 0, maintenance: 0, actionPlans: 0, nonconformities: 0, legal: 0, meters: 0, basedata: 0, equipment: 0 }
+    const none = { appointments: 0, maintenance: 0, actionPlans: 0, nonconformities: 0, legal: 0, meters: 0, basedata: 0, equipment: 0, notes: 0 }
     expect(moduleCounts(null)).toEqual(none)
     expect(moduleCounts({})).toEqual(none)
     expect(moduleCounts({ modules: { appointments: 3 } })).toEqual({ ...none, appointments: 3 })

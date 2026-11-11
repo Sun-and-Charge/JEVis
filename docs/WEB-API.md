@@ -608,3 +608,76 @@ user may read it. `Cache-Control: private, max-age=300`; 404 if the meter is not
 
 `modules` additionally holds `meters`, `basedata`, `equipment` (number of readable objects of the meter classes,
 "Base Data", equipment classes; not in the recycle bin).
+
+## Notes (W4.4)
+
+View only, like the Control Center's "Notes Plugin". A note is one timestamp of a "Data Notes" object (a child of a
+data row): sample of `Value` (text) plus the samples of `Tag` and `User` at the same timestamp. Only notes of
+"Data Notes" objects the user may read (and that are not in the recycle bin) are returned.
+
+### `GET /web/notes?from=2026-08-11&to=2026-11-11&timeZone=Europe/Berlin&lang=de`
+
+- `from`/`to`: days (`yyyy-MM-dd`, both inclusive) in `timeZone` (IANA, fallback: time zone of the server).
+  Default: the last 3 months up to today. `to` before `from` or more than 3 years answers `400`.
+- `lang`: language of the tag names (fallback English).
+
+```json
+{
+  "from": "2026-08-11T00:00:00.000+02:00",
+  "to": "2026-11-11T23:59:59.999+01:00",
+  "tags": [ { "id": "4", "name": "Ereignis" } ],
+  "notes": [
+    {
+      "id": "23685-1793700900000",
+      "timestamp": "2026-11-03T09:15:00.000+01:00",
+      "text": "Lastspitze durch Anlauf Kompressor 2",
+      "tags": ["4"],
+      "user": "Demo",
+      "notesObject": 23685,
+      "row": { "id": 23672, "name": "Strom - Gesamt", "className": "Data", "path": "Daten / Strom", "readable": true },
+      "site": { "id": 23053, "name": "Musterwerk" }
+    }
+  ],
+  "truncated": false
+}
+```
+
+- `notes`: newest first, at most 5000 (`truncated: true` if there are more in the time frame).
+- `id`: `<notesObject>-<epoch milliseconds>`, unique per note.
+- `tags`: the tag ids of the note. The `Tag` sample holds a `;`-separated list of tag ids (`0`–`13`) or, in old
+  notes, tag names in any language; both are mapped to the ids like the Control Center's `NoteTag.parseTags`.
+  Unknown texts are kept as their own id (the text itself) and listed in `tags` of the answer with `name` = text.
+- top-level `tags`: all tags used in the answer plus the 14 standard tags (`0` none, `1` audit, `2` task,
+  `3` report, `4` event, `5` reminder, `6` error, `7` question, `8` service, `9` characteristic, `10` comment,
+  `11` measure, `12` disturbance, `13` maintenance, as the Control Center's `NoteTag`),
+  names translated (`plugin.notes.tags.*`).
+- `user`: sample of `User` at the timestamp, `null` if none. `text`: `""` if the `Value` sample is empty.
+- `row`: the parent of the "Data Notes" object (the data row); `name`, `className` and `path` only if readable
+  (`readable: false` otherwise, then the note is still returned). `path`: names below the building (not included,
+  see `site`) down to the parent of the row, separated by ` / `, up to the first parent the user may not read;
+  `null` if empty.
+- `site`: the next readable "Building" (or subclass) above the row (`{ "id", "name" }`), `null` if there is none.
+
+### `GET /web/rows/{id}/samples?from=…&to=…`
+
+Raw samples of the `Value` attribute of a readable data row (any class with a `Value` attribute: Data, Clean Data,
+Math Data, ...), for the curve around a note. `from`/`to`: ISO 8601 date-times, at most 31 days apart, else `400`.
+
+```json
+{ "unit": "kWh", "samples": [[1793696400000, 12.5], [1793697300000, 13.1]], "truncated": false }
+```
+
+- `samples`: `[epoch milliseconds, value]`, oldest first, values in the display unit (like the analysis), at most
+  5000 (`truncated`). Text rows: value as string. 404 if the row is not readable or has no `Value` attribute.
+
+### Notes in analyses
+
+`POST /web/analyses/{id}/data`: every row (not the pie rows) additionally has `notes`, the notes within the
+resolved time frame of the "Data Notes" objects below the row's object and — if the row is a Clean Data row — below
+its raw data parent, if the user may read them: `[{ "timestamp": epoch milliseconds, "text": "…", "tags": ["4"],
+"user": "Demo" }]` (oldest first, at most 200 per row; `[]` if none). The web app shows them as markers on the
+curve (tooltip with text, tags, user).
+
+### Navigation
+
+`modules` additionally holds `notes`: number of readable "Data Notes" objects (not in the recycle bin).

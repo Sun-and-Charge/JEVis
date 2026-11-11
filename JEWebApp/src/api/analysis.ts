@@ -97,6 +97,14 @@ export interface RowStats {
   count: number
 }
 
+/** A note of a data row within the time frame (W4.4); tags are tag ids. */
+export interface RowNote {
+  timestamp: number
+  text: string
+  tags: string[]
+  user: string | null
+}
+
 export interface AnalysisRowData {
   key: string
   status: RowStatus | string
@@ -106,6 +114,8 @@ export interface AnalysisRowData {
   stats?: RowStats | null
   /** rows of pie charts: the value of the slice (then without samples) */
   pieValue?: number | null
+  /** notes of the row, oldest first (W4.4; missing on older servers and for pie rows) */
+  notes?: RowNote[]
 }
 
 export interface AnalysisChartData {

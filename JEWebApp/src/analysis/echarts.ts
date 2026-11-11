@@ -4,7 +4,16 @@
 // Only the parts of Apache ECharts that the analysis view needs (keeps the bundle small).
 import { registerLocale, use } from 'echarts/core'
 import { BarChart, HeatmapChart, LineChart, PieChart, ScatterChart } from 'echarts/charts'
-import { DataZoomInsideComponent, DataZoomSliderComponent, GridComponent, LegendScrollComponent, TooltipComponent, VisualMapContinuousComponent } from 'echarts/components'
+import {
+  DataZoomInsideComponent,
+  DataZoomSliderComponent,
+  GridComponent,
+  LegendScrollComponent,
+  MarkLineComponent,
+  MarkPointComponent,
+  TooltipComponent,
+  VisualMapContinuousComponent,
+} from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import langDE from 'echarts/i18n/langDE-obj.js'
 
@@ -20,6 +29,8 @@ use([
   DataZoomInsideComponent,
   DataZoomSliderComponent,
   VisualMapContinuousComponent,
+  MarkPointComponent,
+  MarkLineComponent,
   CanvasRenderer,
 ])
 registerLocale('DE', langDE as Parameters<typeof registerLocale>[1])

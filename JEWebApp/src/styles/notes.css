@@ -1,0 +1,182 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Notes (view only); builds on modules.css and iso.css. */
+
+/* time frame */
+.notes-range {
+  margin-bottom: 0.5rem;
+}
+
+.notes-range-msg {
+  flex: 1 1 100%;
+  margin: 0;
+  min-height: 0;
+  font-size: 0.85rem;
+}
+
+.notes-range-msg:empty {
+  display: none;
+}
+
+.notes-range input[aria-invalid='true'] {
+  border-color: var(--error);
+}
+
+.notes-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blueberry);
+  height: 2.25rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.iso-toolbar .notes-btn {
+  height: auto;
+  padding: 0.3rem 0.6rem;
+}
+
+.notes-btn:hover:not(:disabled) {
+  border-color: var(--blueberry);
+}
+
+.notes-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.notes-btn:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+/* search fields: checkboxes in the segmented control */
+.notes-in label {
+  padding: 0 0.65rem;
+}
+
+/* tag chips */
+.notes-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+}
+
+.notes-tags .seg-label {
+  margin: 0 0.25rem 0 0;
+}
+
+.notes-chip {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.notes-chip:hover {
+  border-color: var(--blueberry);
+}
+
+.notes-chip[aria-pressed='true'] {
+  background: var(--blueberry);
+  border-color: var(--blueberry);
+  color: #fff;
+}
+
+.notes-chip:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.notes-chip-count {
+  font-weight: 400;
+  margin-left: 0.15rem;
+  opacity: 0.75;
+}
+
+.notes-truncated {
+  background: #fffbe0;
+  border: 1px solid var(--sun);
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+
+/* table */
+.notes-row {
+  cursor: pointer;
+}
+
+.notes-row:hover > td {
+  background: var(--bg);
+}
+
+.notes-row.is-selected > td {
+  background: #fffbe0;
+}
+
+.notes-row-name .notes-path {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.notes-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notes-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  min-width: 14rem;
+}
+
+.notes-card .notes-text {
+  margin: 0 0 0.5rem;
+}
+
+.note-tag {
+  display: inline-block;
+  margin: 0 0.25rem 0.2rem 0;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #fffbe0;
+  color: var(--ink);
+  border: 1px solid var(--sun);
+}
+
+/* detail panel */
+.note-full-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0 0 0.75rem;
+}
+
+.note-chart {
+  height: 240px;
+  min-width: 0;
+}
+
+.note-small {
+  font-size: 0.8rem;
+  margin: 0.25rem 0 0;
+}

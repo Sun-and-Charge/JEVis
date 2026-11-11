@@ -4,6 +4,7 @@ import type { EChartsOption } from 'echarts'
 import { escapeHtml, formatDate, formatDateTime, formatMonth, formatNumber, formatValue } from './format'
 import { buildHeatMap, colorScale } from './heatmap'
 import { lastValue, numericSamples, rowTotal, type ChartView, type RowView, type XyType } from './model'
+import { noteMarkers, noteMarkPoint } from './notes'
 
 /** Texts and locale for the chart options. */
 export interface OptionContext {
@@ -14,7 +15,11 @@ export interface OptionContext {
     error: string
     /** "Anzahl" (bubble size) */
     count: string
+    /** "Notiz" (tooltip of the note markers) */
+    note?: string
   }
+  /** name of a note tag id (default: the id) */
+  tagName?: (id: string) => string
 }
 
 const GREY = '#9aa3b2'
@@ -133,11 +138,32 @@ function seriesFor(row: RowView, data: [number, number, string | null][], stackC
   return base
 }
 
+/**
+ * Note markers (markPoint) on the series of rows with notes. Stacked rows sit on the sum of the rows stacked below
+ * them at the same time (ECharts stacks in series order).
+ */
+function addNoteMarkers(rows: RowView[], samples: [number, number, string | null][][], series: Record<string, unknown>[], ctx: OptionContext) {
+  const below = new Map<string, Map<number, number>[]>()
+  const tooltip = { locale: ctx.locale, title: ctx.labels.note ?? 'Note', tagName: ctx.tagName ?? ((id: string) => id) }
+  rows.forEach((row, i) => {
+    const stack = series[i].stack as string | undefined
+    const lower = stack ? (below.get(stack) ?? []) : []
+    if (row.notes?.length) {
+      const offset = (t: number) => lower.reduce((sum, values) => sum + (values.get(t) ?? 0), 0)
+      const markPoint = noteMarkPoint(noteMarkers(samples[i], row.notes, offset), row.name, row.color, tooltip)
+      if (markPoint) series[i].markPoint = markPoint
+    }
+    if (stack) below.set(stack, [...lower, new Map(samples[i].map(([t, v]) => [t, v]))])
+  })
+}
+
 /** LINE, AREA, STACKED_AREA, COLUMN, STACKED_COLUMN, SCATTER, LOGICAL (also mixed per row): time axis, 1 or 2 y axes. */
 export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
   const rows = chart.rows
   const stackCount = new Map<string, number>()
-  const series = rows.map((row) => seriesFor(row, numericSamples(row), stackCount))
+  const samples = rows.map((row) => numericSamples(row))
+  const series = rows.map((row, i) => seriesFor(row, samples[i], stackCount))
+  addNoteMarkers(rows, samples, series, ctx)
   const twoAxes = rows.some((r) => r.axis === 1)
   const onlyLogical = rows.length > 0 && rows.every((r) => r.type === 'LOGICAL')
   const hasBars = rows.some((r) => r.type === 'COLUMN' || r.type === 'STACKED_COLUMN')

@@ -24,6 +24,7 @@ export const router = createRouter({
         { path: 'meters', name: 'meters', component: () => import('./views/RegisterView.vue'), props: { kind: 'meters' } },
         { path: 'basedata', name: 'basedata', component: () => import('./views/RegisterView.vue'), props: { kind: 'basedata' } },
         { path: 'equipment', name: 'equipment', component: () => import('./views/RegisterView.vue'), props: { kind: 'equipment' } },
+        { path: 'notes', name: 'notes', component: () => import('./views/NotesView.vue') },
         { path: ':pathMatch(.*)*', name: 'notFound', component: () => import('./views/NotFoundView.vue') },
       ],
     },

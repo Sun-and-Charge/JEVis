@@ -94,7 +94,7 @@ public class ResourceWebAnalysis {
             if (analysis == null) return notFound();
             AnalysisDefinition definition = new AnalysisReader().read(analysis);
             AnalysisResult result = new AnalysisEvaluator(ds).evaluate(analysis, definition, settings);
-            return json(dataJson(result));
+            return json(dataJson(result, notes(sql, definition, result)));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
@@ -262,7 +262,62 @@ public class ResourceWebAnalysis {
         return r;
     }
 
+    /**
+     * The notes of the rows (W4.4): for every row that is not part of a pie chart the notes of its "Data Notes"
+     * objects in the resolved time frame (empty for rows the user may not read). Errors only leave the notes empty.
+     *
+     * @return notes by row key
+     */
+    private static Map<String, List<Map<String, Object>>> notes(SQLDataSource sql, AnalysisDefinition definition,
+                                                                AnalysisResult result) {
+        Map<String, List<Map<String, Object>>> notes = new HashMap<>();
+        Map<String, RowStatus> status = new HashMap<>();
+        for (ChartResult chart : result.getCharts()) {
+            for (RowResult row : chart.getRows()) status.put(row.getKey(), row.getStatus());
+        }
+        ResourceWebModules.Lookup lookup = null;
+        Set<String> cleanDataClasses = null;
+        ResourceWebNotes.Samples samples = ResourceWebNotes.sqlSamples(sql);
+        for (ChartDefinition chart : definition.getCharts()) {
+            for (RowDefinition row : chart.getRows()) {
+                if (isPie(chart, row) || row.getKey() == null) continue;
+                List<Map<String, Object>> rowNotes = new ArrayList<>();
+                notes.put(row.getKey(), rowNotes);
+                if (!Boolean.TRUE.equals(row.getReadable()) || status.get(row.getKey()) == RowStatus.NO_PERMISSION
+                        || result.getFrom() == null || result.getTo() == null) {
+                    continue;
+                }
+                try {
+                    if (lookup == null) {
+                        lookup = ResourceWebModules.lookup(sql);
+                        cleanDataClasses = ResourceWebRegisters.Classes.fromCache().withHeirs(ResourceWebNotes.CLASS_CLEAN_DATA);
+                    }
+                    if (lookup.readable(row.getObjectId()) == null) continue;
+                    rowNotes.addAll(ResourceWebNotes.rowNotes(row.getObjectId(), result.getFrom(), result.getTo(),
+                            lookup, cleanDataClasses, samples));
+                } catch (Exception ex) {
+                    logger.warn("Could not load the notes of row {}", row.getKey(), ex);
+                }
+            }
+        }
+        return notes;
+    }
+
+    /**
+     * @return true for rows shown as pie (the chart is a pie chart or the row is drawn as pie)
+     */
+    static boolean isPie(ChartDefinition chart, RowDefinition row) {
+        return chart.getType() == AnalysisChartType.PIE || row.getChartType() == AnalysisChartType.PIE;
+    }
+
     static Map<String, Object> dataJson(AnalysisResult analysisResult) {
+        return dataJson(analysisResult, Collections.emptyMap());
+    }
+
+    /**
+     * @param notes notes by row key; rows without entry (pie rows) get no {@code notes}
+     */
+    static Map<String, Object> dataJson(AnalysisResult analysisResult, Map<String, List<Map<String, Object>>> notes) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("from", analysisResult.getFrom() != null ? analysisResult.getFrom().toString() : null);
         result.put("to", analysisResult.getTo() != null ? analysisResult.getTo().toString() : null);
@@ -272,7 +327,10 @@ public class ResourceWebAnalysis {
             c.put("id", chart.getId());
             List<Map<String, Object>> rows = new ArrayList<>();
             for (RowResult row : chart.getRows()) {
-                rows.add(rowDataJson(row));
+                Map<String, Object> r = rowDataJson(row);
+                List<Map<String, Object>> rowNotes = notes.get(row.getKey());
+                if (rowNotes != null) r.put("notes", rowNotes);
+                rows.add(r);
             }
             c.put("rows", rows);
             charts.add(c);

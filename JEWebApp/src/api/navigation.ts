@@ -22,7 +22,7 @@ export interface Navigation {
   other: { analyses: NavItem[]; dashboards: NavItem[] }
   /** the user's start dashboard (if readable), opened after login */
   startDashboard?: number | null
-  /** number of readable appointments / maintenance entries (W4.1), plans (W4.2) and register objects (W4.3); missing on older servers */
+  /** number of readable appointments / maintenance entries (W4.1), plans (W4.2) and register objects (W4.3) and notes (W4.4); missing on older servers */
   modules?: Partial<ModuleCounts> | null
 }
 
@@ -36,6 +36,8 @@ export interface ModuleCounts {
   meters: number
   basedata: number
   equipment: number
+  /** readable "Data Notes" objects (W4.4) */
+  notes: number
 }
 
 /** Module counts with missing values as 0 (the menu shows only modules with entries). */
@@ -51,6 +53,7 @@ export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCou
     meters: n(m?.meters),
     basedata: n(m?.basedata),
     equipment: n(m?.equipment),
+    notes: n(m?.notes),
   }
 }
 
