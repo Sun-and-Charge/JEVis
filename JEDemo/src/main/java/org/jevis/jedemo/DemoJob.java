@@ -71,6 +71,8 @@ public class DemoJob {
     static final List<String> CHANNEL_TARGET_ATTRIBUTES = Arrays.asList("Target", "Target ID", "Target Id");
     static final String LINK_CLASS = "Link";
     static final String INVOICE_DIRECTORY_CLASS = "Energy Invoices Directory";
+    static final String NOTES_CLASS = "Data Notes";
+    static final List<String> NOTES_ATTRIBUTES = Arrays.asList("Value", "Tag", "User");
     static final int WRITE_CHUNK = 5000;
     private static final DateTimeFormatter FILE_STAMP = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
@@ -362,6 +364,9 @@ public class DemoJob {
                     case "Obligation":
                         done = shiftFileEntry(o, DateShifter.OBLIGATION_FIELDS, weeks);
                         break;
+                    case NOTES_CLASS:
+                        done = shiftNotes(o, weeks);
+                        break;
                     default:
                         continue;
                 }
@@ -429,6 +434,56 @@ public class DemoJob {
         newSample.commit();
         logger.debug("Shifted {} [{}]", o.getName(), o.getID());
         return true;
+    }
+
+    /**
+     * Data notes: the samples of "Value", "Tag" and "User" move by whole weeks (local time kept), so the notes stay
+     * on the replayed curves. The old time stamps are deleted first and the moved samples written afterwards, so a
+     * service user without the right to delete note samples changes nothing (no doubled notes).
+     */
+    private boolean shiftNotes(JEVisObject o, int weeks) throws JEVisException {
+        boolean any = false, first = true;
+        for (String name : NOTES_ATTRIBUTES) {
+            JEVisAttribute att = o.getAttribute(name);
+            List<JEVisSample> samples = att != null ? new ArrayList<>(att.getAllSamples()) : null;
+            if (samples == null || samples.isEmpty()) continue;
+            any = true;
+            if (dryRun) continue;
+            List<Object[]> moved = new ArrayList<>();
+            Set<Long> newTimes = new HashSet<>();
+            for (JEVisSample s : samples) {
+                long ts = DateShifter.shiftMillis(s.getTimestamp().getMillis(), weeks);
+                newTimes.add(ts);
+                moved.add(new Object[]{ts, s.getValueAsString(), s.getNote()});
+            }
+            for (JEVisSample s : samples) {
+                long ts = s.getTimestamp().getMillis();
+                if (newTimes.contains(ts)) continue; // overwritten by the moved sample
+                // the delete request has second precision; the range must not reach a moved sample
+                long from = ts - Math.floorMod(ts, 1000L);
+                long to = ts % 1000 == 0 ? from : from + 1000;
+                boolean clash = newTimes.stream().anyMatch(n -> n >= from && n <= to);
+                boolean deleted = !clash && att.deleteSamplesBetween(new DateTime(from), new DateTime(to));
+                if (!deleted && first) {
+                    throw new JEVisException("Old note samples of '" + name + "' could not be deleted (missing delete right?), notes not shifted", 403);
+                }
+                if (!deleted) {
+                    logger.warn("Could not remove the old note sample {} of {} [{}] '{}'", s.getTimestamp(), o.getName(), o.getID(), name);
+                }
+                first = false;
+            }
+            List<JEVisSample> write = new ArrayList<>();
+            for (Object[] m : moved) write.add(att.buildSample(new DateTime((long) m[0]), m[1], (String) m[2]));
+            try {
+                att.addSamples(write);
+            } catch (JEVisException | RuntimeException e) {
+                // the old samples are gone already: log the content so it can be restored by hand
+                for (Object[] m : moved) logger.error("Note sample not written: {} [{}] '{}' {} = {}", o.getName(), o.getID(), name, new DateTime((long) m[0]), m[1]);
+                throw e;
+            }
+        }
+        if (any) logger.debug("{} notes of {} [{}]", dryRun ? "[dry run] would shift" : "Shifted", o.getName(), o.getID());
+        return any;
     }
 
     // ------------------------------------------------------------------------------------------------ invoices

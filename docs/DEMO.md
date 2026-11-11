@@ -38,6 +38,10 @@ writes **raw data**, clean data, calculations and alarms follow from the normal 
    - Actions, nonconformities (`Create Date`, `Planned Date`, `Done Date`) and obligations (`issue date`,
      `current version date`, `Date of Examination`): new file sample `DataModel_v2_<yyyyMMddHHmm>.json` like the
      Control Center writes it. The JSON is edited as a tree, unknown keys are kept.
+   - Data notes (`Value`, `Tag`, `User`): the samples move by the same weeks, local time kept, so the notes stay on
+     the replayed curves and in the web app's default time frame. The old samples are deleted first, then the moved
+     ones written; this needs the **delete** (or execute) right on the notes. Without it the job logs an error per
+     notes object and changes nothing there.
    - Then **Shifted Until** moves forward by the same number of weeks.
 3. **Monthly energy invoices.** In the first cycle of a month in which the configured clean data rows reach the new
    month, one ZUGFeRD PDF (EN16931) each for electricity and gas for the previous month is created and imported
@@ -74,8 +78,9 @@ Create an object of class **JEDemo** in the Service Directory:
 
 ## Service user and API key
 
-1. Control Center, user administration: a user (e.g. `demo-replay`) in a new group with **write** rights on the
-   demo organisation's owner group only, no other rights, no Sys Admin.
+1. Control Center, user administration: a user (e.g. `demo-replay`) in a new group with **read, write, create and
+   delete** rights on the demo organisation's owner group only, no other rights, no Sys Admin. Delete is needed to
+   move the data notes.
 2. Create an API key for this user, in the Control Center ("API key" dialog) or on the server **with its own key
    file**:
    ```bash
