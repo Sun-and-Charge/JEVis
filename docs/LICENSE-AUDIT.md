@@ -59,6 +59,14 @@ This document lists what was checked and the issues that still need a decision o
   Control Center (chart and dashboard PDF export, meter labels) and JEReport (PDF splitting). The QR codes of
   the meter labels are drawn from a ZXing matrix, since OpenPDF has no QR code support. JEWebService uses the same
   ZXing `core` 3.5.3 (Apache 2.0, compatible with GPLv3) for the meter QR codes of the web app (SVG).
+- **Energy invoices (JEWebService only, see `ENERGY-INVOICES.md`):** Mustangproject `org.mustangproject:library`
+  2.26.0 (Apache 2.0, needs Java 11+) reads ZUGFeRD / Factur-X and XRechnung. Its jar bundles fonts under the
+  OFL 1.1 (Source Sans Pro, Source Serif Pro) and GNU FreeFont `FreeSans.ttf` (GPLv3 with font exception).
+  Transitive: Apache PDFBox 3.0.8 (`pdfbox`, `pdfbox-io`, `fontbox`, `preflight`, `xmpbox`, Apache 2.0),
+  Saxon-HE 12.10 (MPL 2.0) with `org.xmlresolver:xmlresolver` 5.3.3 (Apache 2.0), dom4j 2.2.0 (BSD 3-clause),
+  `slf4j-api` (MIT, already present). All compatible with GPLv3. Not used and excluded: FOP / Batik (PDF
+  rendering) and the ph-* CII to UBL converter. Saxon cannot be left out (Mustang's `XMLTools` refers to it);
+  it registers itself as the default JAXP `TransformerFactory` of the web service.
 - **`org.json:json`:** updated from 20210307 (JSON License, "shall be used for Good, not Evil") to 20260814
   (public domain).
 - **`javax.activation:activation` 1.1 (CDDL 1.0 only):** excluded from `com.sun.mail:javax.mail`, replaced by

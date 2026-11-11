@@ -740,6 +740,14 @@ public interface JC {
             String a_Period = "Period";
         }
 
+        interface EnergyInvoiceData {
+            String name = "Energy Invoice Data";
+
+            String a_Value = "Value";
+            String a_Period = "Period";
+            String a_Series = "Series";
+        }
+
         interface ForecastData {
             String name = "Forecast Data";
 
@@ -2003,6 +2011,7 @@ public interface JC {
         interface EnergyInvoicesDirectory {
             String name = "Energy Invoices Directory";
 
+            String a_Medium = "Medium";
         }
 
         interface AnalysesDirectory {
@@ -2233,6 +2242,28 @@ public interface JC {
             String a_AdditionalRelativeCost = "Additional Relative Cost";
             String a_AdditionalFixCost = "Additional Fix Cost";
         }
+    }
+
+    interface EnergyInvoice {
+        String name = "Energy Invoice";
+
+        String a_InvoiceFile = "Invoice File";
+        String a_Format = "Format";
+        String a_InvoiceNumber = "Invoice Number";
+        String a_InvoiceDate = "Invoice Date";
+        String a_Seller = "Seller";
+        String a_SellerVATID = "Seller VAT ID";
+        String a_Buyer = "Buyer";
+        String a_PeriodStart = "Period Start";
+        String a_PeriodEnd = "Period End";
+        String a_Medium = "Medium";
+        String a_MeterPoint = "Meter Point";
+        String a_Consumption = "Consumption";
+        String a_NetAmount = "Net Amount";
+        String a_TaxAmount = "Tax Amount";
+        String a_GrossAmount = "Gross Amount";
+        String a_Currency = "Currency";
+        String a_LineItems = "Line Items";
     }
 
     interface EnergySupplier {

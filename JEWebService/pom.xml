@@ -117,6 +117,24 @@
             <artifactId>core</artifactId>
             <version>3.5.3</version>
         </dependency>
+        <!-- reading ZUGFeRD / Factur-X and XRechnung energy invoices (Apache 2.0, Java 11+, see docs/ENERGY-INVOICES.md).
+             Only the importer is used: PDF rendering (FOP/Batik) and the CII to UBL converter (ph-*) are not needed
+             and left out of the server jar. Saxon stays, Mustang's XMLTools cannot be loaded without it. -->
+        <dependency>
+            <groupId>org.mustangproject</groupId>
+            <artifactId>library</artifactId>
+            <version>2.26.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>fop-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.helger</groupId>
+                    <artifactId>en16931-cii2ubl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>

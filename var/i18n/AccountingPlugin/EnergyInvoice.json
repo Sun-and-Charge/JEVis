@@ -1,0 +1,200 @@
+{
+  "jevisclass": "Energy Invoice",
+  "names": {
+    "de": "Energierechnung",
+    "en": "Energy Invoice"
+  },
+  "descriptions": {
+    "de": "Importierte elektronische Energierechnung (ZUGFeRD / Factur-X oder XRechnung) mit Originaldatei und den daraus gelesenen Werten",
+    "en": "Imported electronic energy invoice (ZUGFeRD / Factur-X or XRechnung) with the original file and the values read from it"
+  },
+  "types": [
+    {
+      "type": "Invoice File",
+      "descriptions": {
+        "de": "Originaldatei der Rechnung (PDF oder XML)",
+        "en": "Original file of the invoice (PDF or XML)"
+      },
+      "names": {
+        "de": "Rechnungsdatei",
+        "en": "Invoice file"
+      }
+    },
+    {
+      "type": "Format",
+      "descriptions": {
+        "de": "Format der E-Rechnung, z. B. ZUGFeRD oder XRechnung",
+        "en": "Format of the e-invoice, e.g. ZUGFeRD or XRechnung"
+      },
+      "names": {
+        "de": "Format",
+        "en": "Format"
+      }
+    },
+    {
+      "type": "Invoice Number",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Rechnungsnummer",
+        "en": "Invoice number"
+      }
+    },
+    {
+      "type": "Invoice Date",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Rechnungsdatum",
+        "en": "Invoice date"
+      }
+    },
+    {
+      "type": "Seller",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Verkäufer",
+        "en": "Seller"
+      }
+    },
+    {
+      "type": "Seller VAT ID",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "USt-IdNr. des Verkäufers",
+        "en": "Seller VAT ID"
+      }
+    },
+    {
+      "type": "Buyer",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Käufer",
+        "en": "Buyer"
+      }
+    },
+    {
+      "type": "Period Start",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Leistungszeitraum von",
+        "en": "Period start"
+      }
+    },
+    {
+      "type": "Period End",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Leistungszeitraum bis",
+        "en": "Period end"
+      }
+    },
+    {
+      "type": "Medium",
+      "descriptions": {
+        "de": "ELECTRICITY, GAS, DISTRICT_HEATING oder OTHER",
+        "en": "ELECTRICITY, GAS, DISTRICT_HEATING or OTHER"
+      },
+      "names": {
+        "de": "Medium",
+        "en": "Medium"
+      }
+    },
+    {
+      "type": "Meter Point",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Zählpunkt / Marktlokation",
+        "en": "Meter point / market location"
+      }
+    },
+    {
+      "type": "Consumption",
+      "descriptions": {
+        "de": "Verbrauch laut Rechnung (kWh oder m³)",
+        "en": "Consumption according to the invoice (kWh or m³)"
+      },
+      "names": {
+        "de": "Verbrauch",
+        "en": "Consumption"
+      }
+    },
+    {
+      "type": "Net Amount",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Nettobetrag",
+        "en": "Net amount"
+      }
+    },
+    {
+      "type": "Tax Amount",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Steuerbetrag",
+        "en": "Tax amount"
+      }
+    },
+    {
+      "type": "Gross Amount",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Bruttobetrag",
+        "en": "Gross amount"
+      }
+    },
+    {
+      "type": "Currency",
+      "descriptions": {
+        "de": "",
+        "en": ""
+      },
+      "names": {
+        "de": "Währung",
+        "en": "Currency"
+      }
+    },
+    {
+      "type": "Line Items",
+      "descriptions": {
+        "de": "Positionen der Rechnung als JSON",
+        "en": "Line items of the invoice as JSON"
+      },
+      "names": {
+        "de": "Rechnungspositionen",
+        "en": "Line items"
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "Energy Invoice Data",
+  "description": "The class Energy Invoice Data represents a time series of the imported energy invoices of one medium (consumption, net or gross costs per billing period).",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Energy Invoice Data",
+      "end": "Data",
+      "type": 0
+    },
+    {
+      "start": "Energy Invoice Data",
+      "end": "Energy Invoices Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Series",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 10,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice Data"
+    }
+  ]
+}

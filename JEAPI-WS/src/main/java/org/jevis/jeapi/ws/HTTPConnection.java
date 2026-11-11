@@ -424,6 +424,65 @@ public class HTTPConnection {
     }
 
     /**
+     * Sends a file as {@code multipart/form-data} POST with the credentials of this connection and returns status
+     * and body, also for error responses. Repeats the request once with a new access token after a 401.
+     *
+     * @param resource    the relative resource path including the query
+     * @param fieldName   the name of the form field (e.g. {@code "file"})
+     * @param fileName    the file name sent in the {@code Content-Disposition} of the part
+     * @param contentType the content type of the part
+     * @param content     the file content
+     */
+    public HttpResult postMultipart(String resource, String fieldName, String fileName, String contentType, byte[] content) throws IOException {
+        String boundary = "----JEAPIWS" + Long.toHexString(System.nanoTime()) + Long.toHexString(new SecureRandom().nextLong());
+        byte[] body = multipartBody(boundary, fieldName, fileName, contentType, content);
+        for (int attempt = 0; attempt < 2; attempt++) {
+            HttpURLConnection con = getHTTPConnection(resource);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            con.setRequestProperty("Accept", "application/json");
+            con.setRequestProperty("User-Agent", "JEAPI-WS");
+            con.setDoOutput(true);
+            con.setFixedLengthStreamingMode(body.length);
+            String usedToken = addAuth(con);
+            logger.debug("HTTP multipart POST request {}", con.getURL());
+            try (OutputStream out = con.getOutputStream()) {
+                out.write(body);
+            }
+            int code = con.getResponseCode();
+            if (code == HttpURLConnection.HTTP_UNAUTHORIZED && attempt == 0 && refreshAfterUnauthorized(usedToken)) {
+                con.disconnect();
+                continue;
+            }
+            InputStream stream = code < 400 ? con.getInputStream() : con.getErrorStream();
+            String answer = "";
+            if (stream != null) {
+                try (InputStream in = stream) {
+                    answer = IOUtils.toString(in, StandardCharsets.UTF_8);
+                }
+            }
+            con.disconnect();
+            return new HttpResult(code, answer);
+        }
+        throw new IOException("Unreachable");
+    }
+
+    /**
+     * Builds the body of a {@code multipart/form-data} request with one file part.
+     */
+    static byte[] multipartBody(String boundary, String fieldName, String fileName, String contentType, byte[] content) throws IOException {
+        String safeName = fileName == null ? "file" : fileName.replace("\"", "'").replace("\r", " ").replace("\n", " ");
+        ByteArrayOutputStream out = new ByteArrayOutputStream(content.length + 512);
+        String head = "--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + safeName + "\"\r\n"
+                + "Content-Type: " + (contentType == null ? "application/octet-stream" : contentType) + "\r\n\r\n";
+        out.write(head.getBytes(StandardCharsets.UTF_8));
+        out.write(content);
+        out.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+        return out.toByteArray();
+    }
+
+    /**
      * Performs a GET request and returns the response body as an {@link InputStream}.
      * The request is retried up to {@value #RETRIES} times with a {@value #RETRY_DELAY_MS} ms delay.
      * Supports gzip-compressed responses transparently.

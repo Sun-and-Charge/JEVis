@@ -1,0 +1,24 @@
+{
+  "jevisclass": "Energy Invoice Data",
+  "names": {
+    "de": "Rechnungsdaten",
+    "en": "Energy Invoice Data"
+  },
+  "descriptions": {
+    "de": "Zeitreihe der importierten Energierechnungen eines Mediums (Verbrauch, Kosten netto oder brutto je Abrechnungszeitraum)",
+    "en": "Time series of the imported energy invoices of one medium (consumption, net or gross costs per billing period)"
+  },
+  "types": [
+    {
+      "type": "Series",
+      "descriptions": {
+        "de": "CONSUMPTION, NET oder GROSS",
+        "en": "CONSUMPTION, NET or GROSS"
+      },
+      "names": {
+        "de": "Reihe",
+        "en": "Series"
+      }
+    }
+  ]
+}
