@@ -1,0 +1,46 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Alarms (view only); builds on modules.css, iso.css and notes.css (time frame, chips, rows). */
+
+.alarms-hint {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+/* state badge: open alarms in the warning colour, confirmed ones calm */
+.mod-badge.alarm-state.is-open {
+  background: var(--sun);
+  border-color: var(--sun);
+  color: var(--blueberry);
+}
+
+.mod-badge.alarm-state.is-checked {
+  background: var(--ok-bg);
+  border-color: var(--ok-bg);
+  color: var(--ok);
+}
+
+.mod-badge.alarm-state[title] {
+  cursor: help;
+}
+
+.alarms-op {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.alarms-card-config {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.alarms-card .mod-dl dd {
+  overflow-wrap: anywhere;
+}

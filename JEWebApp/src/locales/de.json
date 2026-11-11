@@ -206,7 +206,9 @@
     "meters": "Messstellen",
     "basedata": "Stammdaten",
     "equipment": "Anlagen",
-    "notes": "Notizen"
+    "notes": "Notizen",
+    "alarms": "Alarme",
+    "alarmsOpen": "{n} offene Alarme (7 Tage) | 1 offener Alarm (7 Tage) | {n} offene Alarme (7 Tage)"
   },
   "appointments": {
     "title": "Termine",
@@ -619,6 +621,66 @@
       "11": "Maßnahme",
       "12": "Störung",
       "13": "Wartung"
+    }
+  },
+  "alarms": {
+    "title": "Alarme",
+    "alarm": "Alarm",
+    "readOnly": "Nur Ansicht – Alarme werden im Control Center quittiert.",
+    "loading": "Alarme werden geladen …",
+    "empty": "Für diese Auswahl gibt es keine Alarme.",
+    "noMatch": "Kein Alarm passt zu Suche und Filtern.",
+    "truncated": "Es werden nur die neuesten {n} Alarme angezeigt. Wählen Sie einen kürzeren Zeitraum, um alle zu sehen.",
+    "rangeHint": "Der Zeitraum bezieht sich darauf, wann die Alarme protokolliert wurden.",
+    "range": {
+      "label": "Zeitraum",
+      "from": "Von",
+      "to": "Bis",
+      "reset": "Letzte 7 Tage",
+      "missing": "Bitte Start- und Enddatum wählen.",
+      "order": "Das Enddatum liegt vor dem Startdatum.",
+      "tooLong": "Der Zeitraum darf höchstens 1 Jahr lang sein."
+    },
+    "state": { "label": "Status", "open": "Offen", "checked": "Quittiert", "all": "Alle" },
+    "searchPlaceholder": "Konfiguration, Datenpunkt, Art …",
+    "typeFilter": "Art",
+    "clearTypes": "Alle Arten",
+    "noAccess": "Kein Leserecht",
+    "col": {
+      "date": "Datum",
+      "site": "Standort",
+      "configuration": "Konfiguration",
+      "path": "Pfad",
+      "row": "Datenpunkt",
+      "isValue": "Ist-Wert",
+      "operator": "Operator",
+      "shouldBeValue": "Soll-Wert",
+      "tolerance": "Toleranz (%)",
+      "unit": "Einheit",
+      "type": "Art",
+      "alarm": "Alarm",
+      "status": "Status",
+      "checkedBy": "Quittiert von",
+      "checkedAt": "Quittiert am",
+      "logged": "Protokolliert",
+      "attribute": "Attribut"
+    },
+    "export": {
+      "csv": "CSV",
+      "csvLabel": "Angezeigte Alarme als CSV herunterladen"
+    },
+    "detail": {
+      "chart": "Verlauf ±1 Tag",
+      "chartLabel": "Verlauf von „{name}“ einen Tag vor bis einen Tag nach dem Alarm",
+      "limit": "Soll-Wert",
+      "loading": "Verlauf wird geladen …",
+      "noRow": "Der Alarm hat keinen Datenpunkt (mehr) – kein Verlauf.",
+      "noAccess": "Der Datenpunkt darf nicht gelesen werden – kein Verlauf.",
+      "notFound": "Der Datenpunkt ist nicht lesbar oder hat keine Werte.",
+      "error": "Der Verlauf konnte nicht geladen werden.",
+      "noData": "Keine Werte rund um den Alarm.",
+      "noNumbers": "Der Datenpunkt enthält Text, keine Zahlen – kein Verlauf.",
+      "truncated": "Nicht alle Werte werden angezeigt."
     }
   },
   "banner": {
