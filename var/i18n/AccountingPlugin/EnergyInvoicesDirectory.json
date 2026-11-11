@@ -1,0 +1,32 @@
+{
+  "jevisclass": "Energy Invoices Directory",
+  "names": {
+    "de": "Energierechnungen",
+    "ru": "счета за энергию",
+    "uk": "рахунки за електроенергію",
+    "en": "Energy Invoices",
+    "th": "ค่าพลังงาน",
+    "ar": "دليل فواتير الطاقة"
+  },
+  "descriptions": {
+    "de": "Unter Energierechnungen werden Energierechnungen abgelegt",
+    "ru": "Счета за электроэнергию регистрируются в разделе «Счета за электроэнергию».",
+    "en": "Energy invoicse are deployed in the Energy Invoices Directory",
+    "uk": "Рахунки за електроенергію подаються в розділі Рахунки за електроенергію",
+    "th": "บิลค่าพลังงานอยู่ภายใต้ บิลค่าพลังงาน",
+    "ar": "يتم تقديم فواتير الطاقة بموجب فواتير الطاقة"
+  },
+  "types": [
+    {
+      "type": "Medium",
+      "descriptions": {
+        "de": "Medium der Rechnungen in diesem Ordner (ELECTRICITY, GAS, DISTRICT_HEATING, OTHER), leer für den obersten Ordner",
+        "en": "Medium of the invoices in this folder (ELECTRICITY, GAS, DISTRICT_HEATING, OTHER), empty for the top folder"
+      },
+      "names": {
+        "de": "Medium",
+        "en": "Medium"
+      }
+    }
+  ]
+}

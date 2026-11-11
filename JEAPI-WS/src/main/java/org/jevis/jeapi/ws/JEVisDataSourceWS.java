@@ -1059,6 +1059,151 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     }
 
     /**
+     * Maximum size of an invoice file accepted by the web service.
+     */
+    public static final long MAX_INVOICE_FILE_BYTES = 20L * 1024 * 1024;
+
+    /**
+     * Parses a ZUGFeRD / Factur-X (PDF or XML) or XRechnung file on the server without storing anything.
+     *
+     * @param file        the invoice file
+     * @param directoryId the target Energy Invoices Directory for the duplicate check, or {@code null}
+     * @return the answer of {@code POST /invoices/parse} (see docs/ENERGY-INVOICES.md)
+     * @throws InvoiceRequestException with status and error code of the server (400, 401, 413, ...)
+     */
+    public com.fasterxml.jackson.databind.JsonNode parseInvoice(File file, Long directoryId) throws InvoiceRequestException {
+        String resource = REQUEST.API_PATH_V1 + "invoices/parse" + (directoryId != null ? "?directory=" + directoryId : "");
+        return postInvoice(resource, file, HttpURLConnection.HTTP_OK);
+    }
+
+    /**
+     * Imports an invoice file into the given Energy Invoices Directory (medium folder, invoice object and time
+     * series are created by the server) and loads the new or changed objects into the cache, so that they appear in
+     * the tree.
+     *
+     * @param file        the invoice file
+     * @param directoryId the Energy Invoices Directory
+     * @param medium      {@code ELECTRICITY}, {@code GAS}, {@code DISTRICT_HEATING} or {@code OTHER}
+     * @return the answer of {@code POST /invoices/import}: {@code invoiceId}, {@code folderId}, {@code series}
+     * @throws InvoiceRequestException with status and error code of the server (409 duplicate, 403, 400, 413, ...)
+     */
+    public com.fasterxml.jackson.databind.JsonNode importInvoice(File file, long directoryId, String medium) throws InvoiceRequestException {
+        String resource;
+        try {
+            resource = REQUEST.API_PATH_V1 + "invoices/import?directory=" + directoryId
+                    + "&medium=" + java.net.URLEncoder.encode(medium == null ? "" : medium, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException ex) {
+            throw new InvoiceRequestException(ex.getMessage(), ex);
+        }
+        com.fasterxml.jackson.databind.JsonNode answer = postInvoice(resource, file, HttpURLConnection.HTTP_CREATED);
+        try {
+            refreshAfterInvoiceImport(answer);
+        } catch (Exception ex) {
+            logger.error("Could not load the imported invoice objects", ex);
+        }
+        return answer;
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode postInvoice(String resource, File file, int expected) throws InvoiceRequestException {
+        if (file.length() > MAX_INVOICE_FILE_BYTES) {
+            throw new InvoiceRequestException(HttpURLConnection.HTTP_ENTITY_TOO_LARGE, null, "File is larger than 20 MB", null);
+        }
+        HTTPConnection.HttpResult result;
+        try {
+            byte[] content = java.nio.file.Files.readAllBytes(file.toPath());
+            result = this.con.postMultipart(resource, "file", file.getName(), invoiceContentType(file.getName()), content);
+        } catch (IOException ex) {
+            logger.error("Invoice request failed: {}", resource, ex);
+            throw new InvoiceRequestException(ex.getMessage() != null ? ex.getMessage() : ex.toString(), ex);
+        }
+        if (result.getCode() == expected || result.getCode() == HttpURLConnection.HTTP_OK || result.getCode() == HttpURLConnection.HTTP_CREATED) {
+            try {
+                return this.objectMapper.readTree(result.getBody());
+            } catch (IOException ex) {
+                throw new InvoiceRequestException(result.getCode(), null, "Invalid answer: " + ex.getMessage(), null);
+            }
+        }
+        throw invoiceError(this.objectMapper, result.getCode(), result.getBody());
+    }
+
+    static String invoiceContentType(String fileName) {
+        String lower = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".pdf")) return "application/pdf";
+        if (lower.endsWith(".xml")) return "application/xml";
+        return "application/octet-stream";
+    }
+
+    /**
+     * Maps an error answer of the invoice endpoints ({@code {"error": ..., "message": ..., "existing": id}} or plain
+     * text) to an {@link InvoiceRequestException}.
+     */
+    static InvoiceRequestException invoiceError(ObjectMapper mapper, int code, String body) {
+        String errorCode = null;
+        String message = null;
+        Long existing = null;
+        if (body != null && !body.trim().isEmpty()) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(body);
+                if (node != null && node.isObject()) {
+                    if (node.hasNonNull("error")) errorCode = node.get("error").asText();
+                    if (node.hasNonNull("message")) message = node.get("message").asText();
+                    if (node.hasNonNull("existing") && node.get("existing").canConvertToLong()) {
+                        existing = node.get("existing").asLong();
+                    }
+                } else if (node != null && node.isTextual()) {
+                    message = node.asText();
+                }
+            } catch (IOException ex) {
+                message = body.trim();
+            }
+        }
+        if (message == null || message.isEmpty()) {
+            message = errorCode != null ? errorCode : "HTTP " + code;
+        }
+        return new InvoiceRequestException(code, errorCode, message, existing);
+    }
+
+    /**
+     * Loads the medium folder, the series and the invoice of an import answer into the cache. New objects are
+     * announced to their parent with {@link JEVisEvent.TYPE#OBJECT_NEW_CHILD}; existing ones get their attributes
+     * reloaded (new samples).
+     */
+    private void refreshAfterInvoiceImport(com.fasterxml.jackson.databind.JsonNode answer) {
+        if (answer == null) return;
+        List<Long> ids = new ArrayList<>();
+        if (answer.hasNonNull("folderId")) ids.add(answer.get("folderId").asLong());
+        com.fasterxml.jackson.databind.JsonNode series = answer.get("series");
+        if (series != null && series.isObject()) {
+            for (String key : Arrays.asList("CONSUMPTION", "NET", "GROSS")) {
+                if (series.hasNonNull(key)) ids.add(series.get(key).asLong());
+            }
+        }
+        if (answer.hasNonNull("invoiceId")) ids.add(answer.get("invoiceId").asLong());
+
+        for (Long id : ids) {
+            if (id == null || id <= 0) continue;
+            JEVisObject cached = this.objectCache.get(id);
+            if (cached != null) {
+                reloadAttribute(cached);
+                continue;
+            }
+            this.objectNullCache.remove(id);
+            JEVisObject obj = getObjectWS(id);
+            if (obj == null) continue;
+            reloadRelationships(id);
+            reloadAttribute(obj);
+            try {
+                List<JEVisObject> parents = obj.getParents();
+                if (parents != null && !parents.isEmpty()) {
+                    parents.get(0).notifyListeners(new JEVisEvent(parents.get(0), JEVisEvent.TYPE.OBJECT_NEW_CHILD, obj));
+                }
+            } catch (Exception ex) {
+                logger.error("Could not announce new object {}", id, ex);
+            }
+        }
+    }
+
+    /**
      * Sys Admin only: removes the two-factor authentication of a user who lost the device and the recovery codes.
      */
     public boolean resetMfa(long userId) throws JEVisException {
@@ -2145,6 +2290,10 @@ public class JEVisDataSourceWS implements JEVisDataSource {
                     this.objectRelMapCache.put(endID, new CopyOnWriteArrayList<>());
                 }
 
+                /* skip relationships that are already cached, e.g. when the other end was loaded before */
+                if (containsRelationship(this.objectRelMapCache.get(startID), re)) {
+                    continue;
+                }
                 this.objectRelMapCache.get(startID).add(re);
                 this.objectRelMapCache.get(endID).add(re);
             }
@@ -2157,7 +2306,18 @@ public class JEVisDataSourceWS implements JEVisDataSource {
             logger.error("IO exception. Error reloading relationship for {}", id, e);
         } catch (InterruptedException e) {
             logger.error("Interrupted exception. Error reloading relationship for {}", id, e);
+        } catch (JEVisException e) {
+            logger.error("Error reloading relationship for {}", id, e);
         }
+    }
+
+    private static boolean containsRelationship(List<JEVisRelationship> list, JEVisRelationship rel) throws JEVisException {
+        for (JEVisRelationship r : list) {
+            if (r.getStartID() == rel.getStartID() && r.getEndID() == rel.getEndID() && r.getType() == rel.getType()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void removeRelationshipFromCache(long startID, long endID, int type) {

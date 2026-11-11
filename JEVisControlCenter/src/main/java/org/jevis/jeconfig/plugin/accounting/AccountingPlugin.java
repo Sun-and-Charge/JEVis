@@ -68,6 +68,7 @@ import org.jevis.jeconfig.application.control.SaveUnderDialog;
 import org.jevis.jeconfig.application.tools.JEVisHelp;
 import org.jevis.jeconfig.dialog.EnterDataDialog;
 import org.jevis.jeconfig.dialog.RenameDialog;
+import org.jevis.jeconfig.plugin.accounting.invoice.InvoiceImportDialog;
 import org.jevis.jeconfig.plugin.RegisterTableRow;
 import org.jevis.jeconfig.plugin.TablePlugin;
 import org.jevis.jeconfig.plugin.dtrc.*;
@@ -127,6 +128,7 @@ public class AccountingPlugin extends TablePlugin {
     private final ToggleButton zoomIn = new ToggleButton("", JEConfig.getSVGImage(Icon.ZOOM_IN, toolBarIconSize, toolBarIconSize));
     private final ToggleButton zoomOut = new ToggleButton("", JEConfig.getSVGImage(Icon.ZOOM_OUT, toolBarIconSize, toolBarIconSize));
     private final ToggleButton importPDF = new ToggleButton("", JEConfig.getSVGImage(Icon.IMPORT, toolBarIconSize, toolBarIconSize));
+    private final ToggleButton importInvoices = new ToggleButton("", JEConfig.getSVGImage(Icon.IMPORT, toolBarIconSize, toolBarIconSize));
     private final BorderPane borderPane = new BorderPane();
     private final TabPane motherTabPane = new TabPane();
     private final TabPane enterDataTabPane = new TabPane();
@@ -647,6 +649,15 @@ public class AccountingPlugin extends TablePlugin {
         zoomOut.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.dashboard.toolbar.tip.zoomout")));
 
         Separator sep5 = new Separator(Orientation.VERTICAL);
+
+        Separator sep6 = new Separator(Orientation.VERTICAL);
+        GlobalToolBar.changeBackgroundOnHoverUsingBinding(importInvoices);
+        importInvoices.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.accounting.invoices.toolbar.tooltip")));
+        importInvoices.setOnAction(event -> {
+            importInvoices.setSelected(false);
+            new InvoiceImportDialog(ds).show(configComboBox.getSelectionModel().getSelectedItem(), this::updateInvoiceImportButton);
+        });
+        updateInvoiceImportButton();
         GlobalToolBar.changeBackgroundOnHoverUsingBinding(importPDF);
         importPDF.setTooltip(new Tooltip(I18n.getInstance().getString("jevistree.menu.import")));
 
@@ -695,9 +706,17 @@ public class AccountingPlugin extends TablePlugin {
                 sep2, save, newButton, delete,
                 sep3, xlsxButton, printButton,
                 sep4, zoomIn, zoomOut,
+                sep6, importInvoices,
 //                sep5, importPDF,
                 JEVisHelp.getInstance().buildSpacerNode(), helpButton, infoButton);
         JEVisHelp.getInstance().addHelpItems(AccountingPlugin.class.getSimpleName(), "", JEVisHelp.LAYOUT.VERTICAL_BOT_CENTER, toolBar.getItems());
+    }
+
+    /**
+     * The invoice import is only possible if the user may create objects below an Energy Invoices Directory.
+     */
+    private void updateInvoiceImportButton() {
+        importInvoices.setDisable(InvoiceImportDialog.getImportDirectories(ds).isEmpty());
     }
 
     private void createExcelFile(File destinationFile) {
@@ -1171,8 +1190,10 @@ public class AccountingPlugin extends TablePlugin {
 
                             JEVisObject selectedItem = configComboBox.getSelectionModel().getSelectedItem();
                             List<JEVisObject> allAccountingConfigurations = getAllAccountingConfigurations();
+                            boolean noInvoiceDirectory = InvoiceImportDialog.getImportDirectories(ds).isEmpty();
                             Platform.runLater(() -> {
                                 try {
+                                    importInvoices.setDisable(noInvoiceDirectory);
                                     if (allAccountingConfigurations.isEmpty()) {
                                         SelectionTemplate selectionTemplate = new SelectionTemplate();
                                         ath.setSelectionTemplate(selectionTemplate);

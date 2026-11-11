@@ -1,0 +1,167 @@
+{
+  "name": "Energy Invoice",
+  "description": "The class Energy Invoice holds an imported electronic energy invoice (ZUGFeRD / Factur-X or XRechnung): the original file and the values read from it.",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Energy Invoice",
+      "end": "Energy Invoices Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Invoice File",
+      "primitiveType": 3,
+      "guiType": "File Selector",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Format",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Invoice Number",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Invoice Date",
+      "primitiveType": 0,
+      "guiType": "Date",
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Seller",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 4,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Seller VAT ID",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 5,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Buyer",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 6,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Period Start",
+      "primitiveType": 0,
+      "guiType": "Date",
+      "guiposition": 7,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Period End",
+      "primitiveType": 0,
+      "guiType": "Date",
+      "guiposition": 8,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Medium",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 9,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Meter Point",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 10,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Consumption",
+      "primitiveType": 1,
+      "guiType": "Number with Unit",
+      "guiposition": 11,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Net Amount",
+      "primitiveType": 1,
+      "guiType": "Number with Unit",
+      "guiposition": 12,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Tax Amount",
+      "primitiveType": 1,
+      "guiType": "Number with Unit",
+      "guiposition": 13,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Gross Amount",
+      "primitiveType": 1,
+      "guiType": "Number with Unit",
+      "guiposition": 14,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Currency",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 15,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Line Items",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 16,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
+    }
+  ]
+}
