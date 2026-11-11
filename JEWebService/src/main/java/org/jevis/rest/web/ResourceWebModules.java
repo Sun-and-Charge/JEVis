@@ -134,8 +134,10 @@ public class ResourceWebModules {
         modules.put("appointments", appointments);
         modules.put("maintenance", maintenance);
         modules.putAll(ResourceWebIso.moduleCounts(readable));
-        modules.putAll(ResourceWebRegisters.moduleCounts(readable, ResourceWebRegisters.Classes.fromCache()));
+        ResourceWebRegisters.Classes classes = ResourceWebRegisters.Classes.fromCache();
+        modules.putAll(ResourceWebRegisters.moduleCounts(readable, classes));
         modules.putAll(ResourceWebNotes.moduleCounts(readable));
+        modules.putAll(ResourceWebReports.moduleCounts(readable, classes));
         return modules;
     }
 

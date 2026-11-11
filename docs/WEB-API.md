@@ -756,3 +756,77 @@ The web app shows the curve of the alarm's row one day before and after the alar
 `modules` additionally holds `alarms`: number of readable, enabled "Alarm Configuration" objects, and
 `alarmsOpen`: number of alarms in the log file samples of the last 7 days of those configurations that are not
 confirmed (the menu badge).
+
+## Reports (W4.6)
+
+View only, like the Control Center's "Report Plugin" (`plugin/reports/ReportPlugin`): the reports' generated files
+can be viewed and downloaded; reports are configured and run in the Control Center / by JEReport. A report is an
+object of class "Report" or a subclass ("Periodic Report") that the user may read and that is not in the recycle
+bin. JEReport writes one file sample per run into `Last Report PDF` (PDF) and `Last Report` (XLSX); an XLSX belongs
+to the PDF written within one minute of it (as `ReportPlugin.loadReport`).
+
+### `GET /web/reports`
+
+```json
+{
+  "reports": [
+    {
+      "id": 23801,
+      "name": "Monatsbericht Energie",
+      "className": "Periodic Report",
+      "path": "Berichte",
+      "site": { "id": 23053, "name": "Musterwerk" },
+      "enabled": true,
+      "schedule": "MONTHLY",
+      "latest": { "timestamp": "2026-11-01T06:00:12.000+01:00", "pdf": true, "xlsx": true, "name": "Monatsbericht Energie_202610.pdf" },
+      "count": 24
+    }
+  ]
+}
+```
+
+- `reports`: sorted by site name (reports without site last), then path (without path first), then name
+  (case-insensitive, locale-aware), like the Control Center. Time stamps are in the server's time zone.
+- `path`: names below the building/organisation down to the parent of the report (same rules as the notes'
+  `row.path`), `null` if empty. `site`: next readable building above the report, else `null`.
+- `enabled`: latest `Enabled` sample is true. `schedule`: latest `Schedule` sample as stored (`null` if none or not a
+  periodic report).
+- `latest`: newest PDF output (`timestamp` of its sample, `name` = file name, `xlsx` = an XLSX within one minute
+  exists), `null` if the report has no PDF output yet (the Control Center shows such reports disabled).
+- `count`: number of PDF outputs.
+
+### `GET /web/reports/{id}/files`
+
+All outputs of a readable report, newest first:
+
+```json
+{
+  "id": 23801,
+  "name": "Monatsbericht Energie",
+  "files": [
+    { "timestamp": "2026-11-01T06:00:12.000+01:00", "name": "Monatsbericht Energie_202610.pdf", "xlsx": "2026-11-01T06:00:11.000+01:00" }
+  ]
+}
+```
+
+- `timestamp`: of the PDF sample; `xlsx`: timestamp of the matching XLSX sample (`null` if none). 404 if the report
+  is not readable or not a report.
+
+### `GET /web/reports/{id}/file?format=pdf|xlsx&ts=<timestamp>`
+
+The bytes of one output. `ts`: the PDF `timestamp` (format `pdf`) or the `xlsx` timestamp (format `xlsx`) from the
+list, ISO 8601; without `ts` the newest; without `format` `pdf`. Content type `application/pdf` or
+`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `Content-Disposition` with the stored file name
+(`inline` for PDF when `?inline=true`, else `attachment`), nosniff, `Cache-Control: private, no-store`, and for
+attachments `Content-Security-Policy: default-src 'none'; sandbox` (not for inline PDFs, the browsers' PDF viewers
+do not run in a sandbox). 404 if the
+report is not readable or the output does not exist; 400 for an unknown `format` or an invalid `ts`.
+
+### Dashboards
+
+Report links of dashboards (`Report-Link` widgets, `link.kind` `REPORT`; image widgets cannot link reports) now lead to the report in the web app
+(`/app/reports?id=<id>`) when the report is readable.
+
+### Navigation
+
+`modules` additionally holds `reports`: number of readable reports (not in the recycle bin).

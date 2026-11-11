@@ -260,7 +260,9 @@ describe('widgets', () => {
       kind: 'route',
       to: { name: 'dashboard', params: { id: 6 }, query: { tf: 'P1W' } },
     })
-    expect(linkTarget({ kind: 'REPORT', id: 7, timeFrame: null, readable: true }, state, null)).toEqual({ kind: 'disabled', reason: 'report' })
+    expect(linkTarget({ kind: 'REPORT', id: 7, timeFrame: null, readable: true }, state, null)).toEqual({ kind: 'route', to: { name: 'reports', query: { id: '7' } } })
+    expect(linkTarget({ kind: 'Report', id: 7, timeFrame: 'P1D', readable: false }, state, null)).toEqual({ kind: 'disabled', reason: 'noAccess' })
+    expect(linkTarget({ kind: 'REPORT', id: 0, timeFrame: null, readable: true }, state, null)).toEqual({ kind: 'disabled', reason: 'noAccess' })
     expect(linkTarget({ kind: 'ANALYSIS', id: 5, timeFrame: null, readable: false }, state, null)).toEqual({ kind: 'disabled', reason: 'noAccess' })
   })
 

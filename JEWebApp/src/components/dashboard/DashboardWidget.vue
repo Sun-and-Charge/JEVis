@@ -42,7 +42,7 @@ const linkLabel = computed(() => props.widget.title || props.widget.tooltip || t
 const linkTitle = computed(() => {
   const l = link.value
   if (!l || l.kind === 'route') return props.widget.tooltip || undefined
-  return l.reason === 'report' ? t('dashboard.reportLater') : t('dashboard.linkNoAccess')
+  return t('dashboard.linkNoAccess')
 })
 
 const TEXT = ['title', 'value', 'string', 'timeFrame', 'alarmCount']

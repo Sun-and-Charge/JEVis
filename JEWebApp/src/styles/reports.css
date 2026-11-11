@@ -1,0 +1,227 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Reports (view only); builds on modules.css, iso.css and notes.css (buttons). */
+
+.rep-layout {
+  display: grid;
+  grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.rep-layout.is-narrow {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 800px) {
+  .rep-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rep-side,
+.rep-main {
+  min-width: 0;
+}
+
+.rep-search {
+  margin-bottom: 0.5rem;
+}
+
+.rep-group + .rep-group {
+  margin-top: 0.75rem;
+}
+
+.rep-group-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.rep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rep-list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.rep-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 4px 0 0 transparent;
+}
+
+.rep-item:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+.rep-item:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: -3px;
+}
+
+.rep-item.is-selected {
+  background: var(--bg);
+  box-shadow: inset 4px 0 0 var(--sun);
+}
+
+.rep-item:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+
+.rep-item-path,
+.rep-item-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.rep-item-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rep-item.is-empty .rep-item-name {
+  font-weight: 400;
+}
+
+.rep-item.is-empty .rep-item-meta {
+  font-style: italic;
+}
+
+.rep-back {
+  margin-bottom: 0.75rem;
+}
+
+.rep-placeholder {
+  padding: 2rem 1rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.rep-detail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  min-width: 0;
+}
+
+.rep-where {
+  margin: 0 0 0.15rem;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.rep-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.rep-title:focus {
+  outline: none;
+}
+
+.rep-meta {
+  margin-bottom: 1rem;
+}
+
+.mod-badge.rep-state.is-enabled {
+  background: var(--ok-bg);
+  border-color: var(--ok-bg);
+  color: var(--ok);
+}
+
+.rep-output {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rep-output-select {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.rep-output-select label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.rep-output-select select {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  width: 100%;
+  min-width: 0;
+}
+
+.rep-output-select select:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.rep-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rep-hint {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.rep-pdf {
+  display: block;
+  width: 100%;
+  height: min(75vh, 60rem);
+  min-height: 20rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.rep-pdf-fallback {
+  padding: 1rem;
+}
+
+.rep-preview .rep-hint {
+  margin-top: 0.35rem;
+}

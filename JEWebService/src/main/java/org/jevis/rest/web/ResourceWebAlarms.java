@@ -182,13 +182,7 @@ public class ResourceWebAlarms {
 
             @Override
             public byte[] file(long id, String attribute, JsonSample sample) throws Exception {
-                String name = sample.getValue();
-                if (name == null || name.contains("..") || name.contains("/") || name.contains("\\")) return null;
-                DateTime ts = JsonFactory.sampleDTF.parseDateTime(sample.getTs());
-                /* like ResourceSample: <file dir>/<id>/<attribute>/<UTC yyyyMMddHHmmss>_<file name> */
-                File file = new File(new File(new File(Config.getFileDir(), String.valueOf(id)), attribute),
-                        DateTimeFormat.forPattern("yyyyMMddHHmmss").withZoneUTC().print(ts) + "_" + name);
-                return file.isFile() && file.canRead() ? Files.readAllBytes(file.toPath()) : null;
+                return sampleFile(Config.getFileDir(), id, attribute, sample);
             }
 
             @Override
@@ -196,6 +190,38 @@ public class ResourceWebAlarms {
                 return ResourceWebRegisters.unitLabel(ds.getAttribute(id, attribute));
             }
         };
+    }
+
+    /**
+     * Reads the file of a file sample directly from the file directory, like {@code ResourceSample}:
+     * {@code <file dir>/<id>/<attribute>/<UTC yyyyMMddHHmmss>_<file name>}. Stored names with a path, {@code ..} or
+     * control characters are rejected, as is any file that would lie outside the attribute's directory.
+     *
+     * @return the content, null if the name is not safe or the file does not exist
+     */
+    static byte[] sampleFile(File fileDir, long id, String attribute, JsonSample sample) throws Exception {
+        String name = sample.getValue();
+        if (!isSafeStoredName(name) || !isSafeStoredName(attribute)) return null;
+        DateTime ts = JsonFactory.sampleDTF.parseDateTime(sample.getTs());
+        File dir = new File(new File(fileDir, String.valueOf(id)), attribute);
+        File file = new File(dir, DateTimeFormat.forPattern("yyyyMMddHHmmss").withZoneUTC().print(ts) + "_" + name);
+        java.nio.file.Path dirPath = dir.toPath().toAbsolutePath().normalize();
+        if (!dirPath.equals(file.toPath().toAbsolutePath().normalize().getParent())) return null;
+        return file.isFile() && file.canRead() ? Files.readAllBytes(file.toPath()) : null;
+    }
+
+    /**
+     * @return whether the stored file name (or attribute name) can be used as part of a path: not empty, no
+     * {@code ..}, no slash or backslash, no control characters
+     */
+    static boolean isSafeStoredName(String name) {
+        if (name == null || name.trim().isEmpty() || name.contains("..") || name.contains("/") || name.contains("\\")) {
+            return false;
+        }
+        for (int i = 0; i < name.length(); i++) {
+            if (Character.isISOControl(name.charAt(i))) return false;
+        }
+        return true;
     }
 
     // ---------------------------------------------------------------- configurations

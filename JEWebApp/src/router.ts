@@ -26,6 +26,7 @@ export const router = createRouter({
         { path: 'equipment', name: 'equipment', component: () => import('./views/RegisterView.vue'), props: { kind: 'equipment' } },
         { path: 'notes', name: 'notes', component: () => import('./views/NotesView.vue') },
         { path: 'alarms', name: 'alarms', component: () => import('./views/AlarmsView.vue') },
+        { path: 'reports', name: 'reports', component: () => import('./views/ReportsView.vue') },
         { path: ':pathMatch(.*)*', name: 'notFound', component: () => import('./views/NotFoundView.vue') },
       ],
     },

@@ -150,7 +150,6 @@
     "timeBar": "Time frame of the dashboard",
     "readOnly": "Read only in the web app",
     "openLink": "Open",
-    "reportLater": "Reports cannot be opened in the web app yet.",
     "linkNoAccess": "The target is not shared with you.",
     "zoom": { "label": "Zoom", "in": "Zoom in", "out": "Zoom out", "reset": "Reset zoom" },
     "table": {
@@ -208,7 +207,8 @@
     "equipment": "Equipment",
     "notes": "Notes",
     "alarms": "Alarms",
-    "alarmsOpen": "{n} open alarms (7 days) | 1 open alarm (7 days) | {n} open alarms (7 days)"
+    "alarmsOpen": "{n} open alarms (7 days) | 1 open alarm (7 days) | {n} open alarms (7 days)",
+    "reports": "Reports"
   },
   "appointments": {
     "title": "Appointments",
@@ -681,6 +681,52 @@
       "noData": "No values around the alarm.",
       "noNumbers": "The data point holds text, not numbers – no curve.",
       "truncated": "Not all values are shown."
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "readOnly": "View only – reports are set up in the Control Center.",
+    "loading": "Loading reports …",
+    "empty": "There are no reports you may read.",
+    "noMatch": "No report matches the search.",
+    "searchPlaceholder": "Name, path, site …",
+    "listLabel": "List of reports",
+    "count": "{shown} of {total} reports",
+    "noOutput": "No report yet",
+    "select": "Select a report from the list.",
+    "notFound": "This report does not exist or you may not read it.",
+    "back": "Back to the list",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "schedule": { "MINUTELY": "Every minute", "HOURLY": "Hourly", "DAILY": "Daily", "WEEKLY": "Weekly", "MONTHLY": "Monthly", "QUARTERLY": "Quarterly", "YEARLY": "Yearly", "NONE": "No schedule" },
+    "detail": {
+      "schedule": "Schedule",
+      "state": "Status",
+      "outputs": "Outputs",
+      "output": "Output",
+      "loading": "Loading outputs …",
+      "error": "The outputs could not be loaded.",
+      "notFound": "The report cannot be read.",
+      "noOutput": "No output has been created for this report yet."
+    },
+    "download": {
+      "pdf": "Download PDF",
+      "xlsx": "Download Excel",
+      "pdfLabel": "Download “{name}” as PDF",
+      "xlsxLabel": "Download “{name}” as Excel file",
+      "noXlsx": "There is no Excel file for this output.",
+      "busy": "Downloading file …",
+      "error": "The download failed.",
+      "notFound": "The file cannot be read or no longer exists."
+    },
+    "preview": {
+      "title": "PDF preview",
+      "label": "PDF preview of “{name}”",
+      "loading": "Loading preview …",
+      "error": "The preview could not be loaded.",
+      "notFound": "The PDF file cannot be read or no longer exists.",
+      "unsupported": "Your browser cannot show the PDF file here.",
+      "open": "Open PDF in a new tab"
     }
   },
   "banner": {
