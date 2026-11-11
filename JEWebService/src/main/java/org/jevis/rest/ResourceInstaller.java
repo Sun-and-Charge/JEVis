@@ -24,6 +24,7 @@ import org.jevis.commons.ws.sql.Config;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.*;
 import java.io.File;
@@ -35,17 +36,13 @@ public class ResourceInstaller {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/{s:.*}")
-    @Context
     public Response getFile(@Context HttpHeaders httpHeaders,
-                            @Context Request request,
-                            @Context UriInfo uri) {
+                            @PathParam("s") String idStr) {
         try {
-
-            // String idStr = uri.getPath().substring(uri.getPath().lastIndexOf('/') + 1);
-            String idStr = uri.getPath().split("/JEWebService/v1/installer/")[1];
-            File file = new File(Config.getInstallerDir() + "/" + idStr);
+            /* Jersey 3 returns UriInfo.getPath() without leading slash, so the path is taken from the template */
             File basePath = new File(Config.getInstallerDir());
-            if (!file.getCanonicalPath().startsWith(basePath.getCanonicalPath())) {
+            File file = new File(basePath, idStr);
+            if (!file.getCanonicalPath().startsWith(basePath.getCanonicalPath() + File.separator)) {
                 /* just a additional check that we don't allow some kind of escape*/
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("File not found").build();
             }
