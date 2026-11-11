@@ -811,7 +811,8 @@ public class ResourceWebRegisters {
     static String unitLabel(JsonAttribute attribute) {
         JsonUnit unit = attribute != null ? attribute.getDisplayUnit() : null;
         String label = unit != null ? unit.getLabel() : null;
-        return label != null && !label.trim().isEmpty() ? label.trim() : null;
+        // "one" is the label of the dimensionless unit JEVis stores for attributes without a unit
+        return label != null && !label.trim().isEmpty() && !"one".equalsIgnoreCase(label.trim()) ? label.trim() : null;
     }
 
     private static String isoTimestamp(String ts) {
