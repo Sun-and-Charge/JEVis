@@ -36,6 +36,7 @@ import org.jevis.commons.ws.json.JsonSample;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.JEVisUserSQL;
 import org.jevis.commons.ws.sql.SQLDataSource;
+import org.joda.time.DateTime;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.*;
@@ -85,7 +86,8 @@ public class ResourceWebNavigation {
             me.put("sysAdmin", user.isSysAdmin());
             result.put("user", me);
             result.put("startDashboard", startDashboard(ds, user.getUserID(), readable));
-            result.put("modules", ResourceWebModules.moduleCounts(readable));
+            result.put("modules", ResourceWebModules.moduleCounts(new ResourceWebModules.Lookup(all, readable, parents),
+                    ResourceWebAlarms.sqlStore(ds), DateTime.now()));
             return Response.ok(MAPPER.writeValueAsString(result)).type(MediaType.APPLICATION_JSON)
                     .header("Cache-Control", "no-store").build();
         } catch (AuthenticationException ex) {
