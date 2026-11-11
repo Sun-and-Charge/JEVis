@@ -61,7 +61,7 @@ Create an object of class **JEDemo** in the Service Directory:
 
 | Attribute | Value |
 |---|---|
-| Enabled | on |
+| Enable | on |
 | Cycle Time | 3600000 (1 h) |
 | Organization | the demo organisation(s) |
 | Shifted Until | the day the module dates were last moved to (e.g. the snapshot date) |
