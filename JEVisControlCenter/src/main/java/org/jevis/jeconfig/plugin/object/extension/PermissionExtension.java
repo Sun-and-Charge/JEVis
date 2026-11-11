@@ -180,7 +180,7 @@ public class PermissionExtension implements ObjectEditorExtension {
                 groupBox.getChildren().addAll(usericon, nameLabel);
 
                 JFXButton remove = new JFXButton();
-                remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 17, 17));
+                remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 17, 17));
                 remove.setOnAction(t -> {
 
                     try {

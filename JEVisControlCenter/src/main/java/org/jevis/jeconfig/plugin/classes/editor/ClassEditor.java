@@ -412,7 +412,7 @@ public class ClassEditor {
                 down.setOnAction(t -> swapPosition(type, types.get(index + 1)));
 
                 JFXButton remove = new JFXButton();
-                remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 20, 20));
+                remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 20, 20));
                 remove.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.classes.editor.type.remove.tooltip")));
                 remove.setOnAction(t -> {
                     /* persisted with the save action of the plugin */

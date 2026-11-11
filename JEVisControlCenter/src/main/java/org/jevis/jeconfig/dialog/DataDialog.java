@@ -256,7 +256,7 @@ public class DataDialog extends Dialog {
             createPage(currentPageIndex);
         });
 
-        JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.MINUS, ICON_SIZE, ICON_SIZE));
+        JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, ICON_SIZE, ICON_SIZE));
         removeButton.prefWidthProperty().bind(addButton.widthProperty());
         removeButton.setOnAction(actionEvent -> {
             int currentPageIndex = pagination.getCurrentPageIndex();

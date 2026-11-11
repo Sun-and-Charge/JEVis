@@ -102,7 +102,7 @@ public class ValidParentEditor {
                                               gb.add(classBox, 0, ++x);
                                               JFXButton remove = new JFXButton();
                                               remove.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
-                                              remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 20, 20));
+                                              remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 20, 20));
                                               gb.add(remove, 1, x);
 
                                               remove.setOnAction(new EventHandler<ActionEvent>() {

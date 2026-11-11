@@ -270,7 +270,7 @@ public class MemberExtension implements ObjectEditorExtension {
             HBox control = new HBox(0.5);
 
             JFXButton remove = new JFXButton();
-            remove.setGraphic(JEConfig.getSVGImage(Icon.MINUS, 17, 17));
+            remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 17, 17));
 
             //if the currentUser has a group which has delete right on the userObj he can delete it
             if (RelationsManagment.canDeleteMembership(aRelationship)) {

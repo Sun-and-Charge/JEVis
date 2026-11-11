@@ -104,7 +104,7 @@ public class DayFilterTab extends Tab {
 
         DatePicker datePicker = new DatePicker();
         Button addButton = new Button("", JEConfig.getSVGImage(Icon.PLUS, 12, 12));
-        Button removeButton = new Button("", JEConfig.getSVGImage(Icon.MINUS, 12, 12));
+        Button removeButton = new Button("", JEConfig.getSVGImage(Icon.DELETE, 12, 12));
         removeButton.disableProperty().bind(datesList.getSelectionModel().selectedItemProperty().isNull());
 
         addButton.setOnAction(event -> {
