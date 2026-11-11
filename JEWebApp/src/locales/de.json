@@ -205,7 +205,8 @@
     "legal": "Rechtskataster",
     "meters": "Messstellen",
     "basedata": "Stammdaten",
-    "equipment": "Anlagen"
+    "equipment": "Anlagen",
+    "notes": "Notizen"
   },
   "appointments": {
     "title": "Termine",
@@ -563,6 +564,61 @@
       "alt": "QR-Code der Messstelle {name}",
       "loading": "QR-Code wird geladen …",
       "error": "Der QR-Code konnte nicht geladen werden."
+    }
+  },
+  "notes": {
+    "title": "Notizen",
+    "note": "Notiz",
+    "readOnly": "Nur Ansicht – Notizen werden im Control Center bearbeitet.",
+    "loading": "Notizen werden geladen …",
+    "empty": "Im gewählten Zeitraum gibt es keine Notizen.",
+    "noMatch": "Keine Notiz passt zu Suche und Filtern.",
+    "truncated": "Es werden nur die neuesten {n} Notizen angezeigt. Wählen Sie einen kürzeren Zeitraum, um alle zu sehen.",
+    "range": {
+      "label": "Zeitraum",
+      "from": "Von",
+      "to": "Bis",
+      "reset": "Letzte 3 Monate",
+      "missing": "Bitte Start- und Enddatum wählen.",
+      "order": "Das Enddatum liegt vor dem Startdatum.",
+      "tooLong": "Der Zeitraum darf höchstens 3 Jahre lang sein."
+    },
+    "searchPlaceholder": "Suche nach …",
+    "noField": "Wählen Sie unter „Suche in“ mindestens ein Feld aus.",
+    "searchIn": "Suche in",
+    "in": { "text": "Notiz", "user": "Benutzer", "row": "Datenpunkt", "tag": "Tag" },
+    "tagFilter": "Tags",
+    "clearTags": "Alle Tags",
+    "noAccess": "Kein Leserecht",
+    "col": { "date": "Datum", "site": "Standort", "path": "Pfad", "row": "Datenpunkt", "text": "Notiz", "tags": "Tags", "user": "Benutzer" },
+    "export": { "csv": "CSV", "csvLabel": "Angezeigte Notizen als CSV herunterladen" },
+    "detail": {
+      "close": "Details schließen",
+      "chart": "Verlauf ±1 Tag",
+      "chartLabel": "Verlauf von „{name}“ einen Tag vor bis einen Tag nach der Notiz",
+      "loading": "Verlauf wird geladen …",
+      "noAccess": "Die Datenreihe darf nicht gelesen werden – kein Verlauf.",
+      "notFound": "Die Datenreihe ist nicht lesbar oder hat keine Werte.",
+      "error": "Der Verlauf konnte nicht geladen werden.",
+      "noData": "Keine Werte rund um die Notiz.",
+      "noNumbers": "Die Datenreihe enthält Text, keine Zahlen – kein Verlauf.",
+      "truncated": "Nicht alle Werte werden angezeigt."
+    },
+    "tags": {
+      "0": "Kein",
+      "1": "Audit",
+      "2": "Aufgabe",
+      "3": "Bericht",
+      "4": "Ereignis",
+      "5": "Erinnerung",
+      "6": "Fehler",
+      "7": "Frage",
+      "8": "Instandsetzung",
+      "9": "Kennzahl",
+      "10": "Kommentar",
+      "11": "Maßnahme",
+      "12": "Störung",
+      "13": "Wartung"
     }
   },
   "banner": {
