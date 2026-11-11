@@ -1,0 +1,14 @@
+[Unit]
+Description=JEDemo
+
+
+[Service]
+User=jevis
+Group=jevis
+Type=simple
+ExecStart=/home/jevis/jevis/bin/jedemo
+
+
+[Install]
+WantedBy=multi-user.target
+

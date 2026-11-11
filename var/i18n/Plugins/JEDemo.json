@@ -1,0 +1,194 @@
+{
+  "jevisclass": "JEDemo",
+  "names": {
+    "de": "JEDemo",
+    "en": "JEDemo"
+  },
+  "descriptions": {
+    "de": "Hält die Demo-Organisation aktuell: Rohdaten weiterschreiben, Termine verschieben, monatliche Demo-Rechnungen.",
+    "en": "Keeps the demo organisation current: continues raw data, moves due dates, monthly demo invoices."
+  },
+  "types": [
+    {
+      "type": "Enable",
+      "descriptions": {
+        "de": "Dieser Schalter schaltet den Dienst ein oder aus.",
+        "ru": "Этот переключатель включает или выключает службу.",
+        "en": "This switch turns the service on or off.",
+        "ar": "يقوم هذا المفتاح بتشغيل الخدمة أو إيقاف تشغيلها."
+      },
+      "names": {
+        "de": "Aktiviert",
+        "ru": "Активированный",
+        "en": "Enabled",
+        "ar": "مفعل"
+      }
+    },
+    {
+      "type": "Cycle Time",
+      "descriptions": {
+        "de": "Die Zeit, nach der der Dienst eine neue Abfragerunde startet. Angegeben in Millisekunden.",
+        "ru": "Время, по истечении которого служба начинает новый раунд голосования. Указано в миллисекундах.",
+        "en": "The time after which the service starts a new polling round. Specified in milliseconds.",
+        "ar": "الوقت الذي تبدأ بعده الخدمة جولة اقتراع جديدة. محدد بالمللي ثانية."
+      },
+      "names": {
+        "de": "Taktzeit",
+        "ru": "продолжительность цикла",
+        "en": "Cycle Time",
+        "ar": "دورة الزمن"
+      }
+    },
+    {
+      "type": "Status",
+      "descriptions": {
+        "de": "Der letzte bekannte Status des Dienstes. Möglich sind: 0 = aus, 1 = an und wartend, 2 = an und arbeitend.",
+        "ru": "Последний известный статус службы. Возможны следующие варианты: 0 = выключен, 1 = включен и ждет, 2 = включен и работает.",
+        "en": "The last known status of the service. Possible are: 0 = off, 1 = on and waiting, 2 = on and working.",
+        "ar": "آخر حالة معروفة للخدمة. ما يلي ممكن: 0 = إيقاف ، 1 = قيد التشغيل والانتظار ، 2 = قيد التشغيل والعمل."
+      },
+      "names": {
+        "de": "Status",
+        "ru": "Статус",
+        "en": "State",
+        "ar": "الحالة"
+      }
+    },
+    {
+      "type": "Max Number Threads",
+      "descriptions": {
+        "de": "Die Anzahl der parallelen Threads, die dem Dienst zur Verfügung stehen.",
+        "ru": "Количество параллельных потоков, доступных сервису.",
+        "en": "The number of parallel threads available to the service.",
+        "ar": "الحد الأقصى لعدد المواضيع"
+      },
+      "names": {
+        "de": "Anzahl an Threads",
+        "ru": "Количество потоков",
+        "en": "Number of Threads",
+        "ar": "عدد المواضيع"
+      }
+    },
+    {
+      "type": "Organization",
+      "descriptions": {
+        "de": "Demo-Organisationen, die aktuell gehalten werden. Jeder Name muss \"Demo\" enthalten, andere Organisationen werden abgelehnt.",
+        "en": "Demo organisations to keep current. Each name must contain \"Demo\", other organisations are refused."
+      },
+      "names": {
+        "de": "Organisationen",
+        "en": "Organisations"
+      }
+    },
+    {
+      "type": "Excluded Objects",
+      "descriptions": {
+        "de": "Datenreihen oder Ordner unterhalb der Organisation, die der Dienst nicht anfasst (z. B. Reihen mit händischen Eingaben).",
+        "en": "Data rows or folders below the organisation that the job does not touch (e.g. rows with manual entries)."
+      },
+      "names": {
+        "de": "Ausgenommene Objekte",
+        "en": "Excluded Objects"
+      }
+    },
+    {
+      "type": "Shifted Until",
+      "descriptions": {
+        "de": "Tag, bis zu dem die Termine in den Modulen (Termine, Wartung, Maßnahmen, Abweichungen, Rechtskataster) verschoben wurden. Wird vom Dienst fortgeschrieben.",
+        "en": "Day up to which the dates in the modules (appointments, maintenance, actions, nonconformities, legal register) have been moved. Updated by the service."
+      },
+      "names": {
+        "de": "Verschoben bis",
+        "en": "Shifted Until"
+      }
+    },
+    {
+      "type": "Invoice Directory",
+      "descriptions": {
+        "de": "Energierechnungen-Ordner, in den zu Monatsbeginn je eine Demo-Rechnung für Strom und Gas importiert wird. Leer: keine Rechnungen.",
+        "en": "Energy invoices directory into which a demo invoice for electricity and gas is imported at the start of each month. Empty: no invoices."
+      },
+      "names": {
+        "de": "Energierechnungen-Ordner",
+        "en": "Energy Invoices Directory"
+      }
+    },
+    {
+      "type": "Electricity Row",
+      "descriptions": {
+        "de": "Bereinigte Datenreihe (kWh je Periode), deren Monatssumme in der Stromrechnung abgerechnet wird.",
+        "en": "Clean data row (kWh per period) whose monthly sum is billed in the electricity invoice."
+      },
+      "names": {
+        "de": "Datenreihe Strom",
+        "en": "Electricity Row"
+      }
+    },
+    {
+      "type": "Gas Row",
+      "descriptions": {
+        "de": "Bereinigte Datenreihe (kWh je Periode), deren Monatssumme in der Gasrechnung abgerechnet wird.",
+        "en": "Clean data row (kWh per period) whose monthly sum is billed in the gas invoice."
+      },
+      "names": {
+        "de": "Datenreihe Gas",
+        "en": "Gas Row"
+      }
+    },
+    {
+      "type": "Electricity Price",
+      "descriptions": {
+        "de": "Netto-Arbeitspreis Strom in EUR/kWh (Standard 0,28).",
+        "en": "Net work price for electricity in EUR/kWh (default 0.28)."
+      },
+      "names": {
+        "de": "Arbeitspreis Strom",
+        "en": "Electricity Price"
+      }
+    },
+    {
+      "type": "Gas Price",
+      "descriptions": {
+        "de": "Netto-Arbeitspreis Gas in EUR/kWh (Standard 0,09).",
+        "en": "Net work price for gas in EUR/kWh (default 0.09)."
+      },
+      "names": {
+        "de": "Arbeitspreis Gas",
+        "en": "Gas Price"
+      }
+    },
+    {
+      "type": "Electricity Base Price",
+      "descriptions": {
+        "de": "Netto-Grundpreis Strom in EUR pro Monat (Standard 12,50, 0 = keine Position).",
+        "en": "Net base price for electricity in EUR per month (default 12.50, 0 = no line)."
+      },
+      "names": {
+        "de": "Grundpreis Strom",
+        "en": "Electricity Base Price"
+      }
+    },
+    {
+      "type": "Gas Base Price",
+      "descriptions": {
+        "de": "Netto-Grundpreis Gas in EUR pro Monat (Standard 15,00, 0 = keine Position).",
+        "en": "Net base price for gas in EUR per month (default 15.00, 0 = no line)."
+      },
+      "names": {
+        "de": "Grundpreis Gas",
+        "en": "Gas Base Price"
+      }
+    },
+    {
+      "type": "Replay State",
+      "descriptions": {
+        "de": "Vom Dienst geschrieben: Versatz der Reihen mit weniger als einem Jahr Historie (Reihen-ID → P13W / P5M). Nach Änderung der Historie einer Reihe den Eintrag löschen.",
+        "en": "Written by the service: offsets of rows with a history shorter than a year (row id → P13W / P5M). Delete an entry after changing the history of that row."
+      },
+      "names": {
+        "de": "Wiedergabe-Status",
+        "en": "Replay State"
+      }
+    }
+  ]
+}

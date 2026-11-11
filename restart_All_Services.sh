@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo systemctl stop jedemo.service
 sudo systemctl stop jereport.service
 sudo systemctl stop jecalc.service
 sudo systemctl stop jedataprocessor.service
@@ -22,4 +23,6 @@ sleep 10
 sudo systemctl restart jealarm.service
 sleep 10
 sudo systemctl restart jereport.service
+sleep 10
+sudo systemctl restart jedemo.service
 sleep 10

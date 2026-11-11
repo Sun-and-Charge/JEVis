@@ -1,3 +1,4 @@
+systemctl stop jedemo.service
 systemctl stop jereport.service
 systemctl stop jecalc.service
 systemctl stop jedataprocessor.service
