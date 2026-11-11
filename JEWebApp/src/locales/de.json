@@ -208,7 +208,9 @@
     "notes": "Notizen",
     "alarms": "Alarme",
     "alarmsOpen": "{n} offene Alarme (7 Tage) | 1 offener Alarm (7 Tage) | {n} offene Alarme (7 Tage)",
-    "reports": "Berichte"
+    "reports": "Berichte",
+    "contracts": "Verträge",
+    "invoices": "Energierechnungen"
   },
   "appointments": {
     "title": "Termine",
@@ -727,6 +729,174 @@
       "notFound": "Die PDF-Datei ist nicht lesbar oder nicht mehr vorhanden.",
       "unsupported": "Ihr Browser kann die PDF-Datei hier nicht anzeigen.",
       "open": "PDF in neuem Tab öffnen"
+    }
+  },
+  "contracts": {
+    "title": "Verträge",
+    "readOnly": "Nur Ansicht – Verträge und Rechnungen werden im Control Center gepflegt bzw. importiert.",
+    "loading": "Verträge werden geladen …",
+    "empty": "Es gibt keine Verträge, die Sie lesen dürfen.",
+    "noMatch": "Kein Eintrag passt zur Suche.",
+    "searchPlaceholder": "Name, Klasse, Pfad, Vertragspartner …",
+    "tabsLabel": "Vertragsgruppen",
+    "kind": {
+      "suppliers": "Lieferanten",
+      "meteringOperators": "Messstellenbetreiber",
+      "gridOperators": "Netzbetreiber",
+      "contractors": "Vertragspartner",
+      "dues": "Abgaben",
+      "configurations": "Abrechnung"
+    },
+    "contractor": "Vertragspartner",
+    "contractorHidden": "Kein Leserecht",
+    "showContractor": "Vertragspartner „{name}“ anzeigen",
+    "noAttributes": "Keine Angaben.",
+    "energy": {
+      "ELECTRICITY": "Strom",
+      "GAS": "Gas",
+      "COMMUNITY_HEATING": "Fernwärme",
+      "DISTRICT_HEATING": "Fernwärme",
+      "OTHER": "Sonstiges"
+    },
+    "validFrom": "ab {date}",
+    "openEnd": "ab {from}",
+    "ranging": {
+      "from": "Von",
+      "to": "Bis",
+      "value": "Wert",
+      "open": "offen"
+    },
+    "history": {
+      "toggle": "Verlauf",
+      "toggleLabel": "Verlauf von „{name}“ anzeigen",
+      "loading": "Verlauf wird geladen …",
+      "error": "Der Verlauf konnte nicht geladen werden.",
+      "notFound": "Der Verlauf ist nicht verfügbar.",
+      "empty": "Kein Verlauf vorhanden.",
+      "chartLabel": "Preisverlauf von {name}",
+      "caption": "Letzte Werte von {name}",
+      "date": "Gültig ab",
+      "value": "Wert",
+      "more": "Die letzten {n} von {total} Werten."
+    },
+    "config": {
+      "hint": "Die Kostenberechnung folgt in einer späteren Version.",
+      "name": "Abrechnung",
+      "contractNumber": "Vertragsnummer",
+      "marketLocation": "Marktlokation",
+      "contractDate": "Vertragsdatum",
+      "firstRate": "Erste Rate",
+      "periodOfNotice": "Kündigungsfrist",
+      "start": "Vertragsbeginn",
+      "end": "Vertragsende",
+      "energyType": "Energieart"
+    }
+  },
+  "invoices": {
+    "title": "Energierechnungen",
+    "readOnly": "Nur Ansicht – Verträge und Rechnungen werden im Control Center gepflegt bzw. importiert.",
+    "loading": "Rechnungen werden geladen …",
+    "empty": "Im Zeitraum gibt es keine Energierechnungen, die Sie lesen dürfen.",
+    "noMatch": "Keine Rechnung passt zum Filter.",
+    "searchPlaceholder": "Rechnungsnummer, Lieferant, Zählpunkt …",
+    "count": "{shown} von {total} Rechnungen",
+    "rangeHint": "Rechnungen, deren Abrechnungszeitraum (sonst Rechnungsdatum) im Zeitraum beginnt.",
+    "range": {
+      "label": "Zeitraum",
+      "from": "Von",
+      "to": "Bis",
+      "reset": "Letzte 24 Monate",
+      "missing": "Bitte Start- und Enddatum wählen.",
+      "order": "Das Enddatum liegt vor dem Startdatum.",
+      "tooLong": "Der Zeitraum darf höchstens 10 Jahre lang sein."
+    },
+    "mediumFilter": "Medium",
+    "allMedia": "Alle",
+    "medium": {
+      "ELECTRICITY": "Strom",
+      "GAS": "Gas",
+      "DISTRICT_HEATING": "Fernwärme",
+      "OTHER": "Sonstiges"
+    },
+    "truncated": "Es werden nur die neuesten {n} Rechnungen angezeigt. Wählen Sie einen kürzeren Zeitraum, um alle zu sehen.",
+    "credit": "Gutschrift",
+    "yes": "ja",
+    "summary": {
+      "title": "Summen der angezeigten Rechnungen",
+      "invoices": "{n} Rechnungen | 1 Rechnung | {n} Rechnungen",
+      "credits": "davon {n} Gutschriften | davon 1 Gutschrift | davon {n} Gutschriften",
+      "consumption": "Verbrauch",
+      "net": "Netto",
+      "gross": "Brutto"
+    },
+    "chart": {
+      "title": "Monatsverlauf",
+      "consumption": "Verbrauch",
+      "cost": "Kosten brutto",
+      "label": "Monatlicher Verbrauch und Bruttokosten {medium}"
+    },
+    "export": {
+      "csv": "CSV",
+      "csvLabel": "Angezeigte Rechnungen als CSV herunterladen"
+    },
+    "col": {
+      "period": "Zeitraum",
+      "periodStart": "Zeitraum von",
+      "periodEnd": "Zeitraum bis",
+      "number": "Rechnungsnr.",
+      "date": "Rechnungsdatum",
+      "seller": "Lieferant",
+      "sellerVatId": "USt-IdNr. Lieferant",
+      "buyer": "Rechnungsempfänger",
+      "medium": "Medium",
+      "meterPoint": "Zählpunkt",
+      "consumption": "Verbrauch",
+      "unit": "Einheit",
+      "net": "Netto",
+      "tax": "Steuer",
+      "gross": "Brutto",
+      "currency": "Währung",
+      "credit": "Gutschrift",
+      "format": "Format",
+      "site": "Standort",
+      "path": "Pfad",
+      "where": "Ablage"
+    },
+    "detail": {
+      "title": "Rechnung {number}",
+      "items": "Positionen",
+      "loading": "Positionen werden geladen …",
+      "error": "Die Rechnung konnte nicht geladen werden.",
+      "notFound": "Diese Rechnung gibt es nicht oder sie ist für Sie nicht lesbar.",
+      "noItems": "Zu dieser Rechnung sind keine Positionen gespeichert."
+    },
+    "item": {
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "unit": "Einheit",
+      "unitPrice": "Einzelpreis",
+      "net": "Netto",
+      "taxRate": "Steuersatz",
+      "tax": "Steuer",
+      "gross": "Brutto",
+      "period": "Zeitraum"
+    },
+    "file": {
+      "title": "Rechnungsdatei",
+      "none": "Zu dieser Rechnung ist keine Datei gespeichert.",
+      "show": "Rechnung öffnen",
+      "hide": "Vorschau schließen",
+      "download": "Herunterladen",
+      "downloadLabel": "Rechnungsdatei „{name}“ herunterladen",
+      "busy": "Datei wird heruntergeladen …",
+      "error": "Der Download ist fehlgeschlagen.",
+      "notFound": "Die Datei ist nicht lesbar oder nicht mehr vorhanden.",
+      "previewTitle": "PDF-Vorschau der Rechnung",
+      "previewLabel": "PDF-Vorschau von „{name}“",
+      "previewLoading": "Vorschau wird geladen …",
+      "previewError": "Die Vorschau konnte nicht geladen werden.",
+      "unsupported": "Ihr Browser kann die PDF-Datei hier nicht anzeigen.",
+      "openTab": "PDF in neuem Tab öffnen"
     }
   },
   "banner": {

@@ -208,7 +208,9 @@
     "notes": "Notes",
     "alarms": "Alarms",
     "alarmsOpen": "{n} open alarms (7 days) | 1 open alarm (7 days) | {n} open alarms (7 days)",
-    "reports": "Reports"
+    "reports": "Reports",
+    "contracts": "Contracts",
+    "invoices": "Energy invoices"
   },
   "appointments": {
     "title": "Appointments",
@@ -727,6 +729,174 @@
       "notFound": "The PDF file cannot be read or no longer exists.",
       "unsupported": "Your browser cannot show the PDF file here.",
       "open": "Open PDF in a new tab"
+    }
+  },
+  "contracts": {
+    "title": "Contracts",
+    "readOnly": "View only – contracts and invoices are maintained or imported in the Control Center.",
+    "loading": "Loading contracts …",
+    "empty": "There are no contracts you may read.",
+    "noMatch": "No entry matches the search.",
+    "searchPlaceholder": "Name, class, path, contractor …",
+    "tabsLabel": "Contract groups",
+    "kind": {
+      "suppliers": "Suppliers",
+      "meteringOperators": "Metering point operators",
+      "gridOperators": "Grid operators",
+      "contractors": "Contractors",
+      "dues": "Dues",
+      "configurations": "Accounting"
+    },
+    "contractor": "Contractor",
+    "contractorHidden": "No read access",
+    "showContractor": "Show contractor “{name}”",
+    "noAttributes": "No details.",
+    "energy": {
+      "ELECTRICITY": "Electricity",
+      "GAS": "Gas",
+      "COMMUNITY_HEATING": "District heating",
+      "DISTRICT_HEATING": "District heating",
+      "OTHER": "Other"
+    },
+    "validFrom": "from {date}",
+    "openEnd": "from {from}",
+    "ranging": {
+      "from": "From",
+      "to": "To",
+      "value": "Value",
+      "open": "open"
+    },
+    "history": {
+      "toggle": "History",
+      "toggleLabel": "Show history of “{name}”",
+      "loading": "Loading history …",
+      "error": "The history could not be loaded.",
+      "notFound": "The history is not available.",
+      "empty": "No history.",
+      "chartLabel": "Price history of {name}",
+      "caption": "Last values of {name}",
+      "date": "Valid from",
+      "value": "Value",
+      "more": "The last {n} of {total} values."
+    },
+    "config": {
+      "hint": "The cost calculation follows in a later version.",
+      "name": "Accounting",
+      "contractNumber": "Contract number",
+      "marketLocation": "Market location",
+      "contractDate": "Contract date",
+      "firstRate": "First rate",
+      "periodOfNotice": "Period of notice",
+      "start": "Contract start",
+      "end": "Contract end",
+      "energyType": "Energy type"
+    }
+  },
+  "invoices": {
+    "title": "Energy invoices",
+    "readOnly": "View only – contracts and invoices are maintained or imported in the Control Center.",
+    "loading": "Loading invoices …",
+    "empty": "There are no energy invoices in this time frame that you may read.",
+    "noMatch": "No invoice matches the filter.",
+    "searchPlaceholder": "Invoice number, supplier, meter point …",
+    "count": "{shown} of {total} invoices",
+    "rangeHint": "Invoices whose billing period (else invoice date) starts in the time frame.",
+    "range": {
+      "label": "Time frame",
+      "from": "From",
+      "to": "To",
+      "reset": "Last 24 months",
+      "missing": "Please choose a start and an end date.",
+      "order": "The end date is before the start date.",
+      "tooLong": "The time frame may be at most 10 years long."
+    },
+    "mediumFilter": "Medium",
+    "allMedia": "All",
+    "medium": {
+      "ELECTRICITY": "Electricity",
+      "GAS": "Gas",
+      "DISTRICT_HEATING": "District heating",
+      "OTHER": "Other"
+    },
+    "truncated": "Only the newest {n} invoices are shown. Choose a shorter time frame to see all of them.",
+    "credit": "Credit note",
+    "yes": "yes",
+    "summary": {
+      "title": "Totals of the shown invoices",
+      "invoices": "{n} invoices | 1 invoice | {n} invoices",
+      "credits": "{n} of them credit notes | 1 of them a credit note | {n} of them credit notes",
+      "consumption": "Consumption",
+      "net": "Net",
+      "gross": "Gross"
+    },
+    "chart": {
+      "title": "Monthly",
+      "consumption": "Consumption",
+      "cost": "Gross cost",
+      "label": "Monthly consumption and gross cost {medium}"
+    },
+    "export": {
+      "csv": "CSV",
+      "csvLabel": "Download the shown invoices as CSV"
+    },
+    "col": {
+      "period": "Period",
+      "periodStart": "Period from",
+      "periodEnd": "Period to",
+      "number": "Invoice no.",
+      "date": "Invoice date",
+      "seller": "Supplier",
+      "sellerVatId": "Supplier VAT ID",
+      "buyer": "Buyer",
+      "medium": "Medium",
+      "meterPoint": "Meter point",
+      "consumption": "Consumption",
+      "unit": "Unit",
+      "net": "Net",
+      "tax": "Tax",
+      "gross": "Gross",
+      "currency": "Currency",
+      "credit": "Credit note",
+      "format": "Format",
+      "site": "Site",
+      "path": "Path",
+      "where": "Location"
+    },
+    "detail": {
+      "title": "Invoice {number}",
+      "items": "Line items",
+      "loading": "Loading line items …",
+      "error": "The invoice could not be loaded.",
+      "notFound": "This invoice does not exist or you may not read it.",
+      "noItems": "No line items are stored for this invoice."
+    },
+    "item": {
+      "description": "Description",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "unitPrice": "Unit price",
+      "net": "Net",
+      "taxRate": "Tax rate",
+      "tax": "Tax",
+      "gross": "Gross",
+      "period": "Period"
+    },
+    "file": {
+      "title": "Invoice file",
+      "none": "No file is stored for this invoice.",
+      "show": "Open invoice",
+      "hide": "Close preview",
+      "download": "Download",
+      "downloadLabel": "Download invoice file “{name}”",
+      "busy": "Downloading file …",
+      "error": "The download failed.",
+      "notFound": "The file cannot be read or no longer exists.",
+      "previewTitle": "PDF preview of the invoice",
+      "previewLabel": "PDF preview of “{name}”",
+      "previewLoading": "Loading preview …",
+      "previewError": "The preview could not be loaded.",
+      "unsupported": "Your browser cannot show the PDF file here.",
+      "openTab": "Open PDF in a new tab"
     }
   },
   "banner": {
