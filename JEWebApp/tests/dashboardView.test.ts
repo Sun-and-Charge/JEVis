@@ -30,6 +30,7 @@ describe('DashboardView (mocked API)', () => {
       routes: [
         { path: '/dashboards/:id', name: 'dashboard', component: DashboardView },
         { path: '/analyses/:id', name: 'analysis', component: Stub },
+        { path: '/reports', name: 'reports', component: Stub },
       ],
     })
     await router.push({ path: '/dashboards/7', query })
@@ -40,6 +41,7 @@ describe('DashboardView (mocked API)', () => {
       widget('4', 'Title', { title: 'Heading X', style: { ...widget('x', 'Title').style, titlePosition: 'CENTER' } }),
       widget('5', 'Analyse-Link', { title: 'To analysis', config: { link: { kind: 'ANALYSIS', id: 11, timeFrame: null, readable: true } } }),
       widget('6', 'Report-Link', { title: 'Report', config: { link: { kind: 'REPORT', id: 12, timeFrame: null, readable: true } } }),
+      widget('16', 'Report-Link', { title: 'Hidden report', config: { link: { kind: 'REPORT', id: 13, timeFrame: null, readable: false } } }),
       widget('7', 'Toggle Switch', { rows: [drow('t')] }),
       widget('8', 'Future Widget'),
       widget('9', 'Chart', { rows: [drow('c')] }),
@@ -83,9 +85,12 @@ describe('DashboardView (mocked API)', () => {
 
     const link = wrapper.find('[data-uuid="5"] a')
     expect(link.attributes('href')).toBe('/analyses/11?tf=THIS_WEEK')
-    const report = wrapper.find('[data-uuid="6"] button')
-    expect(report.attributes('aria-disabled')).toBe('true')
-    expect(report.attributes('title')).toContain('Berichte')
+    const report = wrapper.find('[data-uuid="6"] a')
+    expect(report.attributes('href')).toBe('/reports?id=12')
+    expect(report.attributes('aria-label')).toBe('Report')
+    const hidden = wrapper.find('[data-uuid="16"] button')
+    expect(hidden.attributes('aria-disabled')).toBe('true')
+    expect(hidden.attributes('title')).toBe('Das Ziel ist nicht für Sie freigegeben.')
 
     const toggle = wrapper.find('[data-uuid="7"] input')
     expect(toggle.attributes('disabled')).toBeDefined()

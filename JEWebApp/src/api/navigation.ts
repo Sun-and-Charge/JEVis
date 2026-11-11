@@ -22,7 +22,7 @@ export interface Navigation {
   other: { analyses: NavItem[]; dashboards: NavItem[] }
   /** the user's start dashboard (if readable), opened after login */
   startDashboard?: number | null
-  /** number of readable appointments / maintenance entries (W4.1), plans (W4.2) and register objects (W4.3), notes (W4.4) and alarms (W4.5); missing on older servers */
+  /** number of readable appointments / maintenance entries (W4.1), plans (W4.2) and register objects (W4.3), notes (W4.4), alarms (W4.5) and reports (W4.6); missing on older servers */
   modules?: Partial<ModuleCounts> | null
 }
 
@@ -42,6 +42,8 @@ export interface ModuleCounts {
   alarms: number
   /** unconfirmed alarms logged in the last 7 days (menu badge, not a module of its own) */
   alarmsOpen: number
+  /** readable reports, not in the recycle bin (W4.6) */
+  reports: number
 }
 
 /** Module counts with missing values as 0 (the menu shows only modules with entries). */
@@ -60,6 +62,7 @@ export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCou
     notes: n(m?.notes),
     alarms: n(m?.alarms),
     alarmsOpen: n(m?.alarmsOpen),
+    reports: n(m?.reports),
   }
 }
 

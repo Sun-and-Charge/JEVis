@@ -150,7 +150,6 @@
     "timeBar": "Zeitraum des Dashboards",
     "readOnly": "In der Web-App nur lesbar",
     "openLink": "Öffnen",
-    "reportLater": "Berichte können in der Web-App noch nicht geöffnet werden.",
     "linkNoAccess": "Das Ziel ist nicht für Sie freigegeben.",
     "zoom": { "label": "Zoom", "in": "Vergrößern", "out": "Verkleinern", "reset": "Zoom zurücksetzen" },
     "table": {
@@ -208,7 +207,8 @@
     "equipment": "Anlagen",
     "notes": "Notizen",
     "alarms": "Alarme",
-    "alarmsOpen": "{n} offene Alarme (7 Tage) | 1 offener Alarm (7 Tage) | {n} offene Alarme (7 Tage)"
+    "alarmsOpen": "{n} offene Alarme (7 Tage) | 1 offener Alarm (7 Tage) | {n} offene Alarme (7 Tage)",
+    "reports": "Berichte"
   },
   "appointments": {
     "title": "Termine",
@@ -681,6 +681,52 @@
       "noData": "Keine Werte rund um den Alarm.",
       "noNumbers": "Der Datenpunkt enthält Text, keine Zahlen – kein Verlauf.",
       "truncated": "Nicht alle Werte werden angezeigt."
+    }
+  },
+  "reports": {
+    "title": "Berichte",
+    "readOnly": "Nur Ansicht – Berichte werden im Control Center eingerichtet.",
+    "loading": "Berichte werden geladen …",
+    "empty": "Es gibt keine Berichte, die Sie lesen dürfen.",
+    "noMatch": "Kein Bericht passt zur Suche.",
+    "searchPlaceholder": "Name, Pfad, Standort …",
+    "listLabel": "Liste der Berichte",
+    "count": "{shown} von {total} Berichten",
+    "noOutput": "Noch kein Bericht",
+    "select": "Wählen Sie einen Bericht aus der Liste.",
+    "notFound": "Diesen Bericht gibt es nicht oder er ist für Sie nicht lesbar.",
+    "back": "Zurück zur Liste",
+    "enabled": "Aktiv",
+    "disabled": "Deaktiviert",
+    "schedule": { "MINUTELY": "Minütlich", "HOURLY": "Stündlich", "DAILY": "Täglich", "WEEKLY": "Wöchentlich", "MONTHLY": "Monatlich", "QUARTERLY": "Vierteljährlich", "YEARLY": "Jährlich", "NONE": "Kein Zeitplan" },
+    "detail": {
+      "schedule": "Zeitplan",
+      "state": "Status",
+      "outputs": "Ausgaben",
+      "output": "Ausgabe",
+      "loading": "Ausgaben werden geladen …",
+      "error": "Die Ausgaben konnten nicht geladen werden.",
+      "notFound": "Der Bericht ist nicht lesbar.",
+      "noOutput": "Für diesen Bericht wurde noch keine Ausgabe erzeugt."
+    },
+    "download": {
+      "pdf": "PDF herunterladen",
+      "xlsx": "Excel herunterladen",
+      "pdfLabel": "„{name}“ als PDF herunterladen",
+      "xlsxLabel": "„{name}“ als Excel-Datei herunterladen",
+      "noXlsx": "Zu dieser Ausgabe gibt es keine Excel-Datei.",
+      "busy": "Datei wird heruntergeladen …",
+      "error": "Der Download ist fehlgeschlagen.",
+      "notFound": "Die Datei ist nicht lesbar oder nicht mehr vorhanden."
+    },
+    "preview": {
+      "title": "PDF-Vorschau",
+      "label": "PDF-Vorschau von „{name}“",
+      "loading": "Vorschau wird geladen …",
+      "error": "Die Vorschau konnte nicht geladen werden.",
+      "notFound": "Die PDF-Datei ist nicht lesbar oder nicht mehr vorhanden.",
+      "unsupported": "Ihr Browser kann die PDF-Datei hier nicht anzeigen.",
+      "open": "PDF in neuem Tab öffnen"
     }
   },
   "banner": {

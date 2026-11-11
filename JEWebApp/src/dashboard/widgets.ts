@@ -182,16 +182,17 @@ export function timeFrameText(widget: Pick<WidgetConfig, 'uuid' | 'rows' | 'conf
 
 export type LinkTarget =
   | { kind: 'route'; to: { name: 'analysis' | 'dashboard'; params: { id: number }; query: Record<string, string> } }
-  | { kind: 'disabled'; reason: 'report' | 'noAccess' }
+  | { kind: 'route'; to: { name: 'reports'; query: { id: string } } }
+  | { kind: 'disabled'; reason: 'noAccess' }
 
 /**
  * Where a link of an Analyse-, Dashboard- or Report-Link (or Image) widget leads: analyses open with the time frame
- * of the dashboard where possible; reports are not available in the web app yet.
+ * of the dashboard where possible, reports in the reports view (/reports?id=).
  */
 export function linkTarget(link: WidgetLink, state: TimeBarState, shown: { from: number; to: number } | null): LinkTarget {
   const kind = String(link.kind).toUpperCase()
-  if (kind === 'REPORT') return { kind: 'disabled', reason: 'report' }
   if (!link.readable || !(Number(link.id) > 0)) return { kind: 'disabled', reason: 'noAccess' }
+  if (kind === 'REPORT') return { kind: 'route', to: { name: 'reports', query: { id: String(Number(link.id)) } } }
   if (kind === 'ANALYSIS') return { kind: 'route', to: { name: 'analysis', params: { id: Number(link.id) }, query: analysisQuery(link, state, shown) } }
   return { kind: 'route', to: { name: 'dashboard', params: { id: Number(link.id) }, query: dashboardQuery(link) } }
 }
