@@ -76,11 +76,20 @@ Create an object of class **JEDemo** in the Service Directory:
 
 1. Control Center, user administration: a user (e.g. `demo-replay`) in a new group with **write** rights on the
    demo organisation's owner group only, no other rights, no Sys Admin.
-2. Create an API key for this user (user context menu, "API key" dialog, or `bin/jevis-create-apikey "demo-replay"`
-   on the server, which writes the key to a file).
-3. Put the key into `/etc/jevis/jevis.env` as `JEDEMO_API_KEY=...`. `bin/jedemo` passes it to the job as
-   `JEVIS_API_KEY` and refuses to start without it. Do **not** use the shared `JEVIS_API_KEY` of the other
-   services: the job would then run with their rights.
+2. Create an API key for this user, in the Control Center ("API key" dialog) or on the server **with its own key
+   file**:
+   ```bash
+   bin/jevis-create-apikey "demo-replay" "jedemo@$(hostname)" /home/jevis/jevis/etc/jedemo.key
+   ```
+   **Never run `bin/jevis-create-apikey "demo-replay"` without the third argument:** it then overwrites
+   `etc/service.key`, the key file of all other services (`<apikeyfile>` in `etc/jevis.xml`). After their next
+   restart they would log in as `demo-replay`, see only the demo and stop processing every other organisation.
+   If it happened: copy `etc/service.key` to `etc/jedemo.key`, then create a new key for the original service user
+   with `bin/jevis-create-apikey "<service user>"` and revoke its lost old key in the "API key" dialog.
+3. Put the key into `/etc/jevis/jevis.env` as `JEDEMO_API_KEY=...`, e.g.
+   `echo "JEDEMO_API_KEY=$(cat etc/jedemo.key)" | sudo tee -a /etc/jevis/jevis.env`. `bin/jedemo` passes it to the
+   job as `JEVIS_API_KEY` and refuses to start without it. Do **not** use the shared `JEVIS_API_KEY` of the other
+   services: the job would then run with their rights, and they with the job's.
 
 ## Installation (Linux)
 
