@@ -830,3 +830,117 @@ Report links of dashboards (`Report-Link` widgets, `link.kind` `REPORT`; image w
 ### Navigation
 
 `modules` additionally holds `reports`: number of readable reports (not in the recycle bin).
+
+## Contracts and energy invoices (W4.7)
+
+View only, like the Control Center's "Accounting Plugin" (`plugin/accounting/AccountingPlugin`, tabs "Enter data"
+and "Configuration"; class files in `var/classes/AccountingPlugin`). The cost calculation (tab "View",
+TRC templates) follows in W4.8. Objects are found by class across the tree like the Control Center, only those the
+user may read and not in the recycle bin.
+
+### `GET /web/contracts?lang=de`
+
+```json
+{
+  "groups": [
+    {
+      "kind": "suppliers",
+      "objects": [
+        {
+          "id": 23901, "name": "Strom - Energieversorger Nord", "className": "Electricity Supply Contractor",
+          "classLabel": "Stromlieferant", "path": "Energieverträge / Energielieferung",
+          "site": { "id": 23053, "name": "Musterwerk" },
+          "contractor": { "id": 23910, "name": "Energieversorger Nord", "readable": true },
+          "attributes": [
+            { "name": "Energy Price HT", "label": "Arbeitspreis HT", "type": "number", "value": 0.28, "unit": "€/kWh",
+              "timestamp": "2026-01-01T00:00:00.000+01:00", "history": true },
+            { "name": "Demand Charge", "label": "Leistungspreis", "type": "ranging",
+              "value": [ { "from": 0, "to": 100, "value": 12.5 } ], "unit": "€/kW", "timestamp": "…", "history": true }
+          ]
+        }
+      ]
+    }
+  ],
+  "configurations": [
+    { "id": 23950, "name": "Strom Musterwerk", "path": "Energieverträge / Abrechnung", "site": { "id": 23053, "name": "Musterwerk" },
+      "contractNumber": "V-1001", "contractType": "ELECTRICITY", "marketLocation": "DE…", "contractDate": "2025-12-01",
+      "firstRate": "2026-01-01", "periodOfNotice": "2027-09-30", "start": "2026-01-01", "end": "2027-12-31",
+      "energyType": "ELECTRICITY" }
+  ]
+}
+```
+
+- `groups[].kind`, in this order: `suppliers` ("Energy Supplier" and subclasses), `meteringOperators` ("Energy
+  Metering Point Operator" and subclasses), `gridOperators` ("Energy Grid Operator" and subclasses), `contractors`
+  ("Energy Contractor" and subclasses), `dues` ("Governmental Dues"). Empty groups are left out. Objects sorted by
+  site, path, name like the reports.
+- `classLabel`: translated class name (`lang`, fallback English), `label`: translated attribute name, both from the
+  class i18n (`var/i18n/AccountingPlugin`, as the Control Center shows them; fallback the name).
+- `attributes`: all attributes of the class in the class's order, except `Contractor` (given as `contractor`, an
+  object target "id" or "id:attribute" as `TargetHelper`; `null` if empty) and file attributes. `type`: `number`
+  (Double/Long, `value` latest sample, `unit` display unit as `ResourceWebRegisters.unitLabel`), `ranging`
+  (Ranging Value JSON parsed with `RangingValues`, `value` = list of `{from, to, value}`), `text` (everything else,
+  latest value as string). `value`/`timestamp` `null` if no sample. `history`: more than one sample exists.
+- `contractor`: `{ "id", "name", "readable" }` (`name` only if readable and not in the recycle bin), also `null` for
+  classes without `Contractor`. `ranging`: `[]` if the JSON cannot be parsed. `unit` is `null` for `text`.
+  Passwords are left out like files.
+- `configurations`: readable "Accounting Configuration" objects, sorted like the objects; the contract fields come from
+  the JSON file of `Template File` (a file attribute; `SelectionTemplate` / `AccountingTemplateHandler.toJsonNode`):
+  `contractNumber`, `contractType`, `marketLocationNumber` → `marketLocation`, `contractDate`, `firstRate`,
+  `periodOfNotice`, `contractStart` → `start`, `contractEnd` → `end`. The Control Center stores the dates (also
+  `periodOfNotice`, a date picker there) as ISO date times; they are given as `yyyy-MM-dd`, texts that are no date
+  unchanged. `contractType` holds the energy type (`ContractType`: `ELECTRICITY`, `GAS`, `COMMUNITY_HEATING`; the
+  Control Center labels it "energy type"); `energyType` is the same value if it is one of these, else `null`.
+  Missing/empty keys, a missing or unparseable file: `null`. The calculation inputs/outputs of the JSON are not
+  returned.
+
+### `GET /web/contracts/objects/{id}/history?attribute=Energy%20Price%20HT&limit=100`
+
+Price history of one number or ranging attribute of a readable object of the classes above, newest first:
+`{ "unit": "€/kWh", "type": "number", "samples": [ { "timestamp": "…", "value": 0.28 } ] }` (ranging: `value` =
+list of `{from, to, value}`). `limit` 1–500, default 100 (`≤ 0` → 100, more than 500 → 500). 404 if the object is not readable / not such a class or
+the attribute is unknown or not number/ranging.
+
+### `GET /web/invoices?from=2025-11-01&to=2026-11-30&timeZone=Europe/Berlin`
+
+Energy invoices (class "Energy Invoice", see `docs/ENERGY-INVOICES.md`) the user may read, whose `Period Start`
+(else `Invoice Date`) lies in the time frame. `from`/`to` days; default: the last 24 months up to the end of the
+current month (on 2026-11-11: `2024-12-01` to `2026-11-30`; only `to` given: the 24 months up to `to`); `to`
+before `from` or more than 10 years → `400`.
+
+```json
+{
+  "invoices": [
+    {
+      "id": 24601, "number": "EN-202610-S", "date": "2026-11-03", "format": "ZUGFeRD 2.3 EN16931",
+      "seller": "Energieversorger Nord", "buyer": "Sun and Charge Demo",
+      "periodStart": "2026-10-01", "periodEnd": "2026-10-31", "medium": "ELECTRICITY", "meterPoint": "DE0…01",
+      "consumption": 41250.0, "consumptionUnit": "kWh", "net": 11550.0, "tax": 2194.5, "gross": 13744.5, "currency": "EUR",
+      "credit": false, "file": "EN-202610-S.pdf",
+      "path": "Energieverträge / Energierechnungen / Strom", "site": { "id": 23053, "name": "Musterwerk" }
+    }
+  ],
+  "truncated": false
+}
+```
+
+- Newest period first (same day: higher id first), at most 2000 (`truncated`). Invoices without `Period Start` and
+  `Invoice Date` are not listed. Dates `yyyy-MM-dd`. Values are the latest samples of the attributes; `consumptionUnit` the display
+  unit of `Consumption`; `credit`: gross amount < 0 (credit notes are stored negative). `file`: stored file name of
+  `Invoice File`, `null` if none.
+
+### `GET /web/invoices/{id}`
+
+One invoice as above plus `sellerVatId` and `items`: the parsed `Line Items` JSON as stored (`[]` if empty or not
+parseable or no array). 404 if not readable.
+
+### `GET /web/invoices/{id}/file`
+
+The original PDF/XML of `Invoice File` (content type from the bytes: `application/pdf` or `application/xml`, `application/octet-stream` for anything
+else; without stored file name the object name plus `.pdf`/`.xml`;
+`?inline=true` only for PDF), same headers as the reports' file endpoint. 404 if not readable or no file.
+
+### Navigation
+
+`modules` additionally holds `contracts` (number of readable objects of the groups above plus configurations) and
+`invoices` (number of readable "Energy Invoice" objects).

@@ -133,6 +133,16 @@ async function logout() {
               <span>{{ t('modules.reports') }}</span><span class="module-count">{{ nav.modules.reports }}</span>
             </RouterLink>
           </li>
+          <li v-if="nav.modules.contracts">
+            <RouterLink :to="{ name: 'contracts' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.contracts') }}</span><span class="module-count">{{ nav.modules.contracts }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="nav.modules.invoices">
+            <RouterLink :to="{ name: 'invoices' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.invoices') }}</span><span class="module-count">{{ nav.modules.invoices }}</span>
+            </RouterLink>
+          </li>
         </ul>
         <ul class="tree">
           <NavTree v-for="node in nav.tree" :key="node.site.id" :node="node" @navigate="menuOpen = false" />

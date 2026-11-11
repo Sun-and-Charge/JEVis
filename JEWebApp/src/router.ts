@@ -27,6 +27,8 @@ export const router = createRouter({
         { path: 'notes', name: 'notes', component: () => import('./views/NotesView.vue') },
         { path: 'alarms', name: 'alarms', component: () => import('./views/AlarmsView.vue') },
         { path: 'reports', name: 'reports', component: () => import('./views/ReportsView.vue') },
+        { path: 'contracts', name: 'contracts', component: () => import('./views/ContractsView.vue') },
+        { path: 'invoices', name: 'invoices', component: () => import('./views/InvoicesView.vue') },
         { path: ':pathMatch(.*)*', name: 'notFound', component: () => import('./views/NotFoundView.vue') },
       ],
     },
