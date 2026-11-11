@@ -39,6 +39,7 @@ import org.jevis.commons.ws.json.JsonRelationship;
 import org.jevis.commons.ws.json.JsonSample;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 
@@ -135,6 +136,25 @@ public class ResourceWebModules {
         modules.putAll(ResourceWebIso.moduleCounts(readable));
         modules.putAll(ResourceWebRegisters.moduleCounts(readable, ResourceWebRegisters.Classes.fromCache()));
         modules.putAll(ResourceWebNotes.moduleCounts(readable));
+        return modules;
+    }
+
+    /**
+     * @param lookup objects and rights of the request
+     * @param store  samples and files (for the alarms)
+     * @param now    end of the time frame of {@code alarmsOpen}
+     * @return {@link #moduleCounts(Collection)} plus {@code alarms} and {@code alarmsOpen}
+     * ({@link ResourceWebAlarms#moduleCounts}; {@code 0} if they cannot be read)
+     */
+    static Map<String, Object> moduleCounts(Lookup lookup, ResourceWebAlarms.Store store, DateTime now) {
+        Map<String, Object> modules = moduleCounts(lookup.readable());
+        try {
+            modules.putAll(ResourceWebAlarms.moduleCounts(lookup, store, now));
+        } catch (Exception e) {
+            logger.warn("Could not count the alarms", e);
+            modules.put("alarms", 0);
+            modules.put("alarmsOpen", 0);
+        }
         return modules;
     }
 

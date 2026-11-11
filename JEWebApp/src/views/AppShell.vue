@@ -119,6 +119,15 @@ async function logout() {
               <span>{{ t('modules.notes') }}</span><span class="module-count">{{ nav.modules.notes }}</span>
             </RouterLink>
           </li>
+          <li v-if="nav.modules.alarms">
+            <RouterLink :to="{ name: 'alarms' }" class="other-item module-item" @click="menuOpen = false">
+              <span>{{ t('modules.alarms') }}</span>
+              <span class="module-count" :class="{ 'is-alert': nav.modules.alarmsOpen > 0 }" :title="t('modules.alarmsOpen', nav.modules.alarmsOpen)">
+                <span aria-hidden="true">{{ nav.modules.alarmsOpen }}</span>
+                <span class="visually-hidden">{{ t('modules.alarmsOpen', nav.modules.alarmsOpen) }}</span>
+              </span>
+            </RouterLink>
+          </li>
         </ul>
         <ul class="tree">
           <NavTree v-for="node in nav.tree" :key="node.site.id" :node="node" @navigate="menuOpen = false" />
@@ -316,6 +325,18 @@ async function logout() {
 .module-item.router-link-active .module-count {
   background: var(--blueberry);
   color: var(--sun);
+}
+
+/* open alarms: warning colour (the active entry is yellow itself, there the badge turns red) */
+.module-count.is-alert {
+  background: var(--sun);
+  color: var(--blueberry);
+  font-weight: 700;
+}
+
+.module-item.router-link-active .module-count.is-alert {
+  background: var(--error);
+  color: #fff;
 }
 
 .content {

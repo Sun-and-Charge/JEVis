@@ -40,6 +40,7 @@ import org.jevis.commons.ws.sql.SQLDataSource;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.joda.time.Period;
 import org.joda.time.format.ISODateTimeFormat;
 
 import javax.security.sasl.AuthenticationException;
@@ -190,11 +191,22 @@ public class ResourceWebNotes {
      * @throws IllegalArgumentException for invalid days, {@code to} before {@code from} or more than three years
      */
     static DateTime[] dayRange(String from, String to, DateTimeZone zone, LocalDate today) {
+        return dayRange(from, to, zone, today, Period.months(DEFAULT_MONTHS), Period.years(MAX_YEARS), MAX_YEARS + " years");
+    }
+
+    /**
+     * @param defaultLength {@code from} if not set: {@code to} minus this
+     * @param max           longest allowed time frame
+     * @param maxText       {@code max} for the error message ({@code "3 years"})
+     * @see #dayRange(String, String, DateTimeZone, LocalDate)
+     */
+    static DateTime[] dayRange(String from, String to, DateTimeZone zone, LocalDate today, Period defaultLength,
+                               Period max, String maxText) {
         LocalDate toDay = to != null && !to.trim().isEmpty() ? parseDay(to, "to") : today;
-        LocalDate fromDay = from != null && !from.trim().isEmpty() ? parseDay(from, "from") : toDay.minusMonths(DEFAULT_MONTHS);
+        LocalDate fromDay = from != null && !from.trim().isEmpty() ? parseDay(from, "from") : toDay.minus(defaultLength);
         if (toDay.isBefore(fromDay)) throw new IllegalArgumentException("to is before from");
-        if (toDay.isAfter(fromDay.plusYears(MAX_YEARS))) {
-            throw new IllegalArgumentException("At most " + MAX_YEARS + " years");
+        if (toDay.isAfter(fromDay.plus(max))) {
+            throw new IllegalArgumentException("At most " + maxText);
         }
         return new DateTime[]{fromDay.toDateTimeAtStartOfDay(zone),
                 toDay.plusDays(1).toDateTimeAtStartOfDay(zone).minusMillis(1)};
@@ -609,12 +621,20 @@ public class ResourceWebNotes {
         static String name(String id, String language) {
             String key = KEYS.get(id);
             if (key == null) return id;
+            String name = translate(key, language);
+            return name != null ? name : id;
+        }
+
+        /**
+         * @return the text of the key in the JEVis language file of the language (fallback English), null if none
+         */
+        static String translate(String key, String language) {
             for (String lang : new String[]{language, "en"}) {
                 Properties properties = bundles().get(lang);
                 String name = properties != null ? properties.getProperty(key) : null;
                 if (name != null && !name.trim().isEmpty()) return name.trim();
             }
-            return id;
+            return null;
         }
 
         /**

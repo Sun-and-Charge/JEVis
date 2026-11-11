@@ -681,3 +681,78 @@ curve (tooltip with text, tags, user).
 ### Navigation
 
 `modules` additionally holds `notes`: number of readable "Data Notes" objects (not in the recycle bin).
+
+## Alarms (W4.5)
+
+View only, like the Control Center's "Alarm Plugin" (`plugin/alarms/AlarmPlugin`, `AlarmRow`); alarms are
+confirmed in the Control Center. JEAlarm writes the alarms it finds as JSON files (`JsonAlarm[]`) into the attribute
+`Log File` of an "Alarm Configuration"; one file sample per run. An alarm is one entry of such a file. Only
+configurations the user may read, that are enabled (`Enabled`) and not in the recycle bin count.
+
+### `GET /web/alarms?from=2026-11-04&to=2026-11-11&state=open&timeZone=Europe/Berlin&lang=de`
+
+- `from`/`to`: days (`yyyy-MM-dd`, both inclusive) in `timeZone`. Default: the last 7 days up to today. `to` before
+  `from` or more than 1 year answers `400`, as does an unknown `state`. Like the Control Center, the time frame selects the **log file samples**
+  (when JEAlarm logged the alarms); every alarm of a selected file is returned, also if its own timestamp is older.
+- `state`: `open` (default; configurations whose latest `Alarm Checked` is not true), `checked` or `all`. Confirmation
+  is per configuration (latest sample of `Alarm Checked`), as in the Control Center.
+- `lang`: language of the type and log value names (fallback English).
+
+```json
+{
+  "from": "2026-11-04T00:00:00.000+01:00",
+  "to": "2026-11-11T23:59:59.999+01:00",
+  "state": "open",
+  "alarms": [
+    {
+      "id": "24202-1793700900000-0",
+      "timestamp": "2026-11-10T14:15:00.000+01:00",
+      "logged": "2026-11-10T23:43:00.000+01:00",
+      "configuration": { "id": 24202, "name": "Strom - Gesamt - Bereinigte Daten", "checked": false, "checkedBy": null, "checkedAt": null },
+      "row": { "id": 23673, "name": "Strom - Gesamt - Bereinigte Daten", "className": "Clean Data", "path": "Daten / Strom / Strom - Gesamt", "readable": true },
+      "site": { "id": 23053, "name": "Musterwerk" },
+      "attribute": "Value",
+      "isValue": 812.5,
+      "operator": ">",
+      "shouldBeValue": 700.0,
+      "tolerance": 5.0,
+      "unit": "kWh",
+      "type": "L1",
+      "typeName": "Grenzwert Stufe 1",
+      "logValue": 1,
+      "logValueName": "Normaler Alarm"
+    }
+  ],
+  "truncated": false
+}
+```
+
+- `alarms`: newest `timestamp` first, at most 5000 (`truncated: true` if there are more).
+- `id`: `<configuration>-<epoch milliseconds of the alarm>-<index in the file>`, unique per alarm.
+- `logged`: timestamp of the log file sample.
+- `configuration.checkedBy`/`checkedAt`: note and timestamp of the latest `Alarm Checked` sample if it is true
+  (the Control Center writes the note "Checked by <account>"; `checkedBy` is then only `<account>`, other notes
+  unchanged, `null` without note), else `null`.
+- `row`: the object of the alarm (`JsonAlarm.object`), same shape and rules as the notes' `row` (`name`,
+  `className`, `path` only if readable). `site`: next readable building above the row, else above the
+  configuration, else `null`.
+- `isValue`, `shouldBeValue`, `tolerance`: as logged (`null` if missing). `unit`: display unit of the alarm's
+  attribute (as `ResourceWebRegisters.unitLabel`), `""` if none or the row is not readable.
+- `operator`: as logged, normalised like the Control Center's operator column: `>`, `≥` (also for `>=` and `""`),
+  `=`, `≠` (`!=`), `<`, `≤` (`<=`); other texts unchanged.
+- `type`: `AlarmType` (`L1, L2, D1, D2, DYNAMIC, STATIC, GAP, NONE`); `typeName` translated like
+  `Alarm.getTranslatedTypeName` (`plugin.alarm.table.translation.*`).
+- `logValue`: `0` system, `1` normal, `2` standby, `4` silent; `logValueName` translated like `AlarmPlugin.getAlarm`
+  (`plugin.alarm.table.alarm.*`).
+- Unlike the Control Center, an alarm is listed even if its row no longer has a sample at the alarm's timestamp.
+
+### Row history
+
+The web app shows the curve of the alarm's row one day before and after the alarm with `GET /web/rows/{id}/samples`
+(see Notes), with the limit (`shouldBeValue`) as a line if present.
+
+### Navigation
+
+`modules` additionally holds `alarms`: number of readable, enabled "Alarm Configuration" objects, and
+`alarmsOpen`: number of alarms in the log file samples of the last 7 days of those configurations that are not
+confirmed (the menu badge).

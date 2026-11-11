@@ -206,7 +206,9 @@
     "meters": "Meters",
     "basedata": "Base data",
     "equipment": "Equipment",
-    "notes": "Notes"
+    "notes": "Notes",
+    "alarms": "Alarms",
+    "alarmsOpen": "{n} open alarms (7 days) | 1 open alarm (7 days) | {n} open alarms (7 days)"
   },
   "appointments": {
     "title": "Appointments",
@@ -619,6 +621,66 @@
       "11": "Measure",
       "12": "Disturbance",
       "13": "Maintenance"
+    }
+  },
+  "alarms": {
+    "title": "Alarms",
+    "alarm": "Alarm",
+    "readOnly": "View only – alarms are confirmed in the Control Center.",
+    "loading": "Loading alarms …",
+    "empty": "There are no alarms for this selection.",
+    "noMatch": "No alarm matches the search and filters.",
+    "truncated": "Only the newest {n} alarms are shown. Choose a shorter time frame to see all of them.",
+    "rangeHint": "The time frame refers to when the alarms were logged.",
+    "range": {
+      "label": "Time frame",
+      "from": "From",
+      "to": "To",
+      "reset": "Last 7 days",
+      "missing": "Please choose a start and an end date.",
+      "order": "The end date is before the start date.",
+      "tooLong": "The time frame may be at most 1 year long."
+    },
+    "state": { "label": "Status", "open": "Open", "checked": "Confirmed", "all": "All" },
+    "searchPlaceholder": "Configuration, data point, type …",
+    "typeFilter": "Type",
+    "clearTypes": "All types",
+    "noAccess": "No read access",
+    "col": {
+      "date": "Date",
+      "site": "Site",
+      "configuration": "Configuration",
+      "path": "Path",
+      "row": "Data point",
+      "isValue": "Actual value",
+      "operator": "Operator",
+      "shouldBeValue": "Limit",
+      "tolerance": "Tolerance (%)",
+      "unit": "Unit",
+      "type": "Type",
+      "alarm": "Alarm",
+      "status": "Status",
+      "checkedBy": "Confirmed by",
+      "checkedAt": "Confirmed at",
+      "logged": "Logged",
+      "attribute": "Attribute"
+    },
+    "export": {
+      "csv": "CSV",
+      "csvLabel": "Download the shown alarms as CSV"
+    },
+    "detail": {
+      "chart": "Curve ±1 day",
+      "chartLabel": "Curve of “{name}” from one day before to one day after the alarm",
+      "limit": "Limit",
+      "loading": "Loading curve …",
+      "noRow": "The alarm has no data point (any more) – no curve.",
+      "noAccess": "The data point may not be read – no curve.",
+      "notFound": "The data point cannot be read or has no values.",
+      "error": "The curve could not be loaded.",
+      "noData": "No values around the alarm.",
+      "noNumbers": "The data point holds text, not numbers – no curve.",
+      "truncated": "Not all values are shown."
     }
   },
   "banner": {

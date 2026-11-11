@@ -237,13 +237,21 @@ export type RangeCheck = 'ok' | 'missing' | 'order' | 'tooLong'
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 
-/** Checks a time frame before it is sent: both days set, `to` not before `from`, at most 3 years (server: 400). */
-export function checkNoteRange(from: string, to: string): RangeCheck {
+/**
+ * Checks a time frame before it is sent: both days set, `to` not before `from`, at most `maxYears` years
+ * (server: 400).
+ */
+export function checkRange(from: string, to: string, maxYears: number): RangeCheck {
   if (!DAY.test(from) || !DAY.test(to)) return 'missing'
   if (to < from) return 'order'
   const [y, m, d] = from.split('-').map(Number)
-  const limit = `${String(y + 3).padStart(4, '0')}-${pad(m)}-${pad(d)}`
+  const limit = `${String(y + maxYears).padStart(4, '0')}-${pad(m)}-${pad(d)}`
   return to > limit ? 'tooLong' : 'ok'
+}
+
+/** Time frame of the notes: at most 3 years. */
+export function checkNoteRange(from: string, to: string): RangeCheck {
+  return checkRange(from, to, 3)
 }
 
 /** Text for the detail panel / tooltips: tags as names, joined. */

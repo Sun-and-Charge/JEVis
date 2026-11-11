@@ -37,12 +37,15 @@ const MUTED = '#5b6576'
 const LINE = '#d9dee6'
 const ACCENT = '#00538a'
 const SUN = '#ffde00'
+const LIMIT = '#b3261e'
 const FONT = 'Montserrat, Segoe UI, Arial, sans-serif'
 
 export interface NoteChartContext {
   locale: string
   /** "Notiz" */
   noteLabel: string
+  /** optional horizontal limit line (alarms: the "Soll-Wert"); the y axis is widened to show it */
+  limit?: { value: number; label: string } | null
 }
 
 /** ECharts option of the detail chart; `samples` numeric and sorted (see {@link numericRowSamples}). */
@@ -51,6 +54,15 @@ export function noteChartOption(samples: readonly [number, number][], ts: number
   const decimals = decimalsOf(samples)
   const suffix = unit ? ' ' + unit : ''
   const at = sampleAt(samples, ts)
+  const limit = ctx.limit && Number.isFinite(ctx.limit.value) ? ctx.limit : null
+  const markData: Record<string, unknown>[] = [{ xAxis: ts }]
+  if (limit) {
+    markData.push({
+      yAxis: limit.value,
+      lineStyle: { color: LIMIT, type: 'dashed', width: 1.5 },
+      label: { show: true, position: 'insideStartTop', formatter: limit.label, color: LIMIT, fontFamily: FONT, fontWeight: 600 },
+    })
+  }
   return {
     animation: false,
     textStyle: { fontFamily: FONT, color: INK },
@@ -66,6 +78,8 @@ export function noteChartOption(samples: readonly [number, number][], ts: number
     yAxis: {
       type: 'value',
       scale: true,
+      min: limit ? (e: { min: number }) => Math.min(e.min, limit.value) : undefined,
+      max: limit ? (e: { max: number }) => Math.max(e.max, limit.value) : undefined,
       name: unit ?? '',
       nameTextStyle: { color: MUTED, align: 'left' },
       splitLine: { lineStyle: { color: LINE } },
@@ -97,7 +111,7 @@ export function noteChartOption(samples: readonly [number, number][], ts: number
           animation: false,
           lineStyle: { color: INK, type: 'dashed', width: 1.5 },
           label: { show: true, position: 'insideEndTop', formatter: ctx.noteLabel, color: INK, fontFamily: FONT, fontWeight: 600 },
-          data: [{ xAxis: ts }],
+          data: markData,
         },
         markPoint: at
           ? {
