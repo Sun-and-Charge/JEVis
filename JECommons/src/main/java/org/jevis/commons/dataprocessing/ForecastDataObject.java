@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -32,6 +33,7 @@ import org.jevis.commons.database.SampleHandler;
 import org.jevis.commons.dataprocessing.processor.workflow.PeriodRule;
 import org.jevis.commons.json.JsonGapFillingConfig;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 
@@ -472,13 +474,10 @@ public class ForecastDataObject {
     public void finishCurrentRun(JEVisObject object) {
         Long cycleTime = getCycleTime(object);
         DateTime lastRun = getLastRun(object);
-        DateTimeZone timeZone = getTimeZone();
-        int offset = timeZone.getOffset(lastRun);
         try {
             JEVisAttribute lastRunAttribute = object.getAttribute("Last Run");
             if (lastRunAttribute != null) {
-                DateTime dateTime = lastRun.plusMillis(cycleTime.intValue());
-                dateTime = fixTimeZoneOffset(timeZone, dateTime, offset);
+                DateTime dateTime = nextRun(lastRun, cycleTime, getTimeZone());
                 JEVisSample newSample = lastRunAttribute.buildSample(DateTime.now(), dateTime);
                 newSample.commit();
             }
@@ -487,7 +486,20 @@ public class ForecastDataObject {
             logger.error("Could not get data source last run time: ", e);
         }
     }
-    
+
+    /**
+     * Last run plus cycle time. Cycles of whole days keep the local time of day across a DST change (00:00 stays
+     * 00:00); shorter cycles advance in real time. Correcting a one-hour cycle by the DST offset would cancel the step
+     * on the day of the change, and the forecast would never get past that day.
+     */
+    static DateTime nextRun(DateTime lastRun, long cycleTime, DateTimeZone timeZone) {
+        DateTime dateTime = lastRun.plus(cycleTime);
+        if (cycleTime % DateTimeConstants.MILLIS_PER_DAY == 0) {
+            dateTime = fixTimeZoneOffset(timeZone, dateTime, timeZone.getOffset(lastRun));
+        }
+        return dateTime;
+    }
+
     private static DateTime fixTimeZoneOffset(DateTimeZone tz, DateTime start, int offset) {
         int newOffset = tz.getOffset(start);
 

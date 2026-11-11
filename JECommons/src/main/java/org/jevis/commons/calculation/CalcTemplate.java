@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -55,7 +56,7 @@ public class CalcTemplate {
      *                      to plain {@code varname} automatically.
      */
     public CalcTemplate(long calcObjID, String rawExpression) {
-        this.normalizedExpression = rawExpression.replaceAll("#\\{(\\w+)}", "$1");
+        this.normalizedExpression = CalcExpressions.normalize(rawExpression);
         this.calcObjectId = calcObjID;
     }
 
@@ -68,7 +69,7 @@ public class CalcTemplate {
      */
     BigDecimal evaluate() {
         if (expr == null) {
-            expr = new Expression(normalizedExpression);
+            expr = CalcExpressions.create(normalizedExpression);
         }
         variables.forEach(expr::setVariable);
         try {
@@ -92,6 +93,6 @@ public class CalcTemplate {
      * @param value the numeric value to assign
      */
     void put(String key, BigDecimal value) {
-        variables.put(key, value);
+        variables.put(CalcExpressions.variable(key), value);
     }
 }

@@ -219,15 +219,9 @@ public class CalcJobFactory {
         logger.debug("{} inputs found", calcInputObjects.size());
 
         try {
-            String normalizedExpr = expression.replaceAll("#\\{(\\w+)}", "$1");
-            com.udojava.evalex.Expression mxExpr = new com.udojava.evalex.Expression(normalizedExpr);
-            for (CalcInputObject var : calcInputObjects) {
-                mxExpr.setVariable(var.getIdentifier(), java.math.BigDecimal.ONE);
-            }
-            double val = mxExpr.eval().doubleValue();
-            if (!Double.isNaN(val) && Double.isInfinite(val)) {
-                logger.warn("Expression '{}' evaluated to Infinite during validation for calc object {}", expression, calcObjID);
-            }
+            String normalizedExpr = CalcExpressions.normalize(expression);
+            /* syntax check only: evaluating with dummy values fails on valid formulas, e.g. a/(b-c) with b = c */
+            CalcExpressions.create(normalizedExpr).toRPN();
         } catch (com.udojava.evalex.Expression.ExpressionException e) {
             throw new RuntimeException("Invalid calculation expression: " + expression, e);
         }

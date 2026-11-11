@@ -23,6 +23,7 @@ package org.jevis.jeconfig.plugin.dtrc;
 import com.ibm.icu.text.NumberFormat;
 import com.jfoenix.controls.*;
 import com.udojava.evalex.Expression;
+import org.jevis.commons.calculation.CalcExpressions;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -711,7 +712,7 @@ public class OutputView extends Tab {
                     }
 
                     try {
-                        Double d = new Expression(s).eval().doubleValue();
+                        Double d = CalcExpressions.create(s).eval().doubleValue();
                         if (!d.isNaN()) {
                             allResults.put(ts, d);
                         }
@@ -765,7 +766,7 @@ public class OutputView extends Tab {
 
                 if (needsCalculation || formulaString.contains("if(")) {
                     try {
-                        calculate = new Expression(formulaString).eval().doubleValue();
+                        calculate = CalcExpressions.create(formulaString).eval().doubleValue();
                     } catch (Expression.ExpressionException e) {
                         logger.error("Formula evaluation failed: {}", e.getMessage());
                     }
@@ -783,7 +784,7 @@ public class OutputView extends Tab {
                     try {
                         if (calculate == 0d) {
                             try {
-                                calculate = new Expression(formulaString).eval().doubleValue();
+                                calculate = CalcExpressions.create(formulaString).eval().doubleValue();
                             } catch (Expression.ExpressionException e) {
                                 logger.error("Formula evaluation failed: {}", e.getMessage());
                             }

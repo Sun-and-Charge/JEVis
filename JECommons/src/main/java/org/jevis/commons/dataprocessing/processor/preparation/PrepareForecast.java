@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JECommons.
  * <p>
@@ -35,6 +36,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrepareForecast implements ProcessStep {
+    /**
+     * Keeps the local time of day across a DST change for periods of a day or longer. Periods shorter than a day
+     * (hours, minutes) advance in real time: correcting them would cancel a one-hour step on the day of the change
+     * and the intervals would stop there.
+     */
+    static DateTime fixTimeZoneOffset(DateTimeZone tz, DateTime start, int offset, Period period) {
+        if (period.getYears() == 0 && period.getMonths() == 0 && period.getWeeks() == 0 && period.getDays() == 0) {
+            return start;
+        }
+        return fixTimeZoneOffset(tz, start, offset);
+    }
+
     private static DateTime fixTimeZoneOffset(DateTimeZone tz, DateTime start, int offset) {
         int newOffset = tz.getOffset(start);
 
@@ -100,7 +113,7 @@ public class PrepareForecast implements ProcessStep {
                     } else {
                         endOfInterval = start.plus(inputPeriod);
                     }
-                    endOfInterval = fixTimeZoneOffset(tz, endOfInterval, offset);
+                    endOfInterval = fixTimeZoneOffset(tz, endOfInterval, offset, inputPeriod);
                     endOfInterval = endOfInterval.minusMillis(1);
 
                     if (!start.isBefore(endOfInterval)) {
@@ -137,7 +150,7 @@ public class PrepareForecast implements ProcessStep {
                     } else {
                         start = start.plus(inputPeriod);
                     }
-                    start = fixTimeZoneOffset(tz, start, offset);
+                    start = fixTimeZoneOffset(tz, start, offset, inputPeriod);
                     offset = tz.getOffset(start);
                 }
                 resourceManager.setIntervals(intervals);

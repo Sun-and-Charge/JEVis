@@ -23,6 +23,7 @@ package org.jevis.jeconfig.plugin.object.extension.calculation;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextArea;
 import com.udojava.evalex.Expression;
+import org.jevis.commons.calculation.CalcExpressions;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
@@ -124,9 +125,9 @@ public class FormulaBox extends HBox {
 
     public void eval() {
         try {
-            String normalizedExpr = textArea.getText().replaceAll("#\\{(\\w+)}", "$1");
-            Expression mxExpr = new Expression(normalizedExpr);
-            variables.forEach(var -> mxExpr.setVariable(var, BigDecimal.ONE));
+            String normalizedExpr = CalcExpressions.normalize(textArea.getText());
+            Expression mxExpr = CalcExpressions.create(normalizedExpr);
+            variables.forEach(var -> mxExpr.setVariable(CalcExpressions.variable(var), BigDecimal.ONE));
 
             List<String> warnings = new ArrayList();
             List<String> error = new ArrayList<>();
