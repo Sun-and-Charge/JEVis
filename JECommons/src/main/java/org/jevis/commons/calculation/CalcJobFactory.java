@@ -435,7 +435,9 @@ public class CalcJobFactory {
                 }
 
             } catch (Exception e) {
-                throw new RuntimeException("Cant find valid values for input data with id " + child.getID());
+                /* keep the reason (no target, target not found, no samples, ...) in the log */
+                throw new RuntimeException("Cant find valid values for input data with id " + child.getID()
+                        + ": " + e.getMessage(), e);
             }
         }
 
