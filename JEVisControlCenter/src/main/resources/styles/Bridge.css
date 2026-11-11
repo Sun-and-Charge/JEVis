@@ -71,6 +71,7 @@
     -fx-text-fill: #000000;
     -fx-background-radius: 20;
     -fx-background-insets: 0;
+    -fx-border-color: transparent;
     -fx-padding: 0.35em 1.2em 0.35em 1.2em;
 }
 
