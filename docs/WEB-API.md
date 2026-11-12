@@ -1256,3 +1256,126 @@ plan's lists, empty title, nonconformity requirement check) is JSON `{ "messages
   to 200 characters (extension kept). Items marked deleted answer `404`. `DELETE /web/attachments/{fileId}` → `204`,
   moves the "File" object to the recycle bin (as the CC's `FileTableView`); needs delete right on it and the parent must
   be an action, nonconformity or obligation (`404` otherwise). Download stays `GET /web/files/{id}`.
+
+## Editing, stage E3: analyses
+
+Create, change, copy and delete analyses with everything the Control Center's analysis dialog edits
+(`NewSelectionDialog`: tabs `CommonSettingTab`, `ChartTab`, `DayFilterTab`, row table `SelectionTable/*`). The common
+rules of E1 apply (server-side rights per write, `logUserAction` with `web:<action>`, `version` required on changes →
+`409` with the current analysis, `400 version missing`, plain-text `400`/`403`).
+
+**Storage (as `AnalysisHandler.saveDataModel`):** a new file sample at now in the attribute "Analysis File" of the
+"Analysis" object, named `<local name in the request language>_<yyyyMMddHHmmss>.json`, content as
+`AnalysisHandler.toJsonNode(dataModel)` (pretty printed, `"type": "AnalysisHandler"`). The JSON is written by a new
+headless `AnalysisWriter` in `org.jevis.commons.chart` (counterpart of `AnalysisReader`, Java 8 compatible). Keys of
+the stored JSON the writer does not know are kept: the writer starts from the latest stored JSON and patches it —
+top level as a whole; charts matched by `chartId`; rows matched by `id` + `attributeString` within their chart. New
+charts/rows get the CC's keys only. Not written, as in the CC: time frame and per-row
+`aggregationPeriod`/`manipulationMode` (they come from the toolbar, OpenJEVis #2358; stored ones of old files are
+kept untouched). Analyses still in the legacy format ("Data Model"/"Charts") are written in the current format on
+their first save (as the CC does); the legacy attributes are not changed. If two saves fall into the same second,
+the second waits until the next second.
+
+**Rights (as `SaveAnalysisDialog`):** create = create right for "Analysis" below an "Analyses Directory"; change =
+write right on the analysis; delete = delete right; rename = write right. Names are unique within a directory
+(`409` `{ "nameTaken": true, "id": <existing id> }` on create/rename/copy with a name that exists; the web app then
+offers to overwrite, which is a `PUT` on the existing analysis).
+
+### Reading
+
+`GET /web/analyses/{id}` (W2) additionally carries everything needed for editing (all additive):
+
+- top level: `version` (timestamp of the latest "Analysis File" sample, or of the legacy "Data Model" sample, ISO;
+  `"none"` if the analysis has never been saved), `canWrite`, `canDelete`, `directoryId` (parent "Analyses
+  Directory", `null` if the parent is something else), `forcedInterval`, `dayFilter`
+  `{ "weekdays": "…", "holidays": false, "dates": "…" }` (stored strings as in the file), `limitLines`
+  `[{ "value", "label", "color", "axis", "fill" }]`;
+- per chart: `fractionDigitsAuto`, `filterEnabled`, `coloringEnabled`, `showColumnSums`, `showRowSums`, `dayStart`,
+  `dayEnd` (`HH:mm:ss` or `null`), `filterTexts` (object);
+- per row: `rowClass` (already there), `unitPrefix`, `unitFormula`, `unitLabel` (stored unit; `unit` stays the
+  display label), `calculationId`, `interval` `{ "enabled": false, "start": null, "end": null }`, `css`.
+
+Limit lines and table options are now also applied by the web view (as in the CC): limit lines as horizontal lines
+on their axis, table sums/colouring/filter in table charts. The day filter is already applied by the data endpoint.
+
+### Writing
+
+The **definition** sent is the GET answer's shape without the read-only keys (`id`, `names`, `defaults`, `version`,
+`can*`, `directoryId`, per row `readable`, `unit`, `key`, `rowClass`, `calculationId`):
+`{ "chartsPerScreen", "horizontalPies", "horizontalTables", "autoSize", "forcedInterval", "dayFilter", "limitLines",
+"charts": [{ "id", "name", "type", "minFractionDigits", "maxFractionDigits", "fractionDigitsAuto", "height",
+"orientation", "fixYAxisToZero", "xAxisTitle", "yAxisTitle", "groupingInterval", "colorMapping", "filterEnabled",
+"coloringEnabled", "showColumnSums", "showRowSums", "dayStart", "dayEnd", "filterTexts", "rows": [{ "objectId",
+"attribute", "name", "color", "axis", "chartType", "unitPrefix", "unitFormula", "unitLabel", "decimalDigits",
+"calculation", "bubbleType", "interval", "css" }] }] }`. Missing keys get the CC defaults. Charts are stored in the
+order sent.
+
+Validation (`400` JSON `{ "messages": [...] }` with all problems, as in E2): chart ids unique and ≥ 0; enum values
+(`type`, `chartType`, `orientation`, `colorMapping`, `bubbleType`, limit line `fill`) from the lists of W2 / the CC
+enums; `axis` 0 or 1; colours `#rrggbb` or `#rrggbbaa`; `chartsPerScreen`, `horizontalPies`, `horizontalTables`
+1–20; fraction digits 0–20; `dayStart`/`dayEnd` `HH:mm:ss`; every row object must be readable by the user and of a
+selectable class (`Data`, `Clean Data`, `Base Data`, `Math Data`, `Forecast Data`, `String Data`, as
+`TreeSelectionDialog`) with the attribute existing; rows the user may not read that are **already stored** may be
+sent back by `objectId` + `attribute` and keep their stored settings, so saving does not drop them.
+`calculation: true` sets `calculationId` on the server (`ChartTools.getCalculationId`: the calculation whose output
+is the row); `400` if there is none. Unit fields must be one of `GET /web/rows/{id}/units` (or the stored unit).
+
+- `POST /web/analyses?lang=de` with `{ "directoryId", "name", "definition" }` → `201` the new analysis (GET format).
+  Creates the "Analysis" object below the directory (create right), writes the file. A failure after creating the
+  object deletes it again. Name: trimmed, 1–100 characters, no control characters.
+- `PUT /web/analyses/{id}?lang=de` with `{ "version", "definition", "name"? }` → the analysis (GET format). `name`
+  renames the object (write right; unique in the directory).
+- `POST /web/analyses/{id}/copy?lang=de` with `{ "directoryId", "name", "definition"? }` → `201` ("Speichern unter":
+  the sent definition, or the stored one). Needs read right on the source and create right in the target directory.
+- `DELETE /web/analyses/{id}?version=…` → `204`; moves the object to the recycle bin (as deleting in the CC). Needs
+  delete right.
+- Logged actions: `web:analysis-create`, `web:analysis-save`, `web:analysis-copy`, `web:analysis-delete`.
+
+**Details settled in the implementation**
+
+- `PUT`, `copy` with a definition and `preview` with an `id`: a key missing in a chart or row keeps the stored value
+  (charts matched by `id`, rows by `objectId` + `attribute`); new charts/rows get the CC dialog defaults (row
+  `chartType` `DEFAULT`, colour `#add8e6`, unit = display unit of the attribute, interval today 00:00 – now).
+- A row `name` sent back equal to the object name keeps a stored empty name (`""`, the CC then shows the object name).
+- Colours: `GET` answers `#rrggbb`; rows are stored as `0xrrggbbaa` (JavaFX `Color.toString`, alpha kept when only
+  the RGB is unchanged), limit lines as `#RRGGBB` (as `UserLimitLine`). Unchanged values keep their stored spelling.
+- `dayStart`/`dayEnd`: `HH:mm:ss` in the answer, `HH:mm` or `HH:mm:ss` accepted, stored as the CC's `HH:mm:ss.SSS`.
+- File name: path and control characters of the local name become `_`.
+- `PUT` with only `name` (no `definition`) renames without writing a new file; the version stays.
+- `preview/data` also accepts `id` (stored unreadable rows may be sent back; workday of that analysis) and
+  `directoryId` (workday for new analyses).
+- `rows/tree` without `parent`/`q`: readable organisations and buildings without a readable organisation/building
+  above them. `q` shorter than 2 characters and an invalid `parent` → `400`, an unreadable `parent` → `404`.
+- Order of checks for `PUT`: `404`, `403`, `400 version missing`, validation `400`, `409` version, `409 nameTaken`.
+- The CC picker's limits (max. 10 rows in a pie, one row in a heat map) are not enforced.
+- Web app: "Neue Analyse" with a taken name offers "Vorhandene Analyse öffnen" instead of overwriting (an empty new
+  analysis would replace a filled one); "Speichern unter" and rename offer overwrite.
+
+### Helpers for the editor
+
+- `GET /web/analyses/directories` → `[{ "id", "name", "path": "Org / Building / Analysen", "canCreate": true }]`:
+  all "Analyses Directory" objects the user may read; `canCreate` = create right for "Analysis" there.
+- `GET /web/rows/tree?parent=<id>&q=<text>&lang=de` → row picker. Without `parent` and `q`: the organisations the
+  user may read. With `parent`: its readable children `[{ "id", "name", "class", "hasChildren", "selectable",
+  "unit", "attributes": ["Value"] }]` — directories and buildings with `hasChildren`; `selectable` for the classes
+  above (their children, e.g. the Clean Data below a Data row, are children in the tree); `unit` the display unit of
+  `Value`. `q` (≥ 2 characters) searches by name below `parent` (or everywhere the user may read), max 200 hits,
+  each with `path`. Names in the request language (local names), like the navigation.
+- `GET /web/rows/{id}/units?attribute=Value` → `[{ "prefix", "formula", "label" }]`: the units offered for the row,
+  as the CC's unit box (`ChartUnitBox` / `ChartUnits`), first the row's own unit. `404` if not readable.
+- `POST /web/analyses/preview/data` with `{ "definition", …the W2 data request… }` → the W2 data answer for an
+  unsaved definition (`key` of rows = `<chartId>-<objectId>-<attribute>` as in W2). Rows the user may not read answer
+  `NO_PERMISSION` as in W2. Same validation as saving (`400`). Used for the live preview while editing.
+
+### Web app
+
+- Analysis view: "Bearbeiten" (shown with `canWrite`; with only a directory with `canCreate` the panel opens with
+  "Speichern unter" only) switches to edit mode: a side panel with the tabs **Allgemein** (charts per screen, auto
+  size, pies/tables per row, forced interval, limit lines, day filter), **Diagramme** (add/remove/rename/order charts
+  and their settings), **Datenreihen** (rows per chart: picker, name, colour, unit, axis, chart type, bubble type,
+  decimals, interval, calculation; apply a unit/colour to all rows of a chart as the CC's "for all" button). The
+  chart area previews the changes via `preview/data` (debounced). Buttons: "Speichern", "Speichern unter",
+  "Verwerfen", "Löschen".
+- "Neue Analyse" in the navigation (when any directory has `canCreate`): name + directory, opens the new analysis in
+  edit mode. After create/rename/delete the navigation reloads.
+- Leaving edit mode or the page with unsaved changes asks first. Conflicts (`409`) offer reload or "Speichern unter".

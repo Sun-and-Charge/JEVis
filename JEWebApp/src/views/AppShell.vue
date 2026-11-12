@@ -7,6 +7,7 @@ import { hasModules, localName, startDashboardFor } from '../api/navigation'
 import LanguageSwitch from '../components/LanguageSwitch.vue'
 import MaintenanceBanner from '../components/MaintenanceBanner.vue'
 import NavTree from '../components/NavTree.vue'
+import NewAnalysisButton from '../components/analysis/edit/NewAnalysisButton.vue'
 import { useAuthStore } from '../stores/auth'
 import { useNavigationStore } from '../stores/navigation'
 
@@ -73,6 +74,7 @@ async function logout() {
       <p v-if="nav.loading" class="side-info">{{ t('nav.loading') }}</p>
       <p v-else-if="nav.failed" class="side-info">{{ t('nav.error') }}</p>
       <template v-else-if="nav.data">
+        <NewAnalysisButton @navigate="menuOpen = false" />
         <ul v-if="hasModules(nav.modules)" class="modules" :aria-label="t('modules.title')">
           <li v-if="nav.modules.appointments">
             <RouterLink :to="{ name: 'appointments' }" class="other-item module-item" @click="menuOpen = false">

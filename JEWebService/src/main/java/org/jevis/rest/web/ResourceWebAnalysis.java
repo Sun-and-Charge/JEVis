@@ -58,21 +58,69 @@ public class ResourceWebAnalysis {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response config(@Context HttpHeaders httpHeaders, @PathParam("id") long id) {
-        SQLDataSource sql = null;
-        try {
-            sql = new SQLDataSource(httpHeaders::getRequestHeader);
-            JEVisObject analysis = findAnalysis(new LocalDataSource(sql), id);
-            if (analysis == null) return notFound();
-            AnalysisDefinition definition = new AnalysisReader().read(analysis);
-            return json(configJson(analysis.getID(), analysis.getName(), analysis.getLocalNameList(), definition));
-        } catch (AuthenticationException ex) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
-        } catch (Exception ex) {
-            logger.error("Could not read analysis {}", id, ex);
-            return Response.serverError().build();
-        } finally {
-            Config.CloseDS(sql);
-        }
+        /* the W2 configuration with what the editor needs (stage E3) */
+        return WebEdit.runSql(httpHeaders, "read analysis " + id,
+                (sql, store) -> ResourceWebEditAnalysis.config(store, ResourceWebEditAnalysis.sqlEngine(sql), id));
+    }
+
+    // ---------------------------------------------------------------- editing (stage E3, ResourceWebEditAnalysis)
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response create(@Context HttpHeaders httpHeaders, @QueryParam("lang") String lang, String body) {
+        String language = WebEdit.language(lang, httpHeaders);
+        return WebEdit.runSql(httpHeaders, "create an analysis", (sql, store) -> ResourceWebEditAnalysis.create(store,
+                ResourceWebEditAnalysis.sqlEngine(sql), body, language, DateTime.now()));
+    }
+
+    @PUT
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response update(@Context HttpHeaders httpHeaders, @PathParam("id") long id, @QueryParam("lang") String lang,
+                           String body) {
+        String language = WebEdit.language(lang, httpHeaders);
+        return WebEdit.runSql(httpHeaders, "change analysis " + id, (sql, store) -> ResourceWebEditAnalysis.update(store,
+                ResourceWebEditAnalysis.sqlEngine(sql), id, body, language, DateTime.now()));
+    }
+
+    @POST
+    @Path("{id}/copy")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response copy(@Context HttpHeaders httpHeaders, @PathParam("id") long id, @QueryParam("lang") String lang,
+                         String body) {
+        String language = WebEdit.language(lang, httpHeaders);
+        return WebEdit.runSql(httpHeaders, "copy analysis " + id, (sql, store) -> ResourceWebEditAnalysis.copy(store,
+                ResourceWebEditAnalysis.sqlEngine(sql), id, body, language, DateTime.now()));
+    }
+
+    @DELETE
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(@Context HttpHeaders httpHeaders, @PathParam("id") long id,
+                           @QueryParam("version") String version) {
+        return WebEdit.runSql(httpHeaders, "delete analysis " + id, (sql, store) -> ResourceWebEditAnalysis.delete(store,
+                ResourceWebEditAnalysis.sqlEngine(sql), id, version));
+    }
+
+    @GET
+    @Path("directories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response directories(@Context HttpHeaders httpHeaders, @QueryParam("lang") String lang) {
+        String language = WebEdit.language(lang, httpHeaders);
+        return WebEdit.run(httpHeaders, "read the analysis directories",
+                store -> ResourceWebEditAnalysis.directories(store, language));
+    }
+
+    @POST
+    @Path("preview/data")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response preview(@Context HttpHeaders httpHeaders, String body) {
+        return WebEdit.runSql(httpHeaders, "preview an analysis", (sql, store) -> ResourceWebEditAnalysis.preview(store,
+                ResourceWebEditAnalysis.sqlEngine(sql), body, DateTime.now()));
     }
 
     @POST
@@ -272,7 +320,7 @@ public class ResourceWebAnalysis {
      * @param editInfo filled with {@code rowClass, canAddNote, canEnter} by row key, for every row (stage E1)
      * @return notes by row key
      */
-    private static Map<String, List<Map<String, Object>>> notes(SQLDataSource sql, AnalysisDefinition definition,
+    static Map<String, List<Map<String, Object>>> notes(SQLDataSource sql, AnalysisDefinition definition,
                                                                 AnalysisResult result,
                                                                 Map<String, Map<String, Object>> editInfo) {
         Map<String, List<Map<String, Object>>> notes = new HashMap<>();

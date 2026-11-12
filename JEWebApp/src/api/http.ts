@@ -50,8 +50,9 @@ export class HttpClient {
     return this.request<T>('GET', path)
   }
 
-  post<T>(path: string, body?: unknown): Promise<T> {
-    return this.request<T>('POST', path, body)
+  /** `signal` aborts the request (e.g. a live preview that a newer one replaces); the promise then rejects. */
+  post<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+    return this.request<T>('POST', path, body, true, signal)
   }
 
   put<T>(path: string, body?: unknown): Promise<T> {
@@ -67,7 +68,7 @@ export class HttpClient {
     return this.request<T>('POST', path, form)
   }
 
-  async request<T>(method: string, path: string, body?: unknown, retry = true): Promise<T> {
+  async request<T>(method: string, path: string, body?: unknown, retry = true, signal?: AbortSignal): Promise<T> {
     const headers: Record<string, string> = { Accept: 'application/json' }
     const token = this.hooks.accessToken()
     if (token) headers.Authorization = `Bearer ${token}`
@@ -80,11 +81,12 @@ export class HttpClient {
       body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body),
       credentials: 'omit',
       cache: 'no-store',
+      signal,
     })
 
     if (response.status === 401 && retry && token) {
       if (await this.refreshOnce()) {
-        return this.request<T>(method, path, body, false)
+        return this.request<T>(method, path, body, false, signal)
       }
       this.hooks.onUnauthorized()
     }

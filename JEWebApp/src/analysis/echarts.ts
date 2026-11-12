@@ -9,6 +9,7 @@ import {
   DataZoomSliderComponent,
   GridComponent,
   LegendScrollComponent,
+  MarkAreaComponent,
   MarkLineComponent,
   MarkPointComponent,
   TooltipComponent,
@@ -31,6 +32,8 @@ use([
   VisualMapContinuousComponent,
   MarkPointComponent,
   MarkLineComponent,
+  // E3: filled areas of limit lines
+  MarkAreaComponent,
   CanvasRenderer,
 ])
 registerLocale('DE', langDE as Parameters<typeof registerLocale>[1])

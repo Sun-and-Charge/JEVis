@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Sun and Charge Germany GmbH */
-import type { AnalysisChartConfig, AnalysisConfig, AnalysisData, AnalysisRowData, RowNote, RowStats, Sample } from '../api/analysis'
+import type { AnalysisChartConfig, AnalysisConfig, AnalysisData, AnalysisRowData, LimitLine, RowNote, RowStats, Sample } from '../api/analysis'
 import { decimalsFor, type Decimals } from './format'
 import { rowNotes } from './notes'
 
@@ -57,6 +57,14 @@ export interface ChartView {
   colorMapping: string
   height: number
   rows: RowView[]
+  /** E3: limit lines of the analysis (charts with a time axis) */
+  limitLines?: LimitLine[]
+  /** E3: table options of the Control Center (table charts) */
+  showColumnSums?: boolean
+  showRowSums?: boolean
+  coloringEnabled?: boolean
+  filterEnabled?: boolean
+  filterTexts?: Record<string, string>
 }
 
 /** Fallback colours for rows without a colour (Control Center like). */
@@ -130,6 +138,11 @@ function uniqueName(name: string, used: Set<string>): string {
   return result
 }
 
+/** Limit lines with a finite value (others cannot be drawn). */
+function limitLines(lines: LimitLine[] | null | undefined): LimitLine[] {
+  return (lines ?? []).filter((l) => l && typeof l.value === 'number' && Number.isFinite(l.value))
+}
+
 /**
  * Joins the configuration and the data answer of an analysis into one view model per chart.
  * `noAccessName` is the name shown for rows the user may not read.
@@ -179,6 +192,12 @@ export function buildChartViews(config: AnalysisConfig, data: AnalysisData | nul
       colorMapping: chart.colorMapping || 'GREEN_YELLOW_RED',
       height: chart.height,
       rows,
+      limitLines: chartKind(type) === 'xy' ? limitLines(config.limitLines) : [],
+      showColumnSums: !!chart.showColumnSums,
+      showRowSums: !!chart.showRowSums,
+      coloringEnabled: !!chart.coloringEnabled,
+      filterEnabled: !!chart.filterEnabled,
+      filterTexts: chart.filterTexts ?? {},
     }
   })
 }
