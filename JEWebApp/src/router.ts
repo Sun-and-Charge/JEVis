@@ -14,6 +14,8 @@ export const router = createRouter({
       children: [
         { path: '', name: 'home', component: () => import('./views/HomeView.vue') },
         { path: 'password', name: 'password', component: () => import('./views/ChangePasswordView.vue') },
+        { path: 'dashboards', name: 'dashboards', component: () => import('./views/DashboardsView.vue') },
+        { path: 'analyses', name: 'analyses', component: () => import('./views/AnalysesView.vue') },
         { path: 'analyses/:id(\\d+)', name: 'analysis', component: () => import('./views/AnalysisView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
         { path: 'dashboards/:id(\\d+)', name: 'dashboard', component: () => import('./views/DashboardView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
         { path: 'appointments', name: 'appointments', component: () => import('./views/AppointmentsView.vue') },

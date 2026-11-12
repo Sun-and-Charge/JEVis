@@ -22,6 +22,7 @@ import {
 } from '../iso/nonconformities'
 import { useIsoEditing, type ListHandle } from '../iso/useIsoEditing'
 import { useLoader } from '../iso/useLoader'
+import { useSitePreselection } from '../nav/useSitePreselection'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
 import '../styles/iso.css'
@@ -38,8 +39,14 @@ const options = computed(() => nonconformityOptions(plans.value, filter.plan, lo
 const dateFields = computed(() => NONCONFORMITY_DATE_FIELDS.map((value) => ({ value, label: t('iso.nc.col.' + value) })))
 const statusOptions = ['all', 'open', 'closed'] as const
 
+/* a single plan is selected right away, else (once) the plan of the site chosen in the top bar */
+const preselect = useSitePreselection()
 watch(plans, (list) => {
   if (list.length === 1) filter.plan = list[0].id
+  else {
+    const id = preselect.pick(list.map((p) => ({ key: p.id, site: p.site })))
+    if (id !== null) filter.plan = id
+  }
 })
 watch(
   () => filter.plan,

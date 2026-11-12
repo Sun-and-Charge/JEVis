@@ -1,0 +1,265 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Overview pages "Dashboards" / "Analysen" and the start page: cards with favourite star, filters, recent items */
+
+.ov-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.ov-head h1 {
+  margin: 0;
+}
+
+.ov-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ov-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.ov-control {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ov-control label {
+  margin: 0;
+}
+
+.ov-search {
+  flex: 1 1 16rem;
+  max-width: 24rem;
+  padding: 0 0.6rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.ov-search:focus-within {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.ov-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0;
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+}
+
+.ov-search input:focus-visible {
+  outline: none;
+}
+
+.ov-control select {
+  padding: 0.45rem 0.5rem;
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.ov-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ov-toggle[aria-pressed='true'] {
+  background: var(--blueberry);
+  color: var(--sun);
+  border-color: var(--blueberry);
+}
+
+.ov-recent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.ov-recent h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.ov-recent ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-recent a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.88rem;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.ov-recent a:hover {
+  border-color: var(--blueberry);
+}
+
+.ov-recent svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+
+.ov-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-card {
+  position: relative;
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blueberry);
+  border-radius: var(--radius);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.ov-card:hover {
+  border-left-color: var(--sun);
+  box-shadow: 0 4px 14px rgba(26, 42, 69, 0.12);
+}
+
+.ov-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.85rem 0.5rem 0.85rem 0.9rem;
+  min-height: 5rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.ov-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ov-site {
+  font-size: 0.82rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.ov-star {
+  align-self: flex-start;
+  display: inline-flex;
+  margin: 0.45rem 0.45rem 0 0;
+  padding: 0.3rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ov-star:hover {
+  color: var(--blueberry);
+  background: var(--bg);
+}
+
+.ov-star[aria-pressed='true'] {
+  color: #c9a800;
+}
+
+.ov-other h2,
+.home-section h2 {
+  font-size: 1rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0.6rem;
+}
+
+.home-section {
+  margin-bottom: 1.5rem;
+}
+
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: 0.5rem;
+}
+
+/* phone width: a list instead of cards */
+@media (max-width: 800px) {
+  .ov-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .ov-card {
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ov-card:last-child {
+    border-bottom: none;
+  }
+
+  .ov-link {
+    min-height: 0;
+    padding: 0.65rem 0.5rem 0.65rem 0.8rem;
+  }
+
+  .ov-star {
+    align-self: center;
+    margin: 0 0.35rem 0 0;
+  }
+
+  .ov-search {
+    max-width: none;
+  }
+}

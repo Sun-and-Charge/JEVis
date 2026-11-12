@@ -11,9 +11,9 @@ import { useNavigationStore } from '../../../stores/navigation'
 import AnalysisNameDialog from './AnalysisNameDialog.vue'
 
 /*
- * "Neue Analyse" in the navigation (E3, shown when a directory allows creating analyses): name and directory, then
- * POST /web/analyses with an empty analysis (one line chart) and the new analysis opens in edit mode. A taken name
- * links to the existing analysis (overwriting it with an empty one would only lose data).
+ * "Neue Analyse" in the header of the analyses overview (E3, shown when a directory allows creating analyses): name
+ * and directory, then POST /web/analyses with an empty analysis (one line chart) and the new analysis opens in edit
+ * mode. A taken name links to the existing analysis (overwriting it with an empty one would only lose data).
  */
 
 const emit = defineEmits<{ navigate: [] }>()
@@ -61,7 +61,7 @@ async function openExisting(id: number) {
 </script>
 
 <template>
-  <button v-if="nav.creatableDirectories.length" type="button" class="new-analysis" @click="start">
+  <button v-if="nav.creatableDirectories.length" type="button" class="btn btn-primary new-analysis" @click="start">
     <span aria-hidden="true">+</span> {{ t('nav.newAnalysis') }}
   </button>
   <Teleport to="body">
@@ -81,31 +81,3 @@ async function openExisting(id: number) {
     />
   </Teleport>
 </template>
-
-<style scoped>
-.new-analysis {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  width: 100%;
-  margin: 0 0 0.6rem;
-  padding: 0.45rem 0.5rem;
-  font: inherit;
-  font-weight: 600;
-  color: var(--sun);
-  text-align: left;
-  background: none;
-  border: 1px dashed rgba(255, 222, 0, 0.55);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.new-analysis:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.new-analysis:focus-visible {
-  outline: 3px solid var(--sun);
-  outline-offset: 1px;
-}
-</style>

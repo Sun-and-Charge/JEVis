@@ -8,6 +8,12 @@ Status: login (incl. two-factor code, "remember me", forgot/change password), na
 building, language switch (de/en) (phase W1); analyses with time frame, aggregation and manipulation, all chart
 types of the Control Center (Apache ECharts), summary tables, PNG/CSV export (phase W2). Dashboards (W3) follow.
 
+Navigation: the sidebar has Start, Dashboards and Analysen (overview pages `/dashboards` and `/analyses` with search,
+site filter and favourite stars; the user's favourites below the entries), the module groups ISO 50001, Betrieb,
+Anlagen and Finanzen, and Berichte; it collapses to an icon rail. The top bar has the site picker ("Standort") and
+the search (Strg+K or "/"). Favourites, recently opened items, the chosen site and the sidebar state are kept in the
+browser per user (`localStorage` key `jevis.nav.<userId>`); the logic is in `src/nav/`.
+
 The analysis view (`src/views/AnalysisView.vue`) keeps its settings in the URL (`?tf=LAST_MONTH&agg=DAILY&man=NONE`,
 with `tf=CUSTOM` also `from`/`to` as ISO 8601). The mapping of the API answer to charts, tables and CSV is in plain
 TypeScript modules under `src/analysis/` (tested in `tests/analysis.test.ts`).
