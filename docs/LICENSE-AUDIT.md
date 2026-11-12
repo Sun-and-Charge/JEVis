@@ -1,24 +1,24 @@
 # License audit
 
-Status: 2026-11-05. JEVis is licensed under the GNU GPL version 3 only (see `LICENSE` and `NOTICE`).
+Status: 2026-11-12. JEVis is licensed under the GNU GPL version 3 only (see `LICENSE` and `NOTICE`).
 This document lists what was checked and the issues that still need a decision or manual work.
 
 ## Open issues
 
-1. **Eclipse Milo (OPC UA) is EPL 2.0 only.** `org.eclipse.milo:sdk-client`, `sdk-core`, `stack-client`,
-   `stack-core` 0.6.16 are licensed under EPL 2.0 without the "Secondary License" (GPL) designation
-   (checked in the license file and the source headers, also on the current main branch), so they are not
-   compatible with the GPL. Milo is used by `DataCollector/OPCUA-Driver`, `DataCollector/loytec-xml-dl` and
-   the OPC UA browser of the Control Center.
-   No GPL-compatible Java OPC UA stack covers what JEVis needs (above all HistoryRead raw and processed):
-   Apache PLC4X has no HistoryRead and needs Java 21, the OPC Foundation Java stack is GPL-2.0-only.
-   **Decided 2026-11-05:** replace Milo by a separate program `opcua-bridge` written in Go on gopcua (MIT),
-   which JEVis calls as a process (JSON over stdin/stdout). Planned after web phase W1.
-2. **GPLv3 only** (deferred). The original Envidatec headers say "in version 3", not "or later". Moving to
+1. **GPLv3 only** (deferred). The original Envidatec headers say "in version 3", not "or later". Moving to
    a later GPL version would need the consent of the copyright holders.
 
 ## Done
 
+- **Eclipse Milo (OPC UA, EPL 2.0 only) removed.** `org.eclipse.milo:sdk-client` 0.6.16 and its parts were
+  licensed under EPL 2.0 without the "Secondary License" (GPL) designation and so not compatible with the GPL.
+  No GPL-compatible Java OPC UA stack covers what JEVis needs (above all HistoryRead raw and processed):
+  Apache PLC4X has no HistoryRead and needs Java 21, the OPC Foundation Java stack is GPL-2.0-only.
+  OPC UA now goes through the separate program `opcua-bridge` (Go, on gopcua, MIT), which JEVis starts as a
+  child process and talks to with JSON lines over stdin/stdout (see `OPCUA-BRIDGE.md`). The bridge is an
+  independent program next to JEVis, not linked with it; its Go dependencies and their licenses are listed in
+  `tools/opcua-bridge/THIRD-PARTY.md`. The Java side (`DataCollector/OPCUA-Driver`, `DataCollector/loytec-xml-dl`,
+  OPC UA browser of the Control Center) uses only Jackson for the protocol. Milo is no longer in any `pom.xml`.
 - Root `LICENSE` (GPLv3 text), new root `NOTICE` (fork notice, copyright holders).
 - `pom.xml`: `<licenses>`, `<organization>`, `<scm>` and project URL point to this repository.
 - Source headers:
@@ -96,7 +96,7 @@ This document lists what was checked and the issues that still need a decision o
 The generated license list (Help > Licenses) also contains these licenses, which are compatible:
 
 - **CDDL / GPL 2.0 with Classpath Exception** (dual license), e.g. `com.sun.mail:javax.mail`, JAXB
-  (`jaxb-api`, `jaxb-runtime`, `txw2`, `istack-commons-runtime`, `stax-ex`, pulled in by Milo),
+  (`jaxb-api`, `jaxb-runtime`, `txw2`, `istack-commons-runtime`, `stax-ex`, pulled in by jollyday),
   `javax.activation-api`: used under the GPL 2.0 + Classpath Exception, which allows linking with
   independent modules under any license.
 - **EPL 2.0 / GPL 2.0 with Classpath Exception** (dual license): `jakarta.annotation-api`,
