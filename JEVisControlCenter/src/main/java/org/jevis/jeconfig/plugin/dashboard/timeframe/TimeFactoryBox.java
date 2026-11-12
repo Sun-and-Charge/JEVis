@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -22,6 +23,7 @@ package org.jevis.jeconfig.plugin.dashboard.timeframe;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.tools.DisabledItemsComboBox;
 import org.joda.time.DateTime;
@@ -65,6 +67,19 @@ public class TimeFactoryBox extends DisabledItemsComboBox<TimeFrame> {
 
         setCellFactory(cellFactory);
         setButtonCell(cellFactory.call(null));
+        // the JFoenix skin shows the value through the converter; without one an anonymous placeholder time frame
+        // (e.g. before a template's time frames are loaded) showed its class name
+        setConverter(new StringConverter<TimeFrame>() {
+            @Override
+            public String toString(TimeFrame timeFrame) {
+                return timeFrame != null ? timeFrame.getListName() : "";
+            }
+
+            @Override
+            public TimeFrame fromString(String string) {
+                return null;
+            }
+        });
 
         getSelectionModel().selectFirst();
     }

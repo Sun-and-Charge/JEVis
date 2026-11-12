@@ -1,23 +1,23 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
- * This file is part of JEVisControlCenter.
+ * This file is part of JECommons.
  * <p>
- * JEVisControlCenter is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation in version 3.
+ * JECommons is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation in version 3.
  * <p>
- * JEVisControlCenter is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * JECommons is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * <p>
  * You should have received a copy of the GNU General Public License along with
- * JEVisControlCenter. If not, see <http://www.gnu.org/licenses/>.
+ * JECommons. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEVisControlCenter is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
+ * JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
-package org.jevis.jeconfig.plugin.dtrc;
+package org.jevis.commons.trc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -36,7 +36,12 @@ import org.jevis.api.JEVisObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Reads and writes the JSON of a "Result Calculation Template" ({@link RCTemplate}, attribute "Template File").
+ * Moved from the Control Center's {@code plugin.dtrc}.
+ */
 public class TemplateHandler {
+    public static final String TEMPLATE_FILE = "Template File";
     public final static String TYPE = "SimpleDataHandler";
     private static final Logger logger = LogManager.getLogger(TemplateHandler.class);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -74,6 +79,8 @@ public class TemplateHandler {
         try {
             this.rcTemplate = this.mapper.treeToValue(jsonNode, RCTemplate.class);
 
+            normalize();
+
             removeOldStyleFormulaInputs();
 
             createFormulaInputs();
@@ -81,6 +88,25 @@ public class TemplateHandler {
             checkFormulaInputs();
         } catch (JsonProcessingException e) {
             logger.error("Could not parse json model", e);
+        }
+    }
+
+    /**
+     * Replaces lists that are {@code null} in the JSON by empty ones and drops {@code null} entries.
+     */
+    private void normalize() {
+        RCTemplate template = getRcTemplate();
+        if (template.getTemplateInputs() == null) template.setTemplateInputs(new ArrayList<>());
+        if (template.getTemplateFormulaInputs() == null) template.setTemplateFormulaInputs(new ArrayList<>());
+        if (template.getTemplateOutputs() == null) template.setTemplateOutputs(new ArrayList<>());
+        if (template.getTemplateFormulas() == null) template.setTemplateFormulas(new ArrayList<>());
+        if (template.getIntervalSelectorConfiguration() == null) template.setIntervalSelectorConfiguration(new java.util.HashMap<>());
+        template.getTemplateInputs().removeIf(java.util.Objects::isNull);
+        template.getTemplateOutputs().removeIf(java.util.Objects::isNull);
+        template.getTemplateFormulas().removeIf(java.util.Objects::isNull);
+        for (TemplateFormula formula : template.getTemplateFormulas()) {
+            if (formula.getInputIds() == null) formula.setInputIds(new ArrayList<>());
+            formula.getInputIds().removeIf(java.util.Objects::isNull);
         }
     }
 
@@ -108,7 +134,7 @@ public class TemplateHandler {
     private void removeOldStyleFormulaInputs() {
         List<TemplateInput> inputsToRemove = new ArrayList<>();
         for (TemplateInput templateInput : getRcTemplate().getTemplateInputs()) {
-            if (templateInput.getVariableType().equals(InputVariableType.FORMULA.toString())) {
+            if (InputVariableType.FORMULA.toString().equals(templateInput.getVariableType())) {
                 inputsToRemove.add(templateInput);
             }
         }
@@ -124,6 +150,23 @@ public class TemplateHandler {
             formulaInput.setVariableType(InputVariableType.FORMULA.toString());
             getRcTemplate().getTemplateFormulaInputs().add(formulaInput);
         }
+    }
+
+    /**
+     * @param json the content of a "Template File"
+     * @return the template as the Control Center reads it (old style formula inputs removed, formula inputs created,
+     * unknown input ids of the formulas removed); {@code null} if the JSON cannot be parsed
+     */
+    public static RCTemplate parse(byte[] json) {
+        if (json == null || json.length == 0) return null;
+        TemplateHandler handler = new TemplateHandler();
+        try {
+            handler.jsonToModel(handler.mapper.readTree(json));
+        } catch (Exception e) {
+            logger.error("Could not parse template file", e);
+            return null;
+        }
+        return handler.getRcTemplate();
     }
 
     public JsonNode toJsonNode() {
@@ -215,7 +258,7 @@ public class TemplateHandler {
         this.templateObject = templateObject;
         this.setTitle(templateObject.getName());
         try {
-            JEVisAttribute templateFileAttribute = templateObject.getAttribute("Template File");
+            JEVisAttribute templateFileAttribute = templateObject.getAttribute(TEMPLATE_FILE);
             if (templateFileAttribute.hasSample()) {
                 JEVisFile file = templateFileAttribute.getLatestSample().getValueAsFile();
                 JsonNode jsonNode = mapper.readTree(file.getBytes());

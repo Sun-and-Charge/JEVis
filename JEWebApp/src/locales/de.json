@@ -210,7 +210,8 @@
     "alarmsOpen": "{n} offene Alarme (7 Tage) | 1 offener Alarm (7 Tage) | {n} offene Alarme (7 Tage)",
     "reports": "Berichte",
     "contracts": "Verträge",
-    "invoices": "Energierechnungen"
+    "invoices": "Energierechnungen",
+    "costs": "Kostenrechnung"
   },
   "appointments": {
     "title": "Termine",
@@ -780,7 +781,7 @@
       "more": "Die letzten {n} von {total} Werten."
     },
     "config": {
-      "hint": "Die Kostenberechnung folgt in einer späteren Version.",
+      "hint": "Das Ergebnis der Abrechnungen zeigt das Modul „Kostenrechnung“.",
       "name": "Abrechnung",
       "contractNumber": "Vertragsnummer",
       "marketLocation": "Marktlokation",
@@ -897,6 +898,77 @@
       "previewError": "Die Vorschau konnte nicht geladen werden.",
       "unsupported": "Ihr Browser kann die PDF-Datei hier nicht anzeigen.",
       "openTab": "PDF in neuem Tab öffnen"
+    }
+  },
+  "costs": {
+    "title": "Kostenrechnung",
+    "readOnly": "Nur Ansicht – Vorlagen und Abrechnungen werden im Control Center eingerichtet.",
+    "loading": "Kostenrechnungen werden geladen …",
+    "empty": "Es gibt keine Abrechnungen oder Vorlagen, die Sie lesen dürfen.",
+    "noMatch": "Keine Abrechnung oder Vorlage passt zur Suche.",
+    "searchPlaceholder": "Name, Vorlage, Standort …",
+    "count": "{shown} von {total} Einträgen",
+    "listLabel": "Abrechnungen und Vorlagen",
+    "section": {
+      "configuration": "Abrechnungen",
+      "template": "Vorlagen"
+    },
+    "kind": {
+      "configuration": "Abrechnung",
+      "template": "Vorlage"
+    },
+    "templateOf": "Vorlage: {name}",
+    "templateMissing": "Vorlage fehlt oder ist nicht lesbar",
+    "select": "Wählen Sie links eine Abrechnung oder Vorlage.",
+    "notFound": "Dieser Eintrag ist nicht vorhanden oder Sie dürfen ihn nicht lesen.",
+    "back": "Zur Liste",
+    "detail": {
+      "kind": "Art",
+      "template": "Vorlage",
+      "term": "Laufzeit",
+      "loading": "Berechnung wird geladen …",
+      "settings": "Einstellungen der Berechnung",
+      "timeFrame": "Zeitraum",
+      "custom": "Benutzerdefiniert",
+      "from": "Von",
+      "to": "Bis",
+      "rangeOrder": "Das Ende liegt vor dem Beginn.",
+      "noObject": "Kein Objekt",
+      "noAccess": "Kein Leserecht",
+      "inputs": "Eingaben ({n})"
+    },
+    "result": {
+      "title": "Ergebnis",
+      "period": "Zeitraum",
+      "loading": "Ergebnis wird berechnet …",
+      "empty": "Die Vorlage hat keine Ausgaben.",
+      "warnings": "{n} Hinweise | 1 Hinweis | {n} Hinweise",
+      "csv": "CSV",
+      "print": "Drucken"
+    },
+    "error": {
+      "notFound": "Die Berechnung ist nicht vorhanden oder Sie dürfen sie nicht lesen.",
+      "template": "Vorlage fehlt oder ist nicht lesbar.",
+      "invalid": "Die Einstellungen sind ungültig.",
+      "definition": "Die Berechnung konnte nicht geladen werden.",
+      "result": "Das Ergebnis konnte nicht berechnet werden."
+    },
+    "chart": {
+      "show": "Verlauf von „{name}“ anzeigen",
+      "tooLong": "Zeitraum zu lang für die Vorschau",
+      "title": "Verlauf: {name}",
+      "label": "Verlauf von {name}",
+      "close": "Schließen",
+      "loading": "Verlauf wird geladen …",
+      "error": "Der Verlauf konnte nicht geladen werden.",
+      "notFound": "Die Datenreihe ist nicht verfügbar oder Sie dürfen sie nicht lesen.",
+      "noData": "Keine Werte im Zeitraum.",
+      "truncated": "Es werden nicht alle Werte angezeigt."
+    },
+    "csv": {
+      "name": "Name",
+      "value": "Wert",
+      "unit": "Einheit"
     }
   },
   "banner": {

@@ -202,7 +202,7 @@ describe('contracts view (mocked API)', () => {
   it('shows the configurations with the hint on the cost calculation', async () => {
     const w = await mountView(api(contractList()))
     await tabByText(w, 'Abrechnung').trigger('click')
-    expect(w.find('.ctr-hint').text()).toContain('Kostenberechnung folgt')
+    expect(w.find('.ctr-hint').text()).toContain('Kostenrechnung')
     const row = w.find('.ctr-config-table tbody tr')
     const text = txt(row)
     expect(text).toContain('Musterwerk / Energieverträge / Abrechnung Strom Musterwerk')

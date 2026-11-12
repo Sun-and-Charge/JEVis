@@ -47,6 +47,7 @@ import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
+import org.jevis.commons.trc.*;
 import org.jevis.jeconfig.plugin.dtrc.*;
 
 import java.util.ArrayList;
@@ -383,7 +384,9 @@ public class TemplateCalculationInputDialog extends Dialog {
                 if (newValue != null && !newValue.equals(oldValue)) {
                     try {
                         templateInput.setAttributeName(newValue.getName());
-                        templateInput.buildVariableName(classSelector.getSelectionModel().getSelectedItem(), newValue);
+                        JEVisClass selectedClass = classSelector.getSelectionModel().getSelectedItem();
+                        templateInput.setVariableName(org.jevis.commons.utils.NameFormatter.formatVariableText(
+                                I18nWS.getInstance().getClassName(selectedClass) + I18nWS.getInstance().getTypeName(selectedClass.getName(), newValue.getName())));
                         variableNameField.setText(templateInput.getVariableName());
                     } catch (JEVisException e) {
                         logger.error("Could not set new attribute name", e);

@@ -661,7 +661,7 @@ data row): sample of `Value` (text) plus the samples of `Tag` and `User` at the 
 ### `GET /web/rows/{id}/samples?from=…&to=…`
 
 Raw samples of the `Value` attribute of a readable data row (any class with a `Value` attribute: Data, Clean Data,
-Math Data, ...), for the curve around a note. `from`/`to`: ISO 8601 date-times, at most 31 days apart, else `400`.
+Math Data, ...), for the curve around a note. `from`/`to`: ISO 8601 date-times, at most 31 days (plus one hour for the switch to winter time) apart, else `400`.
 
 ```json
 { "unit": "kWh", "samples": [[1793696400000, 12.5], [1793697300000, 13.1]], "truncated": false }
@@ -944,3 +944,121 @@ else; without stored file name the object name plus `.pdf`/`.xml`;
 
 `modules` additionally holds `contracts` (number of readable objects of the groups above plus configurations) and
 `invoices` (number of readable "Energy Invoice" objects).
+
+## Cost and result calculation (W4.8)
+
+View only, like the Control Center's "Accounting Plugin" tab "View" and the "Template Result Calculation" (TRC)
+plugin (`plugin/dtrc/OutputView`, `TemplateHandler`, `TemplateInput`, `RCTemplate`). A **template** ("Result
+Calculation Template", JSON in `Template File`: `templateInputs`, `templateFormulas`, `templateOutputs`,
+`intervalSelectorConfiguration`) defines inputs, formulas and an output grid. An **accounting configuration**
+("Accounting Configuration", JSON in `Template File`: `templateSelection` = template id, `selectedInputs` = the
+inputs bound to objects, contract fields) applies a template to concrete objects.
+
+**Shared calculator:** the evaluation moves from the Control Center into JECommons (`org.jevis.commons.trc`, Java 8,
+no JavaFX): models (`RCTemplate`, `TemplateInput`, `TemplateFormula`, `TemplateOutput`, `SelectionTemplate`, …) and
+a `ResultCalculator` that resolves the time frame, aggregates the inputs, orders dependent formulas and evaluates
+them with `CalcExpressions`. The Control Center's `OutputView` uses the same calculator, so both show the same numbers.
+**Fixed against the old Control Center:** per time step all inputs of a formula (and the results of the formulas it
+uses) are substituted (the old code kept only the last one, so the time steps failed and it fell back to the values of
+the first time step), and variables are substituted as whole names (a variable `a` no longer replaces part of `ab`).
+Time steps at which an input has no value are skipped; if no time step can be evaluated or the result is `0`, the
+formula is evaluated once with the first value of every input (the old fallback). Formulas without output that other
+formulas use are calculated (the old code used `0`); a formula that cannot be evaluated (e.g. division by zero) has
+no result (`null`, the other formulas use `0`) instead of a missing output. Everything else (NaN/infinite → 0, quantity units summed,
+other units averaged over the time steps, `YEARLY_VALUE` spread over the time steps, `NON_PERIODIC` carried forward,
+`RANGING_VALUE`, time restrictions with fixed/reducing time frame, text inputs and the `Name` attribute) behaves as
+before.
+
+### `GET /web/costs`
+
+```json
+{
+  "configurations": [
+    { "id": 23950, "name": "Strom Musterwerk", "path": "Energieverträge / Abrechnung", "site": { "id": 23053, "name": "Musterwerk" },
+      "template": { "id": 23960, "name": "Stromkosten", "readable": true } }
+  ],
+  "templates": [
+    { "id": 23960, "name": "Stromkosten", "path": "Berechnungen / Vorlagen", "site": { "id": 23053, "name": "Musterwerk" } }
+  ]
+}
+```
+
+Readable objects not in the recycle bin, sorted like the reports. A configuration whose template is missing or not
+readable has `template.readable: false` (still listed, the result answers `409`).
+
+### `GET /web/costs/{id}?lang=de`
+
+`{id}` is a configuration or a template.
+
+```json
+{
+  "id": 23950, "kind": "configuration", "name": "Strom Musterwerk", "templateName": "Stromkosten",
+  "timeFrames": [ { "id": "P1M", "name": "Monat" }, { "id": "P1Y", "name": "Jahr" } ],
+  "defaultTimeFrame": "P1M",
+  "contract": { "contractNumber": "V-1001", "marketLocation": "DE…", "energyType": "ELECTRICITY", "start": "2026-01-01", "end": "2027-12-31" },
+  "inputs": [
+    { "id": "i1", "variableName": "verbrauch", "label": "Verbrauch", "objectClass": "Clean Data",
+      "selectable": false, "selected": { "id": 23684, "name": "Bereinigte Daten", "readable": true }, "options": [] }
+  ],
+  "grid": { "rows": 12, "columns": 3 }
+}
+```
+
+- `timeFrames`: the time frames enabled in the template's `intervalSelectorConfiguration`, in the Control Center's
+  order (`TimeFrameFactory.getReduced`), names translated; `defaultTimeFrame` the first.
+- `contract`: only for configurations (same fields as `/web/contracts` `configurations`), else `null`.
+- `inputs`: the object selectors of the Control Center's input pane: one per input with `group: false` (sorted by
+  variable name), then one per `objectClass` for the other inputs (they share one object; `id`/`variableName` of the
+  first input, `label` = the variable names joined by `, `). For a configuration they are bound (`selectable: false`,
+  `selected` = the configured object; not readable: `{ id, name: null, readable: false }`; an input without object
+  uses the object of its group or the first option, like the Control Center). For a template the Control Center lets
+  the user pick an object of `objectClass` (exactly that class, filtered by the input's `filter`: every word in the
+  name, for clean data "data row \ clean data"): `selectable: true`, `options` = readable objects of that class
+  (`{ id, name }`, sorted by name, max 500), `selected` = the first option (the Control Center selects the first
+  object; templates store no object) or `null`.
+
+### `POST /web/costs/{id}/result`
+
+```json
+{ "timeFrame": "P1M", "from": null, "to": null, "timeZone": "Europe/Berlin", "selections": { "i1": 23684 } }
+```
+
+- `timeFrame`: one of `timeFrames`, resolved at "now" in `timeZone` like the Control Center's interval selector
+  (the current month etc.); or `CUSTOM` with ISO `from`/`to` (max 10 years, else `400`; also if `CUSTOM` is not
+  enabled in the template). `P10Y` covers 10 years (the Control Center's `TimeFrameFactory` 5, see the dashboards).
+- `selections`: only for templates; input id (the `id` of an `inputs` entry) → object id (must be one of the
+  `options`, else `400`; it applies to all inputs of the entry). Missing selections use `selected`. For
+  configurations `selections` may be missing, `null` or empty and is ignored.
+- `400` answers have a plain text message (also: missing/unknown `timeFrame`, unknown `timeZone`, invalid JSON).
+
+```json
+{
+  "from": "2026-11-01T00:00:00.000+01:00", "to": "2026-11-30T23:59:59.999+01:00",
+  "rows": 12, "columns": 3,
+  "cells": [
+    { "row": 0, "column": 0, "rowSpan": 1, "columnSpan": 2, "kind": "value", "name": "Arbeitspreis", "nameBold": false,
+      "value": 1234.56, "text": null, "unit": "€", "resultBold": true, "tooltip": null,
+      "analysis": { "objectId": 23684, "attribute": "Value", "from": "2026-11-01T00:00:00.000+01:00", "to": "2026-11-30T23:59:59.999+01:00" } },
+    { "row": 1, "column": 0, "rowSpan": 1, "columnSpan": 3, "kind": "separator", "orientation": "horizontal" }
+  ],
+  "warnings": [ "Formel \"Netz\": Eingabe \"leistung\" hat keine Werte im Zeitraum" ]
+}
+```
+
+- `cells`: one per template output. `kind`: `value` (formula result as number; `null` if it could not be
+  calculated, the Control Center shows "-"), `text` (text formula: `text` set), `label` (output without formula:
+  `name` and formatting, `value`/`text` `null`), `separator` (`orientation` `horizontal` if `columnSpan > 1`, `vertical` if `rowSpan > 1`).
+- `analysis`: only if the output has "show analysis link", its formula has exactly one input (the Control
+  Center's analysis button) and its object is readable; `from`/`to` is the time frame of the formula (with its time
+  restriction); the web app links to an ad-hoc chart of that row for that time frame.
+  Outputs with a manual data link (`link`/`target`) get no editing in the web.
+- `warnings`: formulas that failed (expression error) or depend on themselves, inputs without object, not readable or
+  without values; translated (German/English by the first `Accept-Language`, fallback English).
+- Rights: the configuration/template and the bound objects must be readable; an input whose object is not readable
+  counts as having no values (warning), it is never read. `404` if `{id}` is not readable, `409` if a configuration's
+  template is missing or unreadable.
+
+### Navigation
+
+`modules` additionally holds `costs`: number of readable accounting configurations plus result calculation
+templates.

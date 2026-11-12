@@ -50,8 +50,8 @@ import org.jevis.jeconfig.application.Chart.data.AnalysisHandler;
 import org.jevis.jeconfig.application.Chart.data.ChartData;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 import org.jevis.jeconfig.application.Chart.data.DataModel;
-import org.jevis.jeconfig.plugin.accounting.AccountingTemplateHandler;
-import org.jevis.jeconfig.plugin.accounting.SelectionTemplate;
+import org.jevis.commons.trc.AccountingTemplateHandler;
+import org.jevis.commons.trc.SelectionTemplate;
 import org.jevis.jeconfig.plugin.scada.SCADAPlugin;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -410,9 +410,51 @@ public class TreeExporter {
                             + fileAttribute.getObject().getID() + " konnte nicht umgesetzt werden", e);
                 }
 
+            } else if (fileAttribute.getName().equals(JC.AccountingConfiguration.a_TemplateFile)
+                    && !JC.AccountingConfiguration.name.equals(fileAttribute.getObject().getJEVisClassName())) {
+                // "Result Calculation Template" (TRC) uses the same attribute name but a different JSON format
+                // (templateInputs/templateFormulas/templateOutputs). Reading it as an accounting selection gave an
+                // empty selection that replaced the template. Keep the content and only remap set input object ids.
+                try {
+                    JEVisSample latestSample = fileAttribute.getLatestSample();
+                    JEVisFile file = latestSample != null ? latestSample.getValueAsFile() : null;
+                    if (file != null && file.getBytes() != null && file.getBytes().length > 0) {
+                        JsonNode root = objectMapper.readTree(file.getBytes());
+                        int remapped = 0;
+                        JsonNode inputs = root != null ? root.get("templateInputs") : null;
+                        if (inputs != null && inputs.isArray()) {
+                            for (JsonNode input : inputs) {
+                                JsonNode idNode = input.get("objectID");
+                                if (input instanceof ObjectNode && idNode != null && idNode.canConvertToLong() && idNode.asLong() > 0) {
+                                    JEVisObject resolved = resolveObject(ds, createdObjects, idNode.asLong());
+                                    if (resolved != null) {
+                                        if (!resolved.getID().equals(idNode.asLong())) {
+                                            ((ObjectNode) input).put("objectID", resolved.getID());
+                                            remapped++;
+                                        }
+                                    } else {
+                                        report.warning("TemplateInput-ID " + idNode.asLong() + " in Vorlage "
+                                                + fileAttribute.getObject().getID() + " konnte nicht aufgelöst werden");
+                                        report.skipped++;
+                                    }
+                                }
+                            }
+                        }
+                        if (remapped > 0) {
+                            JEVisFileImp updatedFile = new JEVisFileImp(file.getFilename(),
+                                    objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(root));
+                            fileAttribute.buildSample(new DateTime(), updatedFile).commit();
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to remap result calculation template of object {}",
+                            fileAttribute.getObject().getID(), e);
+                    report.error("Vorlage von Objekt " + fileAttribute.getObject().getID()
+                            + " konnte nicht umgesetzt werden", e);
+                }
+
             } else if (fileAttribute.getName().equals(JC.AccountingConfiguration.a_TemplateFile)) {
-                // Covers both JC.AccountingConfiguration and JC.ResultCalculationTemplate,
-                // which both use the same attribute name and JSON format.
+                // Accounting Configuration: SelectionTemplate JSON
                 try {
                     AccountingTemplateHandler handler = new AccountingTemplateHandler();
                     handler.setTemplateObject(fileAttribute.getObject());
@@ -435,7 +477,7 @@ public class TreeExporter {
                         }
 
                         // Remap objectID on each selected data input
-                        for (org.jevis.jeconfig.plugin.dtrc.TemplateInput input : template.getSelectedInputs()) {
+                        for (org.jevis.commons.trc.TemplateInput input : template.getSelectedInputs()) {
                             Long oldId = input.getObjectID();
                             if (oldId != null && oldId > 0) {
                                 JEVisObject resolved = resolveObject(ds, createdObjects, oldId);
@@ -452,7 +494,7 @@ public class TreeExporter {
                         }
 
                         // Remap TargetHelper target strings on linked outputs
-                        for (org.jevis.jeconfig.plugin.dtrc.TemplateOutput output : template.getLinkedOutputs()) {
+                        for (org.jevis.commons.trc.TemplateOutput output : template.getLinkedOutputs()) {
                             if (Boolean.TRUE.equals(output.getLink()) && output.getTarget() != null
                                     && !output.getTarget().isEmpty()) {
                                 try {

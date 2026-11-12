@@ -1,23 +1,23 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
- * This file is part of JEVisControlCenter.
+ * This file is part of JECommons.
  * <p>
- * JEVisControlCenter is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation in version 3.
+ * JECommons is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation in version 3.
  * <p>
- * JEVisControlCenter is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * JECommons is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * <p>
  * You should have received a copy of the GNU General Public License along with
- * JEVisControlCenter. If not, see <http://www.gnu.org/licenses/>.
+ * JECommons. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * JEVisControlCenter is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
+ * JECommons is part of the JEVis project, see <https://github.com/Sun-and-Charge/JEVis>.
  */
-package org.jevis.jeconfig.plugin.accounting;
+package org.jevis.commons.trc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -32,8 +32,11 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisFile;
 import org.jevis.api.JEVisObject;
-import org.jevis.jeconfig.plugin.dtrc.InputVariableType;
 
+/**
+ * Reads and writes the JSON of an "Accounting Configuration" ({@link SelectionTemplate}, attribute "Template File").
+ * Moved from the Control Center's {@code plugin.accounting}.
+ */
 public class AccountingTemplateHandler {
     public final static String TYPE = "SimpleDataHandler";
     private static final Logger logger = LogManager.getLogger(AccountingTemplateHandler.class);
@@ -72,9 +75,31 @@ public class AccountingTemplateHandler {
     public void jsonToModel(JsonNode jsonNode) {
         try {
             this.selectionTemplate = this.mapper.treeToValue(jsonNode, SelectionTemplate.class);
+            if (this.selectionTemplate != null) {
+                if (this.selectionTemplate.getSelectedInputs() == null) this.selectionTemplate.setSelectedInputs(new java.util.ArrayList<>());
+                if (this.selectionTemplate.getLinkedOutputs() == null) this.selectionTemplate.setLinkedOutputs(new java.util.ArrayList<>());
+                this.selectionTemplate.getSelectedInputs().removeIf(java.util.Objects::isNull);
+                this.selectionTemplate.getLinkedOutputs().removeIf(java.util.Objects::isNull);
+            }
         } catch (JsonProcessingException e) {
             logger.error("Could not parse json model", e);
         }
+    }
+
+    /**
+     * @param json the content of a "Template File"
+     * @return the configuration, {@code null} if the JSON cannot be parsed
+     */
+    public static SelectionTemplate parse(byte[] json) {
+        if (json == null || json.length == 0) return null;
+        AccountingTemplateHandler handler = new AccountingTemplateHandler();
+        try {
+            handler.jsonToModel(handler.mapper.readTree(json));
+        } catch (Exception e) {
+            logger.error("Could not parse accounting configuration", e);
+            return null;
+        }
+        return handler.selectionTemplate;
     }
 
     public JsonNode toJsonNode() {

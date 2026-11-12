@@ -22,8 +22,6 @@ package org.jevis.jeconfig.plugin.dtrc;
 
 import com.ibm.icu.text.NumberFormat;
 import com.jfoenix.controls.*;
-import com.udojava.evalex.Expression;
-import org.jevis.commons.calculation.CalcExpressions;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -52,31 +50,28 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.constants.GUIConstants;
-import org.jevis.commons.datetime.PeriodHelper;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.relationship.ObjectRelations;
-import org.jevis.commons.unit.ChartUnits.QuantityUnits;
+import org.jevis.commons.trc.*;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartTools;
-import org.jevis.jeconfig.application.Chart.data.ValueWithDateTime;
 import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.control.AnalysisLinkButton;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.filter.JEVisTreeFilter;
 import org.jevis.jeconfig.dialog.EnterDataDialog;
 import org.jevis.jeconfig.dialog.SelectTargetDialog;
-import org.jevis.jeconfig.plugin.accounting.SelectionTemplate;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrameFactory;
 import org.jevis.jeconfig.plugin.object.attribute.AttributeEditor;
 import org.jevis.jeconfig.plugin.object.attribute.RangingValueEditor;
 import org.joda.time.DateTime;
-import org.joda.time.Period;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -84,7 +79,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.FormatStyle;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class OutputView extends Tab {
     private static final Logger logger = LogManager.getLogger(OutputView.class);
@@ -103,7 +97,6 @@ public class OutputView extends Tab {
     private final VBox viewVBox;
     private final GridPane viewInputs = new GridPane();
     private final IntervalSelector intervalSelector;
-    private final ConcurrentHashMap<String, Double> resultMap = new ConcurrentHashMap<>();
     private final AlphanumComparator alphanumComparator = new AlphanumComparator();
     private final ObjectRelations objectRelations;
     private final GridPane headerGP = new GridPane();
@@ -254,14 +247,9 @@ public class OutputView extends Tab {
         if (templateHandler.getRcTemplate() == null) return;
 
         Platform.runLater(() -> gridPane.getChildren().clear());
-        resultMap.clear();
 
         DateTime start = getStart();
         DateTime end = getEnd();
-
-        //Sort outputs by formula
-        List<TemplateOutput> templateOutputs = templateHandler.getRcTemplate().getTemplateOutputs();
-        final Map<String, Boolean> intervalConfiguration = templateHandler.getRcTemplate().getIntervalSelectorConfiguration();
 
         if (timeframeField != null) {
             String overall = String.format("%s %s %s",
@@ -272,14 +260,14 @@ public class OutputView extends Tab {
             Platform.runLater(() -> timeframeField.setText(overall));
         }
 
-        createOutputs(templateOutputs);
+        createOutputs(start, end);
 
         TimeFrame lastSelectedTimeFrame = intervalSelector.getTimeFactoryBox().getSelectionModel().getSelectedItem();
         List<TimeFrame> timeFrames = new ArrayList<>();
         TimeFrameFactory timeFrameFactory = new TimeFrameFactory(ds);
+        List<String> enabled = TrcTimeFrames.enabled(templateHandler.getRcTemplate());
         for (TimeFrame item : timeFrameFactory.getReduced()) {
-            Boolean aBoolean = intervalConfiguration.get(item.getID());
-            if (aBoolean) {
+            if (enabled.contains(item.getID())) {
                 timeFrames.add(item);
             }
         }
@@ -287,8 +275,6 @@ public class OutputView extends Tab {
         Platform.runLater(() -> {
             try {
                 intervalSelector.getTimeFactoryBox().getItems().clear();
-
-                //intervalSelector.getTimeFactoryBox().getItems().clear();
                 intervalSelector.getTimeFactoryBox().getItems().addAll(timeFrames);
 
                 if (intervalSelector.getTimeFactoryBox().getItems().contains(lastSelectedTimeFrame)) {
@@ -302,51 +288,36 @@ public class OutputView extends Tab {
         });
     }
 
-    private void createOutputs(List<TemplateOutput> outputs) {
+    /**
+     * @return the result of the template for the selected time frame (shared {@link ResultCalculator}), {@code null}
+     * without template
+     */
+    public TrcResult calculate() {
+        return calculate(getStart(), getEnd());
+    }
 
-        List<TemplateOutput> separatorOutputs = new ArrayList<>();
-        List<TemplateOutput> otherOutputs = new ArrayList<>();
+    private TrcResult calculate(DateTime start, DateTime end) {
+        if (templateHandler.getRcTemplate() == null) return null;
+        return new ResultCalculator(ds, new TrcTimeFrames(DateTimeZone.getDefault(), null))
+                .calculate(templateHandler.getRcTemplate(), start, end);
+    }
 
-        for (TemplateOutput output : outputs) {
-            if (output.getSeparator()) {
-                separatorOutputs.add(output);
-            } else {
-                output.setTemplateFormula(templateHandler.getRcTemplate().getTemplateFormulas().stream().filter(templateFormula -> output.getId().equals(templateFormula.getOutput())).findFirst().orElse(null));
-
-                otherOutputs.add(output);
-            }
-        }
-
-        separatorOutputs.forEach(templateOutput -> {
-            Task<Void> task = new Task<Void>() {
-                @Override
-                protected Void call() {
-                    Separator separator = new Separator();
-                    if (templateOutput.getColSpan() > 1) {
-                        separator.setPadding(new Insets(8, 0, 8, 0));
-                        separator.setOrientation(Orientation.HORIZONTAL);
-                    }
-                    if (templateOutput.getRowSpan() > 1) {
-                        separator.setPadding(new Insets(0, 8, 0, 8));
-                        separator.setOrientation(Orientation.VERTICAL);
-                    }
-
-                    Platform.runLater(() -> gridPane.add(separator, templateOutput.getColumn(), templateOutput.getRow(), templateOutput.getColSpan(), templateOutput.getRowSpan()));
-                    return null;
-                }
-            };
-
-            JEConfig.getStatusBar().addTask(OutputView.class.getSimpleName(), task, null, true);
-        });
-
+    private void createOutputs(DateTime start, DateTime end) {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() {
                 try {
-                    if (otherOutputs.size() > 0) {
-                        for (TemplateOutput output : otherOutputs) {
-                            processOutput(otherOutputs, output);
+                    TrcResult result = calculate(start, end);
+                    if (result == null) return null;
+                    for (TrcResult.Cell cell : result.getCells()) {
+                        if (cell.getKind() == TrcResult.Kind.SEPARATOR) {
+                            buildSeparator(cell.getOutput());
+                        } else {
+                            buildOutput(cell);
                         }
+                    }
+                    if (!result.getWarnings().isEmpty()) {
+                        logger.debug("Warnings of the calculation: {}", result.getWarnings());
                     }
                 } catch (Exception e) {
                     logger.error("Could not create Outputs", e);
@@ -358,43 +329,22 @@ public class OutputView extends Tab {
         JEConfig.getStatusBar().addTask(OutputView.class.getSimpleName(), task, null, true);
     }
 
-    private void processOutput(List<TemplateOutput> otherOutputs, TemplateOutput currentOutput) {
-
-        if (currentOutput.getName() != null) {
-            logger.debug("Output creation for {}", currentOutput.getName());
-        } else if (currentOutput.getVariableName() != null) {
-            logger.debug("Output creation for output with variable name {}", currentOutput.getVariableName());
+    private void buildSeparator(TemplateOutput templateOutput) {
+        Separator separator = new Separator();
+        if (templateOutput.getColSpan() > 1) {
+            separator.setPadding(new Insets(8, 0, 8, 0));
+            separator.setOrientation(Orientation.HORIZONTAL);
+        }
+        if (templateOutput.getRowSpan() > 1) {
+            separator.setPadding(new Insets(0, 8, 0, 8));
+            separator.setOrientation(Orientation.VERTICAL);
         }
 
-        TemplateFormula formula = currentOutput.getTemplateFormula();
-
-        if (formula != null) {
-            logger.debug("Found formula named {} with formula {}", formula.getName(), formula.getFormula());
-
-            for (String inputId : formula.getInputIds()) {
-                for (TemplateFormula templateFormula : templateHandler.getRcTemplate().getTemplateFormulas()) {
-                    try {
-                        if (inputId.equals(templateFormula.getId()) && !resultMap.contains(templateFormula.getId())) {
-                            TemplateOutput correspondingOutput = otherOutputs.stream().filter(otherOutput -> templateFormula.equals(otherOutput.getTemplateFormula())).findFirst().orElse(null);
-
-                            logger.debug("Missing result for {}, following up with {}", templateFormula.getName(), correspondingOutput.getTemplateFormula().getName());
-                            processOutput(otherOutputs, correspondingOutput);
-                        }
-                    } catch (Exception e) {
-                        logger.error("Error while processing formula {}", templateFormula.getName(), e);
-                    }
-                }
-            }
-        }
-
-        buildOutput(currentOutput);
+        Platform.runLater(() -> gridPane.add(separator, templateOutput.getColumn(), templateOutput.getRow(), templateOutput.getColSpan(), templateOutput.getRowSpan()));
     }
 
-    private void buildOutput(TemplateOutput templateOutput) {
-
-//        Task<Void> task = new Task<Void>() {
-//            @Override
-//            protected Void call() {
+    private void buildOutput(TrcResult.Cell cell) {
+        TemplateOutput templateOutput = cell.getOutput();
         try {
             Label label = new Label(templateOutput.getName());
             if (templateOutput.getNameBold()) {
@@ -497,318 +447,27 @@ public class OutputView extends Tab {
                 }
             }
 
-            TemplateFormula formula = templateOutput.getTemplateFormula();
-
-            if (formula != null) {
-                logger.debug("Found formula named {} with formula {}", formula.getName(), formula.getFormula());
-
-                DateTime start = getStart();
-                DateTime end = getEnd();
-
-                result.setText(NO_RESULT);
-                if (formula.getTimeRestrictionEnabled()) {
-                    TimeFrame fixedTimeFrame = null;
-                    TimeFrame reducingTimeFrame = null;
-
-                    for (TimeFrame timeFrame : intervalSelector.getTimeFactoryBox().getItems()) {
-                        if (formula.getFixedTimeFrame().equals(timeFrame.getID())) {
-                            fixedTimeFrame = timeFrame;
-                        } else if (formula.getReducingTimeFrame().equals(timeFrame.getID())) {
-                            reducingTimeFrame = timeFrame;
-                        }
-                    }
-
-                    if (fixedTimeFrame != null && reducingTimeFrame != null && !fixedTimeFrame.equals(TimeFrameFactory.NONE)) {
-                        start = fixedTimeFrame.getInterval(getStart(), false).getStart();
-                        end = getEnd();
-
-                        Period p = null;
-                        DateTime previousEndDate = null;
-                        if (!reducingTimeFrame.equals(TimeFrameFactory.NONE)) {
-                            try {
-                                p = new Period(reducingTimeFrame.getID());
-                            } catch (Exception ignored) {
-                            }
-
-                            if (p != null) {
-                                DateTime minusPeriodToDate = PeriodHelper.minusPeriodToDate(end, p);
-
-                                boolean followUp = false;
-
-                                if (p.equals(Period.years(1))) {
-                                    minusPeriodToDate = minusPeriodToDate.withMonthOfYear(12);
-                                    followUp = true;
-                                }
-
-                                if (followUp || p.equals(Period.months(1))) {
-                                    int lastDayOfMonth = minusPeriodToDate.dayOfMonth().getMaximumValue();
-                                    minusPeriodToDate = minusPeriodToDate.withDayOfMonth(lastDayOfMonth);
-                                    followUp = true;
-                                }
-
-                                if (followUp || p.equals(Period.days(1))) {
-                                    minusPeriodToDate = minusPeriodToDate.withHourOfDay(23);
-                                    followUp = true;
-                                }
-
-                                if (followUp || p.equals(Period.hours(1))) {
-                                    minusPeriodToDate = minusPeriodToDate.withMinuteOfHour(59);
-                                    followUp = true;
-                                }
-
-                                if (followUp || p.equals(Period.minutes(1))) {
-                                    minusPeriodToDate = minusPeriodToDate.withSecondOfMinute(59);
-                                }
-
-                                previousEndDate = minusPeriodToDate;
-                            } else {
-                                previousEndDate = end.minus(reducingTimeFrame.getInterval(getStart(), false).toDuration());
-                            }
-                        }
-
-                        if (previousEndDate != null && previousEndDate.isAfter(start)) {
-                            end = previousEndDate;
-                        } else if (previousEndDate != null && (previousEndDate.isBefore(start) || previousEndDate.equals(start))) {
-                            start = start.plusSeconds(1);
-                            end = start;
-                        }
-                    }
-                }
-
-                String formulaString = formula.getFormula();
-                Double calculate = 0d;
-                logger.debug("Start of formula creation starting with string " + formulaString);
-
-                boolean isText = false;
-                List<DateTime> allTimestamps = new ArrayList<>();
-                List<TemplateInput> textTypeInputs = new ArrayList<>();
-                List<TemplateInput> valueTypeInputs = new ArrayList<>();
-                List<TemplateInput> oneValueTypeInputs = new ArrayList<>();
-                List<TemplateInput> dependencyInputs = new ArrayList<>();
-                for (TemplateInput templateInput : templateHandler.getRcTemplate().getTemplateInputs()) {
-                    if (formula.getInputIds().contains(templateInput.getId())) {
-                        if (templateInput.getVariableType().equals(InputVariableType.STRING.toString()) || templateInput.getAttributeName().equals("Name")) {
-                            isText = true;
-                            formulaString = formulaString.replace(templateInput.getVariableName(), templateInput.getValue(ds, start, end));
-                        } else if (templateInput.getVariableType().equals(InputVariableType.AVG.toString())
-                                || templateInput.getVariableType().equals(InputVariableType.MIN.toString())
-                                || templateInput.getVariableType().equals(InputVariableType.MAX.toString())
-                                || templateInput.getVariableType().equals(InputVariableType.SUM.toString())) {
-                            templateInput.CreateValues(ds, intervalSelector, start, end);
-
-                            templateInput.getResultMap().forEach((dateTime, aDouble) -> {
-                                if (!allTimestamps.contains(dateTime)) allTimestamps.add(dateTime);
-                            });
-
-                            valueTypeInputs.add(templateInput);
-                        } else if (templateInput.getVariableType().equals(InputVariableType.NON_PERIODIC.toString())) {
-                            templateInput.CreateValues(ds, intervalSelector, start, end);
-
-                            templateInput.getResultMap().forEach((dateTime, aDouble) -> {
-                                if (!allTimestamps.contains(dateTime)) allTimestamps.add(dateTime);
-                            });
-
-                            oneValueTypeInputs.add(templateInput);
-
-                            if (templateInput.getDependency() != null) {
-                                TemplateInput dependencyInput = templateHandler.getRcTemplate().getTemplateInputs().stream().filter(ti -> ti.getId().equals(templateInput.getDependency())).findFirst().orElse(null);
-                                if (dependencyInput != null) {
-                                    dependencyInput.CreateValues(ds, intervalSelector, start, end);
-                                    dependencyInputs.add(dependencyInput);
-                                }
-                            }
-                        } else if (templateInput.getVariableType().equals(InputVariableType.LAST.toString())) {
-                            templateInput.CreateValues(ds, intervalSelector, start, end);
-
-                            templateInput.getResultMap().forEach((dateTime, aDouble) -> {
-                                if (!allTimestamps.contains(dateTime)) allTimestamps.add(dateTime);
-                            });
-
-                            oneValueTypeInputs.add(templateInput);
-                        } else if (templateInput.getVariableType().equals(InputVariableType.YEARLY_VALUE.toString())) {
-                            templateInput.CreateValues(ds, intervalSelector, start, end);
-
-                            templateInput.getResultMap().forEach((dateTime, aDouble) -> {
-                                if (!allTimestamps.contains(dateTime)) allTimestamps.add(dateTime);
-                            });
-
-                            oneValueTypeInputs.add(templateInput);
-                        } else if (templateInput.getVariableType().equals(InputVariableType.RANGING_VALUE.toString())) {
-
-                            String rangingValueDeterminationId = templateInput.getDependency();
-                            DateTime finalStart = start;
-                            DateTime finalEnd = end;
-                            Double rangingValueDetermination = templateHandler.getRcTemplate().getTemplateInputs().stream().filter(determinationInput -> rangingValueDeterminationId.equals(determinationInput.getId())).findFirst().map(determinationInput -> Double.parseDouble(determinationInput.getValue(ds, finalStart, finalEnd))).orElse(null);
-
-                            if (!allTimestamps.contains(start)) allTimestamps.add(start);
-
-                            formulaString = formulaString.replace(templateInput.getVariableName(), templateInput.getValue(ds, start, end, rangingValueDetermination));
-                        }
-                    }
-                }
-
-                if (formula.getInputIds().size() == 1 && templateOutput.getShowAnalysisLink()) {
-                    TemplateInput correspondingInput = templateHandler.getRcTemplate().getTemplateInputs().stream().filter(templateInput -> templateInput.getId().equals(formula.getInputIds().get(0))).findFirst().orElse(null);
-
-                    if (correspondingInput != null && !correspondingInput.getAttributeName().equals("name")) {
-                        JEVisAttribute attribute = ds.getObject(correspondingInput.getObjectID()).getAttribute(correspondingInput.getAttributeName());
-                        AnalysisLinkButton analysisLinkButton = new AnalysisLinkButton(attribute);
-                        analysisLinkButton.getAnalysisRequest().setStartDate(start);
-                        analysisLinkButton.getAnalysisRequest().setEndDate(end);
-                        hBox.getChildren().add(analysisLinkButton);
-                    }
-
-                }
-
-                dependencyInputs.forEach(dependencyInput -> dependencyInput.getResultMap().forEach((dateTime, aDouble) -> {
-                    if (!allTimestamps.contains(dateTime)) allTimestamps.add(dateTime);
-                }));
-
-                allTimestamps.sort(Comparator.naturalOrder());
-
-                for (TemplateInput oneValueTypeInput : oneValueTypeInputs) {
-                    if (oneValueTypeInput.getVariableType().equals(InputVariableType.NON_PERIODIC.toString())) {
-                        List<ValueWithDateTime> valuesWithDateTimes = new ArrayList<>();
-                        oneValueTypeInput.getResultMap().forEach((dateTime, aDouble) -> valuesWithDateTimes.add(new ValueWithDateTime(dateTime, aDouble)));
-                        valuesWithDateTimes.sort(Comparator.comparing(o -> o.getDateTime().get(0)));
-                        ValueWithDateTime lastValue = valuesWithDateTimes.get(0);
-
-                        for (DateTime ts : allTimestamps) {
-                            if (!oneValueTypeInput.getResultMap().containsKey(ts)) {
-                                oneValueTypeInput.getResultMap().put(ts, lastValue.getValue());
-                            } else {
-                                lastValue = new ValueWithDateTime(ts, oneValueTypeInput.getResultMap().get(ts));
-                            }
-                        }
-                    } else if (oneValueTypeInput.getVariableType().equals(InputVariableType.LAST.toString())) {
-                        Double d = oneValueTypeInput.getResultMap().entrySet().stream().findFirst().map(Map.Entry::getValue).orElse(null);
-                        if (d != null) {
-                            for (DateTime ts : allTimestamps) {
-                                oneValueTypeInput.getResultMap().put(ts, d);
-                            }
-                        }
-                    } else if (oneValueTypeInput.getVariableType().equals(InputVariableType.YEARLY_VALUE.toString())) {
-                        Double d = oneValueTypeInput.getResultMap().entrySet().stream().findFirst().map(Map.Entry::getValue).orElse(null);
-                        if (d != null) {
-                            d = d / allTimestamps.size();
-
-                            for (DateTime ts : allTimestamps) {
-                                oneValueTypeInput.getResultMap().put(ts, d);
-                            }
-                        }
-                    }
-                }
-
-                Map<DateTime, Double> allResults = new HashMap<>();
-
-                for (DateTime ts : allTimestamps) {
-                    String s = formulaString;
-                    for (TemplateInput valueTypeInput : valueTypeInputs) {
-                        s = formulaString.replace(valueTypeInput.getVariableName(), String.valueOf(valueTypeInput.getResultMap().get(ts)));
-                    }
-
-                    for (TemplateInput oneValueTypeInput : oneValueTypeInputs) {
-                        s = formulaString.replace(oneValueTypeInput.getVariableName(), String.valueOf(oneValueTypeInput.getResultMap().get(ts)));
-                    }
-
-                    try {
-                        Double d = CalcExpressions.create(s).eval().doubleValue();
-                        if (!d.isNaN()) {
-                            allResults.put(ts, d);
-                        }
-                    } catch (Expression.ExpressionException e) {
-                        logger.error("Formula evaluation failed: {}", e.getMessage());
-                    }
-                }
-
-                for (Map.Entry<DateTime, Double> entry : allResults.entrySet()) {
-                    Double aDouble = entry.getValue();
-                    calculate += aDouble;
-                }
-
-                QuantityUnits qu = new QuantityUnits();
-
-                if (!qu.isQuantityUnit(templateOutput.getUnit())) {
-                    calculate = calculate / allResults.size();
-                }
-
-                logger.debug("Formula after input replacement: " + formulaString);
-
-                boolean needsCalculation = false;
-                for (TemplateInput templateInput : templateHandler.getRcTemplate().getTemplateFormulaInputs()) {
-                    if (formula.getInputIds().contains(templateInput.getTemplateFormula())) {
-
-                        Double d = resultMap.get(templateInput.getTemplateFormula());
-                        if (d != null) {
-                            formulaString = formulaString.replace(templateInput.getVariableName(), d.toString());
-                        } else {
-                            formulaString = formulaString.replace(templateInput.getVariableName(), "0");
-                        }
-
-                        needsCalculation = true;
-                    }
-                }
-
-                for (TemplateInput templateInput : templateHandler.getRcTemplate().getTemplateInputs()) {
-                    if (formula.getInputIds().contains(templateInput.getId())
-                            && formulaString.contains(templateInput.getVariableName())) {
-
-                        Double value = templateInput.getResultMap().entrySet().stream().findFirst().map(Map.Entry::getValue).orElse(null);
-
-                        if (value != null) {
-                            needsCalculation = true;
-                            formulaString = formulaString.replace(templateInput.getVariableName(), String.valueOf(value));
-                        }
-                    }
-                }
-
-                logger.debug("Finished formula after formula input replacement: " + formulaString);
-
-                if (needsCalculation || formulaString.contains("if(")) {
-                    try {
-                        calculate = CalcExpressions.create(formulaString).eval().doubleValue();
-                    } catch (Expression.ExpressionException e) {
-                        logger.error("Formula evaluation failed: {}", e.getMessage());
-                    }
-                }
-
-                if (formula.getInputIds().size() == 0) {
-                    try {
-                        calculate = Double.parseDouble(formulaString);
-                    } catch (Exception e) {
-                        logger.error("No input ids and could not parse formula as value", e);
-                    }
-                }
-
-                if (!isText) {
-                    try {
-                        if (calculate == 0d) {
-                            try {
-                                calculate = CalcExpressions.create(formulaString).eval().doubleValue();
-                            } catch (Expression.ExpressionException e) {
-                                logger.error("Formula evaluation failed: {}", e.getMessage());
-                            }
-                        }
-
-                        if (!calculate.isNaN() && !calculate.isInfinite()) {
-                            resultMap.put(formula.getId(), calculate);
-                            logger.debug("added value of {} to result map", calculate);
-                        } else {
-                            logger.debug("value is NaN or Infinite, added value of {} as 0d to result map", calculate);
-                            resultMap.put(formula.getId(), 0d);
-                        }
-
-                        if (templateOutput.getUnit() != null) {
-                            result.setText(nf.format(calculate) + " " + templateOutput.getUnit());
-                        } else {
-                            result.setText(nf.format(calculate));
-                        }
-
-                    } catch (Exception e) {
-                        logger.error("Error in formula {}", formula.getName(), e);
-                    }
+            if (cell.getKind() == TrcResult.Kind.VALUE) {
+                Double calculate = cell.getValue();
+                if (calculate == null) {
+                    result.setText(NO_RESULT);
+                } else if (templateOutput.getUnit() != null) {
+                    result.setText(nf.format(calculate) + " " + templateOutput.getUnit());
                 } else {
-                    result.setText(formulaString);
+                    result.setText(nf.format(calculate));
+                }
+            } else if (cell.getKind() == TrcResult.Kind.TEXT) {
+                result.setText(cell.getText());
+            }
+
+            if (cell.getAnalysisObjectId() != null) {
+                JEVisObject analysisObject = ds.getObject(cell.getAnalysisObjectId());
+                JEVisAttribute attribute = analysisObject != null ? analysisObject.getAttribute(cell.getAnalysisAttribute()) : null;
+                if (attribute != null) {
+                    AnalysisLinkButton analysisLinkButton = new AnalysisLinkButton(attribute);
+                    analysisLinkButton.getAnalysisRequest().setStartDate(cell.getAnalysisFrom());
+                    analysisLinkButton.getAnalysisRequest().setEndDate(cell.getAnalysisTo());
+                    hBox.getChildren().add(analysisLinkButton);
                 }
             }
 
@@ -819,11 +478,6 @@ public class OutputView extends Tab {
         } catch (Exception e) {
             logger.error("Could not create Output {} on location Column: {} Row: {}", templateOutput.getName(), templateOutput.getColumn(), templateOutput.getRow());
         }
-//                return null;
-//            }
-//        };
-//
-//        JEConfig.getStatusBar().addTask(OutputView.class.getSimpleName(), task, null, true);
     }
 
     public void updateViewInputFlowPane() {
@@ -1243,26 +897,7 @@ public class OutputView extends Tab {
     }
 
     private void linkConfiguredToTemplate(Map<TemplateInput, TemplateInput> translationMap) {
-        templateHandler.getRcTemplate().getTemplateInputs().stream().filter(templateInput -> !selectionTemplate.getSelectedInputs().contains(templateInput)).forEach(templateInput -> selectionTemplate.getSelectedInputs().add(templateInput));
-        for (TemplateInput templateInput : templateHandler.getRcTemplate().getTemplateInputs()) {
-            for (TemplateInput input : selectionTemplate.getSelectedInputs()) {
-                if (templateInput.equals(input)) {
-                    translationMap.put(templateInput, input);
-                    templateInput.setObjectID(input.getObjectID());
-                    break;
-                }
-            }
-        }
-
-        templateHandler.getRcTemplate().getTemplateOutputs().stream().filter(templateOutput -> !selectionTemplate.getLinkedOutputs().contains(templateOutput)).forEach(templateOutput -> selectionTemplate.getLinkedOutputs().add(templateOutput));
-        for (TemplateOutput templateOutput : templateHandler.getRcTemplate().getTemplateOutputs()) {
-            for (TemplateOutput output : selectionTemplate.getLinkedOutputs()) {
-                if (templateOutput.equals(output)) {
-                    templateOutput.setTarget(output.getTarget());
-                    break;
-                }
-            }
-        }
+        ResultCalculator.link(templateHandler.getRcTemplate(), selectionTemplate, translationMap);
     }
 
     public void removeNode(final int row, final int column, GridPane gridPane) {
