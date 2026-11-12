@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of loytec-xml-dl.
  * <p>
@@ -25,11 +26,11 @@ import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.milo.opcua.stack.core.UaException;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.driver.*;
+import org.jevis.jeopc.OpcException;
 import org.jevis.soapdatasource.Channel;
 import org.jevis.soapdatasource.SOAPDataSource;
 import org.joda.time.DateTime;
@@ -248,8 +249,8 @@ public class LoytecXmlDlDataSource implements DataSource {
                     setLastReadout(channel.getJeVisObject(), dataObject.getAttribute("Value").getTimestampOfLastSample());
                 }
 
-            } catch (UaException | ExecutionException | InterruptedException e) {
-                log.error(e);
+            } catch (OpcException e) {
+                log.error("OPC UA server not reachable: {}", e.getMessage());
 
                 OPCUAStatus opcUAStatus = new OPCUAStatus(OPCUAStatus.OPC_SERVER_NOT_REACHABLE);
                 opcUAStatus.writeStatus(channel.getJeVisObject(), DateTime.now());

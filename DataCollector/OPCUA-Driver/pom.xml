@@ -11,7 +11,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <skipTests>true</skipTests>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
@@ -67,19 +66,13 @@
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
+        <!-- JSON lines to the opcua-bridge program (OPC UA client, see docs/OPCUA-BRIDGE.md) -->
         <dependency>
-            <groupId>org.eclipse.milo</groupId>
-            <artifactId>sdk-client</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jevis.commons</groupId>

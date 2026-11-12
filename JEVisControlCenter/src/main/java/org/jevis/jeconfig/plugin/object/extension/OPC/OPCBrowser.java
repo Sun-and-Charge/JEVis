@@ -34,10 +34,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
-import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
-import org.eclipse.milo.opcua.stack.core.types.structured.UserTokenPolicy;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
@@ -50,8 +46,8 @@ import org.jevis.jeconfig.dialog.DialogHeader;
 import org.jevis.jeconfig.tool.ImageConverter;
 import org.jevis.jeopc.OPCClient;
 import org.jevis.jeopc.OPCUAServer;
-
-import java.util.concurrent.ExecutionException;
+import org.jevis.jeopc.OpcEndpoint;
+import org.jevis.jeopc.OpcException;
 
 public class OPCBrowser {
 
@@ -71,7 +67,7 @@ public class OPCBrowser {
 
     private JEVisDataSource ds;
 
-    private EndpointDescription endpointDescription;
+    private OpcEndpoint endpointDescription;
 
 
     Dialog opcUaBrowserDialog;
@@ -126,17 +122,15 @@ public class OPCBrowser {
         try {
 
 
-            Callback<ListView<EndpointDescription>, ListCell<EndpointDescription>> cellFactory = new Callback<ListView<EndpointDescription>, ListCell<EndpointDescription>>() {
+            Callback<ListView<OpcEndpoint>, ListCell<OpcEndpoint>> cellFactory = new Callback<ListView<OpcEndpoint>, ListCell<OpcEndpoint>>() {
                 @Override
-                public ListCell<EndpointDescription> call(ListView<EndpointDescription> param) {
-                    final ListCell<EndpointDescription> cell = new ListCell<EndpointDescription>() {
+                public ListCell<OpcEndpoint> call(ListView<OpcEndpoint> param) {
+                    final ListCell<OpcEndpoint> cell = new ListCell<OpcEndpoint>() {
 
                         @Override
-                        protected void updateItem(EndpointDescription item, boolean empty) {
+                        protected void updateItem(OpcEndpoint item, boolean empty) {
                             super.updateItem(item, empty);
                             if (item != null && !empty) {
-                                //String security = item.getSecurityMode() + " " + item.getSecurityLevel();
-                                String security = item.getSecurityPolicyUri().split("#")[1];
                                 setText(toUserString(item));
                                 setTooltip(new Tooltip(item.toString()));
 
@@ -163,15 +157,21 @@ public class OPCBrowser {
 
                 try {
                     OPCUAServer opcuaServer = new OPCUAServer(this.opcServerObj);
+                    if (opcClient != null) {
+                        /* a new connection replaces the previous one */
+                        opcClient.close();
+                    }
                     opcClient = new OPCClient(opcuaServer.getURL().replace(this.opcServerObj.getAttribute("Port").getLatestSample().getValue().toString(), port.getText()));//"opc.tcp://10.1.2.128:4840");
+                    opcClient.setApplicationName("JEVis Control Center");
+                    opcuaServer.configureTimeouts(opcClient);
                     endpointDescription = opcClient.autoSelectEndpoint();
 
-
-                    UsernameProvider usernameProvider = new UsernameProvider(this.opcServerObj.getAttribute("User").getLatestSample().getValue().toString(), this.opcServerObj.getAttribute("Password").getLatestSample().getValue().toString());
+                    String user = this.opcServerObj.getAttribute("User").getLatestSample().getValue().toString();
+                    String password = this.opcServerObj.getAttribute("Password").getLatestSample().getValue().toString();
                     opcClient.setEndpoints(endpointDescription);
 
-                    if (!this.opcServerObj.getAttribute("User").getLatestSample().getValue().toString().isEmpty() && !this.opcServerObj.getAttribute("Password").getLatestSample().getValue().toString().isEmpty()) {
-                        opcClient.setIdentification(usernameProvider);
+                    if (!user.isEmpty() && !password.isEmpty()) {
+                        opcClient.setIdentification(user, password);
                     }
 
 
@@ -188,7 +188,7 @@ public class OPCBrowser {
                     }
 
 
-                } catch (JEVisException | ExecutionException | InterruptedException | UaException e) {
+                } catch (JEVisException | OpcException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.initOwner(stage);
 
@@ -246,29 +246,9 @@ public class OPCBrowser {
     }
 
 
-    private String toUserString(EndpointDescription ep) {
-        String product = ep.getServer().getProductUri();
-        String securityMode = ep.getSecurityMode().name();
-        String security = ep.getSecurityPolicyUri().split("#")[1];
-        String userTokens = "{";
-        for (UserTokenPolicy userIdentityToken : ep.getUserIdentityTokens()) {
-            try {
-                userTokens += userIdentityToken.getPolicyId();
-                userTokens += " " + userIdentityToken.getSecurityPolicyUri().split("#")[1] + " | ";
-            } catch (Exception ex) {
-
-            }
-        }
-        userTokens += "} ";
-
-        String endpoints = "{";
-        for (String discoveryUrl : ep.getServer().getDiscoveryUrls()) {
-            endpoints += discoveryUrl + ", ";
-        }
-        endpoints += "} ";
-
-        String info = String.format("Endpoints: %s | Product: %s | security: %s{%s} | userTokens: %s "
-                , product, endpoints, securityMode, security, userTokens);
+    private String toUserString(OpcEndpoint ep) {
+        String info = String.format("Endpoint: %s | security: %s{%s} level %s | userTokens: %s "
+                , ep.getUrl(), ep.getSecurityMode(), ep.getSecurityPolicy(), ep.getSecurityLevel(), ep.getUserTokens());
         return info;
     }
 
