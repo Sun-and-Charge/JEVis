@@ -44,8 +44,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.apache.logging.log4j.LogManager;
-import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.jevis.api.*;
 import org.jevis.commons.dataprocessing.CleanDataObject;
 import org.jevis.commons.i18n.I18n;
@@ -58,6 +56,8 @@ import org.jevis.jeconfig.application.jevistree.plugin.SimpleTargetPlugin;
 import org.jevis.jeconfig.dialog.SelectTargetDialog;
 import org.jevis.jeconfig.plugin.dashboard.DashBordPlugIn;
 import org.jevis.jeopc.OPCClient;
+import org.jevis.jeopc.OpcException;
+import org.jevis.jeopc.OpcReference;
 import org.jevis.jeopc.PathReferenceDescription;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -175,7 +175,7 @@ public class NodeTreeTable {
                     while (c.next()) {
                         if (c.wasAdded()) {
                             c.getAddedSubList().forEach(o -> {
-                                logger.debug("New Des: " + o.getPath() + "  -> " + o.getReferenceDescription().getBrowseName().getName());
+                                logger.debug("New Des: " + o.getPath() + "  -> " + o.getReferenceDescription().getName());
                                 PathReferenceDescription x = o;
 
                                 Node node = new Node(o.getReferenceDescription(), o.getPath(), o.getDataValue());
@@ -238,7 +238,7 @@ public class NodeTreeTable {
             JEConfig.getStatusBar().addTask(DashBordPlugIn.class.getName(), task, taskIcon, true);
 
             /**
-             HashMap<String,ReferenceDescription> map = opcClient.browse();
+             HashMap<String,OpcReference> map = opcClient.browse();
              System.out.println("Mapsize: "+map.size());
              map.forEach((xpath, referenceDescription) -> {
              Node newNode = new Node(referenceDescription,xpath);
@@ -259,7 +259,7 @@ public class NodeTreeTable {
             TreeTableColumn<Node, String> valueCol = new TreeTableColumn<>(I18n.getInstance().getString("plugin.object.opcua.column.value"));
             TreeTableColumn<Node, String> nodeIDCol = new TreeTableColumn<>(I18n.getInstance().getString("plugin.object.opcua.column.nodeid"));
             valueCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().readData()));
-            nodeIDCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getNodeIdProperty().toParseableString()));
+            nodeIDCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getNodeIdProperty()));
             opcUATreeTableView.getColumns().addAll(nameCol, valueCol, nodeIDCol);
         } else if (mode.equals(SETUP_MODE)) {
             TreeTableColumn<Node, Boolean> checkCol = new TreeTableColumn<>(I18n.getInstance().getString("plugin.object.opcua.column.import"));
@@ -284,7 +284,7 @@ public class NodeTreeTable {
                             if (!empty && getTreeTableRow().getTreeItem() != null) {
                                 try {
 
-                                    if (getTreeTableRow().getTreeItem().getValue().getDescriptionProperty().getNodeClass().getValue() == 1) {
+                                    if (getTreeTableRow().getTreeItem().getValue().getDescriptionProperty().isObject()) {
                                         JFXCheckBox box = new JFXCheckBox();
                                         box.setSelected(item);
                                         box.selectedProperty().addListener((observableValue, aBoolean, t1) -> {
@@ -336,7 +336,8 @@ public class NodeTreeTable {
 
     private void setSetValueDialog(OPCClient opcClient) {
         try {
-            String dataType = opcClient.getDataType(NodeId.parse(opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID()));
+            String nodeId = opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID();
+            String dataType = opcClient.getDataType(nodeId);
 
 
             setValueDialog = new Dialog<>();
@@ -364,7 +365,7 @@ public class NodeTreeTable {
             valueComboBox.getItems().addAll(true, false);
 
 
-            if (dataType.equals(Boolean.class.getName())) {
+            if ("Boolean".equals(dataType)) {
                 hbox.getChildren().addAll(valueLabel, valueComboBox);
             } else {
                 hbox.getChildren().addAll(valueLabel, valueField);
@@ -387,14 +388,14 @@ public class NodeTreeTable {
                 try {
 
 
-                    if (dataType.equals(Boolean.class.getName())) {
-                        opcClient.writeValue(valueComboBox.getValue(), NodeId.parse(opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID()));
-                    } else if (dataType.equals(String.class.getName())) {
-                        opcClient.writeValue(valueField.getText(), NodeId.parse(opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID()));
-                    } else if (dataType.equals(Double.class.getName())) {
-                        opcClient.writeValue(Double.valueOf(valueField.getText()), NodeId.parse(opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID()));
-                    } else if (dataType.equals(Integer.class.getName())) {
-                        opcClient.writeValue(Integer.valueOf(valueField.getText()), NodeId.parse(opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID()));
+                    if ("Boolean".equals(dataType)) {
+                        opcClient.writeValue(valueComboBox.getValue(), nodeId);
+                    } else if ("String".equals(dataType)) {
+                        opcClient.writeValue(valueField.getText(), nodeId);
+                    } else if ("Double".equals(dataType) || "Float".equals(dataType)) {
+                        opcClient.writeValue(Double.valueOf(valueField.getText()), nodeId, dataType);
+                    } else if (OPCClient.isIntegerType(dataType)) {
+                        opcClient.writeValue(Long.valueOf(valueField.getText().trim()), nodeId, dataType);
                     } else {
                         logger.info("Datatype Mismatch");
                         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -403,9 +404,9 @@ public class NodeTreeTable {
                         alert.showAndWait();
                     }
 
-                    opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().setDataValue(opcClient.readValue(NodeId.parse(opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().getStringNodeID())));
+                    opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().setDataValue(opcClient.readValue(nodeId));
                     opcUATreeTableView.refresh();
-                } catch (UaException | NumberFormatException e) {
+                } catch (OpcException | NumberFormatException e) {
                     e.printStackTrace();
                     logger.info("Datatype Mismatch");
                     Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -468,6 +469,10 @@ public class NodeTreeTable {
 
     private TreeItem<Node> setRoot() {
         PathReferenceDescription pd = opcClient.getRoot("/Objects/Loytec ROOT");
+        if (pd == null) {
+            /* no Loytec device: an invisible placeholder root, the browsed folders are added below it */
+            pd = new PathReferenceDescription(new OpcReference(OPCClient.ROOT_FOLDER, "0:Root", "Root", OpcReference.NODE_CLASS_OBJECT, null, null), "/Root", null);
+        }
         mainRootTreeItem = new TreeItem<>(new Node(pd.getReferenceDescription(), pd.getPath(), pd.getDataValue()));
         opcUATreeTableView.setRoot(mainRootTreeItem);
         opcUATreeTableView.setShowRoot(false);
@@ -485,17 +490,17 @@ public class NodeTreeTable {
         if (bacnet) {
             node.setTrendType(Node.BACNET_TREND);
         }
-        if ((parent.getValue().getPathProperty() + "/" + parent.getValue().getDescriptionProperty().getBrowseName().getName()).equals(node.getPathProperty())) {
+        if ((parent.getValue().getPathProperty() + "/" + parent.getValue().getDescriptionProperty().getName()).equals(node.getPathProperty())) {
             TreeItem<Node> treeItem = new TreeItem<>(node);
             logger.info("OPC-UA children: {} added", node.getDescriptionProperty().getBrowseName());
-            if (node.getDescriptionProperty().getNodeClass().getValue() == 1 || mode.equals(BROWSER_MODE)) {
+            if (node.getDescriptionProperty().isObject() || mode.equals(BROWSER_MODE)) {
                 parent.getChildren().add(treeItem);
                 return treeItem;
             } else {
-                if (node.getDescriptionProperty().getBrowseName().getName().equals("LogHandle")) {
+                if (node.getDescriptionProperty().getName().equals("LogHandle")) {
                     String logHandleString = node.readData().split("\\.|\\-")[node.readData().split("\\.|\\-.").length - 2];
                     parent.getValue().setTrendID(logHandleString);
-                } else if (node.getDescriptionProperty().getBrowseName().getName().equals("Configuration")) {
+                } else if (node.getDescriptionProperty().getName().equals("Configuration")) {
                     try {
                         parent.getValue().setLogInterval(getLogInterval(node.readData()));
                     } catch (ParserConfigurationException e) {
@@ -599,7 +604,7 @@ public class NodeTreeTable {
     private JEVisObject createJEVisObject(TreeItem<Node> node, JEVisObject jevisParentObject, String className) throws JEVisException {
         JEVisClass dataClass = jevisParentObject.getDataSource().buildClass(className);
 
-        String name = node.getValue().getDescriptionProperty().getBrowseName().getName();
+        String name = node.getValue().getDescriptionProperty().getName();
         name = name.replace("Trend_", "");
 
 

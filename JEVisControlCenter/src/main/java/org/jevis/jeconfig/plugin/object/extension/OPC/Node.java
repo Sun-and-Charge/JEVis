@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -22,21 +23,19 @@ package org.jevis.jeconfig.plugin.object.extension.OPC;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription;
-import org.jevis.jeopc.Nodes;
+import org.jevis.jeopc.OpcReference;
+import org.jevis.jeopc.OpcValue;
 
 public class Node {
 
-    private final SimpleObjectProperty<ReferenceDescription> descriptionProperty;
-    private SimpleObjectProperty<NodeId> nodeIdProperty = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<OpcReference> descriptionProperty;
+    private SimpleObjectProperty<String> nodeIdProperty = new SimpleObjectProperty<>();
     private SimpleStringProperty stringNodeID = new SimpleStringProperty("");
     private SimpleStringProperty idStringProperty = new SimpleStringProperty("");
     private final StringProperty pathProperty;
     private StringProperty stringProperty = new SimpleStringProperty("hmmm");
     private StringProperty typeProperty = new SimpleStringProperty("");
-    private DataValue dataValue;
+    private OpcValue dataValue;
     private String TrendID;
     private String logInterval = "";
     private String name;
@@ -46,19 +45,19 @@ public class Node {
     public static final String GERNERIC_TREND = "generic";
     public static final String BACNET_TREND = "bacnet";
 
-    public Node(ReferenceDescription referenceDescription, String xpath, DataValue dataValue) {
+    public Node(OpcReference referenceDescription, String xpath, OpcValue dataValue) {
         pathProperty = new SimpleStringProperty(xpath);
         descriptionProperty=new SimpleObjectProperty<>(referenceDescription);
         this.dataValue = dataValue;
-        name = descriptionProperty.get().getBrowseName().getName();
+        name = descriptionProperty.get().getName();
 
         try {
-            NodeId nodeId = Nodes.toNodeID(descriptionProperty.get());
+            String nodeId = referenceDescription.getNodeId();
             nodeIdProperty.set(nodeId);
-            stringNodeID.set("ns="+nodeId.getNamespaceIndex()+";i="+nodeId.getIdentifier());
-            idStringProperty.set(referenceDescription.getBrowseName().getName());
+            stringNodeID.set(nodeId);
+            idStringProperty.set(referenceDescription.getName());
             stringProperty.setValue(referenceDescription.toString());
-            typeProperty.set(referenceDescription.getNodeClass().toString());
+            typeProperty.set(referenceDescription.getNodeClass());
         }catch ( Exception ex){
             ex.printStackTrace();
         }
@@ -68,8 +67,8 @@ public class Node {
 
     public String readData(){
         try {
-            if (descriptionProperty.get().getNodeClass().getValue() == 2) {
-                return dataValue.getValue().getValue().toString();
+            if (descriptionProperty.get().isVariable() && dataValue != null && dataValue.getValue() != null) {
+                return dataValue.getValue().toString();
             } else {
                 return "";
             }
@@ -104,27 +103,27 @@ public class Node {
         this.logInterval = logInterval;
     }
 
-    public ReferenceDescription getDescriptionProperty() {
+    public OpcReference getDescriptionProperty() {
         return descriptionProperty.get();
     }
 
-    public SimpleObjectProperty<ReferenceDescription> descriptionPropertyProperty() {
+    public SimpleObjectProperty<OpcReference> descriptionPropertyProperty() {
         return descriptionProperty;
     }
 
-    public void setDescriptionProperty(ReferenceDescription descriptionProperty) {
+    public void setDescriptionProperty(OpcReference descriptionProperty) {
         this.descriptionProperty.set(descriptionProperty);
     }
 
-    public NodeId getNodeIdProperty() {
+    public String getNodeIdProperty() {
         return nodeIdProperty.get();
     }
 
-    public SimpleObjectProperty<NodeId> nodeIdPropertyProperty() {
+    public SimpleObjectProperty<String> nodeIdPropertyProperty() {
         return nodeIdProperty;
     }
 
-    public void setNodeIdProperty(NodeId nodeIdProperty) {
+    public void setNodeIdProperty(String nodeIdProperty) {
         this.nodeIdProperty.set(nodeIdProperty);
     }
 
@@ -188,11 +187,11 @@ public class Node {
         this.typeProperty.set(typeProperty);
     }
 
-    public DataValue getDataValue() {
+    public OpcValue getDataValue() {
         return dataValue;
     }
 
-    public void setDataValue(DataValue dataValue) {
+    public void setDataValue(OpcValue dataValue) {
         this.dataValue = dataValue;
     }
 
@@ -230,46 +229,4 @@ public class Node {
                 ", trendType='" + trendType + '\'' +
                 '}';
     }
-/**
-    public ReferenceDescription getDescriptionProperty() {
-        return descriptionProperty.get();
-    }
-
-    public SimpleObjectProperty<ReferenceDescription> descriptionPropertyProperty() {
-        return descriptionProperty;
-    }
-
-    public NodeId getNodeIdProperty() {
-        return nodeIdProperty.get();
-    }
-
-    public SimpleObjectProperty<NodeId> nodeIdPropertyProperty() {
-        return nodeIdProperty;
-    }
-
-    public String getIdStringProperty() {
-        return idStringProperty.get();
-    }
-
-    public SimpleStringProperty idStringPropertyProperty() {
-        return idStringProperty;
-    }
-
-    public String getPathProperty() {
-        return pathProperty.get();
-    }
-
-    public StringProperty pathPropertyProperty() {
-        return pathProperty;
-    }
-
-    public String getStringProperty() {
-        return stringProperty.get();
-    }
-
-    public StringProperty stringPropertyProperty() {
-        return stringProperty;
-    }
-
- */
 }

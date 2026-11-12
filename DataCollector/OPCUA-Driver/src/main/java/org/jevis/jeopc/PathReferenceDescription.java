@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of OPCUA-Driver.
  * <p>
@@ -19,22 +20,22 @@
  */
 package org.jevis.jeopc;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription;
-
+/**
+ * A browsed node with the path of its parent and, for variables, its value.
+ */
 public class PathReferenceDescription {
 
-    private final  ReferenceDescription referenceDescription;
+    private final OpcReference referenceDescription;
     private final String path;
-    private final DataValue dataValue;
+    private final OpcValue dataValue;
 
-    public PathReferenceDescription(ReferenceDescription referenceDescription, String path, DataValue dataValue) {
+    public PathReferenceDescription(OpcReference referenceDescription, String path, OpcValue dataValue) {
         this.referenceDescription = referenceDescription;
         this.path=path;
         this.dataValue = dataValue;
     }
 
-    public ReferenceDescription getReferenceDescription() {
+    public OpcReference getReferenceDescription() {
         return referenceDescription;
     }
 
@@ -42,7 +43,10 @@ public class PathReferenceDescription {
         return path;
     }
 
-    public DataValue getDataValue() {
+    /**
+     * @return the value of a variable, null for objects or if it could not be read
+     */
+    public OpcValue getDataValue() {
         return dataValue;
     }
 }

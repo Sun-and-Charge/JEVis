@@ -20,79 +20,66 @@
  */
 package org.jevis.jeopc;
 
-import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
-import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
-import org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadResult;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription;
 import org.joda.time.DateTime;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
 
+/**
+ * Command line client for tests: lists the endpoints, connects, browses and reads the history of a node.
+ * <p>
+ * Arguments: url [user password]
+ */
 public class CMDClient {
 
     public CMDClient() {
 
     }
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws OpcException {
         System.out.println("Start CommandLine OPC UA Client using URL: " + args[0]);
         OPCClient opcClient = new OPCClient(args[0]);
 
         System.out.println("List Endpoints:");
         String username = "";
         String password = "";
-        String dp = "";
-        try {
+        if (args.length > 2) {
             username = args[1];
             password = args[2];
-            dp = args[3];
-        } catch (Exception ex) {
-
         }
         int i = 0;
         int auto = -1;
-        for (EndpointDescription endpointDescription : opcClient.getEndpoints()) {
-
-
-            System.out.printf("\nEP[%s]:  %s%n", i, endpointDescription.getEndpointUrl());
-            try {
-                SecurityPolicy securityPolicy = SecurityPolicy.fromUri(endpointDescription.getSecurityPolicyUri());
-                if (securityPolicy == SecurityPolicy.None) {
-                    System.out.println("... Found Unsecured Endpoint");
-                    auto = i;
-                }
-            } catch (UaException e) {
-                e.printStackTrace();
+        List<OpcEndpoint> endpoints = opcClient.getEndpoints();
+        for (OpcEndpoint endpointDescription : endpoints) {
+            System.out.printf("%nEP[%s]:  %s %s/%s level %s user tokens %s%n", i, endpointDescription.getUrl(),
+                    endpointDescription.getSecurityPolicy(), endpointDescription.getSecurityMode(),
+                    endpointDescription.getSecurityLevel(), endpointDescription.getUserTokens());
+            if (endpointDescription.isSecurityNone()) {
+                System.out.println("... Found Unsecured Endpoint");
+                auto = i;
             }
-            String epString = OPCClient.printEP(endpointDescription);
+            OPCClient.printEP(endpointDescription);
             i++;
         }
 
         System.out.println("\nAutoselect EP: " + auto);
 
         Scanner scanner = new Scanner(System.in);
-        EndpointDescription endpointDescription = null;
+        OpcEndpoint endpointDescription = auto >= 0 ? endpoints.get(auto) : null;
         try {
             while (true) {
                 System.out.println("\n\nSelect endpoint ID, leave emtpy if same");
                 String line = scanner.nextLine();
 
                 if (!line.isEmpty()) {
-                    endpointDescription = opcClient.getEndpoints().get(Integer.parseInt(line));
+                    endpointDescription = endpoints.get(Integer.parseInt(line));
                 }
 
-                UsernameProvider usernameProvider = new UsernameProvider(username, password);
                 opcClient.setEndpoints(endpointDescription);
                 if (!username.isEmpty() && !password.isEmpty()) {
                     System.out.println("Using username: " + username);
-                    opcClient.setIdentification(usernameProvider);
+                    opcClient.setIdentification(username, password);
                 }
                 opcClient.connect();
                 System.out.println("\nConnection successful");
@@ -105,74 +92,40 @@ public class CMDClient {
 
                 System.out.println("\nfetch samples?(for example: ns=1;s=SM_E_38_WA )");
                 String fetch = scanner.nextLine();
-                if (!browse.isEmpty()) {
+                if (!fetch.isEmpty()) {
                     printData(opcClient, fetch);
                 }
-
-
             }
         } catch (Exception ex) {
             // System.in has been closed
             System.out.println("System.in was closed; exiting");
             ex.printStackTrace();
+        } finally {
+            opcClient.close();
         }
     }
 
 
-    private static void printData(OPCClient opcClient, String id) throws ExecutionException, InterruptedException {
+    private static void printData(OPCClient opcClient, String id) throws OpcException {
         System.out.println("Fetch Datapoint: '" + id + "'");
-        NodeId nodeIdName = NodeId.parse(id);//"ns=1;i=20036");
 
-        DateTime from = new DateTime(DateTime.now().getYear(), 01, 01, 15, 00, 00);
-        DateTime until = new DateTime(DateTime.now().getYear(), 12, 22, 31, 00, 00);
+        DateTime from = new DateTime(DateTime.now().getYear(), 1, 1, 15, 0, 0);
+        DateTime until = DateTime.now();
 
-        //HistoryReadResult historyReadResult = opcClient.getHistory(nodeIdName, new DateTime().minusDays(1), new DateTime());
         OPCUAChannel OPCUAChannel = new OPCUAChannel(id, "i=11505", 900000);
 
-        HistoryReadResult historyReadResult = opcClient.getHistory(OPCUAChannel, from, until);
-        List<DataValue> valueList = opcClient.getDateValues(historyReadResult);
-        valueList.forEach(dataValue -> {
-            try {
-                System.out.println("sample: " + dataValue);
-                //list.add(new DataValueRow(dataValue));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        List<OpcValue> valueList = opcClient.getHistory(OPCUAChannel, from, until);
+        for (OpcValue dataValue : valueList) {
+            System.out.println("sample: " + dataValue);
+        }
     }
 
     private static void getDP(OPCClient opcClient) {
         System.out.println("Fetch Nodes: please wait....");
-        /**
-         ObservableList<PathReferenceDescription> testList = FXCollections.observableArrayList();
-         testList.addListener(new ListChangeListener<PathReferenceDescription>() {
-        @Override public void onChanged(Change<? extends PathReferenceDescription> c) {
-        while (c.next()) {
-        if (c.wasAdded()) {
-        c.getAddedSubList().forEach(o -> {
-        //list.add(new Node(o.getReferenceDescription(), o.getPath()));
-        // updateFilteredData();
-        System.out.println("New Des: " + o.getPath() + "  -> " + o.getReferenceDescription().getBrowseName().getName());
-        });
-
-        }
-        }
-
-        }
-        });
-         **/
-        HashMap<String, ReferenceDescription> map = opcClient.browse();
+        HashMap<String, OpcReference> map = opcClient.browse();
         map.forEach((s, referenceDescription) -> {
-            System.out.println("New Des: " + referenceDescription.getBrowseName().getName() + " " + referenceDescription.getNodeId().toParseableString());
+            System.out.println("New Des: " + referenceDescription.getName() + " " + referenceDescription.getNodeId());
             System.out.println("-" + referenceDescription);
-            /**
-             if (referenceDescription.getBrowseName().getName().equals("Strom - E-Mobility - Total Import (reactive) (Trend_Strom - E-Mobility - Total Import (reactive))")) {
-             System.out.println("--Wait here");
-             System.out.println("1 "+referenceDescription.());
-
-             return;
-             }
-             **/
         });
         System.out.println("Done");
     }

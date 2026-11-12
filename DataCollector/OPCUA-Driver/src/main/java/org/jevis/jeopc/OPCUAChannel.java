@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of OPCUA-Driver.
  * <p>
@@ -21,7 +22,6 @@ package org.jevis.jeopc;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.jevis.api.*;
 import org.jevis.commons.DatabaseHelper;
 import org.jevis.commons.object.plugin.TargetHelper;
@@ -123,11 +123,11 @@ public class OPCUAChannel {
         }
     }
 
-    public NodeId getOPCNodeId() {
-        //NodeId nodeIdNumeric = new NodeId(1, 20100);
-
-        NodeId nodeIdName = NodeId.parse(nodeId); //20100
-        return nodeIdName;
+    /**
+     * @return the node id in OPC UA string form, e.g. "ns=1;i=20100"
+     */
+    public String getOPCNodeId() {
+        return nodeId == null ? null : nodeId.trim();
     }
 
     public JEVisAttribute getTarget() {

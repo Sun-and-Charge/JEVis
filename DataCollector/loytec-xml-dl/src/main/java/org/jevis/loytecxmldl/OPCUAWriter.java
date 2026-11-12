@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of loytec-xml-dl.
  * <p>
@@ -21,17 +22,13 @@ package org.jevis.loytecxmldl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
-import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.driver.DataCollectorTypes;
 import org.jevis.jeopc.OPCClient;
 import org.jevis.jeopc.OPCUAServer;
+import org.jevis.jeopc.OpcEndpoint;
+import org.jevis.jeopc.OpcException;
 import org.joda.time.DateTime;
-
-import java.util.concurrent.ExecutionException;
 
 public class OPCUAWriter {
     private static final Logger logger = LogManager.getLogger(OPCUAWriter.class);
@@ -46,20 +43,26 @@ public class OPCUAWriter {
         try {
             if (!outputChannel.getAttribute(DataCollectorTypes.Channel.LAST_READOUT).hasSample() || dataObject.getAttribute(VALUE).getTimestampOfLastSample().getMillis() > outputChannel.getAttribute(DataCollectorTypes.Channel.LAST_READOUT).getTimestampOfLastSample().getMillis()) {
 
-                logger.info("new Data to write for JEVis ID", outputChannel.getID());
+                logger.info("new Data to write for JEVis ID {}", outputChannel.getID());
 
-                NodeId nodeId = NodeId.parse(outputChannel.getAttribute(OPC_ID).getLatestSample().getValue().toString());
+                String nodeId = outputChannel.getAttribute(OPC_ID).getLatestSample().getValue().toString().trim();
                 String datatype = opcClient.getDataType(nodeId);
-                logger.info("OPC-UA Node datatype:", datatype);
+                logger.info("OPC-UA Node datatype: {}", datatype);
 
-                if (datatype.equals(Double.class.getName())) {
-                    opcClient.writeValue(dataObject.getAttribute(VALUE).getLatestSample().getValueAsDouble(), nodeId);
-                } else if (datatype.equals(Boolean.class.getName())) {
-                    opcClient.writeValue(convertToBool(dataObject.getAttribute(VALUE).getLatestSample().getValueAsDouble()), nodeId);
-                } else if (datatype.equals(String.class.getName())) {
+                if ("Double".equals(datatype) || "Float".equals(datatype)) {
+                    opcClient.writeValue(dataObject.getAttribute(VALUE).getLatestSample().getValueAsDouble(), nodeId, datatype);
+                } else if (OPCClient.isIntegerType(datatype)) {
+                    opcClient.writeValue(Math.round(dataObject.getAttribute(VALUE).getLatestSample().getValueAsDouble()), nodeId, datatype);
+                } else if ("Boolean".equals(datatype)) {
+                    Boolean value = convertToBool(dataObject.getAttribute(VALUE).getLatestSample().getValueAsDouble());
+                    if (value == null) {
+                        throw new Exception("Value is not 0 or 1 for boolean node " + nodeId);
+                    }
+                    opcClient.writeValue(value, nodeId);
+                } else if ("String".equals(datatype)) {
                     opcClient.writeValue(dataObject.getAttribute(VALUE).getLatestSample().getValueAsString(), nodeId);
                 } else {
-                    throw new Exception("Datatype not found");
+                    throw new Exception("Datatype not supported: " + datatype);
                 }
 
                 OPCUAStatus opcUAStatus = new OPCUAStatus(OPCUAStatus.SUCCESS);
@@ -75,7 +78,12 @@ public class OPCUAWriter {
         return false;
     }
 
-    public void connectToOPCUAServer(JEVisObject opcServerObj) throws ExecutionException, InterruptedException, UaException {
+    /**
+     * Connects to the OPC UA server of the data source.
+     *
+     * @throws OpcException if the server cannot be reached
+     */
+    public void connectToOPCUAServer(JEVisObject opcServerObj) throws OpcException {
 
         try {
             logger.info("set up OPC-UA Connection");
@@ -83,22 +91,28 @@ public class OPCUAWriter {
             OPCUAServer opcuaServer = new OPCUAServer(opcServerObj);
 
             opcClient = new OPCClient(opcuaServer.getURL());
-            EndpointDescription endpointDescription = opcClient.autoSelectEndpoint();
+            opcuaServer.configureTimeouts(opcClient);
+            OpcEndpoint endpointDescription = opcClient.autoSelectEndpoint();
             opcClient.setEndpoints(endpointDescription);
 
-            UsernameProvider usernameProvider = new UsernameProvider(opcuaServer.getUser(), opcuaServer.getPassword());
-            opcClient.setIdentification(usernameProvider);
-            logger.info("Connect to OPC-UA Server to: ", opcuaServer.getURL());
+            opcClient.setIdentification(opcuaServer.getUser(), opcuaServer.getPassword());
+            logger.info("Connect to OPC-UA Server to: {}", opcuaServer.getURL());
             opcClient.connect();
 
+        } catch (OpcException e) {
+            logger.error("Error connection to OPC Server: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             logger.error("Error connection to OPC Server", e);
         }
     }
 
     public void disconnect() {
-        logger.info("Disconnected from OPC-UA Server");
-        opcClient.close();
+        if (opcClient != null) {
+            opcClient.close();
+            opcClient = null;
+            logger.info("Disconnected from OPC-UA Server");
+        }
     }
 
     public Boolean convertToBool(Double value) {

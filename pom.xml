@@ -78,7 +78,6 @@
         <poi.version>5.3.0</poi.version>
         <bouncycastle.version>1.78.1</bouncycastle.version>
         <junixsocket.version>2.6.2</junixsocket.version>
-        <milo.version>0.6.16</milo.version>
     </properties>
 
     <build>
@@ -484,12 +483,6 @@
                 <groupId>com.kohlschutter.junixsocket</groupId>
                 <artifactId>junixsocket-native-common</artifactId>
                 <version>${junixsocket.version}</version>
-            </dependency>
-            <!-- OPC UA client (OPCUA-Driver, Control Center); 0.6.x is the last Java-8-compatible line -->
-            <dependency>
-                <groupId>org.eclipse.milo</groupId>
-                <artifactId>sdk-client</artifactId>
-                <version>${milo.version}</version>
             </dependency>
             <!-- @NotNull/@Nullable; modules declare it with provided scope -->
             <dependency>

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of OPCUA-Driver.
  * <p>
@@ -21,11 +22,6 @@ package org.jevis.jeopc;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
-import org.eclipse.milo.opcua.stack.core.BuiltinDataType;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
-import org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadResult;
 import org.jevis.api.*;
 import org.jevis.commons.DatabaseHelper;
 import org.jevis.commons.dataprocessing.VirtualSample;
@@ -90,7 +86,6 @@ public class OPCUAServer {
      * <p>
      * TODO: support different protocol
      * TODO: select endpoint
-     * TODO: setTimeouts
      *
      * @param dataSourceObject
      */
@@ -104,7 +99,7 @@ public class OPCUAServer {
         connectionTimeout = Integer.parseInt(helper.getValue(dataSourceObject, DataCollectorTypes.DataSource.DataServer.CONNECTION_TIMEOUT, DEFAULT_CONNECTION_TIMEOUT));
         readTimeout = Integer.parseInt(helper.getValue(dataSourceObject, DataCollectorTypes.DataSource.DataServer.READ_TIMEOUT, DEFAULT_READ_TIMEOUT));
         user = helper.getValue(dataSourceObject, DataCollectorTypes.DataSource.DataServer.OPCUA.USER, USER_DEFAULT);
-        logger.error("user attribute: '{}' User: {}", DataCollectorTypes.DataSource.DataServer.OPCUA.USER, user);
+        logger.debug("user attribute: '{}' User: {}", DataCollectorTypes.DataSource.DataServer.OPCUA.USER, user);
         password = helper.getValue(dataSourceObject, DataCollectorTypes.DataSource.DataServer.OPCUA.PASSWORD, DEFAULT_PASSWORD);
         protocol = String.valueOf(helper.getValue(dataSourceObject, DataCollectorTypes.DataSource.DataServer.OPCUA.PROTOCOL, DEFAULT_PROTOCOL));
 
@@ -172,12 +167,13 @@ public class OPCUAServer {
             String deviceAddress = getURL();
             logger.info("Endpoint: {}", deviceAddress);
             opcClient = new OPCClient(deviceAddress);
+            configureTimeouts(opcClient);
 
-            EndpointDescription endpointDescription = opcClient.autoSelectEndpoint();
+            OpcEndpoint endpointDescription = opcClient.autoSelectEndpoint();
             opcClient.setEndpoints(endpointDescription);
-            if (!user.isEmpty()) {
-                logger.error("Using user: {} pw:{}", user, password);
-                opcClient.setIdentification(new UsernameProvider(user, password));
+            if (user != null && !user.isEmpty()) {
+                logger.info("Using user: {}", user);
+                opcClient.setIdentification(user, password);
             }
 
 
@@ -238,6 +234,23 @@ public class OPCUAServer {
     }
 
     /**
+     * Applies the connection and read timeouts (seconds) of the data source to the client. A history request may
+     * take several calls to the server (continuation points), so it gets ten times the read timeout, at least
+     * ten minutes.
+     *
+     * @param opcClient client to configure
+     */
+    public void configureTimeouts(OPCClient opcClient) {
+        if (connectionTimeout != null && connectionTimeout > 0) {
+            opcClient.setConnectTimeoutMs(connectionTimeout * 1000L);
+        }
+        if (readTimeout != null && readTimeout > 0) {
+            opcClient.setRequestTimeoutMs(readTimeout * 1000L);
+            opcClient.setHistoryTimeoutMs(Math.max(readTimeout * 10000L, 600000L));
+        }
+    }
+
+    /**
      * Calculates the enddate for a data call based on the last date plus the DAYS_PER_Request setting.
      *
      * @param date last date to start from
@@ -268,60 +281,56 @@ public class OPCUAServer {
         logger.error("Start readout for channel: {} from: {} until: {}", OPCUAChannel.getJeVisObject(), startDate, endTime);
 
 
-        HistoryReadResult historyReadResult = opcClient.getHistory(OPCUAChannel, startDate, endTime);
-        List<DataValue> valueList = opcClient.getDateValues(historyReadResult);
+        List<OpcValue> valueList = opcClient.getHistory(OPCUAChannel, startDate, endTime);
         List<Result> results = new ArrayList<>();
 
-        logger.error("Samples received: {}", valueList.size());
-        valueList.forEach(dataValue -> {
-            try {
-
-                DateTime ts = new DateTime(dataValue.getSourceTime().getJavaDate()).withZone(timezone);
-
-                if (dataValue.getStatusCode().isBad()) {
-                    statusResults.add(new VirtualSample(ts, dataValue.getStatusCode().getValue()));
-                } else {
-                    Class<?> javaType = String.class;
-                    try {
-                        javaType = BuiltinDataType.getBackingClass(dataValue.getValue().getDataType().get());
-                    } catch (Exception ex) {
-                        logger.error("cannot cast type: {}", ex, ex);
-                    }
-
-                    Object value = null;
-                    if (javaType.equals(org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger.class)) {
-                        value = ((org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger) dataValue.getValue().getValue()).doubleValue();
-                    } else if (javaType.equals(java.lang.Float.class)) {
-                        Float aFloat = (java.lang.Float) dataValue.getValue().getValue();
-                        value = Double.valueOf(aFloat.toString());
-                    } else {
-                        try {
-                            value = Double.parseDouble(dataValue.getValue().getValue().toString());
-                        } catch (Exception ex) {
-                            value = dataValue.getValue().getValue().toString();
-                        }
-
-                    }
-                    logger.debug(" Target: {} TS: {} -> v: {}  class: {} raw: {} ", OPCUAChannel.getTargetId(), ts, value, javaType, dataValue.getValue());
-
-                    if (dataValue.getStatusCode().isGood()) {
-                        results.add(new Result(OPCUAChannel.getTargetString(), value, ts));
-                    } else {
-                        statusResults.add(new VirtualSample(ts, -1L));
-                        logger.error("Error status for value: {}", dataValue);
-                    }
-                }
-
-
-            } catch (Exception ex) {
-                logger.error("DataValue error; {}", ex);
-            }
-        });
+        logger.info("Samples received: {}", valueList.size());
+        convertValues(valueList, OPCUAChannel.getTargetString(), timezone, results, statusResults);
 
         return results;
 
     }
 
+
+    /**
+     * Converts history values into results: good values to samples of the target (numbers as Double, else text),
+     * bad values to status samples with the status code, uncertain values to status samples with -1.
+     * Values without timestamp or without value are skipped.
+     *
+     * @param values        values of the history request
+     * @param target        target string of the channel
+     * @param timezone      timezone of the timestamps
+     * @param results       receives the samples
+     * @param statusResults receives the status samples
+     */
+    static void convertValues(List<OpcValue> values, String target, DateTimeZone timezone, List<Result> results, List<JEVisSample> statusResults) {
+        for (OpcValue dataValue : values) {
+            try {
+                if (dataValue.getTimestamp() == null) {
+                    logger.debug("Value without timestamp skipped: {}", dataValue);
+                    continue;
+                }
+                DateTime ts = dataValue.getTimestamp().withZone(timezone);
+
+                if (dataValue.isBad()) {
+                    statusResults.add(new VirtualSample(ts, dataValue.getStatusCode()));
+                } else if (!dataValue.isGood()) {
+                    statusResults.add(new VirtualSample(ts, -1L));
+                    logger.warn("Error status for value: {}", dataValue);
+                } else {
+                    Object value = dataValue.toSampleValue();
+                    if (value == null) {
+                        logger.debug("Value without value skipped: {}", dataValue);
+                        continue;
+                    }
+                    logger.debug(" Target: {} TS: {} -> v: {} raw: {} ", target, ts, value, dataValue.getValue());
+                    results.add(new Result(target, value, ts));
+                }
+            } catch (Exception ex) {
+                logger.error("DataValue error; {}", dataValue, ex);
+            }
+        }
+    }
 
     /**
      * Fetch all channel setting in for the given OPC Server in the jevistree
