@@ -1092,5 +1092,61 @@
       "DONE": "Done"
     },
     "conflict": "The entry was changed in the meantime. The list was reloaded – please try again."
+  },
+  "isoEdit": {
+    "new": "New",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "editLabel": "Edit “{title}”",
+    "deleteLabel": "Delete “{title}”",
+    "editTitle": "Edit “{title}”",
+    "newTitle": {
+      "actions": "New action",
+      "nonconformities": "New nonconformity",
+      "obligations": "New legal provision"
+    },
+    "section": {
+      "actions": "Notes",
+      "nonconformities": "Cause and measures",
+      "obligations": "Further details"
+    },
+    "entry": "Entry",
+    "requiredHint": "Fields marked with * are required.",
+    "required": "Please fill in.",
+    "linkInvalid": "Please enter an address starting with http:// or https://.",
+    "notInList": "“{value}” is not in the plan’s list – please remove it or choose another value.",
+    "staleOption": "{value} (no longer in the list)",
+    "noSelection": "– none –",
+    "noOptions": "The plan has no values for this.",
+    "relevant50001": "Relevant for ISO 50001",
+    "calculated": "Net present value, consumption and EnPI are calculated in the Control Center and are not changed here.",
+    "calculatedShort": "Calculated in the Control Center.",
+    "doneDateSet": "Done date set to today.",
+    "nothingChanged": "No changes to save.",
+    "noVersion": "The entry cannot be changed (version missing). Please reload the view.",
+    "conflict": "The entry was changed meanwhile. The current version was loaded – please check and save again.",
+    "conflictDelete": "The entry was changed meanwhile and was not deleted. Please check and try again.",
+    "invalidTitle": "The input was not accepted:",
+    "requirementsTitle": "The nonconformity does not meet the requirements:",
+    "created": "“{title}” was created.",
+    "createdShort": "The entry was created.",
+    "saved": "“{title}” was saved.",
+    "savedShort": "The entry was saved.",
+    "deleted": "“{title}” was deleted.",
+    "deleteTitle": "Delete entry",
+    "deleteQuestion": "Delete “{title}”? The entry is marked as deleted and disappears from the list.",
+    "attachments": {
+      "upload": "Upload file",
+      "hint": "Or drag files here. At most 25 MB per file.",
+      "uploading": "Uploading “{name}” …",
+      "uploaded": "Uploaded: {name}",
+      "uploadError": "“{name}” could not be uploaded.",
+      "tooLarge": "“{name}” is larger than 25 MB and was not uploaded.",
+      "deleteLabel": "Delete attachment “{name}”",
+      "deleteTitle": "Delete attachment",
+      "deleteQuestion": "Delete “{name}”? The file is moved to the recycle bin.",
+      "deleted": "“{name}” was deleted."
+    }
   }
 }

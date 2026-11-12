@@ -1176,3 +1176,83 @@ interchangeable.
 - `POST /web/maintenance/{id}/status` with `{ "status": "PLANNED"|"IN_PROGRESS"|"DONE", "version": "…" }` → the
   updated entry. Uses `MaintenanceLogic.changeStatus(entry, status, now)` (`doneAt` set or cleared). Mails follow from
   JENotifier as today (the "finished" mail only if an inform was sent or requested).
+
+## Editing, stage E2: action plans, nonconformities, legal register
+
+Create, edit and (soft-)delete items of the three ISO modules and manage their attachments. Data is written as the
+Control Center writes it (`ActionData`, `NonconformityData`, `ObligationData` in `JEVisControlCenter/.../plugin/
+{action,nonconformities,legal}/data`), so both stay interchangeable. The common rules of E1 apply (server-side
+rights per write, `logUserAction` with `web:<action>`, `version` required on changes of existing entries → `409` with
+the current entry on conflict, `400 version missing`, plain-text `400`/`403` messages).
+
+**Storage (unchanged):** each item is an object ("Action", "Nonconformity", "Obligation") with one FILE attribute
+`Data`; every save writes a new file sample at now named `DataModel_v2_<yyyyMMddHHmm>.json` with the item JSON. The
+server patches the **latest stored JSON as a tree** (Jackson `ObjectNode`): only the fields sent are changed, every
+other key (unknown keys, `Attachment`, NPV `Years`, legacy spellings such as `Nr`/`No`, `Desciption`) stays as stored.
+Dates are sent as `yyyy-MM-dd` (`null` or `""` clears the date; anything else → `400`) and written as
+`yyyy-MM-dd'T'HH:mm:ss.SSSXXX` at 00:00 in the site's time zone (date pickers); NaN/Infinity stay
+unquoted; nonconformities and obligations keep writing `null` for empty dates, actions omit empty keys (as the CC).
+If two saves fall into the same second, the second waits until the next second (no overwritten sample).
+
+**Read answers** (`GET /web/actionplans`, `/web/nonconformities`, `/web/legal`) additionally carry per plan
+`canCreate` (create right for the item class below the plan's item directory, or below the plan if the directory is
+missing — the server creates the directory then, as the CC does) and per item `version` (timestamp of the latest
+`Data` sample, ISO), `canWrite`, `canDelete` (write **and** delete right) and `canAttach` (create right for "File"
+below the item). `GET /web/objects/{id}/attachments` additionally has `canDelete` per attachment (delete right on the
+"File" object).
+`GET /web/actionplans`: if a plan's `statuses` contain none of the translations of `plugin.action.status.done`, the
+done status is appended in the request language (`?lang=`, else `Accept-Language`, else German like the CC's default
+statuses); the same for `plugin.action.status.open`.
+
+**Validation answers:** `400` for invalid field values (unknown or read-only keys, wrong types, values outside the
+plan's lists, empty title, nonconformity requirement check) is JSON `{ "messages": ["…", …] }` with
+`Content-Type: application/json`, all problems of the request at once. Other `400`s (invalid JSON body,
+`version missing`, invalid version) stay plain text as in E1.
+
+### Editable fields (request keys = the stored JSON keys)
+
+- **Action:** `Title`, `Description`, `Note`, `Responsible`, `Distributor`, `Planned Date`, `Done Date`,
+  `Status Tags` (one of the plan's statuses), `Field Tags` (list → stored `;`-joined), `Medium Tags` (a medium id of the
+  plan), `SEU Tags` (list → `;`-joined), `Correction`, `Follow Action`, `Alternative Measures`, `Affected Process Note`,
+  `Energy Flow Note`, `Evaluation Note`, `Check List` (object of booleans, stored keys, merged into the stored object:
+  keys not sent, unknown keys and `New EnPI` stay). Not editable on the web: `No`, `Create Date`, `From User`, `NPV`,
+  `Consumption`, `EnPI` (calculated by the Control Center), `Check List`.`New EnPI`.
+  If `Status Tags` is set to a "done" status (the translations of `plugin.action.status.done` in any language, e.g.
+  "Erledigt", "Done") and `Done Date` is empty, `Done Date` becomes today (as `GeneralTab`). The object is renamed to
+  `"<prefix> %03d - <title cut at 50>"` (as `ActionData.commit`).
+- **Nonconformity:** `Title`, `Responsible Person`, `Description`, `Cause`, `Immediate Measures`, `Corrective Actions`,
+  `Action`, `Medium` (a medium name of the plan), `SEU`, `Field Tags` (list, stored as JSON array), `Planned Date`,
+  `Done Date`, `Check List`. Not editable: `Nr`, `Creator`, `Create Date`. Saving runs the Control Center's
+  requirement check (`NonconformityItem.warnings` / `NonconformityData.checkForRequirements`): violations answer
+  `400` with the messages. Renamed to `<prefix><nr>` as the CC does.
+- **Obligation:** `title`, `Designation`, `Description`, `importance for the company`, `link`, `category` (one of the
+  plan's categories), `scope` (one of the plan's scopes), `Relevance 50001` (boolean), `issue date`,
+  `current version date`, `Date of Examination`. Not editable: `Nr`, `uuid`. Renamed to the nr as the CC does.
+- Values outside the plan's lists (status, medium, field, SEU, category, scope) answer `400`; old stored values that
+  are no longer in the list are kept when not changed and may be sent back unchanged. Allowed statuses are the plan's
+  statuses plus the "done" translations. Empty values are always allowed (except the title).
+- `Title` (`title` for obligations) is required on create and cannot be cleared (`400`).
+
+### Endpoints (`{kind}` = `actions` | `nonconformities` | `obligations`)
+
+- `POST /web/{kind}/plans/{planId}/items` with the editable fields, flat (`{ "Title": … }`) or as
+  `{ "fields": { … } }` → `201` the new item (list format). Fields not sent get the CC's empty defaults; an action's
+  status defaults to the translation of `plugin.action.status.open` in the request language. Creates the
+  item directory if missing, creates the object named by the number, assigns **`Nr`/`No` = highest number of all items
+  of the plan + 1**, counting deleted items and items the user cannot read (the server reads them with its own
+  rights for this count only; nothing else of them is returned), sets `Create Date` = today (actions,
+  nonconformities), `From User`/`Creator` = the user's first and last name (account name if empty), `uuid`
+  (obligations), writes the JSON, renames. Needs create right. A failure after creating the object deletes it (and a
+  directory created by the request) again. Objects in the recycle bin are not counted (their parent link is gone).
+- `PUT /web/{kind}/items/{id}` with `{ "version": "…", "fields": { … } }` → the updated item. Needs write right.
+- `DELETE /web/{kind}/items/{id}?version=…` → `204`. Soft delete as the CC: writes the JSON with `"Deleted": true`.
+  Needs write **and delete** right (stricter than the CC, which only needs write). The item disappears from the lists.
+  `409` with the current item as for PUT. Order of checks for PUT/DELETE: `404`, `403`, `400 version missing`, field
+  validation `400`, `409`, requirement check `400`.
+- Attachments (all kinds): `POST /web/items/{id}/attachments` (multipart `file`, max 25 MB, any type; the stored
+  file name is sanitised) creates a "File" child named like the file and writes the `File` sample → `201`
+  `{ id, name, size, canDelete }`; needs create right for "File" below the item; `413` (plain text) if larger, `400`
+  without file. The name loses path parts, control/format characters and `"<>:*?|;`, leading dots, `..`, and is cut
+  to 200 characters (extension kept). Items marked deleted answer `404`. `DELETE /web/attachments/{fileId}` → `204`,
+  moves the "File" object to the recycle bin (as the CC's `FileTableView`); needs delete right on it and the parent must
+  be an action, nonconformity or obligation (`404` otherwise). Download stays `GET /web/files/{id}`.

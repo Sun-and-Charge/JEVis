@@ -1092,5 +1092,61 @@
       "DONE": "Erledigt"
     },
     "conflict": "Der Eintrag wurde inzwischen geändert. Die Liste wurde neu geladen – bitte erneut versuchen."
+  },
+  "isoEdit": {
+    "new": "Neu",
+    "create": "Anlegen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "editLabel": "„{title}“ bearbeiten",
+    "deleteLabel": "„{title}“ löschen",
+    "editTitle": "„{title}“ bearbeiten",
+    "newTitle": {
+      "actions": "Neue Maßnahme",
+      "nonconformities": "Neue Abweichung",
+      "obligations": "Neue Rechtsvorschrift"
+    },
+    "section": {
+      "actions": "Notizen",
+      "nonconformities": "Ursache und Maßnahmen",
+      "obligations": "Weitere Angaben"
+    },
+    "entry": "Eintrag",
+    "requiredHint": "Mit * markierte Felder sind Pflichtfelder.",
+    "required": "Bitte ausfüllen.",
+    "linkInvalid": "Bitte eine Adresse mit http:// oder https:// eingeben.",
+    "notInList": "„{value}“ steht nicht in der Liste des Plans – bitte entfernen oder einen anderen Wert wählen.",
+    "staleOption": "{value} (nicht mehr in der Liste)",
+    "noSelection": "– keine Auswahl –",
+    "noOptions": "Im Plan sind keine Werte festgelegt.",
+    "relevant50001": "Relevant für ISO 50001",
+    "calculated": "Kapitalwert, Verbrauch und EnPI werden im Control Center berechnet und hier nicht geändert.",
+    "calculatedShort": "Wird im Control Center berechnet.",
+    "doneDateSet": "Abschlussdatum auf heute gesetzt.",
+    "nothingChanged": "Keine Änderungen zum Speichern.",
+    "noVersion": "Der Eintrag kann nicht geändert werden (Versionsstand fehlt). Bitte die Ansicht neu laden.",
+    "conflict": "Der Eintrag wurde inzwischen geändert. Die aktuelle Fassung wurde geladen – bitte prüfen und erneut speichern.",
+    "conflictDelete": "Der Eintrag wurde inzwischen geändert und nicht gelöscht. Bitte prüfen und erneut versuchen.",
+    "invalidTitle": "Die Eingabe wurde nicht angenommen:",
+    "requirementsTitle": "Die Abweichung erfüllt die Anforderungen nicht:",
+    "created": "„{title}“ wurde angelegt.",
+    "createdShort": "Der Eintrag wurde angelegt.",
+    "saved": "„{title}“ wurde gespeichert.",
+    "savedShort": "Der Eintrag wurde gespeichert.",
+    "deleted": "„{title}“ wurde gelöscht.",
+    "deleteTitle": "Eintrag löschen",
+    "deleteQuestion": "„{title}“ löschen? Der Eintrag wird als gelöscht markiert und verschwindet aus der Liste.",
+    "attachments": {
+      "upload": "Datei hochladen",
+      "hint": "Oder Dateien hierher ziehen. Höchstens 25 MB je Datei.",
+      "uploading": "„{name}“ wird hochgeladen …",
+      "uploaded": "Hochgeladen: {name}",
+      "uploadError": "„{name}“ konnte nicht hochgeladen werden.",
+      "tooLarge": "„{name}“ ist größer als 25 MB und wurde nicht hochgeladen.",
+      "deleteLabel": "Anhang „{name}“ löschen",
+      "deleteTitle": "Anhang löschen",
+      "deleteQuestion": "„{name}“ löschen? Die Datei wird in den Papierkorb verschoben.",
+      "deleted": "„{name}“ wurde gelöscht."
+    }
   }
 }

@@ -1,13 +1,16 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only · Copyright (C) 2026 Sun and Charge Germany GmbH -->
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { loadActionPlans } from '../api/iso'
 import ActionDetails from '../components/iso/ActionDetails.vue'
 import ActionStats from '../components/iso/ActionStats.vue'
+import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
+import IsoItemDialog from '../components/iso/IsoItemDialog.vue'
 import IsoList from '../components/iso/IsoList.vue'
 import { ACTION_COLUMNS, ACTION_DATE_FIELDS, actionOptions, actionRows, actionStatistics, DEFAULT_ACTION_COLUMNS, DEFAULT_ACTION_FILTER, filterActions, type ActionFilter, type ActionRow } from '../iso/actions'
 import { ALL } from '../iso/filter'
+import { useIsoEditing, type ListHandle } from '../iso/useIsoEditing'
 import { useLoader } from '../iso/useLoader'
 import { formatLocalDate } from '../modules/dates'
 import { useAuthStore } from '../stores/auth'
@@ -16,7 +19,8 @@ import '../styles/iso.css'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
-const { data, state, reload } = useLoader(() => loadActionPlans(auth.http))
+const { data, state, reload } = useLoader(() => loadActionPlans(auth.http, locale.value))
+watch(locale, () => reload())
 
 const filter = reactive<ActionFilter>({ ...DEFAULT_ACTION_FILTER })
 const plans = computed(() => data.value?.plans ?? [])
@@ -40,6 +44,26 @@ watch(
   },
 )
 
+const listRef = useTemplateRef<ListHandle>('list')
+const {
+  editing,
+  deleting,
+  deleteError,
+  deleteBusy,
+  deleteLabel,
+  message,
+  creatable,
+  writable,
+  openCreate,
+  openEdit,
+  onSaved,
+  onStale,
+  askDelete,
+  confirmDelete,
+  cancelDelete,
+  setAttachments,
+} = useIsoEditing('actions', data, reload, () => filter.plan, () => listRef.value)
+
 const rowTitle = (r: ActionRow) => [r.item.number, r.item.title].filter(Boolean).join(' – ')
 </script>
 
@@ -48,8 +72,10 @@ const rowTitle = (r: ActionRow) => [r.item.number, r.item.title].filter(Boolean)
     <div class="mod-head">
       <h1 id="iso-title">{{ t('modules.actionPlans') }}</h1>
       <span v-if="data?.today" class="muted">{{ t('appointments.today', { date: formatLocalDate(data.today, locale) }) }}</span>
+      <button v-if="creatable.length" type="button" class="btn btn-primary iso-new" @click="openCreate">{{ t('isoEdit.new') }}</button>
     </div>
-    <p class="muted read-only">{{ t('iso.readOnly') }}</p>
+    <p v-if="!writable" class="muted read-only">{{ t('iso.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result iso-result" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">{{ message.text }}</p>
 
     <p v-if="state === 'loading' && !data" class="muted" role="status">{{ t('iso.loading') }}</p>
     <div v-else-if="state === 'error'" class="alert alert-error" role="alert">
@@ -60,6 +86,7 @@ const rowTitle = (r: ActionRow) => [r.item.number, r.item.title].filter(Boolean)
     <p v-if="data && !plans.length" class="muted">{{ t('iso.noPlans') }}</p>
     <IsoList
       v-else-if="data"
+      ref="list"
       v-model:plan="filter.plan"
       v-model:text="filter.text"
       v-model:date-field="filter.dateField"
@@ -109,8 +136,30 @@ const rowTitle = (r: ActionRow) => [r.item.number, r.item.title].filter(Boolean)
         <ActionStats :stats="stats" />
       </template>
       <template #detail="{ row }">
-        <ActionDetails :row="row" />
+        <ActionDetails :row="row" @edit="openEdit(row.plan, row.item)" @remove="askDelete(row.plan, row.item)" @attachments="setAttachments(row.plan.id, row.item, $event)" />
       </template>
     </IsoList>
+
+    <IsoItemDialog
+      v-if="editing"
+      kind="actions"
+      :plan="editing.plan"
+      :plans="editing.plans"
+      :item="editing.item" :today="data?.today"
+      @close="editing = null"
+      @saved="onSaved"
+      @stale="onStale"
+    />
+    <ConfirmDialog
+      v-if="deleting"
+      :title="t('isoEdit.deleteTitle')"
+      :message="t('isoEdit.deleteQuestion', { title: deleteLabel })"
+      :confirm-label="t('isoEdit.delete')"
+      :busy="deleteBusy"
+      :error="deleteError"
+      danger
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </section>
 </template>

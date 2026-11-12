@@ -773,6 +773,18 @@ public class ResourceWebNotes {
         }
 
         /**
+         * @return the non-empty texts of the key in all JEVis language files (trimmed, no repeats)
+         */
+        static List<String> allTranslations(String key) {
+            List<String> texts = new ArrayList<>();
+            for (Properties properties : bundles().values()) {
+                String text = properties.getProperty(key);
+                if (text != null && !text.trim().isEmpty() && !texts.contains(text.trim())) texts.add(text.trim());
+            }
+            return texts;
+        }
+
+        /**
          * @return {@code [{id, name}]}: the standard tags, then the other used ids (sorted)
          */
         static List<Map<String, Object>> tagList(Collection<String> used, String language) {

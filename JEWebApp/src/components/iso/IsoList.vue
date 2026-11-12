@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only · Copyright (C) 2026 Sun and Charge Germany GmbH -->
 <script setup lang="ts" generic="R extends { plan: PlanRef; item: { id: number } }">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { localName } from '../../api/navigation'
 import { loadColumnPrefs, orderColumns, saveColumnPrefs, sortRows, toggleColumn, type ColumnContext, type ColumnDef, type SortDirection } from '../../iso/columns'
@@ -96,6 +96,18 @@ function toggleRow(id: number) {
   if (!next.delete(id)) next.add(id)
   expanded.value = next
 }
+
+/** Opens the detail panel of an item (e.g. a new one) and moves the focus to its toggle once it is shown. */
+async function expand(id: number) {
+  if (!expanded.value.has(id)) expanded.value = new Set([...expanded.value, id])
+  await nextTick()
+  const panel = document.getElementById(`${props.module}-d-${id}`) ?? document.getElementById(`${props.module}-c-${id}`)
+  const toggle = document.querySelector<HTMLElement>(`[aria-controls="${props.module}-d-${id}"], [aria-controls="${props.module}-c-${id}"]`)
+  toggle?.focus()
+  panel?.scrollIntoView?.({ block: 'nearest' })
+}
+
+defineExpose({ expand })
 
 /* collapse panels of rows that are filtered out */
 watch(

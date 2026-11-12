@@ -7,11 +7,14 @@ import { splitTags } from '../../iso/filter'
 import { NONCONFORMITY_BADGE, nonconformityState, warningText, type NonconformityRow } from '../../iso/nonconformities'
 import IsoAttachments from './IsoAttachments.vue'
 import IsoCheckList from './IsoCheckList.vue'
+import IsoItemActions from './IsoItemActions.vue'
 
 const props = defineProps<{ row: NonconformityRow }>()
+const emit = defineEmits<{ edit: []; remove: []; attachments: [count: number] }>()
 const { t, locale } = useI18n()
 
 const n = computed(() => props.row.item)
+const label = computed(() => [n.value.number, n.value.title].filter(Boolean).join(' – '))
 const sid = (name: string) => `nc-${n.value.id}-${name}`
 const state = computed(() => nonconformityState(n.value))
 const warnings = computed(() => (n.value.warnings ?? []).map((w) => warningText(w, t)))
@@ -37,6 +40,7 @@ const general = computed(() =>
 </script>
 
 <template>
+  <IsoItemActions :item="n" :label="label" @edit="emit('edit')" @remove="emit('remove')" />
   <div class="iso-sections">
     <section class="iso-section" :aria-labelledby="sid('general')">
       <h3 :id="sid('general')">{{ t('iso.section.general') }}</h3>
@@ -61,7 +65,7 @@ const general = computed(() =>
 
     <section class="iso-section" :aria-labelledby="sid('files')">
       <h3 :id="sid('files')">{{ t('iso.section.attachments') }}</h3>
-      <IsoAttachments :item-id="n.id" :count="n.attachments" />
+      <IsoAttachments :item-id="n.id" :count="n.attachments" :can-attach="!!n.canAttach" @changed="emit('attachments', $event)" />
     </section>
   </div>
 </template>

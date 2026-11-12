@@ -59,7 +59,22 @@ export interface Consumption {
 /** Check list as stored: booleans, plus text values (e.g. newEnPI). */
 export type CheckList = Record<string, boolean | string | number | null>
 
-export interface Action {
+/** What the user may do with an item (E2); missing = not allowed (older servers). */
+export interface ItemRights {
+  /** timestamp of the latest Data sample, sent back on change / delete */
+  version?: string | null
+  canWrite?: boolean
+  canDelete?: boolean
+  /** may add attachments ("File" below the item) */
+  canAttach?: boolean
+}
+
+/** Per plan: may create items (E2). */
+export interface PlanRights {
+  canCreate?: boolean
+}
+
+export interface Action extends ItemRights {
   id: number
   no: number | null
   number: string
@@ -93,7 +108,7 @@ export interface Action {
   attachments: number
 }
 
-export interface ActionPlan {
+export interface ActionPlan extends PlanRights {
   id: number
   name: string
   site: NavItem | null
@@ -113,7 +128,7 @@ export interface ActionPlanList {
 
 export type NonconformityWarning = 'IMMEDIATE_MEASURES_MISSING' | 'DONE_WITHOUT_ACTION' | 'DONE_IN_FUTURE'
 
-export interface Nonconformity {
+export interface Nonconformity extends ItemRights {
   id: number
   nr: number | null
   number: string
@@ -140,7 +155,7 @@ export interface Nonconformity {
   attachments: number
 }
 
-export interface NonconformityPlan {
+export interface NonconformityPlan extends PlanRights {
   id: number
   name: string
   site: NavItem | null
@@ -156,7 +171,7 @@ export interface NonconformityList {
   plans: NonconformityPlan[]
 }
 
-export interface Obligation {
+export interface Obligation extends ItemRights {
   id: number
   uuid: string | null
   nr: number | null
@@ -175,7 +190,7 @@ export interface Obligation {
   attachments: number
 }
 
-export interface LegalPlan {
+export interface LegalPlan extends PlanRights {
   id: number
   name: string
   site: NavItem | null
@@ -194,12 +209,56 @@ export interface Attachment {
   name: string
   size: number | null
   date: string | null
+  /** may move the file to the recycle bin; missing = not delivered (then the item's canAttach decides) */
+  canDelete?: boolean
+}
+
+/* ------------------------------------------------------------------ writes (E2) */
+
+/** Path segment of the item endpoints. */
+export type IsoKind = 'actions' | 'nonconformities' | 'obligations'
+
+/** Item of any of the three modules. */
+export type IsoItem = Action | Nonconformity | Obligation
+
+/** Editable fields with the stored JSON keys ("Title", "Status Tags", …). */
+export type IsoFields = Record<string, unknown>
+
+/** Upper limit of an attachment (the server refuses larger files too). */
+export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
+
+/** POST /web/{kind}/plans/{planId}/items with the editable fields → the new item (list format, with number). */
+export function createIsoItem<T extends IsoItem>(http: Pick<HttpClient, 'post'>, kind: IsoKind, planId: number, fields: IsoFields): Promise<T> {
+  return http.post<T>(`/web/${kind}/plans/${planId}/items`, fields)
+}
+
+/** PUT /web/{kind}/items/{id}: only the changed fields plus the loaded version → the updated item. */
+export function updateIsoItem<T extends IsoItem>(http: Pick<HttpClient, 'put'>, kind: IsoKind, id: number, version: string, fields: IsoFields): Promise<T> {
+  return http.put<T>(`/web/${kind}/items/${id}`, { version, fields })
+}
+
+/** DELETE /web/{kind}/items/{id}?version=… (soft delete, "Deleted": true). */
+export function deleteIsoItem(http: Pick<HttpClient, 'delete'>, kind: IsoKind, id: number, version: string): Promise<void> {
+  return http.delete<void>(`/web/${kind}/items/${id}?version=${encodeURIComponent(version)}`)
+}
+
+/** POST /web/items/{id}/attachments (multipart "file") → the new "File" object. */
+export function uploadAttachment(http: Pick<HttpClient, 'postForm'>, itemId: number, file: File): Promise<Attachment> {
+  const form = new FormData()
+  form.append('file', file, file.name)
+  return http.postForm<Attachment>(`/web/items/${itemId}/attachments`, form)
+}
+
+/** DELETE /web/attachments/{fileId}: the "File" object goes to the recycle bin. */
+export function deleteAttachment(http: Pick<HttpClient, 'delete'>, fileId: number): Promise<void> {
+  return http.delete<void>(`/web/attachments/${fileId}`)
 }
 
 type GetClient = Pick<HttpClient, 'get'>
 
-export function loadActionPlans(http: GetClient): Promise<ActionPlanList> {
-  return http.get<ActionPlanList>('/web/actionplans')
+/** GET /web/actionplans; `lang` names the "open"/"done" statuses the server adds when a plan lacks them. */
+export function loadActionPlans(http: GetClient, lang?: string): Promise<ActionPlanList> {
+  return http.get<ActionPlanList>(lang ? `/web/actionplans?lang=${encodeURIComponent(lang)}` : '/web/actionplans')
 }
 
 export function loadNonconformities(http: GetClient): Promise<NonconformityList> {

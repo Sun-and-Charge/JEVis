@@ -413,6 +413,18 @@ public class ResourceWebModules {
             return readable;
         }
 
+        /**
+         * @return all objects of the class, readable or not (server-internal use only, e.g. the next number of an
+         * item; nothing of them may be returned to the user)
+         */
+        List<JsonObject> allOfClass(String className) {
+            List<JsonObject> result = new ArrayList<>();
+            for (JsonObject object : byId.values()) {
+                if (className.equals(object.getJevisClass())) result.add(object);
+            }
+            return result;
+        }
+
         List<JsonObject> readableOfClass(String className) {
             List<JsonObject> result = new ArrayList<>();
             for (JsonObject object : readable) {
