@@ -52,6 +52,12 @@ class FakeEditStore implements WebEdit.Store {
     final List<String> logs = new ArrayList<>();
     final List<String> renames = new ArrayList<>();
     final List<Long> dependents = new ArrayList<>();
+    final Map<String, byte[]> files = new HashMap<>();
+    final List<Long> deletedObjects = new ArrayList<>();
+    final List<Long> recycled = new ArrayList<>();
+    final List<DateTime> waits = new ArrayList<>();
+    String userName = "Demo User";
+    boolean failFileWrites = false;
     WebEdit.WorkDay workDay = WebEdit.WorkDay.standard(ZONE);
     private ResourceWebModules.Lookup lookup;
     private long nextId = 9000;
@@ -119,6 +125,31 @@ class FakeEditStore implements WebEdit.Store {
     int count(long id, String attribute) {
         TreeMap<Long, JsonSample> map = samples.get(id + "/" + attribute);
         return map != null ? map.size() : 0;
+    }
+
+    /**
+     * Adds a FILE sample with its stored content
+     */
+    FakeEditStore file(long id, String attribute, DateTime time, String fileName, String content) {
+        sample(id, attribute, time, fileName, null);
+        files.put(id + "/" + attribute + "/" + time.getMillis(), content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        return this;
+    }
+
+    /**
+     * @return the content of the latest file of the attribute, null if none
+     */
+    String latestFile(long id, String attribute) {
+        JsonSample latest = latest(id, attribute);
+        byte[] bytes = latest != null ? file(id, attribute, latest) : null;
+        return bytes != null ? new String(bytes, java.nio.charset.StandardCharsets.UTF_8) : null;
+    }
+
+    JsonObject object(long id) {
+        for (JsonObject o : objects) {
+            if (o.getId() == id) return o;
+        }
+        return null;
     }
 
     static JsonNode json(WebEdit.Reply reply) throws Exception {
@@ -250,5 +281,43 @@ class FakeEditStore implements WebEdit.Store {
     @Override
     public List<Long> dependents(JsonObject row) {
         return dependents;
+    }
+
+    @Override
+    public String userName() {
+        return userName;
+    }
+
+    @Override
+    public byte[] file(long id, String attribute, JsonSample sample) {
+        if (sample == null) return null;
+        return files.get(id + "/" + attribute + "/" + ResourceWebNotes.millis(sample.getTs()));
+    }
+
+    @Override
+    public int writeFile(long id, String attribute, DateTime timestamp, String fileName, byte[] content) throws java.io.IOException {
+        if (failFileWrites) throw new java.io.IOException("disk full");
+        files.put(id + "/" + attribute + "/" + timestamp.getMillis(), content);
+        return write(id, attribute, JEVisConstants.PrimitiveType.FILE,
+                new ArrayList<>(Collections.singletonList(WebEdit.sample(timestamp, fileName, null))));
+    }
+
+    @Override
+    public void deleteObject(JsonObject object) {
+        objects.removeIf(o -> o.getId() == object.getId());
+        deletedObjects.add(object.getId());
+        lookup = null;
+    }
+
+    @Override
+    public void recycle(JsonObject object) {
+        object.setDeleteTS("2026-11-12T10:30:15.000+01:00");
+        recycled.add(object.getId());
+        lookup = null;
+    }
+
+    @Override
+    public void waitUntil(DateTime time) {
+        waits.add(time);
     }
 }

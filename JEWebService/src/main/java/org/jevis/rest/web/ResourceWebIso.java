@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -54,7 +55,8 @@ import java.util.function.ToIntFunction;
 
 /**
  * Action plans, nonconformities and the legal register (ISO 50001 modules of the Control Center) for the web app,
- * view only, with the attachments of their items (see docs/WEB-API.md).
+ * with the attachments of their items (see docs/WEB-API.md); the answers carry what the user may change, the write
+ * endpoints are in {@link ResourceWebEditIso}.
  * <p>
  * A plan object holds the plan settings in attributes; its items keep their content as JSON in the file attribute
  * "Data" (read by {@code org.jevis.commons.iso}). Items belong to the nearest plan above them. Only plans and items
@@ -98,19 +100,23 @@ public class ResourceWebIso {
     @GET
     @Path("actionplans")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response actionPlans(@Context HttpHeaders httpHeaders) {
+    public Response actionPlans(@Context HttpHeaders httpHeaders, @QueryParam("lang") String lang) {
         SQLDataSource ds = null;
         try {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
-            Source source = new Source(new LocalDataSource(ds), lookup);
+            Source source = new Source(new LocalDataSource(ds), lookup, ds);
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
             LocalDate today = LocalDate.now();
             DateTimeZone zone = DateTimeZone.getDefault();
             List<Map<String, Object>> plans = new ArrayList<>();
+            String language = ResourceWebEditIso.statusLanguage(lang, httpHeaders);
             for (JsonObject plan : plans(lookup, ActionItem.PLAN_CLASS_NAME)) {
-                plans.add(actionPlanJson(plan, name -> source.text(plan.getId(), name),
-                        itemsOf(plan, ActionItem.CLASS_NAME, lookup), source::data, source::unit,
-                        source::attachmentCount, lookup, today, zone));
+                plans.add(ResourceWebEditIso.addDefaultStatuses(language, ResourceWebEditIso.addEditInfo(ResourceWebEditIso.Kind.ACTIONS,
+                        actionPlanJson(plan, name -> source.text(plan.getId(), name),
+                                itemsOf(plan, ActionItem.CLASS_NAME, lookup), source::data, source::unit,
+                                source::attachmentCount, lookup, today, zone),
+                        plan, lookup, rights, source::latestData)));
             }
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("today", today.toString());
@@ -134,13 +140,16 @@ public class ResourceWebIso {
         try {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
-            Source source = new Source(new LocalDataSource(ds), lookup);
+            Source source = new Source(new LocalDataSource(ds), lookup, ds);
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
             DateTime now = DateTime.now();
             List<Map<String, Object>> plans = new ArrayList<>();
             for (JsonObject plan : plans(lookup, NonconformityItem.PLAN_CLASS_NAME)) {
-                plans.add(nonconformityPlanJson(plan, name -> source.text(plan.getId(), name),
-                        itemsOf(plan, NonconformityItem.CLASS_NAME, lookup), source::data, source::attachmentCount,
-                        lookup, now));
+                plans.add(ResourceWebEditIso.addEditInfo(ResourceWebEditIso.Kind.NONCONFORMITIES,
+                        nonconformityPlanJson(plan, name -> source.text(plan.getId(), name),
+                                itemsOf(plan, NonconformityItem.CLASS_NAME, lookup), source::data,
+                                source::attachmentCount, lookup, now),
+                        plan, lookup, rights, source::latestData));
             }
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("plans", plans);
@@ -163,11 +172,15 @@ public class ResourceWebIso {
         try {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
-            Source source = new Source(new LocalDataSource(ds), lookup);
+            Source source = new Source(new LocalDataSource(ds), lookup, ds);
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
             List<Map<String, Object>> plans = new ArrayList<>();
             for (JsonObject plan : plans(lookup, Obligation.PLAN_CLASS_NAME)) {
-                plans.add(legalPlanJson(plan, name -> source.text(plan.getId(), name),
-                        itemsOf(plan, Obligation.CLASS_NAME, lookup), source::data, source::attachmentCount, lookup));
+                plans.add(ResourceWebEditIso.addEditInfo(ResourceWebEditIso.Kind.OBLIGATIONS,
+                        legalPlanJson(plan, name -> source.text(plan.getId(), name),
+                                itemsOf(plan, Obligation.CLASS_NAME, lookup), source::data, source::attachmentCount,
+                                lookup),
+                        plan, lookup, rights, source::latestData));
             }
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("plans", plans);
@@ -192,6 +205,7 @@ public class ResourceWebIso {
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
             JsonObject item = item(lookup, id);
             if (item == null) return notFound("Object not found");
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
             List<Map<String, Object>> files = new ArrayList<>();
             for (JsonObject file : attachmentsOf(item.getId(), lookup, fileClasses())) {
                 JsonSample sample = null;
@@ -200,7 +214,9 @@ public class ResourceWebIso {
                 } catch (Exception e) {
                     logger.warn("Could not read the file sample of {}", file.getId(), e);
                 }
-                files.add(attachmentJson(file, sample, fileSize(file.getId(), sample)));
+                Map<String, Object> json = attachmentJson(file, sample, fileSize(file.getId(), sample));
+                json.put("canDelete", rights.canDelete(file));
+                files.add(json);
             }
             files.sort(Comparator.comparing(f -> String.valueOf(f.get("name")).toLowerCase(Locale.ROOT)));
             return json(files);
@@ -494,7 +510,7 @@ public class ResourceWebIso {
     /**
      * @param sample latest sample of the attribute "File" (its value is the file name), may be null
      * @param size   size in bytes or null
-     * @return {@code id, name, size, date}
+     * @return {@code id, name, size, date} (the attachments answer adds {@code canDelete})
      */
     static Map<String, Object> attachmentJson(JsonObject file, JsonSample sample, Long size) {
         Map<String, Object> json = new LinkedHashMap<>();
@@ -620,11 +636,25 @@ public class ResourceWebIso {
     private static final class Source {
         private final LocalDataSource local;
         private final ResourceWebModules.Lookup lookup;
+        private final SQLDataSource ds;
         private Set<String> fileClasses;
 
-        Source(LocalDataSource local, ResourceWebModules.Lookup lookup) {
+        Source(LocalDataSource local, ResourceWebModules.Lookup lookup, SQLDataSource ds) {
             this.local = local;
             this.lookup = lookup;
+            this.ds = ds;
+        }
+
+        /**
+         * @return the latest sample of "Data" (for the version), null if none or not readable
+         */
+        JsonSample latestData(long id) {
+            try {
+                return ds.getLastSample(id, IsoJson.ATTRIBUTE_DATA);
+            } catch (Exception e) {
+                logger.warn("Could not read the data sample of {}", id, e);
+                return null;
+            }
         }
 
         private JEVisSample latest(long id, String attributeName) {

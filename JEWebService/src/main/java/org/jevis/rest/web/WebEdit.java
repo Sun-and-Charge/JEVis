@@ -25,21 +25,28 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jevis.api.JEVisConstants;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.datetime.WorkDays;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.commons.ws.json.JsonFactory;
 import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.json.JsonSample;
+import org.jevis.commons.ws.sql.CachedAccessControl;
 import org.jevis.commons.ws.sql.Config;
+import org.jevis.commons.ws.sql.JEVisUserSQL;
 import org.jevis.commons.ws.sql.SQLDataSource;
 import org.jevis.commons.ws.sql.UserRightManagerForWS;
 import org.jevis.commons.ws.sql.local.LocalDataSource;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.ISODateTimeFormat;
 
 import javax.security.sasl.AuthenticationException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -285,6 +292,41 @@ final class WebEdit {
          * below and the outputs of calculations using them), as far as the user may read them.
          */
         List<Long> dependents(JsonObject row) throws Exception;
+
+        /**
+         * @return first and last name of the logged-in user, the account name if both are empty
+         */
+        String userName();
+
+        /**
+         * @param sample a sample of the FILE attribute (its value is the file name)
+         * @return the content of the stored file of the sample, null if there is none. Rights are not checked: the
+         * caller checks them (or only uses the content internally, e.g. for the next number).
+         */
+        byte[] file(long id, String attribute, JsonSample sample) throws Exception;
+
+        /**
+         * Stores the file ({@code <file dir>/<id>/<attribute>/<UTC yyyyMMddHHmmss>_<name>}) and then its FILE sample at
+         * the time stamp (second precision, so one save per second and attribute).
+         *
+         * @return number of changed rows
+         */
+        int writeFile(long id, String attribute, DateTime timestamp, String fileName, byte[] content) throws Exception;
+
+        /**
+         * Removes an object created in the same request for good (rollback after a failure).
+         */
+        void deleteObject(JsonObject object) throws Exception;
+
+        /**
+         * Moves the object to the recycle bin ({@code ResourceObject.deleteObject} without {@code deleteForever}).
+         */
+        void recycle(JsonObject object) throws Exception;
+
+        /**
+         * Waits until the time is reached (two saves in the same second would overwrite each other's file sample).
+         */
+        void waitUntil(DateTime time) throws InterruptedException;
     }
 
     static Store sqlStore(SQLDataSource ds) {
@@ -387,7 +429,72 @@ final class WebEdit {
                 }
                 return ids;
             }
+
+            @Override
+            public String userName() {
+                JEVisUserSQL user = ds.getCurrentUser();
+                String name = ((user.getFirstName() != null ? user.getFirstName() : "") + " "
+                        + (user.getLastName() != null ? user.getLastName() : "")).trim();
+                return name.isEmpty() ? user.getAccountName() : name;
+            }
+
+            @Override
+            public byte[] file(long id, String attribute, JsonSample sample) throws Exception {
+                if (sample == null || sample.getValue() == null || sample.getTs() == null) return null;
+                File file = storedFile(id, attribute, JsonFactory.sampleDTF.parseDateTime(sample.getTs()), sample.getValue());
+                return file.isFile() ? Files.readAllBytes(file.toPath()) : null;
+            }
+
+            @Override
+            public int writeFile(long id, String attribute, DateTime timestamp, String fileName, byte[] content)
+                    throws Exception {
+                File file = storedFile(id, attribute, timestamp, fileName);
+                if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                    throw new IOException("Could not create directory " + file.getParentFile());
+                }
+                /* the sample only after the file, otherwise it would point to a missing file */
+                Files.write(file.toPath(), content);
+                return ds.setSamples(id, attribute, JEVisConstants.PrimitiveType.FILE,
+                        new ArrayList<>(Collections.singletonList(sample(timestamp, fileName, null))));
+            }
+
+            @Override
+            public void deleteObject(JsonObject object) throws Exception {
+                ds.deleteObject(object);
+            }
+
+            @Override
+            public void recycle(JsonObject object) throws Exception {
+                ds.markAsDeletedObject(object);
+                try {
+                    CachedAccessControl.getInstance(ds, true).invalidate();
+                } catch (Exception e) {
+                    logger.error("Could not invalidate the access control", e);
+                }
+            }
+
+            @Override
+            public void waitUntil(DateTime time) throws InterruptedException {
+                long wait = time.getMillis() - System.currentTimeMillis();
+                if (wait > 0) Thread.sleep(wait);
+            }
         };
+    }
+
+    /**
+     * The stored file of a FILE sample: {@code <file dir>/<id>/<attribute>/<UTC yyyyMMddHHmmss>_<name>}
+     * ({@code SQLDataSource.getFile}).
+     *
+     * @throws IOException if the name contains path parts
+     */
+    static File storedFile(long id, String attribute, DateTime timestamp, String fileName) throws IOException {
+        if (fileName.isEmpty() || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")
+                || attribute.contains("..") || attribute.contains("/") || attribute.contains("\\")) {
+            throw new IOException("Invalid file name");
+        }
+        return new File(Config.getFileDir().getAbsolutePath() + File.separator + id + File.separator + attribute
+                + File.separator + DateTimeFormat.forPattern("yyyyMMddHHmmss").withZoneUTC().print(timestamp)
+                + "_" + fileName);
     }
 
     // ---------------------------------------------------------------- answers
