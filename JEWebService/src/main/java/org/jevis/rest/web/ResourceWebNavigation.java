@@ -114,7 +114,12 @@ public class ResourceWebNavigation {
         for (JsonObject object : readable) readableIds.add(object.getId());
 
         Map<Long, Map<String, Object>> sites = new LinkedHashMap<>();
-        List<JsonObject> sorted = new ArrayList<>(readable);
+        /* objects in the recycle bin (e.g. analyses deleted in the web) are not listed; they lost their parent link and
+         * would otherwise appear under "other" */
+        List<JsonObject> sorted = new ArrayList<>();
+        for (JsonObject object : readable) {
+            if (!ResourceWebIso.isDeleted(object)) sorted.add(object);
+        }
         sorted.sort(Comparator.comparing(o -> o.getName() == null ? "" : o.getName().toLowerCase(Locale.ROOT)));
         for (JsonObject object : sorted) {
             if (isSite(object)) {
