@@ -142,6 +142,39 @@ public class DashboardReaderTest {
     }
 
     @Test
+    public void convertsTheLegacyDataHandlerToTheCurrentFormat() throws Exception {
+        JsonNode handler = json("{'type':'SimpleDataHandler','forcedInterval':'LASTVALUE','data':[{'objectID':3001,"
+                + "'cleanObjectID':3002,'attribute':'Value','unit':'kWh','name':'Row C','aggregationPeriod':'DAILY',"
+                + "'manipulationMode':'NONE','enpi':true,'color':{'red':1.0,'green':0.0,'blue':0.0,'opacity':1.0}},"
+                + "{'objectID':3003,'name':'Row D','color':'0x00538aff'}]}");
+        com.fasterxml.jackson.databind.node.ObjectNode converted = new DashboardReader().convertLegacyDataHandler(handler, null);
+        assertEquals("AnalysisHandler", converted.get("type").asText());
+        assertEquals("LASTVALUE", converted.get("forcedInterval").asText());
+        JsonNode rows = converted.get("chartModels").get(0).get("chartData");
+        assertEquals(2, rows.size());
+        JsonNode row = rows.get(0);
+        assertEquals(3002L, row.get("id").asLong());
+        assertEquals("Value", row.get("attributeString").asText());
+        assertEquals("0xff0000ff", row.get("color").asText());
+        assertEquals("DAILY", row.get("aggregationPeriod").asText());
+        assertEquals("NONE", row.get("manipulationMode").asText());
+        assertTrue(row.get("calculation").asBoolean());
+        assertEquals("kWh", row.get("unitLabel").asText());
+        assertEquals("0x00538aff", rows.get(1).get("color").asText());
+        assertFalse(rows.get(1).has("unitLabel"));
+
+        /* read back like the Control Center's next load: the same rows as the legacy handler */
+        WidgetDefinition fromConverted = new DashboardReader().readWidget(json("{'uuid':4,'WidgetType':'Gauge'}"), null);
+        assertTrue(fromConverted.getRows().isEmpty());
+        com.fasterxml.jackson.databind.node.ObjectNode widget = MAPPER.createObjectNode();
+        widget.put("uuid", 4).put("WidgetType", "Gauge").set("dataHandler", converted);
+        RowDefinition read = new DashboardReader().readWidget(widget, null).getRows().get(0);
+        assertEquals("#ff0000", read.getColor());
+        assertEquals(AggregationPeriod.DAILY, read.getAggregation());
+        assertEquals("kWh", read.getUnitDisplay());
+    }
+
+    @Test
     public void typeSpecificConfigurations() throws Exception {
         DashboardReader reader = new DashboardReader();
         WidgetDefinition timeFrame = reader.readWidget(json("{'uuid':5,'WidgetType':'Time Frame','Time Frame':{'format':'dd.MM.yyyy',"

@@ -45,7 +45,8 @@ import java.util.*;
 
 /**
  * Dashboards for the web app (see docs/WEB-API.md): the configuration of a dashboard, the values of its widgets for a
- * time frame, its background image and the images of Image widgets. View only.
+ * time frame, its background image and the images of Image widgets. Editing (stage E4) is in
+ * {@link ResourceWebEditDashboard}.
  * <p>
  * The dashboard is read and evaluated by the headless core {@code org.jevis.commons.dashboard} on a read-only
  * {@link LocalDataSource} with the rights of the logged-in user. Dashboards and objects the user may not read answer
@@ -62,24 +63,9 @@ public class ResourceWebDashboard {
     @Path("dashboards/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response config(@Context HttpHeaders httpHeaders, @PathParam("id") long id) {
-        SQLDataSource sql = null;
-        try {
-            sql = new SQLDataSource(httpHeaders::getRequestHeader);
-            LocalDataSource ds = new LocalDataSource(sql);
-            JEVisObject dashboard = findDashboard(ds, id);
-            if (dashboard == null) return notFound("Dashboard not found");
-            DashboardDefinition definition = new DashboardReader().read(dashboard);
-            List<DashboardTimeFrames.Option> options = new DashboardTimeFrames(ds, DateTimeZone.getDefault(),
-                    null, null).options();
-            return json(configJson(dashboard.getID(), dashboard.getName(), dashboard.getLocalNameList(), definition, options));
-        } catch (AuthenticationException ex) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
-        } catch (Exception ex) {
-            logger.error("Could not read dashboard {}", id, ex);
-            return Response.serverError().build();
-        } finally {
-            Config.CloseDS(sql);
-        }
+        /* with what the editor needs (stage E4): version, rights, directory, canEnter per widget */
+        return WebEdit.runSql(httpHeaders, "read dashboard " + id,
+                (sql, store) -> ResourceWebEditDashboard.config(store, ResourceWebEditDashboard.sqlEngine(sql), id));
     }
 
     @POST

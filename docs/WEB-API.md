@@ -1383,3 +1383,158 @@ is the row); `400` if there is none. Unit fields must be one of `GET /web/rows/{
 - "Neue Analyse" in the navigation (when any directory has `canCreate`): name + directory, opens the new analysis in
   edit mode. After create/rename/delete the navigation reloads.
 - Leaving edit mode or the page with unsaved changes asks first. Conflicts (`409`) offer reload or "Speichern unter".
+
+## Editing, stage E4: dashboards
+
+Create, change, copy and delete dashboards with everything the Control Center's dashboard editor edits (layout,
+dashboard settings, common widget settings, data rows, the settings of all 23 widget types) and use the input
+widgets. The common rules of E1 apply (server-side rights per write, `logUserAction` with `web:<action>`, `version`
+required on changes → `409` with the current state, `400 version missing`, plain-text `400`/`403`; validation
+`400` as JSON `{ "messages": [...] }` with all problems, as in E2/E3).
+
+**Source editing.** The web editor works on the dashboard JSON **as the Control Center stores it** ("source"), not
+on the normalised view format of W3 (the W3 reader drops keys). The server checks the source, stores it and turns
+it into the W3 view format for the preview. So every key of every widget survives a web save, and what the web
+writes is what the CC reads. Format (CC `ConfigManager.toJson`, `Widget.createDefaultNode`, the widgets' `toNode`):
+
+- top level: `version` ("1.2"), `"Dash Board Color"`, `backgroundMode` (`default|repeat|stretch`), `"Snap to Grid"`,
+  `"Show Grid"`, `"X Axis Grid Interval"`, `"Y Axis Grid Interval"`, `"Update Rate"`, `"Zoom Factor"` (number or
+  97/98/99), `width`, `height`, `"Data Period"` (`TimeFrameFactory` id or the id of a custom period), `"Widget"`
+  (array);
+- widget: `uuid` (int), `WidgetType`, `title`, `tooltip`, `"Background Color"`, `"Font Color"`, `fontSize`,
+  `fontWeight`, `fontPosture`, `fontUnderlined`, `"Title Position"`, `borderSize`, `borderColor`, `cornerRadius`,
+  `shadow`, `layer`, `xPos`, `yPos`, `width`, `height`, `decimals`, `decimalsAuto`, `showValue`, `fixedTimeframe`,
+  `forcedTimeFrame`, `dataHandler` (analysis JSON as `AnalysisHandler.toJsonNode(model, true)`, i.e. rows **with**
+  `aggregationPeriod`/`manipulationMode`; `forcedInterval` = the widget's own time frame), plus the type block
+  (`limit`, `percent`, `dimIncompletePeriod`, `gaugeDesign`, `linearGaugeDesign`, `BatteryDesign`, `shapeDesign`,
+  `NetGraph`, `Sankey`, `"Time Frame"`, `minMax`, `arrow`, `image`, `analysisLinker`, `dashboardLinker`,
+  `reportLinker`, `alarmCount`);
+- colours as JavaFX `0xRRGGBBAA`; the server also accepts `#rrggbb`/`#rrggbbaa` and stores `0xRRGGBBAA`.
+- Widget types (exact spelling, the 23 registered in `Widgets.java`): `Chart`, `Pie`, `Table`, `Value`,
+  `String Value`, `Value Editor`, `Toggle Switch`, `Slider`, `PlusMinus`, `Gauge`, `LinearGauge`, `Battery`,
+  `Shape`, `NetGraph`, `Sankey`, `Time Frame`, `Title`, `Arrow`, `Image`, `Analyse-Link`, `Dashboard-Link`,
+  `Report-Link`, `Alarm Count` (check the ids against `Widgets.java`/the widgets' `WIDGET_ID`). Others → `400`
+  (the CC drops unknown types on its next save).
+
+**Storage (as `ConfigManager.saveDashboard`):** a new file sample at now in the attribute "Data Model File" of the
+"Dashboard Analysis" object, named `<name with only A–Z a–z 0–9>_<yyyyMMddHHmm>.json`, pretty printed UTF-8. If two
+saves fall into the same second, the second waits until the next second. Legacy widgets with a `SimpleDataHandler`
+are delivered by `/source` converted to the `AnalysisHandler` format (as the W3 reader does; the CC reads both and
+writes the new one on its own next save).
+
+**Rights (as the CC's `SaveUnderDialog` / toolbar):** create = create right for "Dashboard Analysis" below a
+"Dashboard Directory"; change and rename = write right on the dashboard; delete = delete right. Names unique within
+the directory (`409 { "nameTaken": true, "id": … }`, overwrite offered by the web app = `PUT` on that dashboard).
+**Delete moves the dashboard to the recycle bin** — in the web and, from E4 on, also in the Control Center
+(`DashboardControl` delete → the CC's recycle-bin delete as used for files/objects elsewhere in the CC).
+
+### Validation of a source (save, create, copy, preview)
+
+- JSON object with the top-level keys above (missing ones get the values `ConfigManager.loadDashboard` falls back
+  to: `version` "1.2", colour `0xf4f4f4ff`, mode `default`, `Snap to Grid`/`Show Grid` false, grid 25, update rate
+  900, zoom 1.0, 1863×886, `Data Period` `P1D`, no widgets);
+  `width`/`height` 100–20000; zoom > 0 and ≤ 20 or 97/98/99; grid intervals 1–1000; update rate 1–86400;
+  `"Data Period"` a `TimeFrameFactory` id (`TimeFrameFactory.getAll`: the standard ids without `CUSTOM`, plus
+  `LASTVALUE`) or a custom period the user may read; an unchanged stored value is always accepted.
+- Widgets (at most 1000): known type; `uuid` int ≥ 0 and unique (missing or 0: the next free one is assigned); `xPos`/`yPos` finite, `width`/`height` 10–20000; `layer` int;
+  colours valid; `fontSize` 1–400; `decimals` 0–20; references to other widgets (`limit.source`, `percent.source`,
+  `"Time Frame".selectedWidget.id`) are uuids of the same dashboard or empty.
+- Data rows (`dataHandler.chartModels[].chartData[]`): object readable by the user and of a selectable class (as
+  E3) with the attribute existing; enums (`chartType`, `aggregationPeriod`, `manipulationMode`, `bubbleType`) valid.
+  **Rows, link targets, alarm objects and image objects the user may not read are accepted only if the same widget
+  (`uuid`) of the stored source already has them** (so saving does not drop them and the web cannot add them).
+- Link targets (`analysisLinker.graphAnalysisObject`, `dashboardLinker.dashboardObject`, `reportLinker.reportObject`,
+  `image.objectID`, `alarmCount.alarmObject`): objects of the right class (Analysis / Dashboard Analysis / Report /
+  File / any object for alarms) the user may read (or unchanged, see above).
+
+### Endpoints
+
+- `GET /web/dashboards/{id}` (W3) additionally: `version` (timestamp of the latest "Data Model File" sample, ISO,
+  `"none"` if never saved), `canWrite`, `canDelete`, `directoryId` (parent "Dashboard Directory" or `null`), per
+  widget `canEnter` (input widgets: write right on the row's object, as E1 manual values; else `false`).
+- `GET /web/dashboards/{id}/source` → `{ "version", "source": {…} }` (read right). A dashboard without file gets the
+  CC's empty dashboard.
+- `POST /web/dashboards/preview` with `{ "source", "id"?, "directoryId"?, …the W3 data request… }` →
+  `{ "dashboard": <W3 GET format of the unsaved source>, "data": <W3 data answer> }`. Same validation (`400`); `id`
+  allows the stored unreadable items of that dashboard and gives the building's workday; `directoryId` the workday
+  for new dashboards. Image/background URLs of the GET format refer to `id`.
+- `POST /web/dashboards?lang=de` with `{ "directoryId", "name", "source" }` → `201` GET format (+ `version`). A
+  failure after creating the object deletes it again. Name: trimmed, 1–100 characters, no control characters.
+- `PUT /web/dashboards/{id}?lang=de` with `{ "version", "source"?, "name"? }` → GET format. Only `name`: rename
+  without a new file (version unchanged).
+- `POST /web/dashboards/{id}/copy?lang=de` with `{ "directoryId", "name", "source"? }` → `201` ("Speichern unter"):
+  read right on the source dashboard, create right in the target; copies the latest "Background" sample (as the CC
+  does); image widgets keep referencing their File objects.
+- `DELETE /web/dashboards/{id}?version=…` → `204`, recycle bin, delete right.
+- `GET /web/dashboards/directories` → `[{ "id", "name", "path", "canCreate" }]` (as E3, class "Dashboard Directory").
+- `PUT /web/dashboards/{id}/background` (multipart `file`, PNG/JPEG/GIF/BMP/WebP/SVG recognised by content, max
+  10 MB) → `204`; writes a new "Background" sample (write right on the dashboard). `413`/`400` as E2.
+- `POST /web/dashboards/{id}/images` (multipart `file`, image types as above, max 10 MB) → `201 { "objectId", "name" }`:
+  creates a "File" child of the dashboard (create right) for an Image widget, as `ImageConfig` does. The dashboard
+  must exist (a new dashboard is created first).
+- `POST /web/dashboards/{id}/widgets/{uuid}/value` with `{ "value": number|string|boolean, "rowKey"? }` → the
+  widget's data answer for that widget: input widgets (`Value Editor`, `Toggle Switch`, `Slider`, `PlusMinus`) write
+  the value **as the CC widget does** (check `ValueEditWidget`, `ToggleSwitchWidget`, `SliderWidget`,
+  `PlusMinusWidget`: timestamp, attribute, value type, PlusMinus = latest value ± increment computed on the server)
+  into the widget's row; write right on that object (`403` otherwise); `400` for a widget that is no input widget or
+  a value of the wrong type; Slider within `minMax`. Logged as `web:dashboard-value`.
+- Logged actions: `web:dashboard-create`, `web:dashboard-save`, `web:dashboard-copy`, `web:dashboard-delete`,
+  `web:dashboard-background`, `web:dashboard-image`, `web:dashboard-value`.
+
+**Details settled in the implementation**
+
+- Empty dashboard (`/source` of a dashboard without file, `POST` without `source`): as the CC's new dashboard,
+  1853×876, colour `0xf4f4f4ff`, grid 25, zoom 1.0, `Data Period` `P1D`, update rate 900 (the CC's `DashboardPojo`
+  starts with 10 s; 900 is the reader default and spares the server).
+- `/source` normalises like the CC reader: widgets without uuid get the next free one (same order as W3, so the
+  W3 keys match), legacy `SimpleDataHandler` widgets are converted (`DashboardReader.convertLegacyDataHandler`: one
+  chart model, rows with aggregation/manipulation, unit, colour `0xrrggbbff`, `forcedInterval`).
+- Further checks: `fontWeight` (`FontWeight` names), `fontPosture` (`REGULAR`/`ITALIC`), `"Title Position"` (`Pos`
+  names or legacy `left`/`right`/`center`) — unchanged stored values are accepted; `borderSize` 0–100,
+  `cornerRadius` 0–10000, texts ≤ 10000 characters, booleans, `dataHandler.type` must be `AnalysisHandler` (a
+  legacy handler sent is converted), `dataHandler.forcedInterval` empty or a known time frame, row `axis` 0/1,
+  `decimalDigits` −1–20. Unknown keys are kept everywhere; nothing else is normalised except colours
+  (`#rrggbb`/`#rrggbbaa`/`0xrrggbb` → `0xrrggbbaa`, unchanged stored spellings kept).
+- An unreadable stored row sent back is stored **as stored** (its settings cannot be changed by the web, as E3).
+- `calculation: true` without `calculationId` sets it (as E3, `400` if the row is not calculated); `calculation:
+  false` sets `calculationId` −1.
+- File name from the object name (as the CC, not the local name); `?lang=` is only used for the note of the Value
+  Editor. Copy writes the original's latest background at now (file name kept).
+- Order of checks for `PUT`: `404`, `403`, `400 version missing`, validation `400`, `409` version, `409 nameTaken`.
+- Uploads: `400` without file or if it is no image (by content), `413` above 10 MB. The image object is named like
+  the file without extension (`ImageConfig`), answer `name` = object name.
+- `…/value` (order: `404` dashboard, `404` widget, `400` no input widget / no row / `rowKey` not the first row,
+  `400` missing value, `404` row not readable, `403`, `400` wrong value): the input widgets use their **first** row.
+  `Toggle Switch`: `true`/`false` → Double `1`/`0`; `Slider`: number, rounded to the widget's `decimals` (HALF_UP),
+  within `minMax.minimum`–`maximum` (default 0–0 as `MinMaxPojo`); `PlusMinus`: `"plus"`/`"minus"`, latest value of
+  the row's attribute (none: 0) ± `minMax.Increment` (default 0.1, at most 10), kept within 0–100 (the TilesFX tile's
+  default range, as the CC) and rounded. These three write a Double sample at now to `Value` of the row's object
+  without note (`JEVisAttribute.buildSample(new DateTime(), value)`), no dependent reset. `Value Editor`: the CC opens
+  the manual entry dialog, so it is the E1 manual entry (`POST /web/rows/{id}/values` rules: raw `Data`/`Base Data`
+  only, note, plausibility `409` with warnings, `confirm`, dependents reset); optional `timestamp` (default now) and
+  `confirm`. `canEnter` of a Value Editor = E1 `canEnter`. Optional `timeZone`. Answer `200` with the widget's data.
+- Control Center (from E4): deleting a dashboard moves it to the recycle bin (`deleteObject(id, false)`, error dialog
+  if the server refuses); a save without dashboard object reports an error instead of being skipped; a dashboard
+  whose time frame was cleared is saved with `P1D`.
+
+### Web app
+
+- Dashboard view: "Bearbeiten" (with `canWrite`; with only a directory with `canCreate`: "Speichern unter" only)
+  loads `/source` and switches to edit mode; the canvas renders the draft via `preview` (debounced; moving and
+  resizing are shown immediately from the source, the preview follows).
+- **Canvas:** select by click, add/remove by Ctrl/Shift+click, rubber band; move by dragging, resize by 8 handles;
+  snapping to the dashboard's grid interval (Shift: a quarter of it); arrow keys move the selection by one grid step
+  (with Shift by 1 px); Entf deletes; Strg+D duplicates (new uuid = max + 1, title + " #2", offset by one grid
+  step); layer up/down; undo/redo of the whole source (Strg+Z, Strg+Y / Strg+Umschalt+Z, 30 steps, as the CC);
+  "Widget hinzufügen" with all 23 types (CC defaults per type, placed in the visible area).
+- **Side panel** with three tabs: **Dashboard** (name, width/height, background colour, mode, image upload, time
+  frame, zoom, update rate, grid interval), **Widget** (for one or several selected widgets: title, tooltip,
+  colours, font, title position, border, corner radius, shadow, decimals/auto, show value, position/size, layer, own
+  time frame), **Daten/Typ** (data rows via the E3 picker incl. aggregation/manipulation, name, colour, unit,
+  decimals, calculation; chart settings for `Chart`; the type settings of the selected widget's type).
+- Buttons "Speichern", "Speichern unter", "Verwerfen", "Löschen"; "Neues Dashboard" in the navigation (name +
+  directory, opens the new dashboard in edit mode — **wait until the loaded dashboard is the new one before starting
+  edit mode**, the bug fixed for analyses in E3); unsaved-changes guard; `409` → reload or "Speichern unter".
+- **Input widgets** in the normal view (not edit mode): with `canEnter` they can be used (enter a value, toggle,
+  slide, plus/minus) and write via `…/value`; without, read-only as before.
+- Phone width: editing is offered from tablet width on (≥ 900 px); below, the dashboard stays view-only with a hint.

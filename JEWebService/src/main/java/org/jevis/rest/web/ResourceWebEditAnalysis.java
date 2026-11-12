@@ -577,8 +577,16 @@ public class ResourceWebEditAnalysis {
      * this second; the samples have second precision)
      */
     static DateTime saveTime(WebEdit.Store store, long id, DateTime now) throws Exception {
+        return saveTime(store, id, ATTRIBUTE_FILE, now);
+    }
+
+    /**
+     * @return now to the second, after the latest sample of the attribute (waits for the next second if there already
+     * is one in this second; the samples have second precision)
+     */
+    static DateTime saveTime(WebEdit.Store store, long id, String attribute, DateTime now) throws Exception {
         DateTime time = now.withMillisOfSecond(0);
-        JsonSample latest = store.latest(id, ATTRIBUTE_FILE);
+        JsonSample latest = store.latest(id, attribute);
         Long last = latest != null ? ResourceWebNotes.millis(latest.getTs()) : null;
         if (last != null && last >= time.getMillis()) {
             time = new DateTime(last, now.getZone()).withMillisOfSecond(0).plusSeconds(1);
@@ -1472,16 +1480,25 @@ public class ResourceWebEditAnalysis {
      * {@code GET /web/analyses/directories}: the readable "Analyses Directory" objects
      */
     static WebEdit.Reply directories(WebEdit.Store store, String language) throws Exception {
+        return directories(store, language, CLASS_DIRECTORY, CLASS_ANALYSIS);
+    }
+
+    /**
+     * @return the readable directories of the class outside the recycle bin with path and the create right for the
+     * item class, sorted by path
+     */
+    static WebEdit.Reply directories(WebEdit.Store store, String language, String directoryClass, String itemClass)
+            throws Exception {
         ResourceWebModules.Lookup lookup = store.lookup();
         WebEdit.Rights rights = store.rights();
         List<Map<String, Object>> result = new ArrayList<>();
-        for (JsonObject directory : lookup.readableOfClass(CLASS_DIRECTORY)) {
+        for (JsonObject directory : lookup.readableOfClass(directoryClass)) {
             if (ResourceWebIso.isDeleted(directory)) continue;
             Map<String, Object> json = new LinkedHashMap<>();
             json.put("id", directory.getId());
             json.put("name", localName(directory, language));
             json.put("path", path(lookup, directory, language));
-            json.put("canCreate", rights.canCreate(directory, CLASS_ANALYSIS));
+            json.put("canCreate", rights.canCreate(directory, itemClass));
             result.add(json);
         }
         AlphanumComparator ac = new AlphanumComparator();
