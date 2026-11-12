@@ -258,7 +258,20 @@ public class ResourceWebNotesTest {
         assertEquals(new DateTime(2026, 11, 1, 0, 0, ZONE).getMillis(), range[0].getMillis());
         assertEquals(new DateTime(2026, 11, 1, 0, 0, ZONE).getMillis(),
                 ResourceWebNotes.sampleRange("2026-11-01T00:00:00", "2026-11-02T00:00:00", ZONE)[0].getMillis());
-        for (String[] invalid : new String[][]{{"2026-11-01T00:00:00+01:00", "2026-12-02T00:00:01+01:00"},
+        /* October with the switch to winter time is 31 days and one hour long, also for a server time zone without
+           daylight saving time */
+        for (DateTimeZone zone : new DateTimeZone[]{ZONE, DateTimeZone.UTC}) {
+            DateTime[] october = ResourceWebNotes.sampleRange("2026-10-01T00:00:00+02:00", "2026-10-31T23:59:59.999+01:00", zone);
+            assertEquals(new DateTime(2026, 10, 31, 23, 59, 59, 999, ZONE).getMillis(), october[1].getMillis());
+            ResourceWebNotes.sampleRange("2026-10-01T00:00:00+02:00", "2026-11-01T00:00:00+01:00", zone);
+        }
+        try {
+            ResourceWebNotes.sampleRange("2026-10-01T00:00:00+02:00", "2026-11-01T00:00:01+01:00", DateTimeZone.UTC);
+            fail("31 days and one hour plus one second");
+        } catch (IllegalArgumentException expected) {
+            // 400
+        }
+        for (String[] invalid : new String[][]{{"2026-11-01T00:00:00+01:00", "2026-12-02T01:00:01+01:00"},
                 {"2026-11-02T00:00:00", "2026-11-01T00:00:00"}, {null, "2026-11-01T00:00:00"}, {"x", "y"}}) {
             try {
                 ResourceWebNotes.sampleRange(invalid[0], invalid[1], ZONE);

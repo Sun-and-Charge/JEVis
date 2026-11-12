@@ -222,14 +222,16 @@ public class ResourceWebNotes {
 
     /**
      * @param from ISO 8601 date-time (without offset: in the time zone)
-     * @param to   ISO 8601 date-time, at most {@link #MAX_SAMPLE_DAYS} days after {@code from}
+     * @param to   ISO 8601 date-time, at most {@link #MAX_SAMPLE_DAYS} days (plus one hour for the switch to winter
+     *             time) after {@code from}
      * @throws IllegalArgumentException if missing, invalid, {@code to} before {@code from} or too far apart
      */
     static DateTime[] sampleRange(String from, String to, DateTimeZone zone) {
         DateTime start = parseDateTime(from, zone, "from");
         DateTime end = parseDateTime(to, zone, "to");
         if (end.isBefore(start)) throw new IllegalArgumentException("to is before from");
-        if (end.isAfter(start.plusDays(MAX_SAMPLE_DAYS))) {
+        /* plus one hour: a month with the switch to winter time is one hour longer (dates with fixed offsets) */
+        if (end.isAfter(start.plusDays(MAX_SAMPLE_DAYS).plusHours(1))) {
             throw new IllegalArgumentException("At most " + MAX_SAMPLE_DAYS + " days");
         }
         return new DateTime[]{start, end};

@@ -139,6 +139,7 @@ public class ResourceWebModules {
         modules.putAll(ResourceWebNotes.moduleCounts(readable));
         modules.putAll(ResourceWebReports.moduleCounts(readable, classes));
         modules.putAll(ResourceWebContracts.moduleCounts(readable, classes));
+        modules.putAll(ResourceWebCosts.moduleCounts(readable, classes));
         return modules;
     }
 
