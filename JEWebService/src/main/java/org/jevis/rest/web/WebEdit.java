@@ -578,13 +578,27 @@ final class WebEdit {
     }
 
     /**
+     * One request that also needs the data source itself (e.g. the read-only {@code LocalDataSource} for evaluations).
+     */
+    interface SqlAction {
+        Reply apply(SQLDataSource ds, Store store) throws Exception;
+    }
+
+    /**
      * Runs the action on a new {@link SQLDataSource} with the user of the request and closes it.
      */
     static Response run(HttpHeaders headers, String what, Action action) {
+        return runSql(headers, what, (ds, store) -> action.apply(store));
+    }
+
+    /**
+     * Like {@link #run(HttpHeaders, String, Action)}, the action also gets the data source of the request.
+     */
+    static Response runSql(HttpHeaders headers, String what, SqlAction action) {
         SQLDataSource ds = null;
         try {
             ds = new SQLDataSource(headers::getRequestHeader);
-            return action.apply(sqlStore(ds)).toResponse();
+            return action.apply(ds, sqlStore(ds)).toResponse();
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
