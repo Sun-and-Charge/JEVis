@@ -1,12 +1,15 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only · Copyright (C) 2026 Sun and Charge Germany GmbH -->
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { loadLegal } from '../api/iso'
+import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
+import IsoItemDialog from '../components/iso/IsoItemDialog.vue'
 import IsoList from '../components/iso/IsoList.vue'
 import LegalDetails from '../components/iso/LegalDetails.vue'
 import { ALL } from '../iso/filter'
 import { DEFAULT_LEGAL_COLUMNS, DEFAULT_LEGAL_FILTER, filterLegal, LEGAL_COLUMNS, LEGAL_DATE_FIELDS, legalOptions, legalRows, type LegalFilter, type LegalRow } from '../iso/legal'
+import { useIsoEditing, type ListHandle } from '../iso/useIsoEditing'
 import { useLoader } from '../iso/useLoader'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
@@ -35,6 +38,26 @@ watch(
   },
 )
 
+const listRef = useTemplateRef<ListHandle>('list')
+const {
+  editing,
+  deleting,
+  deleteError,
+  deleteBusy,
+  deleteLabel,
+  message,
+  creatable,
+  writable,
+  openCreate,
+  openEdit,
+  onSaved,
+  onStale,
+  askDelete,
+  confirmDelete,
+  cancelDelete,
+  setAttachments,
+} = useIsoEditing('obligations', data, reload, () => filter.plan, () => listRef.value)
+
 const rowTitle = (r: LegalRow) => [r.item.nr != null ? String(r.item.nr) : '', r.item.title].filter(Boolean).join(' – ')
 const rowClass = (r: LegalRow) => (r.item.relevant === false ? 'is-done' : undefined)
 </script>
@@ -43,8 +66,10 @@ const rowClass = (r: LegalRow) => (r.item.relevant === false ? 'is-done' : undef
   <section class="iso" aria-labelledby="iso-title">
     <div class="mod-head">
       <h1 id="iso-title">{{ t('modules.legal') }}</h1>
+      <button v-if="creatable.length" type="button" class="btn btn-primary iso-new" @click="openCreate">{{ t('isoEdit.new') }}</button>
     </div>
-    <p class="muted read-only">{{ t('iso.readOnly') }}</p>
+    <p v-if="!writable" class="muted read-only">{{ t('iso.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result iso-result" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">{{ message.text }}</p>
 
     <p v-if="state === 'loading' && !data" class="muted" role="status">{{ t('iso.loading') }}</p>
     <div v-else-if="state === 'error'" class="alert alert-error" role="alert">
@@ -55,6 +80,7 @@ const rowClass = (r: LegalRow) => (r.item.relevant === false ? 'is-done' : undef
     <p v-if="data && !plans.length" class="muted">{{ t('iso.noPlans') }}</p>
     <IsoList
       v-else-if="data"
+      ref="list"
       v-model:plan="filter.plan"
       v-model:text="filter.text"
       v-model:date-field="filter.dateField"
@@ -97,8 +123,30 @@ const rowClass = (r: LegalRow) => (r.item.relevant === false ? 'is-done' : undef
         </div>
       </template>
       <template #detail="{ row }">
-        <LegalDetails :row="row" />
+        <LegalDetails :row="row" @edit="openEdit(row.plan, row.item)" @remove="askDelete(row.plan, row.item)" @attachments="setAttachments(row.plan.id, row.item, $event)" />
       </template>
     </IsoList>
+
+    <IsoItemDialog
+      v-if="editing"
+      kind="obligations"
+      :plan="editing.plan"
+      :plans="editing.plans"
+      :item="editing.item"
+      @close="editing = null"
+      @saved="onSaved"
+      @stale="onStale"
+    />
+    <ConfirmDialog
+      v-if="deleting"
+      :title="t('isoEdit.deleteTitle')"
+      :message="t('isoEdit.deleteQuestion', { title: deleteLabel })"
+      :confirm-label="t('isoEdit.delete')"
+      :busy="deleteBusy"
+      :error="deleteError"
+      danger
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </section>
 </template>

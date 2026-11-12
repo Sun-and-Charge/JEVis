@@ -7,11 +7,14 @@ import type { ActionRow } from '../../iso/actions'
 import { formatIsoDate, formatMoney, formatWithUnit, npvInputs, npvResults, yearTotals } from '../../iso/format'
 import IsoAttachments from './IsoAttachments.vue'
 import IsoCheckList from './IsoCheckList.vue'
+import IsoItemActions from './IsoItemActions.vue'
 
 const props = defineProps<{ row: ActionRow }>()
+const emit = defineEmits<{ edit: []; remove: []; attachments: [count: number] }>()
 const { t, locale } = useI18n()
 
 const a = computed(() => props.row.item)
+const label = computed(() => [a.value.number, a.value.title].filter(Boolean).join(' – '))
 const sid = (name: string) => `act-${a.value.id}-${name}`
 
 const general = computed(() =>
@@ -72,6 +75,7 @@ const none = computed(() => t('modules.none'))
 </script>
 
 <template>
+  <IsoItemActions :item="a" :label="label" @edit="emit('edit')" @remove="emit('remove')" />
   <div class="iso-sections">
     <section class="iso-section" :aria-labelledby="sid('general')">
       <h3 :id="sid('general')">{{ t('iso.section.general') }}</h3>
@@ -85,6 +89,7 @@ const none = computed(() => t('modules.none'))
 
     <section class="iso-section" :aria-labelledby="sid('details')">
       <h3 :id="sid('details')">{{ t('iso.section.details') }}</h3>
+      <p v-if="a.canWrite && measures.length" class="iso-calc-note">{{ t('isoEdit.calculatedShort') }}</p>
       <p v-if="!measures.length && !notes.length" class="muted">{{ none }}</p>
       <table v-for="m in measures" :key="m.key" class="iso-mini">
         <caption>{{ t('iso.actions.' + m.key) }}<template v-if="m.value.unit"> ({{ m.value.unit }})</template></caption>
@@ -123,6 +128,7 @@ const none = computed(() => t('modules.none'))
 
     <section class="iso-section" :aria-labelledby="sid('capital')">
       <h3 :id="sid('capital')">{{ t('iso.section.capital') }}</h3>
+      <p v-if="a.canWrite" class="iso-calc-note">{{ t('isoEdit.calculatedShort') }}</p>
       <p v-if="!inputs.length && !results.length && !years.length" class="muted">{{ none }}</p>
       <div class="iso-npv">
         <dl v-if="inputs.length" class="mod-dl">
@@ -179,7 +185,7 @@ const none = computed(() => t('modules.none'))
 
     <section class="iso-section" :aria-labelledby="sid('files')">
       <h3 :id="sid('files')">{{ t('iso.section.attachments') }}</h3>
-      <IsoAttachments :item-id="a.id" :count="a.attachments" />
+      <IsoAttachments :item-id="a.id" :count="a.attachments" :can-attach="!!a.canAttach" @changed="emit('attachments', $event)" />
     </section>
   </div>
 </template>

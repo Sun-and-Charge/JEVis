@@ -1,0 +1,139 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Editing of the ISO modules (E2): item form, item actions, attachment upload */
+
+.iso-edit-section {
+  margin: 0 0 0.75rem;
+}
+
+.iso-edit-section h3 {
+  margin: 0.5rem 0 0.6rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.25rem;
+}
+
+.iso-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 0.9rem;
+}
+
+.iso-edit-grid > .iso-edit-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 36rem) {
+  .iso-edit-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.iso-req {
+  color: var(--error);
+}
+
+.iso-req-hint,
+.iso-calculated {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.iso-field-error {
+  flex-basis: 100%;
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--error);
+}
+
+.edit-field [aria-invalid='true'] {
+  border-color: var(--error);
+}
+
+.edit-chip.is-stale {
+  border-style: dashed;
+}
+
+.iso-edit-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.35rem 0.9rem;
+  border: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+}
+
+.iso-edit-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.edit-field .iso-edit-check input {
+  width: auto;
+  margin-top: 0.2rem;
+}
+
+.iso-edit-bool {
+  align-self: end;
+}
+
+.iso-messages {
+  margin: 0 0 0.75rem;
+}
+
+.iso-edit-info {
+  margin: 0.5rem 0 0;
+}
+
+.iso-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.6rem;
+}
+
+.iso-calc-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.iso-upload {
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.iso-upload.is-over {
+  border-color: var(--blueberry);
+  background: rgb(26 42 69 / 5%);
+}
+
+.iso-upload input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.iso-upload input[type='file']:focus-visible + label {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.iso-upload .edit-hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.iso-file-delete {
+  margin-left: 0.4rem;
+}

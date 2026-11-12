@@ -62,16 +62,22 @@ export class HttpClient {
     return this.request<T>('DELETE', path)
   }
 
+  /** Multipart upload (attachments): the browser sets the Content-Type with the boundary; same token handling. */
+  postForm<T>(path: string, form: FormData): Promise<T> {
+    return this.request<T>('POST', path, form)
+  }
+
   async request<T>(method: string, path: string, body?: unknown, retry = true): Promise<T> {
     const headers: Record<string, string> = { Accept: 'application/json' }
     const token = this.hooks.accessToken()
     if (token) headers.Authorization = `Bearer ${token}`
-    if (body !== undefined) headers['Content-Type'] = 'application/json'
+    const form = typeof FormData !== 'undefined' && body instanceof FormData
+    if (body !== undefined && !form) headers['Content-Type'] = 'application/json'
 
     const response = await this.fetchFn(API + path, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body),
       credentials: 'omit',
       cache: 'no-store',
     })

@@ -80,7 +80,7 @@ describe('ISO views (mocked API)', () => {
       actionPlan(2, [action(10, { title: 'Pump control' })], { name: 'Second plan' }),
     ]
     const get = vi.fn(async (path: string) => {
-      if (path === '/web/actionplans') return { today: '2026-11-06', plans }
+      if (path.startsWith('/web/actionplans')) return { today: '2026-11-06', plans }
       if (path === '/web/objects/1/attachments') return [{ id: 77, name: 'offer.pdf', size: 2048, date: '2026-10-01T10:00:00' }]
       throw new Error(path)
     })
@@ -90,7 +90,7 @@ describe('ISO views (mocked API)', () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
 
     const wrapper = await mountWith(ActionPlansView, get, getBlob)
-    expect(get).toHaveBeenCalledWith('/web/actionplans')
+    expect(get).toHaveBeenCalledWith('/web/actionplans?lang=de')
 
     // overview of all plans: plan column first
     const heads = wrapper.findAll('table.iso-table thead th').map((th) => th.text().replace(/[▲▼]/g, ''))

@@ -5,11 +5,14 @@ import { useI18n } from 'vue-i18n'
 import { formatIsoDate } from '../../iso/format'
 import { relevanceState, safeLink, type LegalRow } from '../../iso/legal'
 import IsoAttachments from './IsoAttachments.vue'
+import IsoItemActions from './IsoItemActions.vue'
 
 const props = defineProps<{ row: LegalRow }>()
+const emit = defineEmits<{ edit: []; remove: []; attachments: [count: number] }>()
 const { t, locale } = useI18n()
 
 const o = computed(() => props.row.item)
+const label = computed(() => [o.value.nr != null ? String(o.value.nr) : '', o.value.title].filter(Boolean).join(' – '))
 const sid = (name: string) => `lg-${o.value.id}-${name}`
 const link = computed(() => safeLink(o.value.link))
 
@@ -29,6 +32,7 @@ const general = computed(() =>
 </script>
 
 <template>
+  <IsoItemActions :item="o" :label="label" @edit="emit('edit')" @remove="emit('remove')" />
   <div class="iso-sections">
     <section class="iso-section" :aria-labelledby="sid('general')">
       <h3 :id="sid('general')">{{ t('iso.section.general') }}</h3>
@@ -49,7 +53,7 @@ const general = computed(() =>
 
     <section class="iso-section" :aria-labelledby="sid('files')">
       <h3 :id="sid('files')">{{ t('iso.section.attachments') }}</h3>
-      <IsoAttachments :item-id="o.id" :count="o.attachments" />
+      <IsoAttachments :item-id="o.id" :count="o.attachments" :can-attach="!!o.canAttach" @changed="emit('attachments', $event)" />
     </section>
   </div>
 </template>
