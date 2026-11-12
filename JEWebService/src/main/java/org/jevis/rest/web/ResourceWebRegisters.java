@@ -146,6 +146,7 @@ public class ResourceWebRegisters {
             } else {
                 groups = equipmentGroups(lookup, classes, translations, data);
             }
+            addCanEnter(kind, groups, lookup, WebEdit.sqlRights(ds.getUserManager()));
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("kind", kind);
             result.put("today", today.toString());
@@ -192,7 +193,8 @@ public class ResourceWebRegisters {
                 return notFound("No data");
             }
             List<JsonSample> samples = ds.getLatestSamples(targetId, attribute, historyLimit(limit));
-            return json(historyJson(unitLabel(ds.getAttribute(targetId, attribute)), samples));
+            return json(historyJson(unitLabel(ds.getAttribute(targetId, attribute)), samples, lookup.readable(targetId),
+                    attribute, WebEdit.sqlRights(ds.getUserManager())));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
@@ -836,18 +838,58 @@ public class ResourceWebRegisters {
      * @return {@code unit, samples: [{timestamp, value, note}]}
      */
     static Map<String, Object> historyJson(String unit, List<JsonSample> samples) {
+        return historyJson(unit, samples, null, null, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * @param row       the row the samples belong to (null if unknown)
+     * @param attribute the attribute of the samples
+     * @return {@code unit, rowId, samples: [{timestamp, value, note, manual, canDelete}]} (stage E1: {@code manual} if
+     * the note starts with the manual entry text, {@code canDelete} if it may be deleted with
+     * {@code DELETE /rows/{id}/values})
+     */
+    static Map<String, Object> historyJson(String unit, List<JsonSample> samples, JsonObject row, String attribute,
+                                           WebEdit.Rights rights) {
+        boolean rowDeletable = row != null && ATTRIBUTE_VALUE.equals(attribute)
+                && WebEdit.MANUAL_ROW_CLASSES.contains(row.getJevisClass()) && !ResourceWebIso.isDeleted(row)
+                && WebEdit.canDeleteSamples(rights, row);
         List<Map<String, Object>> list = new ArrayList<>();
         for (JsonSample sample : samples) {
+            boolean manual = ResourceWebEditValues.isManual(sample.getNote());
             Map<String, Object> json = new LinkedHashMap<>();
             json.put("timestamp", isoTimestamp(sample.getTs()));
             json.put("value", number(sample.getValue()));
             json.put("note", sample.getNote() != null && !sample.getNote().trim().isEmpty() ? sample.getNote() : null);
+            json.put("manual", manual);
+            json.put("canDelete", manual && rowDeletable);
             list.add(json);
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("unit", unit);
+        result.put("rowId", row != null ? row.getId() : null);
         result.put("samples", list);
         return result;
+    }
+
+    /**
+     * Stage E1: {@code canEnter} per row of meters (for the data row its "Online ID" points to, only if that target is
+     * the attribute "Value") and base data, so the web app needs no {@code /entry} call to show the button.
+     */
+    @SuppressWarnings("unchecked")
+    static void addCanEnter(String kind, List<Map<String, Object>> groups, ResourceWebModules.Lookup lookup,
+                            WebEdit.Rights rights) {
+        if (!KIND_METERS.equals(kind) && !KIND_BASEDATA.equals(kind)) return;
+        for (Map<String, Object> group : groups) {
+            for (Map<String, Object> row : (List<Map<String, Object>>) group.get("rows")) {
+                Object id = row.get("id");
+                if (KIND_METERS.equals(kind)) {
+                    Map<String, Object> target = (Map<String, Object>) row.get("target");
+                    boolean value = target != null && ATTRIBUTE_VALUE.equals(target.get("attribute"));
+                    id = value ? target.get("id") : null;
+                }
+                row.put("canEnter", id instanceof Long && WebEdit.canEnter(lookup.readable((Long) id), rights));
+            }
+        }
     }
 
     // ---------------------------------------------------------------- files

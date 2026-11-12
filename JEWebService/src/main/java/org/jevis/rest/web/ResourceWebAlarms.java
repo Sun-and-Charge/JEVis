@@ -106,7 +106,7 @@ public class ResourceWebAlarms {
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
             ResourceWebRegisters.Classes classes = ResourceWebRegisters.Classes.fromCache();
             Map<String, Object> result = alarmsJson(lookup, classes, sqlStore(ds), range[0], range[1], normalizedState,
-                    zone, ResourceWebRegisters.language(lang));
+                    zone, ResourceWebRegisters.language(lang), WebEdit.sqlRights(ds.getUserManager()));
             return Response.ok(MAPPER.writeValueAsString(result)).type(MediaType.APPLICATION_JSON)
                     .header("Cache-Control", "no-store").build();
         } catch (AuthenticationException ex) {
@@ -365,6 +365,15 @@ public class ResourceWebAlarms {
     static Map<String, Object> alarmsJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
                                           Store store, DateTime from, DateTime to, String state, DateTimeZone zone,
                                           String language) throws Exception {
+        return alarmsJson(lookup, classes, store, from, to, state, zone, language, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * {@code GET /alarms} with {@code canConfirm} per configuration (write or execute right).
+     */
+    static Map<String, Object> alarmsJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
+                                          Store store, DateTime from, DateTime to, String state, DateTimeZone zone,
+                                          String language, WebEdit.Rights rights) throws Exception {
         Map<Long, Checked> checkedById = new HashMap<>();
         List<Alarm> alarms = new ArrayList<>();
         for (JsonObject configuration : configurations(lookup, store)) {
@@ -394,7 +403,8 @@ public class ResourceWebAlarms {
             JsonAlarm entry = alarm.json;
             Long rowId = entry.getObject();
             Map<String, Object> config = configurationJson.computeIfAbsent(alarm.configuration,
-                    id -> configurationJson(lookup.object(id), checkedById.get(id), zone));
+                    id -> configurationJson(lookup.object(id), checkedById.get(id), zone,
+                            WebEdit.canConfirmAlarm(rights, lookup.object(id))));
             Map<String, Object> row = rowId != null
                     ? rows.computeIfAbsent(rowId, id -> ResourceWebNotes.rowJson(id, lookup, buildingClasses)) : null;
             Map<String, Object> site = sites.computeIfAbsent(rowId + "/" + alarm.configuration,
@@ -432,7 +442,8 @@ public class ResourceWebAlarms {
         return result;
     }
 
-    private static Map<String, Object> configurationJson(JsonObject configuration, Checked checked, DateTimeZone zone) {
+    static Map<String, Object> configurationJson(JsonObject configuration, Checked checked, DateTimeZone zone,
+                                                 boolean canConfirm) {
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("id", configuration.getId());
         json.put("name", configuration.getName());
@@ -441,6 +452,7 @@ public class ResourceWebAlarms {
         json.put("checkedBy", isChecked ? checked.by : null);
         json.put("checkedAt", isChecked && checked.at != null
                 ? ISODateTimeFormat.dateTime().print(new DateTime(checked.at, zone)) : null);
+        json.put("canConfirm", canConfirm);
         return json;
     }
 

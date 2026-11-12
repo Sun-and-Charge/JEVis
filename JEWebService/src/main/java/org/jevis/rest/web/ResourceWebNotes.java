@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -63,6 +65,7 @@ public class ResourceWebNotes {
 
     static final String CLASS_DATA_NOTES = "Data Notes";
     static final String CLASS_CLEAN_DATA = "Clean Data";
+    static final String CLASS_DATA = "Data";
     static final String ATTRIBUTE_VALUE = "Value";
     static final String ATTRIBUTE_TAG = "Tag";
     static final String ATTRIBUTE_USER = "User";
@@ -110,7 +113,7 @@ public class ResourceWebNotes {
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
             ResourceWebRegisters.Classes classes = ResourceWebRegisters.Classes.fromCache();
             return json(notesJson(lookup, classes, sqlSamples(ds), range[0], range[1], zone,
-                    ResourceWebRegisters.language(lang)));
+                    ResourceWebRegisters.language(lang), WebEdit.sqlRights(ds.getUserManager())));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
@@ -329,12 +332,19 @@ public class ResourceWebNotes {
         return result;
     }
 
-    /**
-     * {@code GET /notes}: all notes of the readable "Data Notes" objects in the time frame, newest first.
-     */
     static Map<String, Object> notesJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
                                          Samples samples, DateTime from, DateTime to, DateTimeZone zone,
                                          String language) throws Exception {
+        return notesJson(lookup, classes, samples, from, to, zone, language, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * {@code GET /notes}: all notes of the readable "Data Notes" objects in the time frame, newest first; with what
+     * the user may do ({@code canEdit}, {@code canDelete} per note, {@code canAddNote} and {@code notesTarget} per row).
+     */
+    static Map<String, Object> notesJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
+                                         Samples samples, DateTime from, DateTime to, DateTimeZone zone,
+                                         String language, WebEdit.Rights rights) throws Exception {
         List<Note> notes = new ArrayList<>();
         for (JsonObject object : notesObjects(lookup)) {
             notes.addAll(notesOf(object.getId(), from, to, samples, FETCH_LIMIT));
@@ -351,21 +361,11 @@ public class ResourceWebNotes {
         for (Note note : notes) {
             Long rowId = lookup.parent(note.notesObject);
             if (!rows.containsKey(note.notesObject)) {
-                rows.put(note.notesObject, rowJson(rowId, lookup, buildingClasses));
-                JsonObject start = rowId != null && lookup.object(rowId) != null ? lookup.object(rowId) : lookup.object(note.notesObject);
-                sites.put(note.notesObject, start != null ? siteJson(start, lookup, buildingClasses) : null);
+                rows.put(note.notesObject, editableRowJson(rowId, lookup, buildingClasses, classes, rights));
+                sites.put(note.notesObject, siteOfNote(note.notesObject, lookup, buildingClasses));
             }
             usedTags.addAll(note.tags);
-            Map<String, Object> json = new LinkedHashMap<>();
-            json.put("id", note.notesObject + "-" + note.millis);
-            json.put("timestamp", ISODateTimeFormat.dateTime().print(new DateTime(note.millis, zone)));
-            json.put("text", note.text);
-            json.put("tags", note.tags);
-            json.put("user", note.user);
-            json.put("notesObject", note.notesObject);
-            json.put("row", rows.get(note.notesObject));
-            json.put("site", sites.get(note.notesObject));
-            list.add(json);
+            list.add(noteJson(note, zone, rows.get(note.notesObject), sites.get(note.notesObject), lookup, rights));
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -375,6 +375,123 @@ public class ResourceWebNotes {
         result.put("notes", list);
         result.put("truncated", truncated);
         return result;
+    }
+
+    /**
+     * @return the site of a note: the nearest readable building above its row (else above the notes object)
+     */
+    static Map<String, Object> siteOfNote(long notesObject, ResourceWebModules.Lookup lookup, Set<String> buildingClasses) {
+        Long rowId = lookup.parent(notesObject);
+        JsonObject start = rowId != null && lookup.object(rowId) != null ? lookup.object(rowId) : lookup.object(notesObject);
+        return start != null ? siteJson(start, lookup, buildingClasses) : null;
+    }
+
+    /**
+     * One note in the format of {@code GET /notes}.
+     */
+    static Map<String, Object> noteJson(Note note, DateTimeZone zone, Map<String, Object> row, Map<String, Object> site,
+                                        ResourceWebModules.Lookup lookup, WebEdit.Rights rights) {
+        JsonObject notesObject = lookup.readable(note.notesObject);
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("id", noteId(note));
+        json.put("timestamp", ISODateTimeFormat.dateTime().print(new DateTime(note.millis, zone)));
+        json.put("text", note.text);
+        json.put("tags", note.tags);
+        json.put("user", note.user);
+        json.put("notesObject", note.notesObject);
+        json.put("row", row);
+        json.put("site", site);
+        json.put("version", version(note));
+        json.put("canEdit", notesObject != null && WebEdit.canWriteNotes(rights, notesObject));
+        json.put("canDelete", notesObject != null && WebEdit.canDeleteNotes(rights, notesObject));
+        return json;
+    }
+
+    /**
+     * @return {@code <notes object>-<epoch ms>}
+     */
+    static String noteId(Note note) {
+        return note.notesObject + "-" + note.millis;
+    }
+
+    /**
+     * The version of a note for concurrent edits: the first 16 hex digits of the SHA-256 of text, tags and user (the
+     * samples table keeps the insert time of a sample when it is overwritten, so it cannot be used).
+     */
+    static String version(Note note) {
+        String content = note.text + '\u001f' + String.join(";", note.tags) + '\u001f' + (note.user != null ? note.user : "");
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(content.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 8; i++) hex.append(String.format("%02x", hash[i]));
+            return hex.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * {@link #rowJson} plus {@code canAddNote} and {@code notesTarget} (id of the row the notes are stored below; null
+     * if notes cannot be stored for the row)
+     */
+    static Map<String, Object> editableRowJson(Long rowId, ResourceWebModules.Lookup lookup, Set<String> buildingClasses,
+                                               ResourceWebRegisters.Classes classes, WebEdit.Rights rights) {
+        Map<String, Object> json = rowJson(rowId, lookup, buildingClasses);
+        if (json == null) return null;
+        NotesTarget target = notesTarget(rowId, lookup, classes);
+        json.put("canAddNote", canAddNote(target, rights));
+        json.put("notesTarget", target != null ? target.row.getId() : null);
+        return json;
+    }
+
+    /**
+     * Where the notes of a row are stored (like the analysis note dialog {@code DataPointNoteDialog}): the target row
+     * is the row itself, or its raw parent if the row is "Clean Data" (or a subclass); the notes object is the first
+     * (lowest id) readable "Data Notes" child of the target row that is not in the recycle bin, null if one has to be
+     * created.
+     */
+    static final class NotesTarget {
+        final JsonObject row;
+        final JsonObject notesObject;
+
+        NotesTarget(JsonObject row, JsonObject notesObject) {
+            this.row = row;
+            this.notesObject = notesObject;
+        }
+    }
+
+    /**
+     * @return the target of the notes of the row; null if the row (or the raw parent of a clean data row) is not a
+     * readable data row ("Data" or a subclass) outside the recycle bin
+     */
+    static NotesTarget notesTarget(Long rowId, ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes) {
+        JsonObject row = rowId != null ? lookup.readable(rowId) : null;
+        if (row == null || ResourceWebIso.isDeleted(row)) return null;
+        Set<String> cleanClasses = classes.withHeirs(CLASS_CLEAN_DATA);
+        JsonObject target = row;
+        if (cleanClasses.contains(row.getJevisClass())) {
+            target = lookup.readable(lookup.parent(row.getId()));
+            if (target == null || ResourceWebIso.isDeleted(target)) return null;
+        }
+        if (!classes.withHeirs(CLASS_DATA).contains(target.getJevisClass()) && !cleanClasses.contains(target.getJevisClass())) {
+            return null;
+        }
+        JsonObject notesObject = null;
+        for (JsonObject child : lookup.readableChildren(target.getId(), Collections.singleton(CLASS_DATA_NOTES))) {
+            if (ResourceWebIso.isDeleted(child)) continue;
+            if (notesObject == null || child.getId() < notesObject.getId()) notesObject = child;
+        }
+        return new NotesTarget(target, notesObject);
+    }
+
+    /**
+     * @return whether the user may add a note to the target: write or execute right on its notes object, or (without
+     * one) the right to create it and to write to it (the new object gets the owners of the target row)
+     */
+    static boolean canAddNote(NotesTarget target, WebEdit.Rights rights) {
+        if (target == null) return false;
+        if (target.notesObject != null) return WebEdit.canWriteNotes(rights, target.notesObject);
+        return rights.canCreate(target.row, CLASS_DATA_NOTES) && WebEdit.canWriteNotes(rights, target.row);
     }
 
     /**
@@ -462,6 +579,16 @@ public class ResourceWebNotes {
     static List<Map<String, Object>> rowNotes(long objectId, DateTime from, DateTime to,
                                               ResourceWebModules.Lookup lookup, Set<String> cleanDataClasses,
                                               Samples samples) throws Exception {
+        return rowNotes(objectId, from, to, lookup, cleanDataClasses, samples, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * @return the notes of a row of an analysis in the time frame: {@code [{id, notesObject, timestamp, text, tags,
+     * user, version, canEdit, canDelete}]}, oldest first, at most {@link #MAX_ROW_NOTES}
+     */
+    static List<Map<String, Object>> rowNotes(long objectId, DateTime from, DateTime to,
+                                              ResourceWebModules.Lookup lookup, Set<String> cleanDataClasses,
+                                              Samples samples, WebEdit.Rights rights) throws Exception {
         List<Note> notes = new ArrayList<>();
         for (JsonObject notesObject : notesObjectsOfRow(objectId, lookup, cleanDataClasses)) {
             notes.addAll(notesOf(notesObject.getId(), from, to, samples, MAX_ROW_NOTES));
@@ -470,11 +597,17 @@ public class ResourceWebNotes {
         if (notes.size() > MAX_ROW_NOTES) notes = notes.subList(0, MAX_ROW_NOTES);
         List<Map<String, Object>> result = new ArrayList<>();
         for (Note note : notes) {
+            JsonObject notesObject = lookup.readable(note.notesObject);
             Map<String, Object> json = new LinkedHashMap<>();
+            json.put("id", noteId(note));
+            json.put("notesObject", note.notesObject);
             json.put("timestamp", note.millis);
             json.put("text", note.text);
             json.put("tags", note.tags);
             json.put("user", note.user);
+            json.put("version", version(note));
+            json.put("canEdit", notesObject != null && WebEdit.canWriteNotes(rights, notesObject));
+            json.put("canDelete", notesObject != null && WebEdit.canDeleteNotes(rights, notesObject));
             result.add(json);
         }
         return result;

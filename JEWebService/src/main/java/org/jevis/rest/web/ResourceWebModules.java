@@ -68,10 +68,12 @@ public class ResourceWebModules {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             Lookup lookup = lookup(ds);
             LocalDate today = LocalDate.now();
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
             List<Map<String, Object>> entries = new ArrayList<>();
             for (JsonObject object : lookup.readableOfClass(Appointment.CLASS_NAME)) {
-                entries.add(appointmentJson(object, latest(ds, object.getId(), EntryFormat.ATTRIBUTE_DATA),
-                        latest(ds, object.getId(), EntryFormat.ATTRIBUTE_MAIL_STATE), lookup, today));
+                JsonSample data = latestSample(ds, object.getId(), EntryFormat.ATTRIBUTE_DATA);
+                entries.add(editInfo(appointmentJson(object, data != null ? data.getValue() : null,
+                        latest(ds, object.getId(), EntryFormat.ATTRIBUTE_MAIL_STATE), lookup, today), object, data, rights));
             }
             sortByTime(entries, "due", true);
             Map<String, Object> result = new LinkedHashMap<>();
@@ -96,10 +98,12 @@ public class ResourceWebModules {
         try {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             Lookup lookup = lookup(ds);
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
             List<Map<String, Object>> entries = new ArrayList<>();
             for (JsonObject object : lookup.readableOfClass(MaintenanceEntry.CLASS_NAME)) {
-                entries.add(maintenanceJson(object, latest(ds, object.getId(), EntryFormat.ATTRIBUTE_DATA),
-                        latest(ds, object.getId(), EntryFormat.ATTRIBUTE_MAIL_STATE), lookup));
+                JsonSample data = latestSample(ds, object.getId(), EntryFormat.ATTRIBUTE_DATA);
+                entries.add(editInfo(maintenanceJson(object, data != null ? data.getValue() : null,
+                        latest(ds, object.getId(), EntryFormat.ATTRIBUTE_MAIL_STATE), lookup), object, data, rights));
             }
             sortByTime(entries, "start", false);
             Map<String, Object> result = new LinkedHashMap<>();
@@ -173,13 +177,30 @@ public class ResourceWebModules {
     }
 
     private static String latest(SQLDataSource ds, long id, String attribute) {
+        JsonSample sample = latestSample(ds, id, attribute);
+        return sample != null ? sample.getValue() : null;
+    }
+
+    private static JsonSample latestSample(SQLDataSource ds, long id, String attribute) {
         try {
-            JsonSample sample = ds.getLastSample(id, attribute);
-            return sample != null ? sample.getValue() : null;
+            return ds.getLastSample(id, attribute);
         } catch (Exception e) {
             logger.warn("Could not read {} of {}", attribute, id, e);
             return null;
         }
+    }
+
+    /**
+     * Adds what the user may do with an entry (stage E1): {@code canWrite} (write right) and {@code version} (time
+     * stamp of the latest "Data" sample, sent back with edits).
+     *
+     * @param data latest sample of "Data", null if none
+     * @return the entry
+     */
+    static Map<String, Object> editInfo(Map<String, Object> json, JsonObject object, JsonSample data, WebEdit.Rights rights) {
+        json.put("canWrite", rights.canWrite(object));
+        json.put("version", WebEdit.version(data));
+        return json;
     }
 
     /**
@@ -372,6 +393,17 @@ public class ResourceWebModules {
                 }
             }
             return readableChildren.getOrDefault(id, Collections.emptyList());
+        }
+
+        /**
+         * Adds an object created in this request (stage E1) as readable child of the parent.
+         */
+        void addReadable(JsonObject object, long parent) {
+            byId.put(object.getId(), object);
+            readableIds.add(object.getId());
+            readable.add(object);
+            parents.put(object.getId(), parent);
+            readableChildren = null;
         }
 
         /**
