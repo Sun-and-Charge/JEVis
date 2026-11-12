@@ -1026,6 +1026,10 @@ readable has `template.readable: false` (still listed, the result answers `409`)
 - `timeFrame`: one of `timeFrames`, resolved at "now" in `timeZone` like the Control Center's interval selector
   (the current month etc.); or `CUSTOM` with ISO `from`/`to` (max 10 years, else `400`; also if `CUSTOM` is not
   enabled in the template). `P10Y` covers 10 years (the Control Center's `TimeFrameFactory` 5, see the dashboards).
+- `date` (optional, ISO): reference date of the period for the time frames other than `CUSTOM` (e.g. a day in
+  September for "Monat" = September); missing or in the future = now. The answer has `previous`/`next`: reference
+  dates of the neighbouring periods (as the dashboards' arrows; `next` is `null` when the current period is shown,
+  both `null` for `CUSTOM`). The web app shows them as arrows next to the period and keeps `date` in the URL (`d`).
 - `selections`: only for templates; input id (the `id` of an `inputs` entry) → object id (must be one of the
   `options`, else `400`; it applies to all inputs of the entry). Missing selections use `selected`. For
   configurations `selections` may be missing, `null` or empty and is ignored.

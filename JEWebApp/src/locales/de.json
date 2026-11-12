@@ -989,6 +989,9 @@
     "result": {
       "title": "Ergebnis",
       "period": "Zeitraum",
+      "previous": "Vorheriger Zeitraum",
+      "next": "Nächster Zeitraum",
+      "current": "Aktueller Zeitraum",
       "loading": "Ergebnis wird berechnet …",
       "empty": "Die Vorlage hat keine Ausgaben.",
       "warnings": "{n} Hinweise | 1 Hinweis | {n} Hinweise",

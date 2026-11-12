@@ -109,6 +109,41 @@
   font-size: 1.05rem;
 }
 
+.cost-period-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.cost-period-row .cost-period {
+  margin: 0;
+}
+
+.cost-step {
+  min-width: 2rem;
+  height: 2rem;
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line, #d0d4da);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.cost-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cost-step:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
 /* the period is the one emphasised element: the yellow bar marks what the result covers */
 .cost-period {
   display: inline-block;

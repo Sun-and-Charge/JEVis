@@ -989,6 +989,9 @@
     "result": {
       "title": "Result",
       "period": "Period",
+      "previous": "Previous period",
+      "next": "Next period",
+      "current": "Current period",
       "loading": "Calculating result …",
       "empty": "The template has no outputs.",
       "warnings": "{n} notes | 1 note | {n} notes",

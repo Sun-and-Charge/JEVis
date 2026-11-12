@@ -402,6 +402,30 @@ public class ResourceWebCostsTest {
     }
 
     @Test
+    public void earlierPeriodsByReferenceDate() throws Exception {
+        Map<String, Object> current = result(50, "{\"timeFrame\":\"P1M\",\"timeZone\":\"Europe/Berlin\"}", new FakeCalculator());
+        assertNotNull("the current month has a previous one", current.get("previous"));
+        assertNull("no next period after the current one", current.get("next"));
+
+        Map<String, Object> september = result(50, "{\"timeFrame\":\"P1M\",\"timeZone\":\"Europe/Berlin\","
+                + "\"date\":\"2026-09-15T12:00:00+02:00\"}", new FakeCalculator());
+        assertEquals("2026-09-01T00:00:00.000+02:00", september.get("from"));
+        assertEquals("2026-09-30T23:59:59.999+02:00", september.get("to"));
+        assertTrue(((String) september.get("previous")).startsWith("2026-08"));
+        assertTrue(((String) september.get("next")).startsWith("2026-10"));
+
+        Map<String, Object> year = result(50, "{\"timeFrame\":\"P1Y\",\"timeZone\":\"Europe/Berlin\","
+                + "\"date\":\"2025-06-01T00:00:00+02:00\"}", new FakeCalculator());
+        assertEquals("2025-01-01T00:00:00.000+01:00", year.get("from"));
+
+        Map<String, Object> future = result(50, "{\"timeFrame\":\"P1M\",\"timeZone\":\"Europe/Berlin\","
+                + "\"date\":\"2030-01-01T00:00:00+01:00\"}", new FakeCalculator());
+        assertEquals("a date in the future counts as now", "2026-11-01T00:00:00.000+01:00", future.get("from"));
+
+        assertEquals(400, status(50, "{\"timeFrame\":\"P1M\",\"date\":\"gestern\"}"));
+    }
+
+    @Test
     public void analysisLinkOnlyToReadableObjects() throws Exception {
         Map<String, Object> answer = result(54, "{\"timeFrame\":\"P1M\"}", new FakeCalculator());
         assertNull(((List<Map<String, Object>>) get(answer, "cells")).get(0).get("analysis"));

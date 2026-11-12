@@ -142,9 +142,24 @@ function setTimeFrame(value: string) {
       to: to != null ? new Date(to) : now,
     })
   } else {
+    // keep the reference date: e.g. September as month, then 2026 as year
     update({ ...state.value, timeFrame: value, from: null, to: null })
   }
 }
+
+/** Moves to the previous / next period (reference dates from the last result), or back to the current one. */
+function step(which: 'previous' | 'next') {
+  const target = which === 'previous' ? result.value?.previous : result.value?.next
+  const ms = parseTime(target)
+  if (!state.value || ms == null) return
+  update({ ...state.value, date: new Date(ms) })
+}
+
+function toCurrent() {
+  if (state.value) update({ ...state.value, date: null })
+}
+
+const canStep = computed(() => !!state.value && state.value.timeFrame !== CUSTOM)
 
 const rangeError = ref(false)
 
@@ -294,9 +309,14 @@ function print() {
         <div class="cost-result-head">
           <div>
             <h3 :id="domId('result')" class="cost-result-title">{{ t('costs.result.title') }}</h3>
-            <p v-if="period" class="cost-period" aria-live="polite">
-              <span class="visually-hidden">{{ t('costs.result.period') }}: </span>{{ period }}
-            </p>
+            <div v-if="period" class="cost-period-row">
+              <button v-if="canStep" type="button" class="cost-step cost-prev" :aria-label="t('costs.result.previous')" :title="t('costs.result.previous')" :disabled="!result?.previous" @click="step('previous')">‹</button>
+              <p class="cost-period" aria-live="polite">
+                <span class="visually-hidden">{{ t('costs.result.period') }}: </span>{{ period }}
+              </p>
+              <button v-if="canStep" type="button" class="cost-step cost-next" :aria-label="t('costs.result.next')" :title="t('costs.result.next')" :disabled="!result?.next" @click="step('next')">›</button>
+              <button v-if="canStep && state?.date" type="button" class="btn-link cost-current" @click="toCurrent">{{ t('costs.result.current') }}</button>
+            </div>
             <p class="cost-print-only">{{ def.name }}<template v-if="templateName && !isTemplate"> · {{ templateName }}</template></p>
           </div>
           <div class="rep-actions cost-actions">

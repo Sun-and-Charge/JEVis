@@ -110,6 +110,19 @@ describe('cost state and query', () => {
     expect(linked.from?.toISOString()).toBe('2026-10-31T23:00:00.000Z')
   })
 
+  it('keeps the reference date of earlier periods in the query and the request', () => {
+    const def = configurationDefinition()
+    const date = new Date(2026, 8, 15, 12, 0)
+    const state = { timeFrame: 'P1M', from: null, to: null, date, selections: {} }
+    const query = costStateToQuery(state, def)
+    expect(query).toEqual({ tf: 'P1M', d: toIsoLocal(date) })
+    expect(costStateFromQuery(query, def, now).date).toEqual(date)
+    expect(costRequest(state, def, 'Europe/Berlin')).toMatchObject({ timeFrame: 'P1M', date: toIsoLocal(date) })
+    // a date in the future means the current period
+    expect(costStateFromQuery({ tf: 'P1M', d: '2030-01-01T00:00:00+01:00' }, def, now).date).toBeNull()
+    expect(isCostStateKey('d')).toBe(true)
+  })
+
   it('knows its query keys', () => {
     expect(['tf', 'from', 'to', 'in.i1'].every(isCostStateKey)).toBe(true)
     expect(isCostStateKey('id')).toBe(false)

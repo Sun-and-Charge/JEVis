@@ -190,6 +190,35 @@ describe('costs view (mocked API)', () => {
     w.unmount()
   })
 
+  it('steps to earlier periods with the arrows and back to the current one', async () => {
+    const OCTOBER = { from: '2026-10-01T00:00:00.000+02:00', to: '2026-10-31T23:59:59.999+01:00' }
+    const client = api({
+      results: {
+        23950: (body) =>
+          body?.date
+            ? costResult(OCTOBER, { previous: '2026-09-15T00:00:00.000+02:00', next: '2026-11-15T00:00:00.000+01:00' })
+            : costResult(NOVEMBER, { previous: '2026-10-15T00:00:00.000+02:00', next: null }),
+      },
+    })
+    const { wrapper: w, router } = await mountView(client, { id: '23950' })
+    await settle()
+    expect(w.find('button.cost-next').attributes('disabled')).toBeDefined()
+    expect(w.find('button.cost-current').exists()).toBe(false)
+
+    await w.find('button.cost-prev').trigger('click')
+    await settle()
+    expect(posts(client.post)[1]).toMatchObject({ timeFrame: 'P1M', date: toIsoLocal(new Date(Date.parse('2026-10-15T00:00:00.000+02:00'))) })
+    expect(router.currentRoute.value.query.d).toBe(toIsoLocal(new Date(Date.parse('2026-10-15T00:00:00.000+02:00'))))
+    expect(w.find('.cost-period').text()).toContain('10.2026')
+    expect(w.find('button.cost-next').attributes('disabled')).toBeUndefined()
+
+    await w.find('button.cost-current').trigger('click')
+    await settle()
+    expect(posts(client.post)[2].date).toBeUndefined()
+    expect(router.currentRoute.value.query.d).toBeUndefined()
+    w.unmount()
+  })
+
   it('ignores answers of older requests', async () => {
     let release: ((r: CostResult) => void) | null = null
     const client = api()
