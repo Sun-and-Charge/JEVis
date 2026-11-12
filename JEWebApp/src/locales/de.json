@@ -200,6 +200,17 @@
     "readOnly": "In der Web-App nur lesbar",
     "openLink": "Öffnen",
     "linkNoAccess": "Das Ziel ist nicht für Sie freigegeben.",
+    "input": {
+      "minus": "{name}: verringern",
+      "plus": "{name}: erhöhen",
+      "enter": "{name}: Wert {value} – neuen Wert erfassen",
+      "title": "Wert erfassen: {name}",
+      "value": "Wert",
+      "time": "Zeitpunkt",
+      "number": "Bitte eine Zahl eingeben.",
+      "confirm": "Trotzdem speichern",
+      "save": "Speichern"
+    },
     "zoom": { "label": "Zoom", "in": "Vergrößern", "out": "Verkleinern", "reset": "Zoom zurücksetzen" },
     "table": {
       "name": "Name",
@@ -1472,6 +1483,250 @@
       "filter": "Filter...",
       "filterLabel": "Filter für {name}",
       "filtered": "{shown} von {total} Zeitpunkten passen zum Filter."
+    }
+  },
+  "dashboardEdit": {
+    "edit": "Bearbeiten",
+    "editLabel": "Dashboard {name} bearbeiten",
+    "starting": "Wird geöffnet …",
+    "narrowHint": "Dashboards können ab Tablet-Breite (900 Pixel) bearbeitet werden.",
+    "newDashboard": "Neues Dashboard",
+    "panelTitle": "Dashboard bearbeiten",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "widget": "Widget",
+      "data": "Daten"
+    },
+    "save": "Speichern",
+    "saveAs": "Speichern unter",
+    "discard": "Verwerfen",
+    "delete": "Löschen",
+    "unsaved": "Ungespeicherte Änderungen",
+    "noChanges": "Keine Änderungen",
+    "empty": "Noch keine Widgets – fügen Sie mit „Widget hinzufügen“ das erste hinzu.",
+    "mixed": "verschieden",
+    "stored": "{value} (gespeichert)",
+    "opacity": "Deckkraft in %",
+    "opacityOf": "Deckkraft von {name} in Prozent",
+    "preview": {
+      "waiting": "Vorschau folgt …",
+      "loading": "Vorschau wird aktualisiert …",
+      "error": "Die Vorschau konnte nicht geladen werden.",
+      "invalid": "Keine Vorschau: bitte zuerst die markierten Eingaben korrigieren.",
+      "hint": "Die Arbeitsfläche zeigt eine Vorschau der Änderungen."
+    },
+    "saved": "Das Dashboard wurde gespeichert.",
+    "copied": "Das Dashboard wurde als „{name}“ gespeichert.",
+    "overwritten": "Das Dashboard „{name}“ wurde überschrieben.",
+    "reloaded": "Das Dashboard wurde neu geladen; Ihre Änderungen wurden verworfen.",
+    "conflict": "Das Dashboard wurde inzwischen geändert.",
+    "invalidSee": "Das Dashboard wurde nicht angenommen – siehe Hinweise im Bearbeitungsbereich.",
+    "invalidTitle": "Das Dashboard wurde nicht angenommen:",
+    "fixProblems": "Bitte zuerst {n} markierte Eingabe korrigieren. | Bitte zuerst {n} markierte Eingaben korrigieren.",
+    "problemsTitle": "Bitte prüfen:",
+    "copyName": "{name} (Kopie)",
+    "readOnlyHint": "Sie dürfen dieses Dashboard nicht ändern; Ihre Änderungen können Sie mit „Speichern unter“ als neues Dashboard speichern.",
+    "canvas": {
+      "label": "Arbeitsfläche des Dashboards",
+      "help": "Tab wechselt zwischen den Widgets, Leertaste wählt aus (mit Strg: zur Auswahl hinzufügen), Pfeiltasten verschieben um einen Rasterschritt (mit Umschalt: 1 Pixel), Entf löscht, Strg+D dupliziert, Strg+Z macht rückgängig, Strg+Y stellt wieder her, Strg+A wählt alle, Esc hebt die Auswahl auf.",
+      "untitled": "ohne Titel",
+      "widgetLabel": "{type}: {title}, Position {x}, {y}, Größe {width} × {height}"
+    },
+    "toolbar": {
+      "label": "Werkzeuge der Arbeitsfläche",
+      "add": "Widget hinzufügen",
+      "addTitle": "Widget hinzufügen",
+      "addHint": "Das neue Widget wird oben links im sichtbaren Bereich eingefügt.",
+      "noTypes": "Keine Widget-Typen verfügbar.",
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
+      "undoKey": "Rückgängig (Strg+Z)",
+      "redoKey": "Wiederholen (Strg+Y)",
+      "duplicate": "Duplizieren",
+      "duplicateKey": "Duplizieren (Strg+D)",
+      "layerUp": "Ebene höher",
+      "layerDown": "Ebene tiefer",
+      "delete": "Löschen",
+      "deleteKey": "Löschen (Entf)",
+      "selected": "{n} Widget ausgewählt | {n} Widgets ausgewählt"
+    },
+    "dashboard": {
+      "name": "Name",
+      "size": "Größe und Zoom",
+      "width": "Breite (Pixel)",
+      "height": "Höhe (Pixel)",
+      "zoom": "Zoom",
+      "zoomFactor": "Zoomfaktor",
+      "background": "Hintergrund",
+      "color": "Hintergrundfarbe",
+      "mode": "Hintergrundbild",
+      "image": "Bild",
+      "data": "Daten",
+      "timeFrame": "Zeitraum",
+      "updateRate": "Aktualisierung (Sekunden)",
+      "grid": "Raster",
+      "gridX": "Raster horizontal (Pixel)",
+      "gridY": "Raster vertikal (Pixel)",
+      "showGrid": "Raster anzeigen",
+      "gridHint": "Beim Verschieben und Ändern der Größe richten sich die Widgets am Raster aus; mit gedrückter Umschalttaste an einem Viertel davon, mit Alt frei."
+    },
+    "zoom": {
+      "FIT_WIDTH": "An Breite anpassen",
+      "FIT_HEIGHT": "An Höhe anpassen",
+      "FIT_SCREEN": "An Bildschirm anpassen",
+      "factor": "Fester Faktor"
+    },
+    "backgroundModes": {
+      "default": "Oben links, Originalgröße",
+      "repeat": "Kacheln",
+      "stretch": "Strecken"
+    },
+    "background": {
+      "choose": "Bild hochladen …",
+      "uploading": "Wird hochgeladen …",
+      "hint": "PNG, JPEG, GIF, BMP, WebP oder SVG, höchstens 10 MB. Das Bild wird sofort gespeichert.",
+      "uploaded": "Das Hintergrundbild wurde gespeichert.",
+      "tooLarge": "Das Bild ist größer als 10 MB."
+    },
+    "timeFrames": {
+      "LASTVALUE": "Letzter Wert"
+    },
+    "widget": {
+      "none": "Bitte auf der Arbeitsfläche ein Widget auswählen.",
+      "one": "Ausgewählt: {type}",
+      "several": "{n} Widgets ausgewählt ({types}) – Änderungen gelten für alle.",
+      "title": "Titel",
+      "tooltip": "Tooltip",
+      "layout": "Position und Größe",
+      "x": "X (Pixel)",
+      "y": "Y (Pixel)",
+      "width": "Breite (Pixel)",
+      "height": "Höhe (Pixel)",
+      "layer": "Ebene",
+      "colors": "Farben",
+      "background": "Hintergrundfarbe",
+      "fontColor": "Schriftfarbe",
+      "font": "Schrift",
+      "fontSize": "Schriftgröße",
+      "fontWeight": "Schriftstärke",
+      "fontPosture": "Schriftstil",
+      "titlePosition": "Ausrichtung",
+      "underline": "Unterstrichen",
+      "border": "Rahmen",
+      "borderSize": "Rahmenbreite",
+      "cornerRadius": "Eckenradius",
+      "borderColor": "Rahmenfarbe",
+      "shadow": "Schatten",
+      "values": "Werte",
+      "decimals": "Nachkommastellen",
+      "decimalsAuto": "Nachkommastellen der Datenreihe verwenden",
+      "showValue": "Wert anzeigen",
+      "timeFrameTitle": "Zeitraum",
+      "timeFrame": "Eigener Zeitraum",
+      "timeFrameNone": "Wie das Dashboard",
+      "fixedTimeFrame": "Fester Zeitraum",
+      "fixedTimeFrameHint": "Ein fester Zeitraum folgt nicht der Auswahl in der Zeitleiste."
+    },
+    "fontWeights": {
+      "THIN": "Dünn",
+      "EXTRA_LIGHT": "Extraleicht",
+      "LIGHT": "Leicht",
+      "NORMAL": "Normal",
+      "MEDIUM": "Mittel",
+      "SEMI_BOLD": "Halbfett",
+      "BOLD": "Fett",
+      "EXTRA_BOLD": "Extrafett",
+      "BLACK": "Schwarz"
+    },
+    "fontPostures": {
+      "REGULAR": "Normal",
+      "ITALIC": "Kursiv"
+    },
+    "positions": {
+      "TOP_LEFT": "Oben links",
+      "TOP_CENTER": "Oben Mitte",
+      "TOP_RIGHT": "Oben rechts",
+      "CENTER_LEFT": "Mitte links",
+      "CENTER": "Mitte",
+      "CENTER_RIGHT": "Mitte rechts",
+      "BOTTOM_LEFT": "Unten links",
+      "BOTTOM_CENTER": "Unten Mitte",
+      "BOTTOM_RIGHT": "Unten rechts"
+    },
+    "data": {
+      "onlyOne": "Datenreihen und Typ-Einstellungen gibt es für ein einzelnes Widget – bitte nur eines auswählen.",
+      "rows": "Datenreihen",
+      "noRows": "Dieses Widget hat noch keine Datenreihen.",
+      "noPermissionHint": "Datenreihe ohne Leserecht (Objekt {id}); sie bleibt unverändert im Widget.",
+      "aggregation": "Aggregation",
+      "manipulation": "Manipulation",
+      "decimalsWidget": "wie Widget",
+      "chart": "Diagramm",
+      "type": "Einstellungen: {type}",
+      "noSettings": "Dieser Widget-Typ hat keine weiteren Einstellungen."
+    },
+    "aggregations": {
+      "NONE": "Keine",
+      "MINUTELY": "Minute",
+      "QUARTER_HOURLY": "Viertelstunde",
+      "HOURLY": "Stunde",
+      "DAILY": "Tag",
+      "WEEKLY": "Woche",
+      "MONTHLY": "Monat",
+      "QUARTERLY": "Quartal",
+      "YEARLY": "Jahr",
+      "THREEYEARS": "3 Jahre",
+      "FIVEYEARS": "5 Jahre",
+      "TENYEARS": "10 Jahre"
+    },
+    "manipulations": {
+      "NONE": "Keine",
+      "AVERAGE": "Mittelwert",
+      "SUM": "Summe",
+      "MIN": "Minimum",
+      "MAX": "Maximum",
+      "MEDIAN": "Median",
+      "RUNNING_MEAN": "Gleitender Mittelwert",
+      "CENTRIC_RUNNING_MEAN": "Zentrierter gleitender Mittelwert",
+      "SORTED_MIN": "Sortiert aufsteigend",
+      "SORTED_MAX": "Sortiert absteigend",
+      "CUMULATE": "Kumuliert",
+      "GEOMETRIC_MEAN": "Geometrisches Mittel"
+    },
+    "nameDialog": {
+      "saveAsTitle": "Dashboard speichern unter",
+      "newTitle": "Neues Dashboard",
+      "create": "Anlegen",
+      "noDirectory": "Kein Verzeichnis, in dem Sie Dashboards anlegen dürfen.",
+      "taken": "In diesem Verzeichnis gibt es bereits ein Dashboard mit diesem Namen.",
+      "openExisting": "Vorhandenes Dashboard öffnen"
+    },
+    "overwrite": {
+      "title": "Dashboard überschreiben",
+      "message": "Das Dashboard „{name}“ gibt es in diesem Verzeichnis bereits. Wollen Sie dieses Dashboard wirklich überschreiben?",
+      "confirm": "Überschreiben"
+    },
+    "deleteDialog": {
+      "title": "Dashboard löschen",
+      "message": "Möchten Sie das Dashboard „{name}“ wirklich löschen? Es wird in den Papierkorb verschoben.",
+      "confirm": "Löschen"
+    },
+    "leave": {
+      "title": "Ungespeicherte Änderungen",
+      "message": "Die Änderungen an diesem Dashboard wurden nicht gespeichert. Möchten Sie sie verwerfen?",
+      "confirm": "Verwerfen"
+    },
+    "conflictDialog": {
+      "title": "Dashboard wurde geändert",
+      "message": "Das Dashboard wurde inzwischen von jemand anderem gespeichert. Sie können die aktuelle Fassung laden (Ihre Änderungen gehen verloren) oder Ihre Fassung unter einem neuen Namen speichern.",
+      "reload": "Neu laden"
+    },
+    "problem": {
+      "required": "Bitte ausfüllen.",
+      "range": "Bitte eine Zahl von {min} bis {max}.",
+      "integerRange": "Bitte eine ganze Zahl von {min} bis {max}.",
+      "color": "Ungültige Farbe.",
+      "tooMany": "Höchstens 1000 Widgets."
     }
   }
 }

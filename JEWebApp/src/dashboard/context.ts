@@ -19,4 +19,6 @@ export interface WidgetContext {
   /** texts for the reused analysis chart options */
   chart: OptionContext
   now: number
+  /** E4: the dashboard is being edited (input widgets stay read-only) */
+  editing?: boolean
 }

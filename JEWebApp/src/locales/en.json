@@ -200,6 +200,17 @@
     "readOnly": "Read only in the web app",
     "openLink": "Open",
     "linkNoAccess": "The target is not shared with you.",
+    "input": {
+      "minus": "{name}: decrease",
+      "plus": "{name}: increase",
+      "enter": "{name}: value {value} – enter a new value",
+      "title": "Enter value: {name}",
+      "value": "Value",
+      "time": "Time",
+      "number": "Please enter a number.",
+      "confirm": "Save anyway",
+      "save": "Save"
+    },
     "zoom": { "label": "Zoom", "in": "Zoom in", "out": "Zoom out", "reset": "Reset zoom" },
     "table": {
       "name": "Name",
@@ -1472,6 +1483,250 @@
       "filter": "Filter...",
       "filterLabel": "Filter for {name}",
       "filtered": "{shown} of {total} timestamps match the filter."
+    }
+  },
+  "dashboardEdit": {
+    "edit": "Edit",
+    "editLabel": "Edit dashboard {name}",
+    "starting": "Opening …",
+    "narrowHint": "Dashboards can be edited from tablet width (900 pixels) on.",
+    "newDashboard": "New dashboard",
+    "panelTitle": "Edit dashboard",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "widget": "Widget",
+      "data": "Data"
+    },
+    "save": "Save",
+    "saveAs": "Save as",
+    "discard": "Discard",
+    "delete": "Delete",
+    "unsaved": "Unsaved changes",
+    "noChanges": "No changes",
+    "empty": "No widgets yet – add the first one with “Add widget”.",
+    "mixed": "different",
+    "stored": "{value} (stored)",
+    "opacity": "Opacity in %",
+    "opacityOf": "Opacity of {name} in percent",
+    "preview": {
+      "waiting": "Preview follows …",
+      "loading": "Updating preview …",
+      "error": "The preview could not be loaded.",
+      "invalid": "No preview: please correct the marked inputs first.",
+      "hint": "The canvas shows a preview of the changes."
+    },
+    "saved": "The dashboard has been saved.",
+    "copied": "The dashboard has been saved as “{name}”.",
+    "overwritten": "The dashboard “{name}” has been overwritten.",
+    "reloaded": "The dashboard has been reloaded; your changes were discarded.",
+    "conflict": "The dashboard has been changed in the meantime.",
+    "invalidSee": "The dashboard was not accepted – see the notes in the edit panel.",
+    "invalidTitle": "The dashboard was not accepted:",
+    "fixProblems": "Please correct {n} marked input first. | Please correct {n} marked inputs first.",
+    "problemsTitle": "Please check:",
+    "copyName": "{name} (copy)",
+    "readOnlyHint": "You may not change this dashboard; you can save your changes as a new dashboard with “Save as”.",
+    "canvas": {
+      "label": "Dashboard canvas",
+      "help": "Tab moves between the widgets, Space selects (with Ctrl: add to the selection), arrow keys move by one grid step (with Shift: 1 pixel), Delete removes, Ctrl+D duplicates, Ctrl+Z undoes, Ctrl+Y redoes, Ctrl+A selects all, Esc clears the selection.",
+      "untitled": "untitled",
+      "widgetLabel": "{type}: {title}, position {x}, {y}, size {width} × {height}"
+    },
+    "toolbar": {
+      "label": "Canvas tools",
+      "add": "Add widget",
+      "addTitle": "Add widget",
+      "addHint": "The new widget is placed at the top left of the visible area.",
+      "noTypes": "No widget types available.",
+      "undo": "Undo",
+      "redo": "Redo",
+      "undoKey": "Undo (Ctrl+Z)",
+      "redoKey": "Redo (Ctrl+Y)",
+      "duplicate": "Duplicate",
+      "duplicateKey": "Duplicate (Ctrl+D)",
+      "layerUp": "Layer up",
+      "layerDown": "Layer down",
+      "delete": "Delete",
+      "deleteKey": "Delete (Del)",
+      "selected": "{n} widget selected | {n} widgets selected"
+    },
+    "dashboard": {
+      "name": "Name",
+      "size": "Size and zoom",
+      "width": "Width (pixels)",
+      "height": "Height (pixels)",
+      "zoom": "Zoom",
+      "zoomFactor": "Zoom factor",
+      "background": "Background",
+      "color": "Background colour",
+      "mode": "Background image",
+      "image": "Image",
+      "data": "Data",
+      "timeFrame": "Time frame",
+      "updateRate": "Update rate (seconds)",
+      "grid": "Grid",
+      "gridX": "Horizontal grid (pixels)",
+      "gridY": "Vertical grid (pixels)",
+      "showGrid": "Show grid",
+      "gridHint": "Moving and resizing snaps the widgets to the grid; with Shift to a quarter of it, with Alt freely."
+    },
+    "zoom": {
+      "FIT_WIDTH": "Fit to width",
+      "FIT_HEIGHT": "Fit to height",
+      "FIT_SCREEN": "Fit to screen",
+      "factor": "Fixed factor"
+    },
+    "backgroundModes": {
+      "default": "Top left, original size",
+      "repeat": "Tile",
+      "stretch": "Stretch"
+    },
+    "background": {
+      "choose": "Upload image …",
+      "uploading": "Uploading …",
+      "hint": "PNG, JPEG, GIF, BMP, WebP or SVG, at most 10 MB. The image is saved at once.",
+      "uploaded": "The background image has been saved.",
+      "tooLarge": "The image is larger than 10 MB."
+    },
+    "timeFrames": {
+      "LASTVALUE": "Last value"
+    },
+    "widget": {
+      "none": "Please select a widget on the canvas.",
+      "one": "Selected: {type}",
+      "several": "{n} widgets selected ({types}) – changes apply to all of them.",
+      "title": "Title",
+      "tooltip": "Tooltip",
+      "layout": "Position and size",
+      "x": "X (pixels)",
+      "y": "Y (pixels)",
+      "width": "Width (pixels)",
+      "height": "Height (pixels)",
+      "layer": "Layer",
+      "colors": "Colours",
+      "background": "Background colour",
+      "fontColor": "Font colour",
+      "font": "Font",
+      "fontSize": "Font size",
+      "fontWeight": "Font weight",
+      "fontPosture": "Font style",
+      "titlePosition": "Alignment",
+      "underline": "Underlined",
+      "border": "Border",
+      "borderSize": "Border width",
+      "cornerRadius": "Corner radius",
+      "borderColor": "Border colour",
+      "shadow": "Shadow",
+      "values": "Values",
+      "decimals": "Decimal places",
+      "decimalsAuto": "Use the decimal places of the data row",
+      "showValue": "Show value",
+      "timeFrameTitle": "Time frame",
+      "timeFrame": "Own time frame",
+      "timeFrameNone": "As the dashboard",
+      "fixedTimeFrame": "Fixed time frame",
+      "fixedTimeFrameHint": "A fixed time frame does not follow the selection of the time bar."
+    },
+    "fontWeights": {
+      "THIN": "Thin",
+      "EXTRA_LIGHT": "Extra light",
+      "LIGHT": "Light",
+      "NORMAL": "Normal",
+      "MEDIUM": "Medium",
+      "SEMI_BOLD": "Semi bold",
+      "BOLD": "Bold",
+      "EXTRA_BOLD": "Extra bold",
+      "BLACK": "Black"
+    },
+    "fontPostures": {
+      "REGULAR": "Regular",
+      "ITALIC": "Italic"
+    },
+    "positions": {
+      "TOP_LEFT": "Top left",
+      "TOP_CENTER": "Top centre",
+      "TOP_RIGHT": "Top right",
+      "CENTER_LEFT": "Centre left",
+      "CENTER": "Centre",
+      "CENTER_RIGHT": "Centre right",
+      "BOTTOM_LEFT": "Bottom left",
+      "BOTTOM_CENTER": "Bottom centre",
+      "BOTTOM_RIGHT": "Bottom right"
+    },
+    "data": {
+      "onlyOne": "Data rows and type settings are available for a single widget – please select only one.",
+      "rows": "Data rows",
+      "noRows": "This widget has no data rows yet.",
+      "noPermissionHint": "Data row without read permission (object {id}); it stays unchanged in the widget.",
+      "aggregation": "Aggregation",
+      "manipulation": "Manipulation",
+      "decimalsWidget": "as widget",
+      "chart": "Chart",
+      "type": "Settings: {type}",
+      "noSettings": "This widget type has no further settings."
+    },
+    "aggregations": {
+      "NONE": "None",
+      "MINUTELY": "Minute",
+      "QUARTER_HOURLY": "Quarter hour",
+      "HOURLY": "Hour",
+      "DAILY": "Day",
+      "WEEKLY": "Week",
+      "MONTHLY": "Month",
+      "QUARTERLY": "Quarter",
+      "YEARLY": "Year",
+      "THREEYEARS": "3 years",
+      "FIVEYEARS": "5 years",
+      "TENYEARS": "10 years"
+    },
+    "manipulations": {
+      "NONE": "None",
+      "AVERAGE": "Average",
+      "SUM": "Sum",
+      "MIN": "Minimum",
+      "MAX": "Maximum",
+      "MEDIAN": "Median",
+      "RUNNING_MEAN": "Running mean",
+      "CENTRIC_RUNNING_MEAN": "Centred running mean",
+      "SORTED_MIN": "Sorted ascending",
+      "SORTED_MAX": "Sorted descending",
+      "CUMULATE": "Cumulated",
+      "GEOMETRIC_MEAN": "Geometric mean"
+    },
+    "nameDialog": {
+      "saveAsTitle": "Save dashboard as",
+      "newTitle": "New dashboard",
+      "create": "Create",
+      "noDirectory": "No directory in which you may create dashboards.",
+      "taken": "This directory already has a dashboard with this name.",
+      "openExisting": "Open the existing dashboard"
+    },
+    "overwrite": {
+      "title": "Overwrite dashboard",
+      "message": "The dashboard “{name}” already exists in this directory. Do you really want to overwrite it?",
+      "confirm": "Overwrite"
+    },
+    "deleteDialog": {
+      "title": "Delete dashboard",
+      "message": "Do you really want to delete the dashboard “{name}”? It will be moved to the recycle bin.",
+      "confirm": "Delete"
+    },
+    "leave": {
+      "title": "Unsaved changes",
+      "message": "The changes to this dashboard have not been saved. Do you want to discard them?",
+      "confirm": "Discard"
+    },
+    "conflictDialog": {
+      "title": "Dashboard has changed",
+      "message": "Someone else has saved the dashboard in the meantime. You can load the current version (your changes are lost) or save your version under a new name.",
+      "reload": "Reload"
+    },
+    "problem": {
+      "required": "Please fill in.",
+      "range": "Please enter a number from {min} to {max}.",
+      "integerRange": "Please enter a whole number from {min} to {max}.",
+      "color": "Invalid colour.",
+      "tooMany": "At most 1000 widgets."
     }
   }
 }

@@ -68,6 +68,11 @@ export class HttpClient {
     return this.request<T>('POST', path, form)
   }
 
+  /** Multipart upload with PUT (E4: background image of a dashboard). */
+  putForm<T>(path: string, form: FormData): Promise<T> {
+    return this.request<T>('PUT', path, form)
+  }
+
   async request<T>(method: string, path: string, body?: unknown, retry = true, signal?: AbortSignal): Promise<T> {
     const headers: Record<string, string> = { Accept: 'application/json' }
     const token = this.hooks.accessToken()

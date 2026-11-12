@@ -3,6 +3,8 @@
 import { createI18n } from 'vue-i18n'
 import de from './locales/de.json'
 import en from './locales/en.json'
+import deTypes from './locales/dashboardTypes.de.json'
+import enTypes from './locales/dashboardTypes.en.json'
 
 export const LOCALES = ['de', 'en'] as const
 export type Locale = (typeof LOCALES)[number]
@@ -25,11 +27,16 @@ function storedLocale(): string | null {
   }
 }
 
+/** E4: the texts of the widget type settings live in their own files, available under `dashboardEdit.types`. */
+function withTypes<T extends { dashboardEdit: object }>(messages: T, types: object): T {
+  return { ...messages, dashboardEdit: { ...messages.dashboardEdit, types } }
+}
+
 export const i18n = createI18n({
   legacy: false,
   locale: initialLocale(storedLocale(), navigator.languages ?? [navigator.language]),
   fallbackLocale: 'de',
-  messages: { de, en },
+  messages: { de: withTypes(de, deTypes), en: withTypes(en, enTypes) },
 })
 
 export function setLocale(locale: Locale): void {

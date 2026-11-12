@@ -3,6 +3,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { loadDirectories as fetchDirectories, type AnalysisDirectory } from '../api/analysis'
+import { loadDashboardDirectories as fetchDashboardDirectories, type DashboardDirectory } from '../api/dashboardEdit'
 import { moduleCounts, type Navigation } from '../api/navigation'
 import { useAuthStore } from './auth'
 
@@ -59,10 +60,48 @@ export const useNavigationStore = defineStore('navigation', () => {
     return directoriesLoading
   }
 
+  /* E4: the "Dashboard Directory" objects (target of new dashboards and "Speichern unter"); loaded on demand */
+  const dashboardDirectories = ref<DashboardDirectory[] | null>(null)
+  let dashboardDirectoriesLoading: Promise<void> | null = null
+  const creatableDashboardDirectories = computed(() => (dashboardDirectories.value ?? []).filter((d) => d.canCreate))
+
+  /** Loads the dashboard directories once (again with `force`); an error leaves the list empty. */
+  function loadDashboardDirectories(force = false): Promise<void> {
+    if (dashboardDirectories.value && !force) return Promise.resolve()
+    if (!dashboardDirectoriesLoading) {
+      dashboardDirectoriesLoading = fetchDashboardDirectories(useAuthStore().http)
+        .then((list) => {
+          dashboardDirectories.value = Array.isArray(list) ? list.filter((d) => d && typeof d.id === 'number') : []
+        })
+        .catch(() => {
+          dashboardDirectories.value = []
+        })
+        .finally(() => {
+          dashboardDirectoriesLoading = null
+        })
+    }
+    return dashboardDirectoriesLoading
+  }
+
   function reset(): void {
     data.value = null
     directories.value = null
+    dashboardDirectories.value = null
   }
 
-  return { data, counts, modules, loading, failed, load, reset, directories, creatableDirectories, loadDirectories }
+  return {
+    data,
+    counts,
+    modules,
+    loading,
+    failed,
+    load,
+    reset,
+    directories,
+    creatableDirectories,
+    loadDirectories,
+    dashboardDirectories,
+    creatableDashboardDirectories,
+    loadDashboardDirectories,
+  }
 })
