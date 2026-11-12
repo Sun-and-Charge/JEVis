@@ -34,6 +34,12 @@ export interface RowView {
   pieValue: number | null
   /** notes of the row (markers on the curve); empty or missing without notes */
   notes?: RowNote[]
+  /** E1: object of the row (data row id for notes and manual values) */
+  objectId?: number
+  /** E1: the user may add notes to the row */
+  canAddNote?: boolean
+  /** E1: raw data row the user may enter values for */
+  canEnter?: boolean
 }
 
 export interface ChartView {
@@ -154,6 +160,9 @@ export function buildChartViews(config: AnalysisConfig, data: AnalysisData | nul
         bubbleType: row.bubbleType ?? 'NONE',
         pieValue: state === 'OK' && typeof d?.pieValue === 'number' ? d.pieValue : null,
         notes: readable ? rowNotes(d?.notes) : [],
+        objectId: row.objectId,
+        canAddNote: readable && (row.canAddNote === true || d?.canAddNote === true),
+        canEnter: readable && (row.canEnter === true || d?.canEnter === true),
       }
     })
     return {

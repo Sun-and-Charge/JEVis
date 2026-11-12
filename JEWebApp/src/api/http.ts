@@ -11,6 +11,16 @@ export class HttpError extends Error {
   ) {
     super(`HTTP ${status}${body ? ': ' + body : ''}`)
   }
+
+  /** The body as JSON (e.g. the current entry of a 409), null if it is empty or not JSON. */
+  json<T = unknown>(): T | null {
+    if (!this.body) return null
+    try {
+      return JSON.parse(this.body) as T
+    } catch {
+      return null
+    }
+  }
 }
 
 export interface AuthHooks {
@@ -42,6 +52,14 @@ export class HttpClient {
 
   post<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>('POST', path, body)
+  }
+
+  put<T>(path: string, body?: unknown): Promise<T> {
+    return this.request<T>('PUT', path, body)
+  }
+
+  delete<T = void>(path: string): Promise<T> {
+    return this.request<T>('DELETE', path)
   }
 
   async request<T>(method: string, path: string, body?: unknown, retry = true): Promise<T> {

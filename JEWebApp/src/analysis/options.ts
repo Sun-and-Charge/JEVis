@@ -20,6 +20,8 @@ export interface OptionContext {
   }
   /** name of a note tag id (default: the id) */
   tagName?: (id: string) => string
+  /** E1: lines of rows that may get notes react to clicks (also without symbols) */
+  noteClicks?: boolean
 }
 
 const GREY = '#9aa3b2'
@@ -164,6 +166,11 @@ export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
   const samples = rows.map((row) => numericSamples(row))
   const series = rows.map((row, i) => seriesFor(row, samples[i], stackCount))
   addNoteMarkers(rows, samples, series, ctx)
+  if (ctx.noteClicks) {
+    rows.forEach((row, i) => {
+      if (series[i].type === 'line' && row.canAddNote) series[i].triggerLineEvent = true
+    })
+  }
   const twoAxes = rows.some((r) => r.axis === 1)
   const onlyLogical = rows.length > 0 && rows.every((r) => r.type === 'LOGICAL')
   const hasBars = rows.some((r) => r.type === 'COLUMN' || r.type === 'STACKED_COLUMN')

@@ -10,6 +10,7 @@ import { loadRowSamples, type Note, type RowSamples } from '../../api/notes'
 import { noteChartOption, noteWindow, numericRowSamples } from '../../notes/chart'
 import { noteTime, visibleTags, type TagName } from '../../notes/notes'
 import { useAuthStore } from '../../stores/auth'
+import '../../styles/edit.css'
 
 /*
  * Detail panel of a note: full text, tags, user, data row and site, and a small chart of the data row from one day
@@ -17,6 +18,10 @@ import { useAuthStore } from '../../stores/auth'
  */
 
 const props = defineProps<{ note: Note; tagName: TagName }>()
+/* E1: change the note / add another note to its data row (the view opens the dialog) */
+const emit = defineEmits<{ edit: []; add: [] }>()
+const changeable = computed(() => !!props.note.version && (!!props.note.canEdit || !!props.note.canDelete))
+const canAdd = computed(() => !!props.note.row?.canAddNote && typeof props.note.row.notesTarget === 'number')
 const { t, locale } = useI18n()
 const auth = useAuthStore()
 
@@ -91,6 +96,10 @@ const id = (suffix: string) => `note-${props.note.id}-${suffix}`
         <dt>{{ t('notes.col.site') }}</dt>
         <dd>{{ note.site?.name || t('modules.none') }}</dd>
       </dl>
+      <div v-if="changeable || canAdd" class="edit-actions">
+        <button v-if="changeable" type="button" class="edit-btn note-edit" @click="emit('edit')">{{ note.canEdit ? t('noteEdit.edit') : t('noteEdit.delete') }}</button>
+        <button v-if="canAdd" type="button" class="edit-btn note-add-row" @click="emit('add')">{{ t('noteEdit.addToRow') }}</button>
+      </div>
     </section>
 
     <section class="iso-section note-chart-section" :aria-labelledby="id('chart')">

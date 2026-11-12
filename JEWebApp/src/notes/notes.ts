@@ -259,3 +259,53 @@ export function tagText(note: Pick<Note, 'tags'>, tagName: TagName): string {
   return visibleTags(note).map(tagName).join(', ')
 }
 
+
+/* ---- editing (E1) ---- */
+
+/** Tags that can be chosen when writing a note: the standard tags 1–13 of `NoteTag` ("0" = none is no chip). */
+export const EDITABLE_TAG_IDS: readonly string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+
+export function isStandardTag(id: string): boolean {
+  return /^\d+$/.test(id) && Number(id) >= 0 && Number(id) <= 13
+}
+
+/** Chips of the note form: id and name (names of the answer, else the app's). */
+export function editableTags(tagName: TagName): NoteTagInfo[] {
+  return EDITABLE_TAG_IDS.map((id) => ({ id, name: tagName(id) }))
+}
+
+/** Standard tags of a note as chosen chips (sorted by id, "0" left out). */
+export function chosenTags(tags: readonly string[] | null | undefined): string[] {
+  return [...new Set((tags ?? []).filter((t) => isStandardTag(t) && t !== TAG_NONE))].sort((a, b) => Number(a) - Number(b))
+}
+
+/** Custom tag texts of old notes (not 0–13): kept by the server as long as the tags are not changed. */
+export function customTags(tags: readonly string[] | null | undefined): string[] {
+  return (tags ?? []).filter((t) => t && !isStandardTag(t))
+}
+
+/**
+ * Tags sent when changing a note: undefined while the chips are unchanged (the server keeps the tags, also custom
+ * ones of old notes), else the chosen standard tags.
+ */
+export function tagsToSend(original: readonly string[] | null | undefined, chosen: readonly string[]): string[] | undefined {
+  const before = chosenTags(original)
+  const after = chosenTags(chosen)
+  const same = before.length === after.length && before.every((t, i) => t === after[i])
+  return same ? undefined : after
+}
+
+/** A note as the note dialog changes it (from the notes list or an analysis marker). */
+export interface EditableNote {
+  /** `<notesObject>-<epoch ms>` */
+  id: string
+  /** epoch ms */
+  timestamp: number
+  text: string
+  tags: string[]
+  version?: string | null
+  /** may change text and tags (needs `version`) */
+  canEdit?: boolean
+  /** may delete the note (needs `version`) */
+  canDelete?: boolean
+}

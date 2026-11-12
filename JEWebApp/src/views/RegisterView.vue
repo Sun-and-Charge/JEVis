@@ -350,7 +350,7 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
               <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
             </button>
             <div v-if="expanded.has(row.id)" :id="id('c-' + row.id)" class="mod-details">
-              <RegisterDetails :kind="kind" :row="row" :columns="group.columns" :today="today" />
+              <RegisterDetails :kind="kind" :row="row" :columns="group.columns" :today="today" @changed="reload" />
             </div>
           </li>
         </ul>
@@ -391,7 +391,7 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
                 </tr>
                 <tr v-if="expanded.has(row.id)" :id="id('d-' + row.id)" class="mod-detail">
                   <td :colspan="visible.length + 1">
-                    <RegisterDetails :kind="kind" :row="row" :columns="group.columns" :today="today" />
+                    <RegisterDetails :kind="kind" :row="row" :columns="group.columns" :today="today" @changed="reload" />
                   </td>
                 </tr>
               </template>

@@ -2,7 +2,9 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { loadAppointments, type Appointment, type AppointmentList } from '../api/modules'
+import { completeAppointment, loadAppointments, type Appointment, type AppointmentList } from '../api/modules'
+import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
+import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
 import { localName } from '../api/navigation'
 import AppointmentDetails from '../components/modules/AppointmentDetails.vue'
 import { DEFAULT_APPOINTMENT_FILTER, dueState, filterAppointments, sortAppointments, type AppointmentFilter } from '../modules/appointments'
@@ -11,6 +13,7 @@ import { siteOptions, type SiteFilter } from '../modules/search'
 import { useNarrow } from '../modules/useNarrow'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
+import '../styles/edit.css'
 
 const { t, te, locale } = useI18n()
 const auth = useAuthStore()
@@ -86,6 +89,54 @@ function siteLabel(a: Appointment): string {
 }
 
 const statusOptions = ['open', 'done', 'all'] as const
+
+/* ---- E1: "Erledigt" ---- */
+
+const anyWritable = computed(() => all.value.some((a) => a.canWrite && !!a.version))
+const message = ref<{ ok: boolean; text: string } | null>(null)
+const asking = ref<Appointment | null>(null)
+const askError = ref<string | null>(null)
+const { busy, run } = useBusy()
+
+function askDone(a: Appointment) {
+  message.value = null
+  askError.value = null
+  asking.value = a
+}
+
+function replace(entry: Appointment) {
+  if (!list.value) return
+  list.value = { ...list.value, appointments: list.value.appointments.map((a) => (a.id === entry.id ? entry : a)) }
+}
+
+async function markDone() {
+  const a = asking.value
+  if (!a) return
+  await run(async () => {
+    try {
+      const updated = await completeAppointment(auth.http, a.id, a.version!)
+      asking.value = null
+      if (updated && typeof updated === 'object' && updated.id === a.id) replace(updated)
+      else void fetchList()
+      const recurring = !!a.recurrence && a.recurrence !== 'NONE'
+      const next = updated?.status === 'OPEN' ? updated.due ?? updated.nextDue : null
+      message.value = {
+        ok: true,
+        text: recurring && next ? t('moduleEdit.doneNext', { title: a.title, date: formatLocal(next, locale.value) }) : t('moduleEdit.doneSaved', { title: a.title }),
+      }
+    } catch (e) {
+      const kind = writeErrorKind(e)
+      // 409 changed meanwhile, 404 gone, 400 e.g. already done elsewhere: show the current list
+      if (kind === 'conflict' || kind === 'notFound' || kind === 'invalid') {
+        asking.value = null
+        message.value = { ok: false, text: kind === 'conflict' ? t('moduleEdit.conflict') : writeErrorText(e, t) }
+        void fetchList()
+      } else {
+        askError.value = writeErrorText(e, t)
+      }
+    }
+  })
+}
 </script>
 
 <template>
@@ -94,7 +145,8 @@ const statusOptions = ['open', 'done', 'all'] as const
       <h1 id="ap-title">{{ t('appointments.title') }}</h1>
       <span v-if="list?.today" class="muted">{{ t('appointments.today', { date: formatLocalDate(list.today, locale) }) }}</span>
     </div>
-    <p class="muted read-only">{{ t('modules.readOnly') }}</p>
+    <p class="muted read-only">{{ anyWritable ? t('moduleEdit.hint') : t('modules.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result ap-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">{{ message.text }}</p>
 
     <p v-if="state === 'loading' && !list" class="muted" role="status">{{ t('appointments.loading') }}</p>
     <div v-else-if="state === 'error'" class="alert alert-error" role="alert">
@@ -161,7 +213,7 @@ const statusOptions = ['open', 'done', 'all'] as const
             <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
           </button>
           <div v-if="expanded.has(a.id)" :id="'ap-c-' + a.id" class="mod-details">
-            <AppointmentDetails :entry="a" />
+            <AppointmentDetails :entry="a" :busy="busy" @done="askDone(a)" />
           </div>
         </li>
       </ul>
@@ -205,13 +257,24 @@ const statusOptions = ['open', 'done', 'all'] as const
                 <td class="nowrap">{{ formatLocal(a.lastMail, locale) || t('modules.none') }}</td>
               </tr>
               <tr v-if="expanded.has(a.id)" :id="'ap-d-' + a.id" class="mod-detail">
-                <td colspan="8"><AppointmentDetails :entry="a" /></td>
+                <td colspan="8"><AppointmentDetails :entry="a" :busy="busy" @done="askDone(a)" /></td>
               </tr>
             </template>
           </tbody>
         </table>
       </div>
     </template>
+
+    <ConfirmDialog
+      v-if="asking"
+      :title="t('moduleEdit.done')"
+      :message="t('moduleEdit.doneQuestion', { title: asking.title })"
+      :confirm-label="t('moduleEdit.done')"
+      :busy="busy"
+      :error="askError"
+      @confirm="markDone"
+      @cancel="asking = null"
+    />
   </section>
 </template>
 

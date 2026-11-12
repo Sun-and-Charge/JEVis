@@ -3,10 +3,13 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatNumber } from '../../analysis/format'
-import type { ChartView } from '../../analysis/model'
+import type { ChartView, RowView } from '../../analysis/model'
 import { stateText, type OptionContext } from '../../analysis/options'
 
 const props = defineProps<{ chart: ChartView; ctx: OptionContext }>()
+/* E1: note / manual value for a row (the view opens the dialog) */
+const emit = defineEmits<{ addNote: [row: RowView]; entry: [row: RowView] }>()
+const hasActions = computed(() => props.chart.rows.some((r) => r.canEnter || (r.canAddNote && props.chart.kind === 'xy')))
 const { t, locale } = useI18n()
 
 const hasSum = computed(() => props.chart.rows.some((r) => r.stats?.sum != null))
@@ -24,6 +27,7 @@ const hasSum = computed(() => props.chart.rows.some((r) => r.stats?.sum != null)
           <th scope="col">{{ t('analysis.summary.avg') }}</th>
           <th v-if="hasSum" scope="col">{{ t('analysis.summary.sum') }}</th>
           <th scope="col" class="unit">{{ t('analysis.summary.unit') }}</th>
+          <th v-if="hasActions" scope="col" class="actions"><span class="visually-hidden">{{ t('alarmEdit.actions') }}</span></th>
         </tr>
       </thead>
       <tbody>
@@ -40,6 +44,16 @@ const hasSum = computed(() => props.chart.rows.some((r) => r.stats?.sum != null)
           </template>
           <td v-else :colspan="hasSum ? 4 : 3" class="state" :class="{ error: row.state === 'ERROR' }">{{ stateText(row, ctx) }}</td>
           <td class="unit">{{ row.unit }}</td>
+          <td v-if="hasActions" class="actions">
+            <span role="group" class="row-actions" :aria-label="t('noteEdit.actionsFor', { name: row.name })">
+              <button v-if="row.canAddNote && chart.kind === 'xy'" type="button" class="act row-note" :aria-label="t('noteEdit.addHere') + ': ' + row.name" @click="emit('addNote', row)">
+                {{ t('noteEdit.addHere') }}
+              </button>
+              <button v-if="row.canEnter" type="button" class="act row-entry" :aria-label="t('entry.actionLabel', { name: row.name })" @click="emit('entry', row)">
+                {{ t('entry.action') }}
+              </button>
+            </span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -109,6 +123,37 @@ td.state {
 td.state.error {
   color: var(--error);
   font-style: normal;
+}
+
+.actions {
+  text-align: right;
+  width: 1%;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.act {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--blueberry);
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.act:hover {
+  border-color: var(--blueberry);
+}
+
+.act:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
 }
 
 tbody tr:last-child th,

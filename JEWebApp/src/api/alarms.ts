@@ -17,6 +17,8 @@ export interface AlarmConfiguration {
   checkedBy: string | null
   /** ISO 8601 with offset, null if not confirmed */
   checkedAt: string | null
+  /** E1: the user may confirm (write or execute right); missing on older servers = no */
+  canConfirm?: boolean
 }
 
 /** One alarm of GET /web/alarms (one entry of a JEAlarm log file). */
@@ -76,4 +78,31 @@ export function alarmsPath(query: AlarmQuery): string {
 
 export function loadAlarms(http: GetClient, query: AlarmQuery): Promise<AlarmList> {
   return http.get<AlarmList>(alarmsPath(query))
+}
+
+/* ---- editing (E1) ---- */
+
+/** Answer of POST /web/alarms/configurations/{id}/confirm. */
+export interface AlarmConfirmResult {
+  checked: boolean
+  checkedBy: string | null
+  checkedAt: string | null
+}
+
+/** Answer of POST /web/alarms/confirm-all: refused ids are not an error of the whole request. */
+export interface AlarmConfirmAllResult {
+  confirmed: number[]
+  refused: number[]
+}
+
+type PostClient = Pick<HttpClient, 'post'>
+
+/** Confirms (checked = true) or withdraws the confirmation of an alarm configuration. */
+export function confirmAlarmConfiguration(http: PostClient, id: number, checked: boolean): Promise<AlarmConfirmResult> {
+  return http.post<AlarmConfirmResult>(`/web/alarms/configurations/${id}/confirm`, { checked })
+}
+
+/** Confirms the given configurations (the ones currently shown). */
+export function confirmAllAlarms(http: PostClient, ids: readonly number[]): Promise<AlarmConfirmAllResult> {
+  return http.post<AlarmConfirmAllResult>('/web/alarms/confirm-all', { ids: [...ids] })
 }

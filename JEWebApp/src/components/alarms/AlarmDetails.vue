@@ -11,13 +11,17 @@ import { HttpError } from '../../api/http'
 import { loadRowSamples, type RowSamples } from '../../api/notes'
 import { noteChartOption, noteWindow, numericRowSamples } from '../../notes/chart'
 import { useAuthStore } from '../../stores/auth'
+import '../../styles/edit.css'
 
 /*
  * Detail panel of an alarm: all logged fields, and the curve of the alarm's data row from one day before to one day
  * after the alarm with the alarm time marked and the limit (Soll-Wert) as dashed line. Unreadable rows get no chart.
  */
 
-const props = defineProps<{ alarm: Alarm }>()
+const props = defineProps<{ alarm: Alarm; busy?: boolean }>()
+/* E1: confirm / withdraw the confirmation of the alarm's configuration (the view sends it) */
+const emit = defineEmits<{ confirm: [checked: boolean] }>()
+const canConfirm = computed(() => !!props.alarm.configuration?.canConfirm)
 const { t, locale } = useI18n()
 const auth = useAuthStore()
 
@@ -126,6 +130,17 @@ const id = (suffix: string) => `alarm-${props.alarm.id}-${suffix}`
           <dd>{{ checkedInfo }}</dd>
         </template>
       </dl>
+      <div v-if="canConfirm" class="edit-actions">
+        <button
+          type="button"
+          class="edit-btn alarm-confirm-detail"
+          :disabled="busy"
+          :aria-label="t(checked ? 'alarmEdit.unconfirmLabel' : 'alarmEdit.confirmLabel', { name: alarm.configuration.name })"
+          @click="emit('confirm', !checked)"
+        >
+          {{ t(checked ? 'alarmEdit.unconfirm' : 'alarmEdit.confirm') }}
+        </button>
+      </div>
     </section>
 
     <section class="iso-section note-chart-section" :aria-labelledby="id('chart')">

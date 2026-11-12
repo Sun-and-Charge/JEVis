@@ -2,7 +2,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { loadMaintenance, type MaintenanceEntry, type MaintenanceList } from '../api/modules'
+import { loadMaintenance, setMaintenanceStatus, type MaintenanceEntry, type MaintenanceList, type MaintenanceStatus } from '../api/modules'
+import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
 import { localName } from '../api/navigation'
 import MaintenanceDetails from '../components/modules/MaintenanceDetails.vue'
 import { formatDuration, formatPeriod } from '../modules/dates'
@@ -11,6 +12,7 @@ import { siteOptions, type SiteFilter } from '../modules/search'
 import { useNarrow } from '../modules/useNarrow'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
+import '../styles/edit.css'
 
 const { t, te, locale } = useI18n()
 const auth = useAuthStore()
@@ -72,6 +74,33 @@ function siteLabel(e: MaintenanceEntry): string {
 
 const statusOptions = ['active', 'done', 'all'] as const
 const typeOptions = ['MAINTENANCE', 'KNOWN_ISSUE'] as const
+
+/* ---- E1: status change ---- */
+
+const anyWritable = computed(() => all.value.some((e) => e.canWrite && !!e.version))
+const message = ref<{ ok: boolean; text: string } | null>(null)
+const { busy, run } = useBusy()
+
+function replace(entry: MaintenanceEntry) {
+  if (!list.value) return
+  list.value = { ...list.value, entries: list.value.entries.map((e) => (e.id === entry.id ? entry : e)) }
+}
+
+async function changeStatus(e: MaintenanceEntry, status: MaintenanceStatus) {
+  message.value = null
+  await run(async () => {
+    try {
+      const updated = await setMaintenanceStatus(auth.http, e.id, status, e.version!)
+      if (updated && typeof updated === 'object' && updated.id === e.id) replace(updated)
+      else void fetchList()
+      message.value = { ok: true, text: t('moduleEdit.statusSaved', { title: e.title, status: t('moduleEdit.statusOption.' + status) }) }
+    } catch (err) {
+      const kind = writeErrorKind(err)
+      message.value = { ok: false, text: kind === 'conflict' ? t('moduleEdit.conflict') : writeErrorText(err, t) }
+      if (kind === 'conflict' || kind === 'notFound') void fetchList()
+    }
+  })
+}
 </script>
 
 <template>
@@ -79,7 +108,8 @@ const typeOptions = ['MAINTENANCE', 'KNOWN_ISSUE'] as const
     <div class="mod-head">
       <h1 id="mt-title">{{ t('maintenance.title') }}</h1>
     </div>
-    <p class="muted read-only">{{ t('modules.readOnly') }}</p>
+    <p class="muted read-only">{{ anyWritable ? t('moduleEdit.hint') : t('modules.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result mt-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">{{ message.text }}</p>
 
     <p v-if="state === 'loading' && !list" class="muted" role="status">{{ t('maintenance.loading') }}</p>
     <div v-else-if="state === 'error'" class="alert alert-error" role="alert">
@@ -151,7 +181,7 @@ const typeOptions = ['MAINTENANCE', 'KNOWN_ISSUE'] as const
             <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
           </button>
           <div v-if="expanded.has(e.id)" :id="'mt-c-' + e.id" class="mod-details">
-            <MaintenanceDetails :entry="e" />
+            <MaintenanceDetails :entry="e" :busy="busy" @status="(s: MaintenanceStatus) => changeStatus(e, s)" />
           </div>
         </li>
       </ul>
@@ -193,7 +223,7 @@ const typeOptions = ['MAINTENANCE', 'KNOWN_ISSUE'] as const
                 <td>{{ siteLabel(e) }}</td>
               </tr>
               <tr v-if="expanded.has(e.id)" :id="'mt-d-' + e.id" class="mod-detail">
-                <td colspan="7"><MaintenanceDetails :entry="e" /></td>
+                <td colspan="7"><MaintenanceDetails :entry="e" :busy="busy" @status="(s: MaintenanceStatus) => changeStatus(e, s)" /></td>
               </tr>
             </template>
           </tbody>

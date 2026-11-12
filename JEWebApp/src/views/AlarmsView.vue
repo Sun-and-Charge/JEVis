@@ -19,8 +19,12 @@ import {
 } from '../alarms/alarms'
 import { formatDateTime } from '../analysis/format'
 import { browserTimeZone } from '../analysis/settings'
-import { ALARM_STATES, loadAlarms, type Alarm, type AlarmState } from '../api/alarms'
+import { ALARM_STATES, confirmAlarmConfiguration, confirmAllAlarms, loadAlarms, type Alarm, type AlarmConfirmResult, type AlarmState } from '../api/alarms'
 import AlarmDetails from '../components/alarms/AlarmDetails.vue'
+import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
+import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
+import { useNavigationStore } from '../stores/navigation'
+import '../styles/edit.css'
 import { saveBlob } from '../iso/download'
 import { sortRows, type ColumnContext, type SortDirection } from '../iso/columns'
 import { useLoader } from '../iso/useLoader'
@@ -34,7 +38,7 @@ import '../styles/notes.css'
 import '../styles/alarms.css'
 
 /*
- * Alarms (W4.5, view only) like the Control Center's Alarm Plugin: alarms logged by JEAlarm in a time frame, open /
+ * Alarms (W4.5; confirming E1) like the Control Center's Alarm Plugin: alarms logged by JEAlarm in a time frame, open /
  * confirmed / all, search, type and site filter, sortable table (cards on phone width), CSV export and a detail
  * panel with the curve of the data row around the alarm and its limit.
  */
@@ -160,6 +164,95 @@ const statusTitle = (a: Alarm) => checkedTitle(a, formatTime) || undefined
 const withUnit = (v: number | null, a: Alarm) => valueWithUnit(v, a.unit, locale.value)
 const tableColumns = ['date', 'site', 'configuration', 'row', 'isValue', 'operator', 'shouldBeValue', 'tolerance', 'type', 'alarm', 'status'] as const
 const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
+
+/* ---- E1: confirm per configuration, confirm all shown ---- */
+
+const nav = useNavigationStore()
+const canConfirm = (a: Alarm) => !!a.configuration?.canConfirm
+const anyConfirmable = computed(() => all.value.some(canConfirm))
+const message = ref<{ ok: boolean; text: string } | null>(null)
+/** configurations with a running request */
+const pending = ref(new Set<number>())
+const isPending = (a: Alarm) => !!a.configuration && pending.value.has(a.configuration.id)
+
+/** Takes the new state of configurations into the shown list (no reload; the state filter applies on the next load). */
+function applyChecked(ids: readonly number[], result: AlarmConfirmResult) {
+  if (!data.value) return
+  const set = new Set(ids)
+  data.value = {
+    ...data.value,
+    alarms: data.value.alarms.map((a) =>
+      a.configuration && set.has(a.configuration.id)
+        ? { ...a, configuration: { ...a.configuration, checked: result.checked, checkedBy: result.checkedBy ?? null, checkedAt: result.checkedAt ?? null } }
+        : a,
+    ),
+  }
+}
+
+async function setConfirmed(a: Alarm, checked: boolean) {
+  const config = a.configuration
+  if (!config || pending.value.has(config.id)) return
+  message.value = null
+  pending.value = new Set(pending.value).add(config.id)
+  try {
+    const result = await confirmAlarmConfiguration(auth.http, config.id, checked)
+    applyChecked([config.id], {
+      checked: result?.checked ?? checked,
+      checkedBy: result?.checkedBy ?? null,
+      checkedAt: result?.checkedAt ?? null,
+    })
+    message.value = { ok: true, text: t(checked ? 'alarmEdit.confirmed' : 'alarmEdit.unconfirmed', { name: config.name }) }
+    void nav.load()
+  } catch (e) {
+    message.value = { ok: false, text: writeErrorText(e, t) }
+    if (writeErrorKind(e) === 'notFound' || writeErrorKind(e) === 'conflict') void reload()
+  } finally {
+    const next = new Set(pending.value)
+    next.delete(config.id)
+    pending.value = next
+  }
+}
+
+/** Configurations of the shown (filtered) open alarms the user may confirm. */
+const confirmAllIds = computed(() => {
+  const ids = new Set<number>()
+  for (const a of rows.value) if (a.configuration && !a.configuration.checked && canConfirm(a)) ids.add(a.configuration.id)
+  return [...ids]
+})
+const askAll = ref(false)
+const allError = ref<string | null>(null)
+const { busy: allBusy, run: runAll } = useBusy()
+
+function openConfirmAll() {
+  allError.value = null
+  message.value = null
+  askAll.value = true
+}
+
+async function confirmAll() {
+  const ids = confirmAllIds.value
+  if (!ids.length) return
+  await runAll(async () => {
+    try {
+      const result = await confirmAllAlarms(auth.http, ids)
+      const confirmed = (result?.confirmed ?? []).filter((id) => typeof id === 'number')
+      const refused = (result?.refused ?? []).filter((id) => typeof id === 'number')
+      applyChecked(confirmed, { checked: true, checkedBy: auth.user?.name ?? null, checkedAt: new Date().toISOString() })
+      askAll.value = false
+      message.value = {
+        ok: !refused.length,
+        text: refused.length
+          ? t('alarmEdit.confirmAllResult', { confirmed: confirmed.length, refused: refused.length })
+          : t('alarmEdit.confirmAllDone', confirmed.length),
+      }
+      void nav.load()
+      // the confirming account and time come from the server
+      if (confirmed.length) void reload()
+    } catch (e) {
+      allError.value = writeErrorText(e, t)
+    }
+  })
+}
 </script>
 
 <template>
@@ -167,7 +260,10 @@ const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
     <div class="mod-head">
       <h1 id="alarms-title">{{ t('alarms.title') }}</h1>
     </div>
-    <p class="muted read-only">{{ t('alarms.readOnly') }}</p>
+    <p class="muted read-only">{{ anyConfirmable ? t('alarmEdit.hint') : t('alarms.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result alarms-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">
+      {{ message.text }}
+    </p>
 
     <fieldset class="mod-filters iso-filters notes-range">
       <legend class="visually-hidden">{{ t('alarms.range.label') }}</legend>
@@ -256,7 +352,20 @@ const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
         <button type="button" class="notes-btn" :disabled="!rows.length" :aria-label="t('alarms.export.csvLabel')" @click="exportCsv">
           {{ t('alarms.export.csv') }}
         </button>
+        <button v-if="confirmAllIds.length" type="button" class="notes-btn alarms-confirm-all" :disabled="allBusy" @click="openConfirmAll">
+          {{ t('alarmEdit.confirmAll') }}
+        </button>
       </div>
+      <ConfirmDialog
+        v-if="askAll"
+        :title="t('alarmEdit.confirmAllTitle')"
+        :message="t('alarmEdit.confirmAllQuestion', confirmAllIds.length)"
+        :confirm-label="t('alarmEdit.confirmAllButton')"
+        :busy="allBusy"
+        :error="allError"
+        @confirm="confirmAll"
+        @cancel="askAll = false"
+      />
 
       <p v-if="!all.length" class="muted">{{ t('alarms.empty') }}</p>
       <p v-else-if="!rows.length" class="muted">{{ t('alarms.noMatch') }}</p>
@@ -289,6 +398,17 @@ const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
             <dt>{{ t('alarms.col.alarm') }}</dt>
             <dd>{{ a.logValueName || t('modules.none') }}</dd>
           </dl>
+          <div v-if="canConfirm(a)" class="edit-actions">
+            <button
+              type="button"
+              class="edit-btn alarm-confirm"
+              :disabled="isPending(a)"
+              :aria-label="t(isChecked(a) ? 'alarmEdit.unconfirmLabel' : 'alarmEdit.confirmLabel', { name: a.configuration.name })"
+              @click="setConfirmed(a, !isChecked(a))"
+            >
+              {{ t(isChecked(a) ? 'alarmEdit.unconfirm' : 'alarmEdit.confirm') }}
+            </button>
+          </div>
           <button
             type="button"
             class="mod-toggle"
@@ -300,7 +420,7 @@ const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
             <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
           </button>
           <div v-if="selected === a.id" :id="domId(a, 'c')" class="mod-details">
-            <AlarmDetails :alarm="a" />
+            <AlarmDetails :alarm="a" :busy="isPending(a)" @confirm="(c: boolean) => setConfirmed(a, c)" />
           </div>
         </li>
       </ul>
@@ -316,6 +436,7 @@ const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
                   {{ t('alarms.col.' + c) }}<span class="iso-sort-mark" aria-hidden="true">{{ sortId === c ? (sortDir === 'asc' ? '▲' : '▼') : '' }}</span>
                 </button>
               </th>
+              <th v-if="anyConfirmable" scope="col">{{ t('alarmEdit.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -353,9 +474,22 @@ const numericColumns = new Set(['isValue', 'shouldBeValue', 'tolerance'])
                 <td>
                   <span class="mod-badge alarm-state" :class="isChecked(a) ? 'is-checked' : 'is-open'" :title="statusTitle(a)">{{ stateName(isChecked(a)) }}</span>
                 </td>
+                <td v-if="anyConfirmable" class="nowrap">
+                  <button
+                    v-if="canConfirm(a)"
+                    type="button"
+                    class="edit-btn is-small alarm-confirm"
+                    :disabled="isPending(a)"
+                    :aria-label="t(isChecked(a) ? 'alarmEdit.unconfirmLabel' : 'alarmEdit.confirmLabel', { name: a.configuration.name })"
+                    :title="t(isChecked(a) ? 'alarmEdit.unconfirmLabel' : 'alarmEdit.confirmLabel', { name: a.configuration.name })"
+                    @click.stop="setConfirmed(a, !isChecked(a))"
+                  >
+                    {{ t(isChecked(a) ? 'alarmEdit.unconfirm' : 'alarmEdit.confirm') }}
+                  </button>
+                </td>
               </tr>
               <tr v-if="selected === a.id" :id="domId(a, 'd')" class="mod-detail">
-                <td :colspan="tableColumns.length + 1"><AlarmDetails :alarm="a" /></td>
+                <td :colspan="tableColumns.length + (anyConfirmable ? 2 : 1)"><AlarmDetails :alarm="a" :busy="isPending(a)" @confirm="(c: boolean) => setConfirmed(a, c)" /></td>
               </tr>
             </template>
           </tbody>

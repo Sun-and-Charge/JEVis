@@ -4,12 +4,20 @@ import { useI18n } from 'vue-i18n'
 import type { Appointment } from '../../api/modules'
 import { formatLocal } from '../../modules/dates'
 import RecipientsText from './RecipientsText.vue'
+import '../../styles/edit.css'
 
-defineProps<{ entry: Appointment }>()
+defineProps<{ entry: Appointment; busy?: boolean }>()
+/* E1: "Erledigt" (the view asks and sends it) */
+const emit = defineEmits<{ done: [] }>()
 const { t, locale } = useI18n()
 </script>
 
 <template>
+  <div v-if="entry.canWrite && entry.version && entry.status === 'OPEN'" class="edit-actions">
+    <button type="button" class="edit-btn ap-done" :disabled="busy" :aria-label="t('moduleEdit.doneLabel', { title: entry.title })" @click="emit('done')">
+      {{ t('moduleEdit.done') }}
+    </button>
+  </div>
   <dl class="mod-dl">
     <dt>{{ t('modules.description') }}</dt>
     <dd>{{ entry.description || t('modules.none') }}</dd>

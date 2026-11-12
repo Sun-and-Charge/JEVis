@@ -36,6 +36,10 @@ export interface AnalysisRowConfig {
   /** role in a bubble chart: X, Y, SIZE or NONE */
   bubbleType?: string
   readable: boolean
+  /** E1: the user may add notes to the row */
+  canAddNote?: boolean
+  /** E1: raw data row the user may enter values for */
+  canEnter?: boolean
 }
 
 export interface AnalysisChartConfig {
@@ -103,6 +107,13 @@ export interface RowNote {
   text: string
   tags: string[]
   user: string | null
+  /** E1: `<notesObject>-<epoch ms>` as in GET /web/notes (needed to change the note) */
+  id?: string
+  /** E1: the "Data Notes" object of the note */
+  notesObject?: number
+  canEdit?: boolean
+  canDelete?: boolean
+  version?: string | null
 }
 
 export interface AnalysisRowData {
@@ -116,6 +127,12 @@ export interface AnalysisRowData {
   pieValue?: number | null
   /** notes of the row, oldest first (W4.4; missing on older servers and for pie rows) */
   notes?: RowNote[]
+  /** E1: class of the row object (null if not readable) */
+  rowClass?: string | null
+  /** E1: the user may add notes to the row */
+  canAddNote?: boolean
+  /** E1: raw "Data" / "Base Data" row with write right (manual values) */
+  canEnter?: boolean
 }
 
 export interface AnalysisChartData {
