@@ -22,7 +22,8 @@ const props = defineProps<{
 }>()
 const { t, locale } = useI18n()
 /* E1: a click on a point / note marker (note dialog), actions of the summary table */
-const emit = defineEmits<{ note: [point: NotePoint]; addNote: [row: RowView]; entry: [row: RowView] }>()
+/* E3: a filter text of a table chart was changed */
+const emit = defineEmits<{ note: [point: NotePoint]; addNote: [row: RowView]; entry: [row: RowView]; filter: [column: string, text: string] }>()
 
 const noteClicks = computed(() => props.chart.kind === 'xy' && props.chart.rows.some((r) => r.canAddNote || r.notes?.some(editableRowNote)))
 
@@ -106,7 +107,7 @@ function exportCsv() {
       </div>
     </header>
 
-    <DataTable v-if="isTable" :chart="chart" :ctx="ctx" />
+    <DataTable v-if="isTable" :chart="chart" :ctx="ctx" @filter="(column: string, text: string) => emit('filter', column, text)" />
     <template v-else>
       <div class="canvas">
         <VChart

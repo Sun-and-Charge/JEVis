@@ -3,6 +3,7 @@
 import type { EChartsOption } from 'echarts'
 import { escapeHtml, formatDate, formatDateTime, formatMonth, formatNumber, formatValue } from './format'
 import { buildHeatMap, colorScale } from './heatmap'
+import type { LimitLine } from '../api/analysis'
 import { lastValue, numericSamples, rowTotal, type ChartView, type RowView, type XyType } from './model'
 import { noteMarkers, noteMarkPoint } from './notes'
 
@@ -159,6 +160,77 @@ function addNoteMarkers(rows: RowView[], samples: [number, number, string | null
   })
 }
 
+/**
+ * Limit lines of the analysis (E3, `UserLimitLine` of the Control Center): per axis one series without data that
+ * carries the horizontal lines (markLine) and the filled areas above / below them (markArea, up to the extreme value
+ * of the rows on that axis). Lines of the right axis go to the left one when the chart has no right axis. `ranges`:
+ * per axis the lowest / highest limit and whether it lies outside the values.
+ */
+export function limitLineSeries(
+  chart: Pick<ChartView, 'limitLines' | 'decimals'>,
+  rows: RowView[],
+  samples: [number, number, string | null][][],
+  twoAxes: boolean,
+  ctx: OptionContext,
+): { series: Record<string, unknown>[]; ranges: Map<number, { min: number; max: number; below: boolean; above: boolean }> } {
+  const series: Record<string, unknown>[] = []
+  const ranges = new Map<number, { min: number; max: number; below: boolean; above: boolean }>()
+  const lines = (chart.limitLines ?? []).filter((l) => Number.isFinite(l.value))
+  for (const axis of twoAxes ? [0, 1] : [0]) {
+    const own: LimitLine[] = lines.filter((l) => (twoAxes ? (l.axis === 1 ? 1 : 0) === axis : true))
+    if (!own.length) continue
+    let dataMin = Infinity
+    let dataMax = -Infinity
+    rows.forEach((row, i) => {
+      if (row.axis !== axis && twoAxes) return
+      for (const [, v] of samples[i]) {
+        dataMin = Math.min(dataMin, v)
+        dataMax = Math.max(dataMax, v)
+      }
+    })
+    const values = own.map((l) => l.value)
+    const min = Math.min(...values)
+    const max = Math.max(...values)
+    ranges.set(axis, { min, max, below: Number.isFinite(dataMin) && min < dataMin, above: Number.isFinite(dataMax) && max > dataMax })
+    const areas = own
+      .filter((l) => l.fill === 'ABOVE' || l.fill === 'BELOW')
+      .map((l) => {
+        const from = l.fill === 'ABOVE' ? l.value : Math.min(Number.isFinite(dataMin) ? dataMin : l.value, l.value)
+        const to = l.fill === 'ABOVE' ? Math.max(Number.isFinite(dataMax) ? dataMax : l.value, l.value) : l.value
+        return [{ yAxis: from, itemStyle: { color: l.color, opacity: 0.12 } }, { yAxis: to }]
+      })
+      .filter(([a, b]) => b.yAxis > a.yAxis)
+    series.push({
+      type: 'line',
+      id: `limits-${axis}`,
+      name: `limits-${axis}`,
+      yAxisIndex: axis,
+      data: [],
+      silent: true,
+      legendHoverLink: false,
+      tooltip: { show: false },
+      markLine: {
+        silent: true,
+        symbol: 'none',
+        animation: false,
+        data: own.map((l) => ({
+          yAxis: l.value,
+          name: l.label,
+          lineStyle: { color: l.color, type: 'dashed', width: 1.5 },
+          label: {
+            position: 'insideEndTop',
+            color: l.color,
+            fontFamily: baseText.fontFamily,
+            formatter: l.label || formatNumber(l.value, ctx.locale, { min: 0, max: Math.max(chart.decimals.max, 0) }),
+          },
+        })),
+      },
+      markArea: areas.length ? { silent: true, animation: false, data: areas } : undefined,
+    })
+  }
+  return { series, ranges }
+}
+
 /** LINE, AREA, STACKED_AREA, COLUMN, STACKED_COLUMN, SCATTER, LOGICAL (also mixed per row): time axis, 1 or 2 y axes. */
 export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
   const rows = chart.rows
@@ -174,21 +246,26 @@ export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
   const twoAxes = rows.some((r) => r.axis === 1)
   const onlyLogical = rows.length > 0 && rows.every((r) => r.type === 'LOGICAL')
   const hasBars = rows.some((r) => r.type === 'COLUMN' || r.type === 'STACKED_COLUMN')
+  const limits = limitLineSeries(chart, rows, samples, twoAxes, ctx)
   const yAxis = [0, 1].slice(0, twoAxes ? 2 : 1).map((axis) => {
     const name = axis === 0 && chart.yAxisTitle ? chart.yAxisTitle : axisUnits(rows, axis as 0 | 1)
+    const fixedMin = chart.fixYAxisToZero || onlyLogical ? 0 : undefined
+    const range = limits.ranges.get(axis)
     return {
       type: 'value' as const,
       name,
       nameTextStyle: { ...baseText, color: MUTED, align: axis === 0 ? ('left' as const) : ('right' as const) },
       position: axis === 0 ? ('left' as const) : ('right' as const),
       scale: !chart.fixYAxisToZero && !hasBars,
-      min: chart.fixYAxisToZero || onlyLogical ? 0 : undefined,
-      max: onlyLogical ? 1 : undefined,
+      // limit lines outside the values widen the axis, so they stay visible
+      min: fixedMin ?? (range?.below ? (v: { min: number }) => Math.min(v.min, range.min) : undefined),
+      max: onlyLogical ? 1 : range?.above ? (v: { max: number }) => Math.max(v.max, range.max) : undefined,
       interval: onlyLogical ? 1 : undefined,
       splitLine: { show: axis === 0, lineStyle: { color: LINE } },
       axisLabel: { ...baseText, color: MUTED, formatter: valueLabelFormatter(chart, ctx) },
     }
   })
+  series.push(...limits.series)
   const byIndex = rows
   return {
     animation: false,

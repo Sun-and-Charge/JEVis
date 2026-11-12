@@ -81,3 +81,115 @@ export function fileName(name: string): string {
   const cleaned = name.replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '_').trim()
   return cleaned || 'chart'
 }
+
+/* ---------------------------------------------------------------- E3: table options of the Control Center */
+
+/** The cell text matches a filter text: contained, case-insensitive; numbers also by their plain digits. */
+export function cellMatches(value: number | string | null, shown: string, filter: string): boolean {
+  const f = filter.trim().toLowerCase()
+  if (!f) return true
+  if (shown.toLowerCase().includes(f)) return true
+  return typeof value === 'number' && String(value).toLowerCase().includes(f.replace(',', '.'))
+}
+
+/**
+ * Indexes of the timestamps whose cells match the filter of their column (`filters[row]`, '' = no filter), as the
+ * filter fields of the Control Center's table (`TableChartV`). `shown(row, index)` is the formatted cell.
+ */
+export function filterTimestamps(
+  table: TimeTable,
+  filters: string[],
+  shown: (row: number, index: number) => string,
+): number[] {
+  const active = filters.map((f, r) => [r, f] as const).filter(([, f]) => f && f.trim())
+  const result: number[] = []
+  for (let i = 0; i < table.timestamps.length; i++) {
+    if (active.every(([r, f]) => cellMatches(table.values[r]?.[i] ?? null, shown(r, i), f))) result.push(i)
+  }
+  return result
+}
+
+/**
+ * Total of a row over the shown timestamps ("Reihensummen" of the Control Center): the sum for quantities (rows
+ * whose statistics have a sum), otherwise the average; null without numbers.
+ */
+export function rowTotalOf(row: Pick<RowView, 'stats'>, values: (number | string | null)[], indexes: number[]): number | null {
+  let sum = 0
+  let n = 0
+  for (const i of indexes) {
+    const v = values[i]
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      sum += v
+      n++
+    }
+  }
+  if (!n) return null
+  return row.stats?.sum != null ? sum : sum / n
+}
+
+/** Sum over all rows at one timestamp ("Spaltensummen": the extra column "Summe"); null without numbers. */
+export function timestampSum(table: TimeTable, index: number): number | null {
+  let sum = 0
+  let any = false
+  for (const column of table.values) {
+    const v = column[index]
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      sum += v
+      any = true
+    }
+  }
+  return any ? sum : null
+}
+
+const hex = (c: string): [number, number, number] | null => {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(c)
+  return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : null
+}
+
+/** Colour at position t (0..1) of a gradient. */
+export function gradientColor(stops: string[], t: number): string {
+  const colors = stops.map(hex).filter((c): c is [number, number, number] => !!c)
+  if (!colors.length) return '#ffffff'
+  if (colors.length === 1) return stops[0]
+  const x = Math.min(1, Math.max(0, Number.isFinite(t) ? t : 0.5)) * (colors.length - 1)
+  const i = Math.min(colors.length - 2, Math.floor(x))
+  const f = x - i
+  const mix = colors[i].map((a, k) => Math.round(a + (colors[i + 1][k] - a) * f))
+  return '#' + mix.map((v) => v.toString(16).padStart(2, '0')).join('')
+}
+
+/** Black or white text, whichever reads better on the background. */
+export function textOn(background: string): string {
+  const c = hex(background)
+  if (!c) return 'inherit'
+  const [r, g, b] = c.map((v) => {
+    const s = v / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.35 ? '#1a2a45' : '#ffffff'
+}
+
+/**
+ * Background colours of the value cells ("Farbliche Einfärbung der Werte"): the position of the value between the
+ * smallest and the largest shown value on the colour mapping of the chart; all equal values get the middle.
+ */
+export function cellColors(table: TimeTable, indexes: number[], stops: string[]): (string | null)[][] {
+  let min = Infinity
+  let max = -Infinity
+  for (const column of table.values) {
+    for (const i of indexes) {
+      const v = column[i]
+      if (typeof v === 'number' && Number.isFinite(v)) {
+        min = Math.min(min, v)
+        max = Math.max(max, v)
+      }
+    }
+  }
+  const range = max - min
+  const shown = new Set(indexes)
+  return table.values.map((column) =>
+    column.map((v, i) =>
+      typeof v === 'number' && Number.isFinite(v) && shown.has(i) ? gradientColor(stops, range > 0 ? (v - min) / range : 0.5) : null,
+    ),
+  )
+}
