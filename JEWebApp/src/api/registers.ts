@@ -75,6 +75,8 @@ export interface RegisterRow {
   verification?: Verification | null
   /** base data: period of the data (if not given in `last`) */
   period?: string | null
+  /** E1: values may be entered (meters: for the target data row `target.id`, which the entry endpoints get) */
+  canEnter?: boolean
 }
 
 export interface RegisterGroup {
@@ -96,11 +98,17 @@ export interface HistorySample {
   timestamp: string
   value: number | string | null
   note: string | null
+  /** E1: entered manually (manual-entry note) */
+  manual?: boolean
+  /** E1: may be deleted via DELETE /web/rows/{rowId}/values */
+  canDelete?: boolean
 }
 
 export interface RegisterHistory {
   unit: string | null
   samples: HistorySample[]
+  /** E1: the row the samples belong to (meters: the target row) */
+  rowId?: number | null
 }
 
 type GetClient = Pick<HttpClient, 'get'>

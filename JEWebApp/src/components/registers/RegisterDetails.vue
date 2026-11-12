@@ -2,7 +2,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { deleteValue, type EntryInfo, type SavedValue } from '../../api/entry'
 import { loadRegisterHistory, type RegisterColumn, type RegisterHistory, type RegisterKind, type RegisterRow } from '../../api/registers'
+import { useBusy, writeErrorText } from '../../edit/edit'
+import { formatEntryTime } from '../../edit/entry'
+import { formatNumber } from '../../analysis/format'
+import ConfirmDialog from '../edit/ConfirmDialog.vue'
+import EntryDialog from '../edit/EntryDialog.vue'
+import '../../styles/edit.css'
 import { formatAttribute, formatByPeriod, formatLast, historyLines, isFileValue, isTargetValue, mediumLabel, rowPeriod, targetText, verificationState, verificationText } from '../../registers/format'
 import { useAuthStore } from '../../stores/auth'
 import MeterQr from './MeterQr.vue'
@@ -15,6 +22,8 @@ import RegisterFile from './RegisterFile.vue'
  */
 
 const props = defineProps<{ kind: RegisterKind; row: RegisterRow; columns: readonly RegisterColumn[]; today: string }>()
+/* E1: a value was entered or deleted (the view reloads the last values) */
+const emit = defineEmits<{ changed: [] }>()
 const { t, te, locale } = useI18n()
 const auth = useAuthStore()
 const tr = (key: string) => t(key)
@@ -37,6 +46,58 @@ async function loadHistory() {
 }
 
 onMounted(loadHistory)
+
+/* ---- E1: manual values (meters: the target data row, base data: the object itself) ---- */
+
+const entryRowId = computed<number | null>(() => {
+  if (props.kind === 'basedata') return props.row.id
+  if (meter.value && typeof props.row.target?.id === 'number') return props.row.target.id
+  return null
+})
+/* the list says whether values may be entered (meters: for the target row) */
+const canEnter = computed(() => props.row.canEnter === true && entryRowId.value != null)
+const entryOpen = ref(false)
+const entryMessage = ref<{ ok: boolean; text: string } | null>(null)
+
+function entrySaved(result: SavedValue, info: EntryInfo) {
+  entryOpen.value = false
+  const value = formatNumber(result.value, locale.value, { min: 0, max: 6 }) + (info.unit ? ' ' + info.unit : '')
+  entryMessage.value = { ok: true, text: t('entry.saved', { value, time: formatEntryTime(result.timestamp, info.mode, locale.value, info.timeZone) }) }
+  void loadHistory()
+  emit('changed')
+}
+
+const toDelete = ref<{ timestamp: string; time: string } | null>(null)
+const deleteError = ref<string | null>(null)
+const { busy: deleting, run: runDelete } = useBusy()
+/* history samples carry `manual` / `canDelete`; the lines are in the order of the samples */
+const canDeleteAt = (index: number) => history.value?.samples?.[index]?.canDelete === true
+const anyDeletable = computed(() => (history.value?.samples ?? []).some((s) => s?.canDelete === true))
+/** row of the history samples (meters: the target row) */
+const historyRowId = computed(() => (typeof history.value?.rowId === 'number' ? history.value.rowId : entryRowId.value))
+
+function askDelete(timestamp: string, time: string) {
+  deleteError.value = null
+  entryMessage.value = null
+  toDelete.value = { timestamp, time }
+}
+
+async function confirmDelete() {
+  const target = toDelete.value
+  const rowId = historyRowId.value
+  if (!target || rowId == null) return
+  await runDelete(async () => {
+    try {
+      await deleteValue(auth.http, rowId, target.timestamp)
+      toDelete.value = null
+      entryMessage.value = { ok: true, text: t('entry.deleted', { time: target.time }) }
+      void loadHistory()
+      emit('changed')
+    } catch (e) {
+      deleteError.value = writeErrorText(e, t)
+    }
+  })
+}
 
 const lines = computed(() =>
   historyLines(history.value, { meter: meter.value, period: rowPeriod(props.row), decimals: props.row.last?.decimals, unit: props.row.last?.unit }, locale.value),
@@ -95,6 +156,10 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
           </dd>
         </template>
       </dl>
+      <div v-if="canEnter" class="edit-actions">
+        <button type="button" class="edit-btn reg-entry" :aria-label="t('entry.actionLabel', { name: row.name })" @click="entryOpen = true">{{ t('entry.action') }}</button>
+      </div>
+      <p v-if="entryMessage" class="alert edit-result reg-entry-message" :class="entryMessage.ok ? 'alert-ok' : 'alert-error'" role="status">{{ entryMessage.text }}</p>
     </section>
 
     <section v-if="columns.length" class="iso-section" :aria-labelledby="id('values')">
@@ -127,6 +192,7 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
               <th scope="col">{{ t('registers.history.time') }}</th>
               <th scope="col" class="num">{{ t('registers.history.value') }}</th>
               <th scope="col">{{ t('registers.history.note') }}</th>
+              <th v-if="anyDeletable" scope="col"><span class="visually-hidden">{{ t('alarmEdit.actions') }}</span></th>
             </tr>
           </thead>
           <tbody>
@@ -136,6 +202,17 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
               <td>
                 <span v-if="l.exchange" class="mod-badge is-dueSoon">{{ t('registers.history.exchange') }}</span>
                 {{ l.note }}
+              </td>
+              <td v-if="anyDeletable">
+                <button
+                  v-if="canDeleteAt(i)"
+                  type="button"
+                  class="edit-btn is-small is-danger reg-value-delete"
+                  :aria-label="t('entry.deleteLabel', { time: l.time })"
+                  @click="askDelete(l.timestamp, l.time)"
+                >
+                  {{ t('entry.deleteAction') }}
+                </button>
               </td>
             </tr>
           </tbody>
@@ -147,5 +224,18 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
       <h3 :id="id('qr')">{{ t('registers.qr.title') }}</h3>
       <MeterQr :meter-id="row.id" :name="row.name" />
     </section>
+
+    <EntryDialog v-if="entryOpen && entryRowId != null" :row-id="entryRowId" :row-name="row.name" @close="entryOpen = false" @saved="entrySaved" />
+    <ConfirmDialog
+      v-if="toDelete"
+      :title="t('entry.deleteTitle')"
+      :message="t('entry.deleteQuestion', { time: toDelete.time })"
+      :confirm-label="t('entry.deleteAction')"
+      :busy="deleting"
+      :error="deleteError"
+      danger
+      @confirm="confirmDelete"
+      @cancel="toDelete = null"
+    />
   </div>
 </template>

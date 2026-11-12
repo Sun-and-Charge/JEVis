@@ -1,15 +1,33 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only · Copyright (C) 2026 Sun and Charge Germany GmbH -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import type { MaintenanceEntry } from '../../api/modules'
+import type { MaintenanceEntry, MaintenanceStatus } from '../../api/modules'
 import { formatLocal } from '../../modules/dates'
 import RecipientsText from './RecipientsText.vue'
+import '../../styles/edit.css'
 
-defineProps<{ entry: MaintenanceEntry }>()
+defineProps<{ entry: MaintenanceEntry; busy?: boolean }>()
+/* E1: status change (the view sends it) */
+const emit = defineEmits<{ status: [status: MaintenanceStatus] }>()
+const STATUSES: readonly MaintenanceStatus[] = ['PLANNED', 'IN_PROGRESS', 'DONE']
 const { t, locale } = useI18n()
 </script>
 
 <template>
+  <div v-if="entry.canWrite && entry.version && entry.status" class="edit-actions mt-status" role="group" :aria-label="t('moduleEdit.statusLabel', { title: entry.title })">
+    <span class="muted">{{ t('moduleEdit.status') }}:</span>
+    <button
+      v-for="s in STATUSES"
+      :key="s"
+      type="button"
+      class="edit-btn mt-status-btn"
+      :aria-pressed="entry.status === s"
+      :disabled="busy || entry.status === s"
+      @click="emit('status', s)"
+    >
+      {{ t('moduleEdit.statusOption.' + s) }}
+    </button>
+  </div>
   <dl class="mod-dl">
     <dt>{{ t('modules.description') }}</dt>
     <dd>{{ entry.description || t('modules.none') }}</dd>

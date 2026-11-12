@@ -51,6 +51,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -207,7 +208,15 @@ public class NotePane extends Dialog {
 
             String tagString = "";
             for (String o : tagList.getSelectionModel().getSelectedItems()) {
-                List<NoteTag> tags = NoteTag.parseTags(o);
+                /* the list shows tag names; store the id of the tag with that name (ids are what is read back) */
+                NoteTag selected = null;
+                for (NoteTag noteTag : NoteTag.getAllTags()) {
+                    if (noteTag.getName().equals(o)) {
+                        selected = noteTag;
+                        break;
+                    }
+                }
+                List<NoteTag> tags = selected != null ? Collections.singletonList(selected) : NoteTag.parseTags(o);
                 for (NoteTag noteTag : tags) {
                     tagString += noteTag.getId() + ";";
                 }

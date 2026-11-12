@@ -4,7 +4,8 @@ import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import VChart from 'vue-echarts'
 import { echartsLocale } from '../../analysis/echarts'
-import type { ChartView } from '../../analysis/model'
+import type { ChartView, RowView } from '../../analysis/model'
+import { editableRowNote, notePointFromClick, type ChartClick, type NotePoint } from '../../analysis/notes'
 import { chartOption, type OptionContext } from '../../analysis/options'
 import { buildCsv, fileName } from '../../analysis/table'
 import DataTable from './DataTable.vue'
@@ -20,14 +21,39 @@ const props = defineProps<{
   exportName: string
 }>()
 const { t, locale } = useI18n()
+/* E1: a click on a point / note marker (note dialog), actions of the summary table */
+const emit = defineEmits<{ note: [point: NotePoint]; addNote: [row: RowView]; entry: [row: RowView] }>()
+
+const noteClicks = computed(() => props.chart.kind === 'xy' && props.chart.rows.some((r) => r.canAddNote || r.notes?.some(editableRowNote)))
+
+/** Time at the x position of a click (lines without symbols), null if it cannot be computed. */
+function pixelTime(click: ChartClick & { event?: { offsetX?: number; offsetY?: number } }): number | null {
+  const x = click.event?.offsetX
+  const y = click.event?.offsetY
+  if (typeof x !== 'number' || typeof y !== 'number' || !chartRef.value) return null
+  try {
+    const v = (chartRef.value as unknown as { convertFromPixel: (finder: unknown, px: number[]) => unknown }).convertFromPixel({ xAxisIndex: 0 }, [x, y])
+    const n = Array.isArray(v) ? v[0] : v
+    return typeof n === 'number' && Number.isFinite(n) ? n : null
+  } catch {
+    return null
+  }
+}
+
+function onClick(click: ChartClick & { event?: { offsetX?: number; offsetY?: number } }) {
+  if (props.chart.kind !== 'xy') return
+  const point = notePointFromClick(props.chart.rows, click, pixelTime(click))
+  if (point) emit('note', point)
+}
 
 const chartRef = ref<InstanceType<typeof VChart> | null>(null)
 const isTable = computed(() => props.chart.kind === 'table')
 
 /* new option object only when the inputs change; notMerge so removed series disappear */
-const option = shallowRef(chartOption(props.chart, props.ctx, props.from, props.to))
+const optionCtx = () => (noteClicks.value ? { ...props.ctx, noteClicks: true } : props.ctx)
+const option = shallowRef(chartOption(props.chart, optionCtx(), props.from, props.to))
 function update() {
-  option.value = chartOption(props.chart, props.ctx, props.from, props.to)
+  option.value = chartOption(props.chart, optionCtx(), props.from, props.to)
 }
 watch(() => [props.chart, props.ctx, props.from, props.to] as const, update)
 // ECharts measures (and caches) text widths when drawing: start once Montserrat is loaded, or the legend overlaps
@@ -83,9 +109,18 @@ function exportCsv() {
     <DataTable v-if="isTable" :chart="chart" :ctx="ctx" />
     <template v-else>
       <div class="canvas">
-        <VChart v-if="fontsReady" ref="chartRef" :option="option ?? {}" :init-options="initOptions" :update-options="{ notMerge: true }" autoresize />
+        <VChart
+          v-if="fontsReady"
+          ref="chartRef"
+          :option="option ?? {}"
+          :init-options="initOptions"
+          :update-options="{ notMerge: true }"
+          autoresize
+          @click="onClick"
+        />
       </div>
-      <SummaryTable :chart="chart" :ctx="ctx" />
+      <p v-if="noteClicks" class="note-hint">{{ t('noteEdit.chartHint') }}</p>
+      <SummaryTable :chart="chart" :ctx="ctx" @add-note="(r: RowView) => emit('addNote', r)" @entry="(r: RowView) => emit('entry', r)" />
     </template>
   </section>
 </template>
@@ -154,5 +189,11 @@ h2 {
 .canvas {
   height: var(--chart-h, 420px);
   margin-bottom: 0.5rem;
+}
+
+.note-hint {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 </style>

@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -115,6 +116,9 @@ public class NoteTag {
                     continue;
                 } else if (tString.equals(TAG_COMMENT.getName())) {
                     tags.add(TAG_COMMENT);
+                    continue;
+                } else if (tString.equals(TAG_MEASURE.getName())) {
+                    tags.add(TAG_MEASURE);
                     continue;
                 } else if (tString.equals(TAG_DISTURBANCE.getName())) {
                     tags.add(TAG_DISTURBANCE);

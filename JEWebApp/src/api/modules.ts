@@ -43,6 +43,10 @@ export interface Appointment {
   lastMail: string | null
   created: string | null
   createdBy: string | null
+  /** E1: the user may change the entry */
+  canWrite?: boolean
+  /** E1: timestamp of the latest Data sample, sent back with changes */
+  version?: string | null
 }
 
 export interface AppointmentList {
@@ -77,6 +81,10 @@ export interface MaintenanceEntry {
   lastMail: string | null
   created: string | null
   createdBy: string | null
+  /** E1: the user may change the entry */
+  canWrite?: boolean
+  /** E1: timestamp of the latest Data sample, sent back with changes */
+  version?: string | null
 }
 
 export interface MaintenanceList {
@@ -92,4 +100,24 @@ export function loadAppointments(http: GetClient): Promise<AppointmentList> {
 
 export function loadMaintenance(http: GetClient): Promise<MaintenanceList> {
   return http.get<MaintenanceList>('/web/maintenance')
+}
+
+/* ---- editing (E1) ---- */
+
+/**
+ * Marks an appointment as done (recurring: next due date, stays OPEN); `version` is required. 409 with the current
+ * entry on a conflict, 400 if it is already DONE.
+ */
+export function completeAppointment(http: Pick<HttpClient, 'post'>, id: number, version: string): Promise<Appointment> {
+  return http.post<Appointment>(`/web/appointments/${id}/done`, { version })
+}
+
+/** Changes the status of a maintenance entry; 409 with the current entry on a conflict. */
+export function setMaintenanceStatus(
+  http: Pick<HttpClient, 'post'>,
+  id: number,
+  status: MaintenanceStatus,
+  version: string,
+): Promise<MaintenanceEntry> {
+  return http.post<MaintenanceEntry>(`/web/maintenance/${id}/status`, { status, version })
 }

@@ -4,7 +4,8 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatDateTime } from '../analysis/format'
 import { browserTimeZone } from '../analysis/settings'
-import { loadNotes, type Note } from '../api/notes'
+import { loadNotes, noteTargetId, type Note } from '../api/notes'
+import NoteDialog from '../components/edit/NoteDialog.vue'
 import NoteDetails from '../components/notes/NoteDetails.vue'
 import { saveBlob } from '../iso/download'
 import { sortRows, type ColumnContext, type SortDirection } from '../iso/columns'
@@ -18,6 +19,7 @@ import {
   defaultNoteRange,
   filterNotes,
   i18nTagName,
+  noteTime,
   noteColumns,
   noteSites,
   notesCsv,
@@ -33,9 +35,10 @@ import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
 import '../styles/iso.css'
 import '../styles/notes.css'
+import '../styles/edit.css'
 
 /*
- * Notes (W4.4, view only) like the Control Center's Notes Plugin: notes of the data rows in a time frame, search
+ * Notes (W4.4; writing E1) like the Control Center's Notes Plugin: notes of the data rows in a time frame, search
  * with the plugin's toggles, tag and site filter, sortable table (cards on phone width), CSV export and a detail
  * panel with the curve of the data row around the note.
  */
@@ -149,6 +152,55 @@ const rowText = (n: Note) => rowFullName(n, noAccess.value)
 const showDetails = (n: Note) => t('modules.showDetails', { title: cell('date', n) })
 const domId = (n: Note, suffix: string) => `note-${n.id}-${suffix}`
 const tableColumns = ['date', 'site', 'row', 'text', 'tags', 'user'] as const
+
+/* ---- E1: new note, change / delete ---- */
+
+type NoteDialogState = { kind: 'new'; rowId: number | null; rowName: string } | { kind: 'edit'; note: Note }
+const dialog = ref<NoteDialogState | null>(null)
+const message = ref<string | null>(null)
+
+/** Data rows of the loaded notes the user may add notes to (one per target row). */
+const rowChoices = computed(() => {
+  const seen = new Map<number, string>()
+  for (const n of all.value) {
+    if (!n.row?.canAddNote || !n.row.readable) continue
+    const id = noteTargetId(n.row)
+    if (id != null && !seen.has(id)) seen.set(id, rowFullName(n, noAccess.value))
+  }
+  return [...seen.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, locale.value))
+})
+const canWriteAny = computed(() => rowChoices.value.length > 0 || all.value.some((n) => n.canEdit || n.canDelete))
+
+function newNote() {
+  message.value = null
+  dialog.value = { kind: 'new', rowId: null, rowName: '' }
+}
+
+function addToRow(n: Note) {
+  message.value = null
+  dialog.value = { kind: 'new', rowId: noteTargetId(n.row), rowName: rowFullName(n, noAccess.value) }
+}
+
+function editNote(n: Note) {
+  message.value = null
+  dialog.value = { kind: 'edit', note: n }
+}
+
+const editable = (n: Note) => ({
+  id: n.id,
+  timestamp: noteTime(n) ?? Date.parse(n.timestamp),
+  text: n.text ?? '',
+  tags: n.tags ?? [],
+  version: n.version ?? null,
+  canEdit: !!n.canEdit,
+  canDelete: !!n.canDelete,
+})
+
+function done(text: string) {
+  dialog.value = null
+  message.value = text
+  void reload()
+}
 </script>
 
 <template>
@@ -156,7 +208,8 @@ const tableColumns = ['date', 'site', 'row', 'text', 'tags', 'user'] as const
     <div class="mod-head">
       <h1 id="notes-title">{{ t('notes.title') }}</h1>
     </div>
-    <p class="muted read-only">{{ t('notes.readOnly') }}</p>
+    <p class="muted read-only">{{ canWriteAny ? t('noteEdit.hint') : t('notes.readOnly') }}</p>
+    <p v-if="message" class="alert alert-ok edit-result notes-message" role="status">{{ message }}</p>
 
     <fieldset class="mod-filters iso-filters notes-range">
       <legend class="visually-hidden">{{ t('notes.range.label') }}</legend>
@@ -223,6 +276,7 @@ const tableColumns = ['date', 'site', 'row', 'text', 'tags', 'user'] as const
         <button type="button" class="notes-btn" :disabled="!rows.length" :aria-label="t('notes.export.csvLabel')" @click="exportCsv">
           {{ t('notes.export.csv') }}
         </button>
+        <button v-if="rowChoices.length" type="button" class="notes-btn notes-new" @click="newNote">{{ t('noteEdit.add') }}</button>
       </div>
 
       <p v-if="!all.length" class="muted">{{ t('notes.empty') }}</p>
@@ -259,7 +313,7 @@ const tableColumns = ['date', 'site', 'row', 'text', 'tags', 'user'] as const
             <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
           </button>
           <div v-if="selected === n.id" :id="domId(n, 'c')" class="mod-details">
-            <NoteDetails :note="n" :tag-name="tagName" />
+            <NoteDetails :note="n" :tag-name="tagName" @edit="editNote(n)" @add="addToRow(n)" />
           </div>
         </li>
       </ul>
@@ -307,12 +361,33 @@ const tableColumns = ['date', 'site', 'row', 'text', 'tags', 'user'] as const
                 <td class="iso-text">{{ n.user ?? '' }}</td>
               </tr>
               <tr v-if="selected === n.id" :id="domId(n, 'd')" class="mod-detail">
-                <td :colspan="tableColumns.length + 1"><NoteDetails :note="n" :tag-name="tagName" /></td>
+                <td :colspan="tableColumns.length + 1"><NoteDetails :note="n" :tag-name="tagName" @edit="editNote(n)" @add="addToRow(n)" /></td>
               </tr>
             </template>
           </tbody>
         </table>
       </div>
     </template>
+
+    <NoteDialog
+      v-if="dialog?.kind === 'new'"
+      :row-id="dialog.rowId"
+      :row-name="dialog.rowName"
+      :row-choices="rowChoices"
+      :tag-name="tagName"
+      @close="dialog = null"
+      @saved="done(t('noteEdit.saved'))"
+      @stale="reload"
+    />
+    <NoteDialog
+      v-else-if="dialog?.kind === 'edit'"
+      :note="editable(dialog.note)"
+      :row-name="rowText(dialog.note)"
+      :tag-name="tagName"
+      @close="dialog = null"
+      @saved="done(t('noteEdit.saved'))"
+      @deleted="done(t('noteEdit.deleted'))"
+      @stale="reload"
+    />
   </section>
 </template>

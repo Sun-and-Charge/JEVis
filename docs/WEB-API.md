@@ -1062,3 +1062,117 @@ readable has `template.readable: false` (still listed, the result answers `409`)
 
 `modules` additionally holds `costs`: number of readable accounting configurations plus result calculation
 templates.
+
+## Editing, stage E1: alarms, notes, manual values, appointments and maintenance
+
+The first write endpoints of the web app. Data is written exactly as the Control Center writes it, so both stay
+interchangeable.
+
+**Common rules**
+
+- Rights are checked on the server for every write with the logged-in user's rights, with the same rules as the
+  generic sample/object resources (`ResourceSample`, `ResourceObject`, `UserRightManagerForWS`, including the
+  execute exceptions for "Data Notes", "User Data" and "Alarm Configuration"). `403` with a plain-text reason if not
+  allowed, `404` if the object is not readable or in the recycle bin.
+- Every write is logged with `SQLDataSource.logUserAction` (`CREATE_SAMPLE`, `DELETE_SAMPLE`, `CREATE_OBJECT`,
+  `UPDATE_OBJECT`) with details in the existing format plus the web action, e.g. `24202:Alarm Checked|1|web:alarm-confirm`.
+- Read answers carry what the user may do (`canConfirm`, `canWrite`, `canEnter`, …) so the web app shows buttons only
+  where they work; the server checks again.
+- Concurrency: edits of existing entries send the `version` they were loaded with (timestamp of the latest sample of
+  the edited attribute, ISO). If the stored version differs, `409` with the current entry as JSON body; nothing is
+  written.
+- Bodies are JSON; `400` with a plain-text message for invalid input. `version` is required wherever it is listed:
+  missing or null → `400` `version missing` (no legacy call without version). No cookies are used (Bearer token), so no CSRF
+  token is needed.
+- The read-only notices in the views ("Nur Ansicht …") are replaced by the edit controls where the user has rights.
+
+### Alarms
+
+- `GET /web/alarms`: each `configuration` additionally has `canConfirm` (write or execute right on the
+  configuration).
+- `POST /web/alarms/configurations/{id}/confirm` with `{ "checked": true|false }` → `{ "checked": true, "checkedBy":
+  "<account>", "checkedAt": "…" }`. Writes a Boolean sample of `Alarm Checked` at now with the note
+  `Checked by <account>` / `Unchecked by <account>` (as `AlarmConfiguration.setChecked`). `404` if not an enabled,
+  readable "Alarm Configuration".
+- `POST /web/alarms/confirm-all` with `{ "ids": [24202, …] }` (the configurations currently shown) →
+  `{ "confirmed": [ids], "refused": [ids] }`. Each id is confirmed if allowed; refused ones are listed (no `403` for
+  the whole request).
+
+### Notes
+
+- `GET /web/notes` and the analysis `notes`: each note additionally has `canEdit` (write or execute right on the
+  notes object), `canDelete` (execute or delete right, the rule of the generic sample delete) and `version`; analysis
+  notes also get `id` (`<notesObject>-<epoch ms>`) and `notesObject` (same format as in the notes list). Each row
+  (`row` in notes) has `canAddNote`. Rows in the notes list answer additionally carry `notesTarget`: the id (number)
+  of the row the notes are stored below (see below), null if notes cannot be stored for this row.
+- Analysis data (`POST /web/analyses/{id}/data`): every row additionally has `rowClass` (class of the row object, null
+  if not readable), `canAddNote` and `canEnter` (raw "Data"/"Base Data" row outside the recycle bin with write right,
+  see manual values); pie rows too.
+- **Where a note is stored** (like the analysis note dialog `DataPointNoteDialog`): the target row is the row itself if
+  it is a raw "Data" (or other non-clean) row, or the raw parent if the row is "Clean Data" (or subclass). The notes
+  object is the first readable "Data Notes" child of the target row; if there is none, a "Data Notes" object named
+  `<target row name> Notes` is created below the target row (needs create right; execute suffices for Data Notes;
+  additionally write or execute right on the target row, because the new object gets its owners). "First" = lowest id.
+- `POST /web/rows/{rowId}/notes` with `{ "timestamp": "…", "text": "…", "tags": ["4", "13"] }` → the note in the notes
+  list format. Writes samples at `timestamp` (to the second; milliseconds dropped) to `Value` (text), `Tag` (ids
+  joined with `;`, e.g. `4;13`) and `User` (account name). `409` if a note already exists at that timestamp on that
+  notes object. If the user may write the target row and a `Value` sample exists at the timestamp, `,userNotes` is
+  appended to its note (as the Control Center does), once. Timestamps without offset (all note endpoints) are read in
+  the time zone of the query parameter `timeZone` (default: server), answers are printed in it.
+- `PUT /web/notes/{noteId}` (`noteId` = `<notesObject>-<epoch ms>` as in the list) with
+  `{ "text": "…", "tags": [...], "version": "…" }` → updated note. Overwrites `Value` and `Tag` at the same timestamp,
+  `User` becomes the editing account; the note field of the `Value` sample is kept. `version` = the list field
+  `version`: the first 16 hex digits of SHA-256 over text, tags and user of the note (the samples table keeps the
+  insert time when a sample is overwritten, so a timestamp cannot detect a concurrent edit). `tags` may be left out
+  (unchanged). Order of checks: `404`, `403`, `400`, `409`.
+- `DELETE /web/notes/{noteId}?version=…` → `204`. Deletes the samples of `Value`, `Tag` and `User` at that timestamp
+  and removes the `,userNotes` marker from the row sample if present.
+- Tags: ids `0`–`13` of `NoteTag`; unknown or custom tag texts in `tags` are rejected with `400` (custom tags from old
+  data are kept when the tags are not changed). `tags: []` (or no `tags` on POST) = no tag (empty `Tag` sample).
+
+### Manual values
+
+- `GET /web/rows/{id}/entry` → what the entry dialog needs:
+  `{ "id", "name", "unit", "canEnter", "canDelete", "counter": true|false, "period": "PT15M"|"P1D"|"P1M"|…, "mode":
+  "SPECIFIC_DATETIME"|"DAY"|"MONTH"|"YEAR", "timeZone": "Europe/Berlin", "suggestedTimestamp": "…" | null, "last": { "timestamp", "value" } | null,
+  "limits": { "min": …, "max": … } | null }`. Only for raw "Data" and "Base Data" rows (`404` otherwise).
+  `canEnter` = write right on the row, `canDelete` = delete right (generic sample delete). `timeZone` = time zone of
+  the site (`WorkDays`). `mode` from the row's `Period` like `DataTypeBox` (P1D/P1W → DAY, P1M → MONTH,
+  P1Y → YEAR, else SPECIFIC_DATETIME; counters always DAY). `suggestedTimestamp` = next period after the last sample
+  (`PeriodHelper.getNextPeriod`, null without samples; without `Period` → SPECIFIC_DATETIME). `counter` = "Conversion to Differential" of the Clean Data child (or the row itself
+  for Base Data). `limits` = first limit step of the Clean Data child.
+- `POST /web/rows/{id}/values` with `{ "timestamp": "…", "value": 123.4, "confirm": false }` → `201`
+  `{ "timestamp", "value", "warnings": [] }` (`?lang=` or `Accept-Language` for the texts). The timestamp (ISO date or
+  date-time; without offset in the site's time zone; for DAY/MONTH/YEAR only the date in that zone counts, so
+  `suggestedTimestamp` can be sent back as is) is aligned by `mode` (YEAR → Jan 1 00:00, MONTH → day 1,
+  DAY → 00:00 in the row's/site's time zone, with the custom-workday shift of `EnterDataDialog`). Writes a Double
+  sample to `Value` with the note `Manuelle Dateneingabe <now>` (the Control Center's `menu.file.import.manual` text in
+  the user's language + timestamp). Then deletes the dependent calculation outputs from that timestamp on
+  (`CommonMethods.cleanDependentObjects`, computed on the read-only `LocalDataSource`), so JECalc recalculates; only
+  rows the user may delete samples of are reset (others are skipped and logged, like the Control Center whose delete
+  the server refuses).
+- Plausibility like `EnterDataDialog`: a counter value lower than the last reading, or a value (counter: difference to
+  the reading one period earlier) outside the limits, answers `409` with `{ "timestamp", "value", "warnings": ["…"] }`
+  unless `confirm` is
+  true. An existing sample at the aligned timestamp also gives a warning (overwrite needs `confirm`).
+- Registers (`GET /web/registers/meters` and `/basedata`): each row additionally has `canEnter` (meters: for the data
+  row of the meter's "Online ID" if it points to `Value`; the entry/value endpoints are then called with that row id
+  `target.id`). `GET /web/registers/objects/{id}/history` additionally has `rowId` (the row of the samples) and per
+  sample `manual` (note starts with the manual-entry text in any language) and `canDelete` (`manual`, attribute `Value`
+  of a raw row and delete right on it).
+- `DELETE /web/rows/{id}/values?timestamp=…` → `204`; only samples whose note starts with the manual-entry text (any
+  language) may be deleted this way, else `403`; needs delete right on the row (generic rule). The dependent rows are
+  reset from that timestamp as after an entry. `404` if there is no sample at exactly that time.
+
+### Appointments and maintenance
+
+- `GET /web/appointments` / `GET /web/maintenance`: each entry additionally has `canWrite` and `version` (timestamp of
+  the latest `Data` sample).
+- `POST /web/appointments/{id}/done` with `{ "version": "…" }` → the updated entry. Uses
+  `AppointmentLogic.complete(entry, now)` (non-recurring: status DONE; recurring: next due date, status stays OPEN,
+  `lastDone` set), writes the JSON as a new `Data` sample at now and renames the object to the title (as
+  `EntryStore.write`/`rename`). Needs write right (`403`); `400` if the entry is already DONE or has no valid data.
+  `version` must be sent (`400`), `409` with the current entry if it differs.
+- `POST /web/maintenance/{id}/status` with `{ "status": "PLANNED"|"IN_PROGRESS"|"DONE", "version": "…" }` → the
+  updated entry. Uses `MaintenanceLogic.changeStatus(entry, status, now)` (`doneAt` set or cleared). Mails follow from
+  JENotifier as today (the "finished" mail only if an inform was sent or requested).

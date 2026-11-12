@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisObject;
 import org.jevis.commons.chart.*;
+import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
 import org.jevis.commons.ws.sql.Config;
@@ -94,7 +95,9 @@ public class ResourceWebAnalysis {
             if (analysis == null) return notFound();
             AnalysisDefinition definition = new AnalysisReader().read(analysis);
             AnalysisResult result = new AnalysisEvaluator(ds).evaluate(analysis, definition, settings);
-            return json(dataJson(result, notes(sql, definition, result)));
+            Map<String, Map<String, Object>> editInfo = new HashMap<>();
+            Map<String, List<Map<String, Object>>> notes = notes(sql, definition, result, editInfo);
+            return json(dataJson(result, notes, editInfo));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
@@ -266,10 +269,12 @@ public class ResourceWebAnalysis {
      * The notes of the rows (W4.4): for every row that is not part of a pie chart the notes of its "Data Notes"
      * objects in the resolved time frame (empty for rows the user may not read). Errors only leave the notes empty.
      *
+     * @param editInfo filled with {@code rowClass, canAddNote, canEnter} by row key, for every row (stage E1)
      * @return notes by row key
      */
     private static Map<String, List<Map<String, Object>>> notes(SQLDataSource sql, AnalysisDefinition definition,
-                                                                AnalysisResult result) {
+                                                                AnalysisResult result,
+                                                                Map<String, Map<String, Object>> editInfo) {
         Map<String, List<Map<String, Object>>> notes = new HashMap<>();
         Map<String, RowStatus> status = new HashMap<>();
         for (ChartResult chart : result.getCharts()) {
@@ -277,24 +282,38 @@ public class ResourceWebAnalysis {
         }
         ResourceWebModules.Lookup lookup = null;
         Set<String> cleanDataClasses = null;
+        ResourceWebRegisters.Classes classes = null;
+        WebEdit.Rights rights = WebEdit.sqlRights(sql.getUserManager());
         ResourceWebNotes.Samples samples = ResourceWebNotes.sqlSamples(sql);
         for (ChartDefinition chart : definition.getCharts()) {
             for (RowDefinition row : chart.getRows()) {
-                if (isPie(chart, row) || row.getKey() == null) continue;
+                if (row.getKey() == null) continue;
+                Map<String, Object> info = new LinkedHashMap<>();
+                info.put("rowClass", null);
+                info.put("canAddNote", false);
+                info.put("canEnter", false);
+                editInfo.put(row.getKey(), info);
+                boolean pie = isPie(chart, row);
                 List<Map<String, Object>> rowNotes = new ArrayList<>();
-                notes.put(row.getKey(), rowNotes);
-                if (!Boolean.TRUE.equals(row.getReadable()) || status.get(row.getKey()) == RowStatus.NO_PERMISSION
-                        || result.getFrom() == null || result.getTo() == null) {
+                if (!pie) notes.put(row.getKey(), rowNotes);
+                if (!Boolean.TRUE.equals(row.getReadable()) || status.get(row.getKey()) == RowStatus.NO_PERMISSION) {
                     continue;
                 }
                 try {
                     if (lookup == null) {
                         lookup = ResourceWebModules.lookup(sql);
-                        cleanDataClasses = ResourceWebRegisters.Classes.fromCache().withHeirs(ResourceWebNotes.CLASS_CLEAN_DATA);
+                        classes = ResourceWebRegisters.Classes.fromCache();
+                        cleanDataClasses = classes.withHeirs(ResourceWebNotes.CLASS_CLEAN_DATA);
                     }
-                    if (lookup.readable(row.getObjectId()) == null) continue;
+                    JsonObject object = lookup.readable(row.getObjectId());
+                    if (object == null) continue;
+                    info.put("rowClass", object.getJevisClass());
+                    info.put("canAddNote", ResourceWebNotes.canAddNote(
+                            ResourceWebNotes.notesTarget(row.getObjectId(), lookup, classes), rights));
+                    info.put("canEnter", WebEdit.canEnter(object, rights));
+                    if (pie || result.getFrom() == null || result.getTo() == null) continue;
                     rowNotes.addAll(ResourceWebNotes.rowNotes(row.getObjectId(), result.getFrom(), result.getTo(),
-                            lookup, cleanDataClasses, samples));
+                            lookup, cleanDataClasses, samples, rights));
                 } catch (Exception ex) {
                     logger.warn("Could not load the notes of row {}", row.getKey(), ex);
                 }
@@ -318,6 +337,15 @@ public class ResourceWebAnalysis {
      * @param notes notes by row key; rows without entry (pie rows) get no {@code notes}
      */
     static Map<String, Object> dataJson(AnalysisResult analysisResult, Map<String, List<Map<String, Object>>> notes) {
+        return dataJson(analysisResult, notes, Collections.emptyMap());
+    }
+
+    /**
+     * @param notes      notes by row key; rows without entry (pie rows) get no {@code notes}
+     * @param editInfo {@code rowClass, canAddNote, canEnter} by row key (stage E1), added to the rows
+     */
+    static Map<String, Object> dataJson(AnalysisResult analysisResult, Map<String, List<Map<String, Object>>> notes,
+                                        Map<String, Map<String, Object>> editInfo) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("from", analysisResult.getFrom() != null ? analysisResult.getFrom().toString() : null);
         result.put("to", analysisResult.getTo() != null ? analysisResult.getTo().toString() : null);
@@ -330,6 +358,8 @@ public class ResourceWebAnalysis {
                 Map<String, Object> r = rowDataJson(row);
                 List<Map<String, Object>> rowNotes = notes.get(row.getKey());
                 if (rowNotes != null) r.put("notes", rowNotes);
+                Map<String, Object> info = editInfo.get(row.getKey());
+                if (info != null) r.putAll(info);
                 rows.add(r);
             }
             c.put("rows", rows);

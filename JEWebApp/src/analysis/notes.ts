@@ -16,12 +16,19 @@ export function rowNotes(raw: unknown): RowNote[] {
     if (!n || typeof n !== 'object') continue
     const o = n as Record<string, unknown>
     if (typeof o.timestamp !== 'number' || !Number.isFinite(o.timestamp)) continue
-    out.push({
+    const note: RowNote = {
       timestamp: o.timestamp,
       text: typeof o.text === 'string' ? o.text : '',
       tags: Array.isArray(o.tags) ? o.tags.filter((t): t is string => typeof t === 'string' && t !== '') : [],
       user: typeof o.user === 'string' && o.user ? o.user : null,
-    })
+    }
+    // E1: what is needed to change the note
+    if (typeof o.id === 'string' && o.id) note.id = o.id
+    if (typeof o.notesObject === 'number') note.notesObject = o.notesObject
+    if (o.canEdit === true) note.canEdit = true
+    if (o.canDelete === true) note.canDelete = true
+    if (typeof o.version === 'string') note.version = o.version
+    out.push(note)
   }
   return out.sort((a, b) => a.timestamp - b.timestamp)
 }
@@ -124,4 +131,80 @@ export function noteMarkPoint(markers: readonly NoteMarker[], rowName: string, c
     },
     data: markers.map((m) => ({ name: 'note', coord: [m.timestamp, m.value], value: m.value })),
   }
+}
+
+/* ---- E1: notes from a click on the chart ---- */
+
+/** Row types whose points can get a note by a click (line, area, column and scatter rows). */
+export const NOTE_CLICK_TYPES: readonly string[] = ['LINE', 'AREA', 'STACKED_AREA', 'COLUMN', 'STACKED_COLUMN', 'SCATTER']
+
+/** What a click on a point or a note marker of a row aims at. */
+export interface NotePoint {
+  rowKey: string
+  rowName: string
+  /** data row the note is stored for (the server resolves clean data to its raw parent) */
+  objectId: number
+  timestamp: number
+  /** notes of the row at exactly that time */
+  notes: RowNote[]
+  canAddNote: boolean
+}
+
+/** The subset of an ECharts click event that is used. */
+export interface ChartClick {
+  componentType?: string
+  seriesIndex?: number
+  dataIndex?: number
+  value?: unknown
+  data?: unknown
+}
+
+interface ClickRow {
+  key: string
+  name: string
+  type: string
+  readable: boolean
+  objectId?: number
+  canAddNote?: boolean
+  notes?: RowNote[]
+  samples: readonly (readonly [number, ...unknown[]])[]
+}
+
+/** Time of the sample nearest to `ts` (null without samples). */
+export function nearestSampleTime(samples: readonly (readonly [number, ...unknown[]])[], ts: number): number | null {
+  let best: number | null = null
+  for (const s of samples) {
+    if (typeof s?.[0] !== 'number') continue
+    if (best == null || Math.abs(s[0] - ts) < Math.abs(best - ts)) best = s[0]
+  }
+  return best
+}
+
+/** A note may be changed or deleted from the chart: it carries id and version and canEdit or canDelete. */
+export function editableRowNote(note: RowNote): boolean {
+  return (note.canEdit === true || note.canDelete === true) && typeof note.id === 'string' && note.id !== '' && !!note.version
+}
+
+/**
+ * The row and time of a click on a chart with a time axis (series index = row index): a note marker (its note
+ * time), a point / column (its sample time) or, for clicks on a line without symbols, the sample nearest to
+ * `pixelTime`. null for other rows / components, or when the user may neither add nor change a note there.
+ */
+export function notePointFromClick(rows: readonly ClickRow[], click: ChartClick, pixelTime: number | null = null): NotePoint | null {
+  const row = rows[click.seriesIndex ?? -1]
+  if (!row || !row.readable || typeof row.objectId !== 'number' || !NOTE_CLICK_TYPES.includes(row.type)) return null
+  let ts: number | null = null
+  if (click.componentType === 'markPoint') {
+    const coord = (click.data as { coord?: unknown[] } | undefined)?.coord
+    ts = typeof coord?.[0] === 'number' ? coord[0] : null
+  } else if (click.componentType === 'series') {
+    const value = Array.isArray(click.value) ? click.value : Array.isArray(click.data) ? click.data : null
+    if (typeof value?.[0] === 'number') ts = value[0]
+    else if (pixelTime != null) ts = nearestSampleTime(row.samples, pixelTime)
+  }
+  if (ts == null || !Number.isFinite(ts)) return null
+  const notes = (row.notes ?? []).filter((n) => n.timestamp === ts)
+  const canAddNote = row.canAddNote === true
+  if (!canAddNote && !notes.some(editableRowNote)) return null
+  return { rowKey: row.key, rowName: row.name, objectId: row.objectId, timestamp: ts, notes, canAddNote }
 }
