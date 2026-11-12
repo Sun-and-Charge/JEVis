@@ -493,6 +493,8 @@ public class ResourceWebCosts {
         String timeFrame;
         DateTime from;
         DateTime to;
+        /** reference date of the period ({@code null} = now) */
+        DateTime date;
         DateTimeZone zone;
         Map<String, Long> selections = new LinkedHashMap<>();
     }
@@ -517,6 +519,10 @@ public class ResourceWebCosts {
         }
         request.timeFrame = ResourceWebContracts.text(root, "timeFrame");
         if (request.timeFrame == null) throw new WebException(400, "Missing timeFrame");
+        String date = ResourceWebContracts.text(root, "date");
+        if (date != null && !DashboardTimeFrames.CUSTOM.equals(request.timeFrame)) {
+            request.date = parseDate(date, request.zone, "date");
+        }
         if (DashboardTimeFrames.CUSTOM.equals(request.timeFrame)) {
             request.from = parseDate(ResourceWebContracts.text(root, "from"), request.zone, "from");
             request.to = parseDate(ResourceWebContracts.text(root, "to"), request.zone, "to");
@@ -596,14 +602,20 @@ public class ResourceWebCosts {
         Subject subject = subject(lookup, classes, store, id);
         DateTime from = request.from;
         DateTime to = request.to;
+        DateTime previous = null;
+        DateTime next = null;
         if (from == null) {
             if (!TrcTimeFrames.enabled(subject.template).contains(request.timeFrame)) {
                 throw new WebException(400, "Unknown timeFrame");
             }
-            TimeRange range = new TrcTimeFrames(request.zone, now).interval(request.timeFrame, now);
+            TrcTimeFrames frames = new TrcTimeFrames(request.zone, now);
+            DateTime reference = request.date == null || request.date.isAfter(now) ? now : request.date;
+            TimeRange range = frames.interval(request.timeFrame, reference);
             if (range == null) throw new WebException(400, "Unknown timeFrame");
             from = range.getStart();
             to = range.getEnd();
+            previous = frames.previous(request.timeFrame, reference);
+            next = frames.next(request.timeFrame, reference);
         }
         bind(subject, request.selections);
         TrcResult result = calculator.calculate(subject.template, from, to, request.zone);
@@ -611,6 +623,8 @@ public class ResourceWebCosts {
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("from", iso(from, request.zone));
         json.put("to", iso(to, request.zone));
+        json.put("previous", previous == null ? null : iso(previous, request.zone));
+        json.put("next", next == null ? null : iso(next, request.zone));
         int rows = 0;
         int columns = 0;
         List<Map<String, Object>> cells = new ArrayList<>();

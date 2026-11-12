@@ -6,7 +6,10 @@ import type { AnalysisDirectory } from '../../../api/analysis'
 import { nameProblem } from '../../../analysis/editor'
 import EditDialog from '../../edit/EditDialog.vue'
 
-/* Name and directory of an analysis (E3): "Speichern unter" and "Neue Analyse" (as the CC's SaveAnalysisDialog). */
+/*
+ * Name and directory of an analysis (E3): "Speichern unter" and "Neue Analyse" (as the CC's SaveAnalysisDialog).
+ * Also used for dashboards (E4) with their own texts (`texts`: i18n keys of noDirectory / taken / openExisting).
+ */
 
 const props = defineProps<{
   title: string
@@ -19,6 +22,8 @@ const props = defineProps<{
   error?: string | null
   /** "Neue Analyse": the name is taken, link to the existing analysis */
   takenId?: number | null
+  /** other texts (dashboards): i18n keys */
+  texts?: { noDirectory?: string; taken?: string; openExisting?: string }
 }>()
 const emit = defineEmits<{ close: []; submit: [value: { name: string; directoryId: number }]; open: [id: number] }>()
 const { t } = useI18n()
@@ -28,6 +33,7 @@ const name = ref(props.name)
 const directoryId = ref<number | null>(props.directoryId ?? props.directories[0]?.id ?? null)
 const problem = ref<string | null>(null)
 
+const text = (key: 'noDirectory' | 'taken' | 'openExisting') => t(props.texts?.[key] ?? 'analysisEdit.nameDialog.' + key)
 const label = (d: AnalysisDirectory) => d.path || d.name
 const sorted = computed(() => [...props.directories].sort((a, b) => label(a).localeCompare(label(b))))
 
@@ -41,7 +47,7 @@ function submit() {
 <template>
   <EditDialog :title="title" :busy="busy" @close="emit('close')">
     <form :id="uid + '-form'" novalidate @submit.prevent="submit">
-      <p v-if="!directories.length" class="alert alert-error" role="alert">{{ t('analysisEdit.nameDialog.noDirectory') }}</p>
+      <p v-if="!directories.length" class="alert alert-error" role="alert">{{ text('noDirectory') }}</p>
       <div class="edit-field">
         <label :for="uid + '-name'">{{ t('analysisEdit.nameDialog.name') }}</label>
         <input
@@ -65,8 +71,8 @@ function submit() {
         </select>
       </div>
       <div v-if="takenId != null" class="alert alert-error" role="alert">
-        {{ t('analysisEdit.nameDialog.taken') }}
-        <button type="button" class="btn-link and-open" @click="emit('open', takenId!)">{{ t('analysisEdit.nameDialog.openExisting') }}</button>
+        {{ text('taken') }}
+        <button type="button" class="btn-link and-open" @click="emit('open', takenId!)">{{ text('openExisting') }}</button>
       </div>
       <p v-else-if="error" class="alert alert-error edit-error" role="alert">{{ error }}</p>
     </form>

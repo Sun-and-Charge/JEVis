@@ -466,7 +466,21 @@ public class DashboardControl {
             if (buttonType == ButtonType.OK) {
                 try {
                     JEVisObject toDeleteObj = this.activeDashboard.getDashboardObject();
-                    toDeleteObj.delete();
+                    if (toDeleteObj == null) {
+                        return;
+                    }
+                    /* into the recycle bin (restorable), like deleting objects in the object tree without "delete forever" */
+                    if (!this.getDataSource().deleteObject(toDeleteObj.getID(), false)) {
+                        logger.error("Failed to move dashboard {} to the recycle bin", toDeleteObj.getID());
+                        Alert error = new Alert(Alert.AlertType.ERROR);
+                        error.setTitle(I18n.getInstance().getString("dialog.error.title"));
+                        error.setHeaderText(I18n.getInstance().getString("dialog.error.servercommit"));
+                        error.initOwner(JEConfig.getStage());
+                        error.showAndWait();
+                        return;
+                    }
+                    /* the deleted dashboard has no unsaved changes to ask for */
+                    this.firstLoadedConfigHash = null;
                     loadDashboardObjects();
                     if (this.dashboardObjects.isEmpty()) {
                         selectDashboard(null);

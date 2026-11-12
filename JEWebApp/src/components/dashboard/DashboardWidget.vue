@@ -19,6 +19,7 @@ import TextWidget from './TextWidget.vue'
 
 /** Frame of a widget: position, size and style of the configuration; the content by widget type. */
 const props = defineProps<{ widget: WidgetConfig; data: WidgetData | undefined; ctx: WidgetContext; z: number }>()
+const emit = defineEmits<{ written: [data: WidgetData] }>()
 const { t } = useI18n()
 
 const kind = computed(() => widgetKind(props.widget.type))
@@ -58,7 +59,7 @@ const GAUGES = ['gauge', 'linearGauge', 'battery']
     <ShapeWidget v-else-if="kind === 'shape'" :widget="widget" :data="data" :ctx="ctx" />
     <ArrowWidget v-else-if="kind === 'arrow'" :widget="widget" />
     <DiagramWidget v-else-if="kind === 'netGraph' || kind === 'sankey'" :widget="widget" :data="data" :ctx="ctx" />
-    <InputWidget v-else-if="kind === 'input'" :widget="widget" :data="data" :ctx="ctx" />
+    <InputWidget v-else-if="kind === 'input'" :widget="widget" :data="data" :ctx="ctx" @written="emit('written', $event)" />
     <template v-else-if="kind === 'image'">
       <RouterLink v-if="link?.kind === 'route'" :to="link.to" class="image-link" :aria-label="widget.title || widget.tooltip || t('dashboard.openLink')">
         <ImageWidget :widget="widget" />

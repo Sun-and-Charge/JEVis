@@ -261,10 +261,27 @@ public class DashboardReader {
      * (shown as not readable).
      */
     private void readLegacyDataHandler(WidgetDefinition widget, JsonNode handler, JEVisDataSource ds) {
+        AnalysisDefinition definition = analysisReader.readAnalysisFile(convertLegacyDataHandler(handler, ds));
+        widget.setData(definition);
+        String forced = text(handler, "", "forcedInterval");
+        if (forced != null && !forced.trim().isEmpty()) widget.setTimeFrame(forced.trim());
+    }
+
+    /**
+     * Converts a legacy "SimpleDataHandler" node of a widget into the current "AnalysisHandler" format, as the Control
+     * Center writes it on its next save ({@code DataModelDataHandler.createChartModelFromOldDataModel} and
+     * {@code AnalysisHandler.toJsonNode(model, true)}): one chart model with the data points, rows with their
+     * aggregation and manipulation, the unit of the point (else, with a data source, the display unit of the
+     * attribute) and the {@code forcedInterval} of the handler. Points whose object is readable but has no such
+     * attribute are left out; points of unreadable objects are kept.
+     *
+     * @param handler the "dataHandler" node of a widget with {@code "type": "SimpleDataHandler"}
+     * @param ds      data source for the objects and display units, may be {@code null}
+     */
+    public ObjectNode convertLegacyDataHandler(JsonNode handler, JEVisDataSource ds) {
         ObjectNode converted = mapper.createObjectNode();
         converted.put("type", ANALYSIS_HANDLER_TYPE);
         ArrayNode chartData = mapper.createArrayNode();
-        List<JEVisUnit> units = new ArrayList<>();
         JsonNode data = field(handler, "data");
         if (data != null && data.isArray()) {
             for (JsonNode point : data) {
@@ -294,7 +311,8 @@ public class DashboardReader {
                 row.put("id", id);
                 row.put("attributeString", attributeName);
                 row.put("name", text(point, "", "name"));
-                row.put("color", legacyColor(field(point, "color")));
+                /* JavaFX Color.toString(), as the Control Center writes the colour of a row */
+                row.put("color", "0x" + legacyColor(field(point, "color")).substring(1) + "ff");
                 row.put("axis", integer(point, 0, "axis"));
                 row.put("calculation", bool(point, false, "enpi"));
                 row.put("bubbleType", text(point, "NONE", "bubbleType"));
@@ -303,23 +321,22 @@ public class DashboardReader {
                 row.put("css", text(point, "", "customCSS"));
                 row.put("aggregationPeriod", text(point, "NONE", "aggregationPeriod"));
                 row.put("manipulationMode", text(point, "NONE", "manipulationMode"));
+                if (unit != null) {
+                    /* ChartData.setUnit / AnalysisHandler.toJsonNode */
+                    RowDefinition withUnit = new RowDefinition();
+                    withUnit.setUnit(unit);
+                    row.put("unitPrefix", withUnit.getUnitPrefix());
+                    row.put("unitFormula", withUnit.getUnitFormula());
+                    row.put("unitLabel", withUnit.getUnitLabel());
+                }
                 chartData.add(row);
-                units.add(unit);
             }
         }
         ObjectNode chartModel = mapper.createObjectNode();
         chartModel.set("chartData", chartData);
         converted.putArray("chartModels").add(chartModel);
-        AnalysisDefinition definition = analysisReader.readAnalysisFile(converted);
-        if (!definition.getCharts().isEmpty()) {
-            List<RowDefinition> rows = definition.getCharts().get(0).getRows();
-            for (int i = 0; i < rows.size() && i < units.size(); i++) {
-                if (units.get(i) != null) rows.get(i).setUnit(units.get(i));
-            }
-        }
-        widget.setData(definition);
-        String forced = text(handler, "", "forcedInterval");
-        if (forced != null && !forced.trim().isEmpty()) widget.setTimeFrame(forced.trim());
+        converted.put("forcedInterval", text(handler, "", "forcedInterval"));
+        return converted;
     }
 
     /**

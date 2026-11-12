@@ -26,10 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -37,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.*;
 import org.jevis.commons.JEVisFileImp;
+import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.relationship.ObjectRelations;
 import org.jevis.jeapi.ws.JEVisDataSourceWS;
 import org.jevis.jeconfig.JEConfig;
@@ -119,20 +122,29 @@ public class ConfigManager {
         JEVisObject dashboardObject = dashboardPojo.getDashboardObject();
 
         logger.debug("---------\n {} \n-----------------", this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dashboardNode));
-        if (this.dashboardObject != null) {
-            JEVisAttribute dataModel = dashboardObject.getAttribute(DashBordPlugIn.ATTRIBUTE_DATA_MODEL_FILE);
+        /* always the object of the dashboard being saved (also a new one whose file was never read), never skipped silently */
+        if (dashboardObject == null) {
+            throw new JEVisException("The dashboard has no object to save to", 404);
+        }
+        if (dashboardNode == null) {
+            throw new IOException("The dashboard could not be converted to JSON");
+        }
+        JEVisAttribute dataModel = dashboardObject.getAttribute(DashBordPlugIn.ATTRIBUTE_DATA_MODEL_FILE);
+        if (dataModel == null) {
+            throw new JEVisException("The dashboard " + dashboardObject.getID() + " has no attribute "
+                    + DashBordPlugIn.ATTRIBUTE_DATA_MODEL_FILE, 404);
+        }
 
-            String filenameStr = filename.replaceAll("[^A-Za-z0-9]", "") + "_" + DateTime.now().toString("yyyyMMddHHmm") + ".json";
-            JEVisFileImp jsonFile = new JEVisFileImp(
-                    filenameStr,
-                    this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dashboardNode).getBytes(StandardCharsets.UTF_8));
-            JEVisSample newSample = dataModel.buildSample(new DateTime(), jsonFile);
-            newSample.commit();
+        String filenameStr = filename.replaceAll("[^A-Za-z0-9]", "") + "_" + DateTime.now().toString("yyyyMMddHHmm") + ".json";
+        JEVisFileImp jsonFile = new JEVisFileImp(
+                filenameStr,
+                this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dashboardNode).getBytes(StandardCharsets.UTF_8));
+        JEVisSample newSample = dataModel.buildSample(new DateTime(), jsonFile);
+        newSample.commit();
+        this.dashboardObject = dashboardObject;
 
-
-            if (wallpaper != null) {
-                setBackgroundImage(dashboardObject, wallpaper);
-            }
+        if (wallpaper != null) {
+            setBackgroundImage(dashboardObject, wallpaper);
         }
     }
 
@@ -155,7 +167,7 @@ public class ConfigManager {
                     .put(ZOOM_FACTOR, dashboardPojo.getZoomFactor())
                     .put(WIDTH, dashboardPojo.getSize().getWidth())
                     .put(HEIGHT, dashboardPojo.getSize().getHeight())
-                    .put(DEFAULT_PERIOD, dashboardPojo.getTimeFrame().getID());
+                    .put(DEFAULT_PERIOD, timeFrameId(dashboardPojo));
 
 
             ArrayNode widgetArray = dashBoardNode.putArray(WIDGET_NODE);
@@ -179,6 +191,18 @@ public class ConfigManager {
         }
 
         return null;
+    }
+
+    /**
+     * @return the id of the dashboard's time frame; the day if there is none (the widget navigator sets none for a
+     * time frame that is not in its list), as {@code DashboardControl} uses for a dashboard without time frame
+     */
+    private String timeFrameId(DashboardPojo dashboardPojo) {
+        TimeFrame timeFrame = dashboardPojo.getTimeFrame();
+        if (timeFrame != null && timeFrame.getID() != null) {
+            return timeFrame.getID();
+        }
+        return this.timeFrameFactory.day().getID();
     }
 
     public DashboardPojo loadDashboard(JsonNode jsonNode) {
@@ -405,6 +429,25 @@ public class ConfigManager {
     }
 
 
+    /**
+     * Tells the user that the dashboard was not saved (instead of failing silently).
+     */
+    private static void showSaveError(Exception ex) {
+        Runnable show = () -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(I18n.getInstance().getString("dialog.error.title"));
+            alert.setHeaderText(I18n.getInstance().getString("dialog.error.servercommit"));
+            alert.setContentText(ex.getMessage());
+            alert.initOwner(JEConfig.getStage());
+            alert.showAndWait();
+        };
+        if (Platform.isFxApplicationThread()) {
+            show.run();
+        } else {
+            Platform.runLater(show);
+        }
+    }
+
     public DashboardPojo createEmptyDashboard() {
         DashboardPojo empty = new DashboardPojo();
         TimeFrame factory = this.timeFrameFactory.day();
@@ -445,6 +488,7 @@ public class ConfigManager {
 
                 } catch (Exception ex) {
                     logger.error("Failed to save dashboard under new name", ex);
+                    showSaveError(ex);
                 }
                 return true;
             });

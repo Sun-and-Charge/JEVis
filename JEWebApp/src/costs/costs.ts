@@ -101,6 +101,8 @@ export interface CostState {
   timeFrame: string
   from: Date | null
   to: Date | null
+  /** reference date of the period for the other time frames (null = now, i.e. the current period) */
+  date?: Date | null
   /** selectable input id → object id */
   selections: Record<string, number>
 }
@@ -164,7 +166,8 @@ export function costStateFromQuery(query: Query, def: Pick<CostDefinition, 'time
     const to = parseDate(single(query.to))
     if (from && to && from.getTime() <= to.getTime()) Object.assign(state, { timeFrame: CUSTOM, from, to })
   } else if (tf && (def.timeFrames ?? []).some((f) => f.id === tf)) {
-    Object.assign(state, { timeFrame: tf, from: null, to: null })
+    const date = parseDate(single(query.d))
+    Object.assign(state, { timeFrame: tf, from: null, to: null, date: date && date.getTime() < now.getTime() ? date : null })
   }
   for (const [key, value] of Object.entries(query)) {
     if (!key.startsWith(SELECTION_PREFIX)) continue
@@ -183,6 +186,8 @@ export function costStateToQuery(state: CostState, def: Pick<CostDefinition, 'in
   if (state.timeFrame === CUSTOM && state.from && state.to) {
     query.from = toIsoLocal(state.from)
     query.to = toIsoLocal(state.to)
+  } else if (state.date) {
+    query.d = toIsoLocal(state.date)
   }
   for (const input of def.inputs ?? []) {
     const id = state.selections[input.id]
@@ -193,7 +198,7 @@ export function costStateToQuery(state: CostState, def: Pick<CostDefinition, 'in
 
 /** True for the query keys written by {@link costStateToQuery} (removed when another entry is selected). */
 export function isCostStateKey(key: string): boolean {
-  return key === 'tf' || key === 'from' || key === 'to' || key.startsWith(SELECTION_PREFIX)
+  return key === 'tf' || key === 'from' || key === 'to' || key === 'd' || key.startsWith(SELECTION_PREFIX)
 }
 
 /** Body of POST /web/costs/{id}/result; selections only for templates. */
@@ -205,6 +210,7 @@ export function costRequest(state: CostState, def: Pick<CostDefinition, 'kind' |
     to: custom ? toIsoLocal(state.to!) : null,
     timeZone,
   }
+  if (!custom && state.date) request.date = toIsoLocal(state.date)
   if (def.kind === 'template') {
     const selections: Record<string, number> = {}
     for (const input of def.inputs ?? []) {

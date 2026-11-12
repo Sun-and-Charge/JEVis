@@ -89,6 +89,8 @@ export interface CostResultRequest {
   /** ISO 8601, only with CUSTOM */
   from: string | null
   to: string | null
+  /** reference date of the period (ISO 8601) for the other time frames; missing = now */
+  date?: string
   timeZone: string
   /** templates only: input id → object id */
   selections?: Record<string, number>
@@ -122,6 +124,9 @@ export interface CostCell {
 export interface CostResult {
   from: string
   to: string
+  /** reference dates of the previous / next period (null: none, e.g. CUSTOM or the current period) */
+  previous?: string | null
+  next?: string | null
   rows: number
   columns: number
   cells: CostCell[]

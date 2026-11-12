@@ -72,6 +72,8 @@ export interface WidgetConfig {
   chart: AnalysisChartConfig | null
   /** type specific, see docs/WEB-API.md */
   config: Record<string, unknown>
+  /** E4: input widgets the user may write (write right on the row's object) */
+  canEnter?: boolean
 }
 
 /** Answer of GET /web/dashboards/{id}. */
@@ -88,6 +90,12 @@ export interface DashboardConfig {
   timeFrame: string
   timeFrames: DashboardTimeFrameOption[]
   widgets: WidgetConfig[]
+  /** E4: timestamp of the latest "Data Model File" sample ("none" if never saved) */
+  version?: string
+  canWrite?: boolean
+  canDelete?: boolean
+  /** parent "Dashboard Directory", null if the parent is something else */
+  directoryId?: number | null
 }
 
 /** Request of POST /web/dashboards/{id}/data. */

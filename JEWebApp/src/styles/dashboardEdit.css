@@ -1,0 +1,172 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Editing of dashboards (E4): edit layer of the canvas, toolbar, widget palette. The side panel uses analysisEdit.css. */
+
+/* the widgets' layers and the edit layer stay inside the canvas, below dialogs and menus of the page */
+.stage.is-editing .canvas {
+  isolation: isolate;
+}
+
+.dbe-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100000;
+  cursor: crosshair;
+  touch-action: none;
+  outline: none;
+}
+
+.dbe-overlay:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--sun);
+}
+
+.dbe-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(26, 42, 69, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 42, 69, 0.12) 1px, transparent 1px);
+}
+
+.dbe-box {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: move;
+  outline: 1px dashed rgba(26, 42, 69, 0.35);
+  outline-offset: -1px;
+  touch-action: none;
+}
+
+.dbe-box:hover {
+  outline: 1px solid var(--blueberry);
+}
+
+.dbe-box.is-selected {
+  outline: 2px solid var(--blueberry);
+  outline-offset: -1px;
+  background: rgba(255, 222, 0, 0.12);
+}
+
+.dbe-box:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 0;
+  box-shadow: 0 0 0 5px var(--blueberry);
+}
+
+.dbe-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--sun);
+  border: 1px solid var(--blueberry);
+  border-radius: 2px;
+  touch-action: none;
+}
+
+.dbe-handle.is-nw { left: 0; top: 0; cursor: nwse-resize; }
+.dbe-handle.is-n { left: 50%; top: 0; cursor: ns-resize; }
+.dbe-handle.is-ne { left: 100%; top: 0; cursor: nesw-resize; }
+.dbe-handle.is-e { left: 100%; top: 50%; cursor: ew-resize; }
+.dbe-handle.is-se { left: 100%; top: 100%; cursor: nwse-resize; }
+.dbe-handle.is-s { left: 50%; top: 100%; cursor: ns-resize; }
+.dbe-handle.is-sw { left: 0; top: 100%; cursor: nesw-resize; }
+.dbe-handle.is-w { left: 0; top: 50%; cursor: ew-resize; }
+
+.dbe-band {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid var(--blueberry);
+  background: rgba(255, 222, 0, 0.18);
+}
+
+.stage.is-editing {
+  /* room for the handles at the edges */
+  padding: 6px;
+  background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 6px, var(--surface) 6px, var(--surface) 12px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.dbe-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.6rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sun);
+  border-radius: var(--radius);
+}
+
+.dbe-toolbar .btn {
+  padding: 0.4rem 0.8rem;
+}
+
+.dbe-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+
+.dbe-count {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.dbe-palette {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.5rem;
+}
+
+.dbe-type-btn {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--blueberry);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.dbe-type-btn:hover,
+.dbe-type-btn:focus-visible {
+  border-color: var(--blueberry);
+  background: rgba(255, 222, 0, 0.25);
+  outline: none;
+}
+
+.dbe-alpha {
+  flex: 0 0 4.2rem;
+  width: 4.2rem;
+}
+
+.dbe-unit {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.dbe-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.dbe-panel {
+  font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+}

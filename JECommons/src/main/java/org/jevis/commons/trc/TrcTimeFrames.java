@@ -112,6 +112,24 @@ public final class TrcTimeFrames {
         return frames.interval(id, date, false);
     }
 
+    /**
+     * @return reference date of the period before the one containing {@code date} (as the dashboards' arrows),
+     * {@code null} for custom ranges and "no time frame"
+     */
+    public DateTime previous(String id, DateTime date) {
+        if (id == null || NONE.equals(id) || DashboardTimeFrames.CUSTOM.equals(id)) return null;
+        return frames.previous(id, date);
+    }
+
+    /**
+     * @return reference date of the period after the one containing {@code date}, {@code null} if that period would
+     * start after now, for custom ranges and "no time frame"
+     */
+    public DateTime next(String id, DateTime date) {
+        if (id == null || NONE.equals(id) || DashboardTimeFrames.CUSTOM.equals(id)) return null;
+        return frames.next(id, date);
+    }
+
     public DateTimeZone getZone() {
         return frames.getZone();
     }
