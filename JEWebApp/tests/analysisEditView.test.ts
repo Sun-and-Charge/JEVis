@@ -423,6 +423,31 @@ describe('analysis view: edit mode (E3)', () => {
   })
 })
 
+describe('analysis view: "Neue Analyse" while another analysis is open (E3 bug)', () => {
+  it('edits and saves the new analysis, not the one that was open before', async () => {
+    const http = api()
+    const created = { ...editConfig(), id: 2, name: 'Neue Testanalyse', names: {}, version: '2026-11-12T20:00:00.000+01:00', charts: [{ ...editConfig().charts[0], id: 0, name: 'Diagramm 1', rows: [] }] }
+    const base = http.get.getMockImplementation() as (path: string) => Promise<unknown>
+    http.get.mockImplementation(async (path: string) => (path === '/web/analyses/2' ? created : base(path)))
+    const basePost = http.post.getMockImplementation() as (path: string, ...rest: unknown[]) => Promise<unknown>
+    http.post.mockImplementation(async (path: string, ...rest: unknown[]) => (path === '/web/analyses/2/data' ? data([]) : basePost(path, ...rest)))
+    http.put.mockImplementation(async (_path: string, body: { definition: unknown }) => ({ ...created, ...(body as object), version: '2026-11-12T20:01:00.000+01:00' }))
+    const { w, router } = await mountView(http)
+    expect(w.find('h1').text()).toBe('Analyse A')
+    await router.push({ name: 'analysis', params: { id: 2 }, query: { edit: '1' } })
+    await flushPromises()
+    expect(panel(w).exists()).toBe(true)
+    expect(control(w, 'Name').element.value).toBe('Neue Testanalyse')
+    expect(router.currentRoute.value.query.edit).toBeUndefined()
+    await control(w, 'Name').setValue('Neue Testanalyse 2')
+    await panel(w).find('.ae-save').trigger('click')
+    await flushPromises()
+    expect(http.put).toHaveBeenCalledTimes(1)
+    expect(String(http.put.mock.calls[0][0]).split('?')[0]).toBe('/web/analyses/2')
+    expect(http.put.mock.calls.some((c: unknown[]) => String(c[0]).startsWith('/web/analyses/1'))).toBe(false)
+  })
+})
+
 describe('analysis view: live preview (E3)', () => {
   it('debounces, sends the draft with the toolbar settings, aborts an older request and skips display-only changes', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })

@@ -106,6 +106,24 @@ public class ResourceWebNavigationTest {
     }
 
     @Test
+    public void objectsInTheRecycleBinAreNotListed() {
+        JsonObject org = obj(1, "Organisation", ResourceWebNavigation.CLASS_ORGANIZATION, 0);
+        JsonObject kept = obj(3, "Kept", ResourceWebNavigation.CLASS_ANALYSIS, 1);
+        JsonObject deleted = obj(5, "Deleted", ResourceWebNavigation.CLASS_ANALYSIS, 0);
+        deleted.setDeleteTS("2026-11-12T20:00:00.000Z");
+        JsonObject deletedDashboard = obj(6, "Deleted board", ResourceWebNavigation.CLASS_DASHBOARD, 0);
+        deletedDashboard.setDeleteTS("2026-11-12T20:00:00.000Z");
+        List<JsonObject> all = Arrays.asList(org, kept, deleted, deletedDashboard);
+        Map<String, Object> result = ResourceWebNavigation.build(all, all, parents(all));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> other = (Map<String, Object>) result.get("other");
+        assertTrue(list(other, "analyses").isEmpty());
+        assertTrue(list(other, "dashboards").isEmpty());
+        assertEquals(1, list(site(result, 1), "analyses").size());
+    }
+
+    @Test
     public void parentCyclesDoNotLoop() {
         JsonObject a = obj(1, "A", "Directory", 2);
         JsonObject b = obj(2, "B", "Directory", 1);
