@@ -50,8 +50,8 @@ import org.jevis.jeconfig.application.Chart.data.AnalysisHandler;
 import org.jevis.jeconfig.application.Chart.data.ChartData;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 import org.jevis.jeconfig.application.Chart.data.DataModel;
-import org.jevis.jeconfig.plugin.accounting.AccountingTemplateHandler;
-import org.jevis.jeconfig.plugin.accounting.SelectionTemplate;
+import org.jevis.commons.trc.AccountingTemplateHandler;
+import org.jevis.commons.trc.SelectionTemplate;
 import org.jevis.jeconfig.plugin.scada.SCADAPlugin;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -435,7 +435,7 @@ public class TreeExporter {
                         }
 
                         // Remap objectID on each selected data input
-                        for (org.jevis.jeconfig.plugin.dtrc.TemplateInput input : template.getSelectedInputs()) {
+                        for (org.jevis.commons.trc.TemplateInput input : template.getSelectedInputs()) {
                             Long oldId = input.getObjectID();
                             if (oldId != null && oldId > 0) {
                                 JEVisObject resolved = resolveObject(ds, createdObjects, oldId);
@@ -452,7 +452,7 @@ public class TreeExporter {
                         }
 
                         // Remap TargetHelper target strings on linked outputs
-                        for (org.jevis.jeconfig.plugin.dtrc.TemplateOutput output : template.getLinkedOutputs()) {
+                        for (org.jevis.commons.trc.TemplateOutput output : template.getLinkedOutputs()) {
                             if (Boolean.TRUE.equals(output.getLink()) && output.getTarget() != null
                                     && !output.getTarget().isEmpty()) {
                                 try {

@@ -43,10 +43,10 @@ import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.tools.WindowSize;
 import org.jevis.jeconfig.dialog.Response;
 import org.jevis.jeconfig.plugin.dashboard.timeframe.TimeFrame;
-import org.jevis.jeconfig.plugin.dtrc.RCTemplate;
-import org.jevis.jeconfig.plugin.dtrc.TemplateFormula;
-import org.jevis.jeconfig.plugin.dtrc.TemplateInput;
-import org.jevis.jeconfig.plugin.dtrc.TemplateOutput;
+import org.jevis.commons.trc.RCTemplate;
+import org.jevis.commons.trc.TemplateFormula;
+import org.jevis.commons.trc.TemplateInput;
+import org.jevis.commons.trc.TemplateOutput;
 
 import java.util.List;
 

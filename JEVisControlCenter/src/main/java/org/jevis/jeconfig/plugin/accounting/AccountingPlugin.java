@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ibm.icu.text.NumberFormat;
 import com.jfoenix.controls.*;
-import com.udojava.evalex.Expression;
-import org.jevis.commons.calculation.CalcExpressions;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
@@ -72,6 +70,7 @@ import org.jevis.jeconfig.dialog.RenameDialog;
 import org.jevis.jeconfig.plugin.accounting.invoice.InvoiceImportDialog;
 import org.jevis.jeconfig.plugin.RegisterTableRow;
 import org.jevis.jeconfig.plugin.TablePlugin;
+import org.jevis.commons.trc.*;
 import org.jevis.jeconfig.plugin.dtrc.*;
 import org.jevis.jeconfig.plugin.object.attribute.AttributeEditor;
 import org.jevis.jeconfig.plugin.object.attribute.PeriodEditor;
@@ -765,7 +764,7 @@ public class AccountingPlugin extends TablePlugin {
         sortedList.addAll(singleInputFormulaOutputs);
         sortedList.addAll(multiInputFormulaOutputs);
 
-        Map<String, Double> resultMap = new HashMap<>();
+        TrcResult result = viewTab.calculate();
 
         DateTime start = viewTab.getStart();
         DateTime end = viewTab.getEnd();
@@ -801,65 +800,32 @@ public class AccountingPlugin extends TablePlugin {
                     cell.setCellValue(templateOutput.getName());
                     hasLabel = true;
                 }
-                TemplateFormula formula = templateHandler.getRcTemplate().getTemplateFormulas().stream().filter(templateFormula -> templateFormula.getOutput().equals(templateOutput.getId())).findFirst().orElse(null);
+                TrcResult.Cell resultCell = result != null ? result.cell(templateOutput.getId()) : null;
 
-                if (formula != null) {
-                    String formulaString = formula.getFormula();
-                    boolean isText = false;
-                    for (TemplateInput templateInput : templateHandler.getRcTemplate().getTemplateInputs()) {
-                        if (formula.getInputIds().contains(templateInput.getId())) {
-                            if (templateInput.getVariableType().equals(InputVariableType.STRING.toString())) {
-                                isText = true;
-                            }
-
-                            if (!templateInput.getVariableType().equals(InputVariableType.FORMULA.toString())) {
-                                formulaString = formulaString.replace(templateInput.getVariableName(), templateInput.getValue(ds, start, end));
-                            } else {
-                                Double d = resultMap.get(templateInput.getVariableName());
-                                if (d != null) {
-                                    formulaString = formulaString.replace(templateInput.getVariableName(), d.toString());
-                                }
-                            }
-
+                if (resultCell != null && resultCell.getKind() == TrcResult.Kind.VALUE) {
+                    Double calculate = resultCell.getValue();
+                    String formatted = calculate != null ? nf.format(calculate) : I18n.getInstance().getString("plugin.dtrc.noresult");
+                    if (hasLabel) {
+                        if (templateOutput.getUnit() != null) {
+                            cell.setCellValue(cell.getStringCellValue() + ": " + formatted + " " + templateOutput.getUnit());
+                        } else {
+                            cell.setCellValue(cell.getStringCellValue() + ": " + formatted);
                         }
-                    }
-
-                    if (!isText) {
-                        try {
-                            Double calculate;
-                            try {
-                                calculate = CalcExpressions.create(formulaString).eval().doubleValue();
-                            } catch (Expression.ExpressionException e) {
-                                logger.error("Formula evaluation failed: {}", e.getMessage());
-                                calculate = Double.NaN;
-                            }
-                            if (!calculate.isNaN()) {
-                                resultMap.put(formula.getName(), calculate);
-                            }
-
-                            if (hasLabel) {
-                                if (templateOutput.getUnit() != null) {
-                                    cell.setCellValue(cell.getStringCellValue() + ": " + nf.format(calculate) + " " + templateOutput.getUnit());
-                                } else {
-                                    cell.setCellValue(cell.getStringCellValue() + ": " + nf.format(calculate));
-                                }
-                            } else {
-                                cell.setCellValue(calculate);
-                                DataFormat format = workbook.createDataFormat();
-                                CellStyle cellStyle = workbook.createCellStyle();
-                                if (templateOutput.getUnit() != null) {
-                                    cellStyle.setDataFormat(format.getFormat("#,##0.00 [$" + templateOutput.getUnit() + "]"));
-                                } else {
-                                    cellStyle.setDataFormat(format.getFormat("#,##0.00"));
-                                }
-                                cell.setCellStyle(cellStyle);
-                            }
-                        } catch (Exception e) {
-                            logger.error("Error in formula {}", formula.getName(), e);
+                    } else if (calculate != null) {
+                        cell.setCellValue(calculate);
+                        DataFormat format = workbook.createDataFormat();
+                        CellStyle cellStyle = workbook.createCellStyle();
+                        if (templateOutput.getUnit() != null) {
+                            cellStyle.setDataFormat(format.getFormat("#,##0.00 [$" + templateOutput.getUnit() + "]"));
+                        } else {
+                            cellStyle.setDataFormat(format.getFormat("#,##0.00"));
                         }
+                        cell.setCellStyle(cellStyle);
                     } else {
-                        cell.setCellValue(formulaString);
+                        cell.setCellValue(formatted);
                     }
+                } else if (resultCell != null && resultCell.getKind() == TrcResult.Kind.TEXT) {
+                    cell.setCellValue(resultCell.getText());
                 }
             }
         }
