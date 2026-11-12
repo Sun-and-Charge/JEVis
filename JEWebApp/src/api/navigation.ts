@@ -22,7 +22,7 @@ export interface Navigation {
   other: { analyses: NavItem[]; dashboards: NavItem[] }
   /** the user's start dashboard (if readable), opened after login */
   startDashboard?: number | null
-  /** number of readable appointments / maintenance entries (W4.1), plans (W4.2) and register objects (W4.3), notes (W4.4), alarms (W4.5), reports (W4.6), contracts and invoices (W4.7); missing on older servers */
+  /** number of readable appointments / maintenance entries (W4.1), plans (W4.2) and register objects (W4.3), notes (W4.4), alarms (W4.5), reports (W4.6), contracts and invoices (W4.7), cost calculations (W4.8); missing on older servers */
   modules?: Partial<ModuleCounts> | null
 }
 
@@ -47,6 +47,8 @@ export interface ModuleCounts {
   /** readable contract objects plus accounting configurations, and readable energy invoices (W4.7) */
   contracts: number
   invoices: number
+  /** readable accounting configurations plus result calculation templates (W4.8) */
+  costs: number
 }
 
 /** Module counts with missing values as 0 (the menu shows only modules with entries). */
@@ -68,6 +70,7 @@ export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCou
     reports: n(m?.reports),
     contracts: n(m?.contracts),
     invoices: n(m?.invoices),
+    costs: n(m?.costs),
   }
 }
 

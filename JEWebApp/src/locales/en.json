@@ -210,7 +210,8 @@
     "alarmsOpen": "{n} open alarms (7 days) | 1 open alarm (7 days) | {n} open alarms (7 days)",
     "reports": "Reports",
     "contracts": "Contracts",
-    "invoices": "Energy invoices"
+    "invoices": "Energy invoices",
+    "costs": "Cost calculation"
   },
   "appointments": {
     "title": "Appointments",
@@ -780,7 +781,7 @@
       "more": "The last {n} of {total} values."
     },
     "config": {
-      "hint": "The cost calculation follows in a later version.",
+      "hint": "The results of the accounting configurations are shown in the “Cost calculation” module.",
       "name": "Accounting",
       "contractNumber": "Contract number",
       "marketLocation": "Market location",
@@ -897,6 +898,77 @@
       "previewError": "The preview could not be loaded.",
       "unsupported": "Your browser cannot show the PDF file here.",
       "openTab": "Open PDF in a new tab"
+    }
+  },
+  "costs": {
+    "title": "Cost calculation",
+    "readOnly": "View only – templates and accounting configurations are set up in the Control Center.",
+    "loading": "Loading cost calculations …",
+    "empty": "There are no accounting configurations or templates you may read.",
+    "noMatch": "No accounting configuration or template matches the search.",
+    "searchPlaceholder": "Name, template, site …",
+    "count": "{shown} of {total} entries",
+    "listLabel": "Accounting configurations and templates",
+    "section": {
+      "configuration": "Accounting",
+      "template": "Templates"
+    },
+    "kind": {
+      "configuration": "Accounting configuration",
+      "template": "Template"
+    },
+    "templateOf": "Template: {name}",
+    "templateMissing": "Template missing or not readable",
+    "select": "Select an accounting configuration or template on the left.",
+    "notFound": "This entry does not exist or you may not read it.",
+    "back": "Back to list",
+    "detail": {
+      "kind": "Type",
+      "template": "Template",
+      "term": "Term",
+      "loading": "Loading calculation …",
+      "settings": "Calculation settings",
+      "timeFrame": "Period",
+      "custom": "Custom",
+      "from": "From",
+      "to": "To",
+      "rangeOrder": "The end is before the start.",
+      "noObject": "No object",
+      "noAccess": "No read right",
+      "inputs": "Inputs ({n})"
+    },
+    "result": {
+      "title": "Result",
+      "period": "Period",
+      "loading": "Calculating result …",
+      "empty": "The template has no outputs.",
+      "warnings": "{n} notes | 1 note | {n} notes",
+      "csv": "CSV",
+      "print": "Print"
+    },
+    "error": {
+      "notFound": "The calculation does not exist or you may not read it.",
+      "template": "Template missing or not readable.",
+      "invalid": "The settings are invalid.",
+      "definition": "The calculation could not be loaded.",
+      "result": "The result could not be calculated."
+    },
+    "chart": {
+      "show": "Show history of “{name}”",
+      "tooLong": "Period too long for the preview",
+      "title": "History: {name}",
+      "label": "History of {name}",
+      "close": "Close",
+      "loading": "Loading history …",
+      "error": "The history could not be loaded.",
+      "notFound": "The data row is not available or you may not read it.",
+      "noData": "No values in the period.",
+      "truncated": "Not all values are shown."
+    },
+    "csv": {
+      "name": "Name",
+      "value": "Value",
+      "unit": "Unit"
     }
   },
   "banner": {

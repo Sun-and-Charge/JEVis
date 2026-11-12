@@ -1,0 +1,354 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Cost and result calculation (view only); builds on modules.css, iso.css, notes.css and reports.css. */
+
+.cost-section + .cost-section {
+  margin-top: 1.25rem;
+}
+
+.cost-section-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.cost-meta {
+  margin-bottom: 1rem;
+}
+
+.cost-wrap {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- settings ---------- */
+
+.cost-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.cost-control {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cost-control label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.cost-control select,
+.cost-control input {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.cost-control select:focus-visible,
+.cost-control input:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.cost-input select {
+  width: 18rem;
+}
+
+.cost-inputs {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.cost-inputs > summary,
+.cost-warnings > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cost-inputs > summary:focus-visible,
+.cost-warnings > summary:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.cost-inputs .mod-dl {
+  margin-top: 0.5rem;
+}
+
+/* ---------- result ---------- */
+
+.cost-result {
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
+.cost-result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cost-result-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+/* the period is the one emphasised element: the yellow bar marks what the result covers */
+.cost-period {
+  display: inline-block;
+  margin: 0.3rem 0 0;
+  padding: 0.15rem 0.5rem;
+  border-left: 4px solid var(--sun);
+  background: var(--bg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-print-only {
+  display: none;
+}
+
+.cost-result-body.is-stale {
+  opacity: 0.55;
+}
+
+.cost-warnings {
+  margin: 0 0 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #e0c36a;
+  background: #fff8e1;
+  color: #5d4300;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.cost-warnings ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.cost-grid {
+  display: grid;
+  gap: 0.15rem 1.25rem;
+  align-items: center;
+  font-size: 0.92rem;
+}
+
+.cost-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.3rem 0;
+  border-bottom: 1px dotted var(--line);
+}
+
+.cost-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cost-amount {
+  flex: 0 0 auto;
+  max-width: 60%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cost-amount.is-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.cost-amount.is-missing .cost-number {
+  color: var(--muted);
+}
+
+.cost-unit {
+  color: var(--muted);
+}
+
+.is-bold {
+  font-weight: 700;
+}
+
+.cost-label {
+  align-self: end;
+  padding: 0.6rem 0 0.15rem;
+  font-weight: 600;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.cost-label.is-bold {
+  color: var(--ink);
+}
+
+.cost-sep.is-horizontal {
+  align-self: center;
+  height: 0;
+  border-top: 2px solid var(--ink);
+  margin: 0.2rem 0;
+}
+
+.cost-sep.is-vertical {
+  justify-self: center;
+  align-self: stretch;
+  width: 0;
+  border-left: 1px solid var(--line);
+}
+
+.cost-chart-btn {
+  flex: 0 0 auto;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--blueberry);
+  cursor: pointer;
+}
+
+.cost-chart-btn svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cost-chart-btn:hover:not(:disabled),
+.cost-cell.is-open .cost-chart-btn {
+  border-color: var(--blueberry);
+  background: var(--bg);
+}
+
+.cost-chart-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.cost-chart-btn:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.cost-chart-hint {
+  margin-top: 0.5rem;
+}
+
+.cost-chart {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.cost-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cost-chart-head h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+/* phone width: one column in reading order (the DOM order), vertical separators left out */
+@media (max-width: 800px) {
+  .cost-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cost-sep.is-vertical {
+    display: none;
+  }
+
+  .cost-input select {
+    width: 100%;
+  }
+
+  .cost-input,
+  .cost-control {
+    flex: 1 1 100%;
+  }
+
+  .cost-control input[type='datetime-local'] {
+    width: 100%;
+  }
+}
+
+/* print: only the result */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .cost-result,
+  .cost-result * {
+    visibility: visible;
+  }
+
+  .cost-result {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    padding: 0;
+  }
+
+  .cost-actions,
+  .cost-chart-btn,
+  .cost-chart,
+  .cost-chart-hint {
+    display: none !important;
+  }
+
+  .cost-print-only {
+    display: block;
+    margin: 0.25rem 0 0;
+    font-weight: 600;
+  }
+
+  .cost-warnings:not([open]) {
+    display: none;
+  }
+
+  .cost-result-body.is-stale {
+    opacity: 1;
+  }
+}
