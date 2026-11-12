@@ -7,6 +7,7 @@ import RegisterDetails from '../components/registers/RegisterDetails.vue'
 import { sortRows, type ColumnContext, type SortDirection } from '../iso/columns'
 import { useLoader } from '../iso/useLoader'
 import { useNarrow } from '../modules/useNarrow'
+import { useSitePreselection } from '../nav/useSitePreselection'
 import {
   loadColumnChoice,
   registerColumns,
@@ -39,6 +40,7 @@ const narrow = useNarrow()
 const { data, state, reload } = useLoader(() => loadRegisters(auth.http, props.kind, locale.value))
 
 const filter = reactive<RegisterFilter>(defaultFilter(null))
+const preselect = useSitePreselection()
 const selected = ref<string | null>(null)
 const choice = ref(loadColumnChoice(props.kind))
 const sortId = ref<string | null>(null)
@@ -54,6 +56,7 @@ watch(
   (kind) => {
     data.value = null
     yearSet = false
+    preselect.reset()
     Object.assign(filter, defaultFilter(null))
     selected.value = null
     choice.value = loadColumnChoice(kind)
@@ -69,6 +72,8 @@ watch(data, (d) => {
     yearSet = true
     filter.year = defaultFilter(d.today).year
   }
+  /* once per kind: the tab of the site chosen in the top bar */
+  if (d && selected.value === null) selected.value = preselect.pick(d.groups)
 })
 
 const groups = computed(() => data.value?.groups ?? [])

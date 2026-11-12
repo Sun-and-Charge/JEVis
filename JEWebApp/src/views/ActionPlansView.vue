@@ -13,6 +13,7 @@ import { ALL } from '../iso/filter'
 import { useIsoEditing, type ListHandle } from '../iso/useIsoEditing'
 import { useLoader } from '../iso/useLoader'
 import { formatLocalDate } from '../modules/dates'
+import { useSitePreselection } from '../nav/useSitePreselection'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
 import '../styles/iso.css'
@@ -30,9 +31,15 @@ const options = computed(() => actionOptions(plans.value, filter.plan, locale.va
 const stats = computed(() => actionStatistics(rows.value, data.value?.today ?? new Date().toISOString().slice(0, 10), filter.from || null, options.value.statuses))
 const dateFields = computed(() => ACTION_DATE_FIELDS.map((value) => ({ value, label: t('iso.actions.col.' + value) })))
 
-/* a single plan is selected right away; tag filters of another plan would hide everything */
+/* a single plan is selected right away, else (once) the plan of the site chosen in the top bar;
+ * tag filters of another plan would hide everything */
+const preselect = useSitePreselection()
 watch(plans, (list) => {
   if (list.length === 1) filter.plan = list[0].id
+  else {
+    const id = preselect.pick(list.map((p) => ({ key: p.id, site: p.site })))
+    if (id !== null) filter.plan = id
+  }
 })
 watch(
   () => filter.plan,

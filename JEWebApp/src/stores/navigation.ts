@@ -3,7 +3,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { loadDirectories as fetchDirectories, type AnalysisDirectory } from '../api/analysis'
-import { buildSiteTree, moduleCounts, type Navigation } from '../api/navigation'
+import { moduleCounts, type Navigation } from '../api/navigation'
 import { useAuthStore } from './auth'
 
 export const useNavigationStore = defineStore('navigation', () => {
@@ -11,7 +11,6 @@ export const useNavigationStore = defineStore('navigation', () => {
   const loading = ref(false)
   const failed = ref(false)
 
-  const tree = computed(() => (data.value ? buildSiteTree(data.value.sites) : []))
   const counts = computed(() => {
     const sites = data.value?.sites ?? []
     const other = data.value?.other
@@ -65,5 +64,5 @@ export const useNavigationStore = defineStore('navigation', () => {
     directories.value = null
   }
 
-  return { data, tree, counts, modules, loading, failed, load, reset, directories, creatableDirectories, loadDirectories }
+  return { data, counts, modules, loading, failed, load, reset, directories, creatableDirectories, loadDirectories }
 })

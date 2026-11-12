@@ -11,6 +11,7 @@ import { ALL } from '../iso/filter'
 import { DEFAULT_LEGAL_COLUMNS, DEFAULT_LEGAL_FILTER, filterLegal, LEGAL_COLUMNS, LEGAL_DATE_FIELDS, legalOptions, legalRows, type LegalFilter, type LegalRow } from '../iso/legal'
 import { useIsoEditing, type ListHandle } from '../iso/useIsoEditing'
 import { useLoader } from '../iso/useLoader'
+import { useSitePreselection } from '../nav/useSitePreselection'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
 import '../styles/iso.css'
@@ -27,8 +28,14 @@ const options = computed(() => legalOptions(plans.value, filter.plan, locale.val
 const dateFields = computed(() => LEGAL_DATE_FIELDS.map((value) => ({ value, label: t('iso.legal.col.' + value) })))
 const relevanceOptions = ['all', 'relevant', 'notRelevant'] as const
 
+/* a single plan is selected right away, else (once) the plan of the site chosen in the top bar */
+const preselect = useSitePreselection()
 watch(plans, (list) => {
   if (list.length === 1) filter.plan = list[0].id
+  else {
+    const id = preselect.pick(list.map((p) => ({ key: p.id, site: p.site })))
+    if (id !== null) filter.plan = id
+  }
 })
 watch(
   () => filter.plan,
