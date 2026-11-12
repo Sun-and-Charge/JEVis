@@ -131,11 +131,15 @@ watch(editing, (now, was) => {
   if (was && !now && fetchedKey !== settingsKey.value) void fetchData()
 })
 
-/* "Neue Analyse" of the navigation opens the new analysis with ?edit=1 */
+/*
+ * "Neue Analyse" of the navigation opens the new analysis with ?edit=1. The route query changes before the id prop
+ * (the prop follows with the next render), so edit mode starts only once the loaded analysis is the one of the route;
+ * otherwise the analysis that was open before would be edited (and saved) instead of the new one.
+ */
 watch(
-  () => [configState.value, route.query.edit, nav.directories] as const,
-  ([state, edit, directories]) => {
-    if (state !== 'ready' || edit !== '1' || directories === null || editing.value) return
+  () => [configState.value, config.value?.id, props.id, route.query.edit, nav.directories] as const,
+  ([state, loadedId, id, edit, directories]) => {
+    if (state !== 'ready' || loadedId !== id || edit !== '1' || directories === null || editing.value) return
     const query = { ...route.query }
     delete query.edit
     void router.replace({ query })

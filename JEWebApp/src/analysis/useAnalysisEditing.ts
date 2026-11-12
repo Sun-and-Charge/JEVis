@@ -148,7 +148,8 @@ export function useAnalysisEditing(options: AnalysisEditingOptions) {
 
   function start() {
     const config = options.config.value
-    if (!config || !canEdit.value) return
+    // only the analysis of the route (a stale one may still be shown while the next one loads)
+    if (!config || config.id !== options.id() || !canEdit.value) return
     result.value = null
     error.value = null
     messages.value = []
@@ -264,6 +265,11 @@ export function useAnalysisEditing(options: AnalysisEditingOptions) {
     clearErrors()
     const config = options.config.value
     if (!draft.value || !config || !canWrite.value) return
+    if (config.id !== options.id()) {
+      // never write a draft into another analysis than the one of the route
+      stop()
+      return
+    }
     if (blockedByProblems()) return
     const newName = draft.value.name.trim()
     const rename = newName !== options.title.value.trim() ? newName : undefined
