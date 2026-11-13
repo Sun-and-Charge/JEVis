@@ -74,6 +74,8 @@ export interface ReadingMeter {
   /** last 11 samples, newest first */
   readings: ReadingSample[]
   problem: ReadingProblem | string | null
+  /** only with `?round=`: read for the round's current due date (E8.2) */
+  doneInRound?: boolean
 }
 
 export interface ReadingGroup {
@@ -83,10 +85,21 @@ export interface ReadingGroup {
   meters: ReadingMeter[]
 }
 
+/** The round of a `?round=` answer (E8.2). */
+export interface ReadingListRound {
+  id: number
+  name: string
+  due: string | null
+  nextDue: string | null
+  state: string
+}
+
 export interface ReadingList {
   /** server date yyyy-MM-dd */
   today: string
   groups: ReadingGroup[]
+  /** only with `?round=`: one group named after the round, meters in round order */
+  round?: ReadingListRound | null
 }
 
 /** Body of POST /web/readings/{meterId}. */
@@ -118,9 +131,9 @@ export const MAX_PHOTO_BYTES = 15 * 1024 * 1024
 
 const lang = (locale: string) => `lang=${encodeURIComponent(locale)}`
 
-/** GET /web/readings; `site` limits it to one building. */
-export function loadReadings(http: Pick<HttpClient, 'get'>, locale: string, site?: number | null): Promise<ReadingList> {
-  const q = site != null ? `&site=${site}` : ''
+/** GET /web/readings; `site` limits it to one building, `round` to the meters of a reading round (E8.2). */
+export function loadReadings(http: Pick<HttpClient, 'get'>, locale: string, site?: number | null, round?: number | null): Promise<ReadingList> {
+  const q = (site != null ? `&site=${site}` : '') + (round != null ? `&round=${round}` : '')
   return http.get<ReadingList>(`/web/readings?${lang(locale)}${q}`)
 }
 

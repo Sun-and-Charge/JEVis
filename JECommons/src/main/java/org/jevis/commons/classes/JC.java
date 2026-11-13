@@ -1852,6 +1852,11 @@ public interface JC {
 
         }
 
+        interface ReadingRoundDirectory {
+            String name = "Reading Round Directory";
+
+        }
+
         interface ServiceDirectory {
             String name = "Service Directory";
 
@@ -2816,6 +2821,22 @@ public interface JC {
             String a_ValueElement = "Value Element";
             String a_ValueInElement = "Value in Element";
         }
+    }
+
+    interface ReadingRound {
+        String name = "Reading Round";
+
+        String a_Enabled = "Enabled";
+        String a_Meters = "Meters";
+        String a_Readers = "Readers";
+        String a_Supervisor = "Supervisor";
+        String a_StartDate = "Start Date";
+        String a_Period = "Period";
+        String a_LeadDays = "Lead Days";
+        String a_ReminderDays = "Reminder Days";
+        String a_EscalationDays = "Escalation Days";
+        String a_Remarks = "Remarks";
+        String a_MailState = "Mail State";
     }
 
     interface RecycleBin {

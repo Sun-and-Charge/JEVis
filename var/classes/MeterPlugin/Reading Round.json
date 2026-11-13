@@ -1,0 +1,113 @@
+{
+  "name": "Reading Round",
+  "description": "Meter reading round: meters in reading order, readers and period",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Reading Round",
+      "end": "Reading Round Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Enabled",
+      "primitiveType": 4,
+      "guiType": "Check Box",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Meters",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Readers",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Supervisor",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Start Date",
+      "primitiveType": 0,
+      "guiType": "Date",
+      "guiposition": 4,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Period",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 5,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Lead Days",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 6,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Reminder Days",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 7,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Escalation Days",
+      "primitiveType": 2,
+      "guiType": "Number",
+      "guiposition": 8,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Remarks",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 9,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    },
+    {
+      "name": "Mail State",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 10,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Reading Round"
+    }
+  ]
+}

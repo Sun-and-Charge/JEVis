@@ -1,0 +1,22 @@
+{
+  "name": "Reading Round Directory",
+  "description": "Directory for meter reading rounds",
+  "unique": true,
+  "relationships": [
+    {
+      "start": "Reading Round Directory",
+      "end": "Organization",
+      "type": 3
+    },
+    {
+      "start": "Reading Round Directory",
+      "end": "Building",
+      "type": 3
+    },
+    {
+      "start": "Reading Round Directory",
+      "end": "Directory",
+      "type": 0
+    }
+  ]
+}
