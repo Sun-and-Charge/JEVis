@@ -964,7 +964,13 @@ the first time step), and variables are substituted as whole names (a variable `
 Time steps at which an input has no value are skipped; if no time step can be evaluated or the result is `0`, the
 formula is evaluated once with the first value of every input (the old fallback). Formulas without output that other
 formulas use are calculated (the old code used `0`); a formula that cannot be evaluated (e.g. division by zero) has
-no result (`null`, the other formulas use `0`) instead of a missing output. Everything else (NaN/infinite → 0, quantity units summed,
+no result (`null`, the other formulas use `0`) instead of a missing output. `YEARLY_VALUE` is prorated to the whole days
+of the time frame (November = 30 days; the old code counted from the first to the last day, i.e. one day less), and a
+time restriction with a fixed time frame and reducing time frame "none" (`NONE`, offered by the restriction dialogs)
+runs from the start of the fixed time frame to the end of the requested one, e.g. the peak of the year up to the end
+of the month (the old code had this case but never reached it and ignored the restriction). Unchanged on purpose:
+`YEARLY_VALUE` only uses a sample inside the calendar year of the start of the time frame (no sample in that year =
+no value and a warning, also in the old Control Center), so yearly amounts need one sample per year. Everything else (NaN/infinite → 0, quantity units summed,
 other units averaged over the time steps, `YEARLY_VALUE` spread over the time steps, `NON_PERIODIC` carried forward,
 `RANGING_VALUE`, time restrictions with fixed/reducing time frame, text inputs and the `Name` attribute) behaves as
 before.

@@ -59,8 +59,9 @@ import java.util.regex.Pattern;
  *     <li>Inputs (in the order of the template): {@code STRING} inputs and the attribute {@code Name} make the formula a
  *     text formula; {@code SUM/AVG/MIN/MAX} are aggregated over the time frame (each with its own time restriction) and
  *     have one value at its start; {@code NON_PERIODIC} has the last value at or before the start (its dependency adds
- *     time steps); {@code LAST} the latest value; {@code YEARLY_VALUE} the last value of the year of the start,
- *     prorated to the days of the time frame; {@code RANGING_VALUE} the value of the ranging table for the value of its
+ *     time steps); {@code LAST} the latest value; {@code YEARLY_VALUE} the last value inside the calendar year of the
+ *     start (a sample of an earlier year is not used, as in the Control Center), prorated to the whole days of the time
+ *     frame ({@link #daysOfInterval}); {@code RANGING_VALUE} the value of the ranging table for the value of its
  *     dependency. The time steps are all time stamps of these values; {@code NON_PERIODIC} is carried forward,
  *     {@code LAST} repeated and {@code YEARLY_VALUE} spread (divided by the number of time steps).</li>
  *     <li>Per time step at which all inputs have a value, all inputs and the results of the formulas used as inputs
@@ -72,7 +73,12 @@ import java.util.regex.Pattern;
  *     formulas using them).</li>
  * </ol>
  * The old Control Center substituted only the last input per time step (so the time steps failed and the first
- * values were used) and replaced variable names inside longer names.
+ * values were used) and replaced variable names inside longer names. It also prorated {@code YEARLY_VALUE} to one day
+ * less than the time frame (a month ending at 23:59:59.999 counted 29 of 30 days) and ignored a time restriction whose
+ * reducing time frame is "none" (its code for that case was never reached, because "none" is not among the time
+ * frames of the selector); now a fixed time frame with reducing time frame {@link TrcTimeFrames#NONE} runs from the
+ * start of the fixed time frame to the end of the requested one (e.g. the peak of the year up to the end of the
+ * month).
  */
 public class ResultCalculator {
     /**
@@ -210,6 +216,29 @@ public class ResultCalculator {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Whole days of a time frame for prorating {@code YEARLY_VALUE}: from the day of {@code from} to the day of
+     * {@code to}, where the day of {@code to} counts unless {@code to} is exactly its start (an exclusive end at
+     * midnight). November from the 1st 00:00 to the 30th 23:59:59.999 (or to 1 December 00:00) has 30 days, a whole
+     * year 365 or 366.
+     */
+    static int daysOfInterval(DateTime from, DateTime to) {
+        if (from == null || to == null || !to.isAfter(from)) return 0;
+        LocalDate first = from.toLocalDate();
+        LocalDate end = to.toLocalDate();
+        if (to.isAfter(to.withTimeAtStartOfDay())) end = end.plusDays(1);
+        return Math.max(0, Days.daysBetween(first, end).getDays());
+    }
+
+    /**
+     * @return the value prorated from the year of {@code from} to the whole days of the time frame
+     */
+    static double prorate(double yearlyValue, DateTime from, DateTime to) {
+        LocalDate ld = new LocalDate(from.getYear(), 1, 1);
+        int daysOfYear = Days.daysBetween(ld, ld.plusYears(1)).getDays();
+        return yearlyValue / daysOfYear * daysOfInterval(from, to);
     }
 
     /**
@@ -498,7 +527,7 @@ public class ResultCalculator {
          */
         private String[] restriction(String fixedId, String reducingId) {
             String fixed = null;
-            String reducing = null;
+            String reducing = TrcTimeFrames.NONE.equals(reducingId) ? TrcTimeFrames.NONE : null;
             for (String id : enabled) {
                 if (id.equals(fixedId)) {
                     fixed = id;
@@ -518,6 +547,7 @@ public class ResultCalculator {
             TimeRange fixedRange = timeFrames.interval(restriction[0], start);
             if (fixedRange == null) return new DateTime[]{from, to};
             from = fixedRange.getStart();
+            if (TrcTimeFrames.NONE.equals(restriction[1])) return new DateTime[]{from, to};
 
             DateTime previousEndDate;
             Period p = period(restriction[1]);
@@ -566,6 +596,7 @@ public class ResultCalculator {
             TimeRange fixedRange = timeFrames.interval(restriction[0], from);
             if (fixedRange == null) return new DateTime[]{from, to};
             from = fixedRange.getStart();
+            if (TrcTimeFrames.NONE.equals(restriction[1])) return new DateTime[]{from, to};
             DateTime previousEndDate;
             Period p = period(restriction[1]);
             if (p != null) {
@@ -665,10 +696,7 @@ public class ResultCalculator {
                     List<JEVisSample> samples = attribute.getSamples(ydt, ydt.plusYears(1).minusMillis(1));
                     if (!samples.isEmpty()) {
                         JEVisSample sample = samples.get(samples.size() - 1);
-                        LocalDate ld = new LocalDate(from.getYear(), 1, 1);
-                        int daysOfYear = Days.daysBetween(ld, ld.plusYears(1)).getDays();
-                        int daysOfInterval = Days.daysBetween(from.toLocalDate(), to.toLocalDate()).getDays();
-                        values.put(ydt, sample.getValueAsDouble() / daysOfYear * daysOfInterval);
+                        values.put(ydt, prorate(sample.getValueAsDouble(), from, to));
                     }
                 }
             } catch (Exception e) {
@@ -722,10 +750,7 @@ public class ResultCalculator {
                     returnValue = String.valueOf(attribute.getLatestSample().getValueAsDouble());
                 } else if (is(type, InputVariableType.YEARLY_VALUE)) {
                     JEVisSample sample = attribute.getLatestSample();
-                    LocalDate ld = new LocalDate(from.getYear(), 1, 1);
-                    int daysOfYear = Days.daysBetween(ld, ld.plusYears(1)).getDays();
-                    int daysOfInterval = Days.daysBetween(from.toLocalDate(), to.toLocalDate()).getDays();
-                    returnValue = String.valueOf(sample.getValueAsDouble() / daysOfYear * daysOfInterval);
+                    returnValue = String.valueOf(prorate(sample.getValueAsDouble(), from, to));
                 } else if (is(type, InputVariableType.STRING)) {
                     returnValue = attribute.getLatestSample().getValueAsString();
                 } else if (is(type, InputVariableType.RANGING_VALUE) && determinationValue != null) {
