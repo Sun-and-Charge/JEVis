@@ -288,6 +288,15 @@ final class FakeTree {
                         return samples.isEmpty() ? null : sample(samples.lastKey(), samples.lastEntry().getValue(), false);
                     case "hasSample":
                         return !samples.isEmpty();
+                    case "getTimestampOfFirstSample":
+                        return samples.isEmpty() ? null : new DateTime(samples.firstKey());
+                    case "getTimestampOfLastSample":
+                        return samples.isEmpty() ? null : new DateTime(samples.lastKey());
+                    case "deleteAllSample":
+                        check();
+                        samples.clear();
+                        writes.add("deleteSamples " + owner.id + " " + this.name);
+                        return true;
                     case "getSampleCount":
                         return (long) samples.size();
                     case "buildSample": {

@@ -11,7 +11,7 @@ generated from it, and JEDemo creates the supplier invoices of each month, so me
 |---|---|---|---|---|
 | A | Strom RLM - Musterwerk Hauptanschluss | Musterwerk | 15-min grid purchase (clean 23734) | work price, grid demand charge on the peak of the year up to the month, grid work price, metering, levies, electricity tax |
 | B | Strom SLP - Außenlager Süd | Außenlager Süd (new) | monthly meter reading | base price, work price, grid base/work price, levies |
-| C | Gas RLM - Musterwerk | Musterwerk | 15-min gas energy (clean 23572), hourly view | demand charge on the hourly peak, CO₂ price, energy tax |
+| C | Gas RLM - Musterwerk | Musterwerk | 15-min gas energy (clean 23572), hourly view | demand charge on the hourly peak, CO₂ price, energy tax; from 11/2025 (the live row 23572 has data only from then on, the invoice backfill skips the months before with a warning) |
 | D | Gas SLP - Außenlager Süd | Außenlager Süd | monthly volume reading | energy = m³ × state number × heating value (23946) |
 | E | Fernwärme - Außenlager Süd | Außenlager Süd | hourly heat meter | work price with price escalation clause (gas and heat price index), capacity price on the connected load, metering price |
 | F | Ladestrom - Dienstwagen Musterwerk | Musterwerk | charge points 1–3 (23925, 23927, 23923) | charging bill per company car (plate, cost centre, personnel no.); no supplier invoice |
@@ -84,12 +84,19 @@ plan that does not exist yet; numbers are existing ids of the live demo. The JED
    them). If the backup fails, nothing is written.
 2. **Objects** in plan order (parents first) with their attribute samples, units and the synthetic histories (up to
    the time of the run); the clean data rows copy the settings named in the plan (e.g. hourly view of gas from 23686).
+   Settings of data rows (Data: Period; Clean Data: Enabled, Conversion to Differential, Value is a Quantity, Period,
+   Period Alignment and the copied ones) are written at the configuration time stamp `1989-12-31T23:00:00Z`
+   (`CostSetup.CONFIG_TIMESTAMP`, as the Control Center does): the JEDataProcessor applies a setting only from its time
+   stamp on. Settings of other objects get the time of the run, dated prices keep their dates.
 3. **Templates** (attribute "Template File") next to the old template, then the **configurations** with the keys
    resolved to the new ids.
 4. **JEDemo service object:** write "Invoice Cases" (keys resolved). From then on the old attributes Invoice Directory,
    Electricity/Gas Row and the prices are ignored.
 5. **Fixes** of existing objects: dashboard 24054 "01 - Übersicht" loses the image widget 21 whose image points to a
    Clean Data row (new "Data Model File" sample, every other key kept); skipped if the widget no longer looks like that.
+   `CLEAN_REPROCESS` (rows B.clean, C.hourly, D.clean, E.clean): if a setting of such a row or of its raw row was not
+   in force at the start of the row's history (and was therefore written early in step 2), all "Value" samples of the
+   clean row are deleted (backed up first) so the JEDataProcessor computes it again from the first raw value.
 6. **Delete** (recycle bin) what the plan lists, only after everything above was written and only if its checks pass:
    the old templates and configuration once the new ones exist (`AFTER_CREATED`), the empty duplicate grid operator
    and the manual invoice values if no template, configuration or dashboard names them (`NOT_REFERENCED`), their
@@ -104,7 +111,8 @@ The live server needs the new JEDemo jar (invoice cases, cost setup) and web ser
 **How it matches and why it can run twice.** New objects are found by parent + class + name (an existing one is
 used, two of them are a problem); existing ones by id, and their class must be the one in the plan. Samples are only
 added where the time stamp has none, a different value at the same time stamp is an update (old → new in the report),
-a setting is written only if the latest value differs, a template / configuration file only if its content (keys
+a setting is written only if the latest value differs (for data rows: also if the value in force at the start of
+the history is not the wanted one, then at the configuration time stamp; a later sample stays), a template / configuration file only if its content (keys
 resolved) differs, a unit only if the attribute has none (a different unit is reported and kept). Histories are
 generated up to the time of the run and only missing time stamps are written. Deleted objects are not found again,
 a fix whose widget is gone is skipped. A second run therefore reports "nothing to do"; after a failure (the run
@@ -162,6 +170,46 @@ java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/j
 # 6. start the job again
 sudo systemctl start jedemo.service
 tail -f var/log/jedemo.log
+```
+
+### Repair after the first apply (2026-11-13)
+
+The first apply wrote the settings of the new rows at the time of the run (2026-11-13). The JEDataProcessor applies a
+setting only from its time stamp on, so it computed 2025-01 … 2026-10 of the clean rows without them: B.clean and
+D.clean hold the counter readings instead of the monthly consumption (the invoice dry run billed 42–72 MWh per month for
+B, E even GWh), C.hourly stayed empty (no period before 2026-11-13). The repair is the same setup run with the fixed
+jar: it writes every row setting again at the configuration time stamp and deletes the values computed before
+(`CLEAN_REPROCESS`), then the JEDataProcessor computes the rows again. No invoice was imported yet (only the dry run);
+if invoices of the cases were imported with the wrong values, delete them in the case folders before the backfill.
+
+C.hourly ("Stundenwerte", Clean Data below the clean data row 23572) stays: the JEDataProcessor takes the first parent
+of a clean data row as its raw row whatever its class (`CleanDataObject` → `ObjectHandler.getFirstParent`) and reads its "Value" and "Period"; it was empty only because its
+Period (and the other settings) started on 2026-11-13, before that its period was zero.
+
+```bash
+cd /home/jevis/jevis
+git pull
+mvn -t <toolchains.xml> package -pl JEDemo -am           # never -P jevisserver
+sudo systemctl stop jedemo.service
+source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
+JEDEMO="java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id>"
+
+# dry run: the row settings "… @ 1989-12-31T23:00Z" and "· Value: delete all … samples" of B.clean, D.clean, E.clean
+$JEDEMO -o costSetup=dryrun
+less "$(ls -t var/log/costdemo-setup-dryrun-*.md | head -1)"
+$JEDEMO -o costSetup=apply
+less "$(ls -t var/log/costdemo-setup-apply-*.md | head -1)"
+$JEDEMO -o costSetup=dryrun                              # must say "nothing to do"
+
+# JEDataProcessor with the key of the services on the four clean rows (ids in the report)
+source /etc/jevis/jevis.env
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <B.clean>,<C.hourly>,<D.clean>,<E.clean>
+
+# invoice dry run with the demo key: monthly consumption now (B ~2.5–3 MWh, D ~80–900 m³ × heating value, E ~3–32 MWh)
+export JEVIS_API_KEY="$JEDEMO_API_KEY"
+$JEDEMO -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true
+$JEDEMO -o invoicesFrom=2025-01 -o invoicesOnly=true
+sudo systemctl start jedemo.service
 ```
 
 Then the checks of the plan (listed at the end of the report). Options: `-o costSetupReport=<directory>` (default

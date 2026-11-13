@@ -57,6 +57,11 @@ public final class SetupPlan {
      */
     public static final String CHECK_OLD_INVOICES = "OLD_INVOICES";
     public static final String FIX_REMOVE_DASHBOARD_WIDGET = "REMOVE_DASHBOARD_WIDGET";
+    /**
+     * fix: delete the values of clean data rows of the plan whose settings did not hold from the start of their history
+     * (the JEDataProcessor computes them again); with "force" always
+     */
+    public static final String FIX_CLEAN_REPROCESS = "CLEAN_REPROCESS";
 
     static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
@@ -87,6 +92,8 @@ public final class SetupPlan {
                 + "NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), "
                 + "OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)");
         refs.put("fixes", "changes of existing objects, skipped if the object no longer looks as described");
+        refs.put("settings", "attribute 'value' entries of data rows (Data, Clean Data) are written at the configuration time "
+                + "stamp 1989-12-31T23:00:00Z like the Control Center does, so they hold for the whole history; other objects at setup time");
         refs.put("setup", "carried out by JEDemo: -sm single -jid <organisation id> -o costSetup=dryrun|apply (docs/DEMO-COSTS.md)");
 
         ArrayNode objects = plan.putArray("objects");
@@ -170,6 +177,16 @@ public final class SetupPlan {
         widget.put("target", 23723);
         widget.put("targetClass", "Clean Data");
         widget.put("reason", "image widget whose image points to a Clean Data row (23723) instead of an image; it shows nothing");
+        ObjectNode reprocess = fixes.addObject();
+        reprocess.put("type", FIX_CLEAN_REPROCESS);
+        ArrayNode rows = reprocess.putArray("rows");
+        for (PlanObject o : CostCases.objects()) {
+            if (o.id == null && "Clean Data".equals(o.jevisClass)) rows.add("@" + o.key);
+        }
+        reprocess.put("force", false);
+        reprocess.put("reason", "the settings of the new rows were first written at the time of the setup (2026-11-13), so the "
+                + "JEDataProcessor computed the history without them (counter readings instead of consumption); the settings are "
+                + "now written at the configuration time stamp and the values computed before are deleted to be computed again");
 
         ArrayNode checks = plan.putArray("checks");
         checks.add("23946 (Gas - Brennwert) has a sample at or before 2025-01-01, otherwise add one (11.4 kWh/m³ at 2025-01-01).");
