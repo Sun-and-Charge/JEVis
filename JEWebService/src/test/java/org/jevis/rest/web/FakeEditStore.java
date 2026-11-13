@@ -320,4 +320,40 @@ class FakeEditStore implements WebEdit.Store {
     public void waitUntil(DateTime time) {
         waits.add(time);
     }
+
+    /**
+     * Input unit labels by {@code <id>/<attribute>} (stage E5)
+     */
+    final Map<String, String> inputUnits = new HashMap<>();
+
+    @Override
+    public ResourceWebRegisters.Data registerData() {
+        return new ResourceWebRegisters.Data() {
+            @Override
+            public Map<String, JsonAttribute> attributes(long id) {
+                Map<String, JsonAttribute> attributes = new HashMap<>();
+                JsonObject object = object(id);
+                if (object == null) return attributes;
+                for (JsonType type : classes().types(object.getJevisClass())) {
+                    JsonAttribute attribute = new JsonAttribute();
+                    attribute.setType(type.getName());
+                    attribute.setLatestValue(latest(id, type.getName()));
+                    String label = inputUnits.get(id + "/" + type.getName());
+                    if (label != null) {
+                        JsonUnit unit = new JsonUnit();
+                        unit.setLabel(label);
+                        attribute.setInputUnit(unit);
+                        attribute.setDisplayUnit(unit);
+                    }
+                    attributes.put(type.getName(), attribute);
+                }
+                return attributes;
+            }
+
+            @Override
+            public Integer decimals(long id, Map<Long, Integer> meterDecimalsByTarget) {
+                return meterDecimalsByTarget.get(id);
+            }
+        };
+    }
 }

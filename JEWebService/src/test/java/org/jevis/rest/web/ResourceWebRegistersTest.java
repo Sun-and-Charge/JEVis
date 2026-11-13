@@ -325,7 +325,9 @@ public class ResourceWebRegistersTest {
         assertEquals("photo.jpg", map(values.get("Picture")).get("file"));
         assertEquals(20L, map(values.get("Online ID")).get("id"));
         assertFalse(values.containsKey("Password"));
-        assertFalse(values.containsKey("Remarks"));
+        /* stage E5: attributes of the class without (or with an empty) value are given as null */
+        assertTrue(values.containsKey("Remarks"));
+        assertNull(values.get("Remarks"));
 
         Map<String, Object> target = map(row.get("target"));
         assertEquals(20L, target.get("id"));
