@@ -10,7 +10,7 @@
     "attributes" : "unit = input/display unit of the attribute; value = one sample written at setup time; samples = samples with these time stamps (Europe/Berlin)",
     "history" : "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to 'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows",
     "delete" : "objects go to the recycle bin, in this order and only after everything above was written; with checkFirst every check must pass: AFTER_CREATED (the objects of the keys exist), NO_CHILDREN, NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)",
-    "fixes" : "changes of existing objects, skipped if the object no longer looks as described",
+    "fixes" : "changes of existing objects, skipped if the object no longer looks as described; REPLACE_HISTORY: all values of each raw row are deleted and the profile (seeded by the row id) is written from 'from' to 'until', unless the row already holds the profile at every quarter hour of the 'verify' windows; then the settings of the clean rows are checked and the values of the clean rows and of 'derived' are deleted (computed again)",
     "settings" : "attribute 'value' entries of data rows (Data, Clean Data) are written at the configuration time stamp 1989-12-31T23:00:00Z like the Control Center does, so they hold for the whole history; other objects at setup time",
     "setup" : "carried out by JEDemo: -sm single -jid <organisation id> -o costSetup=dryrun|apply (docs/DEMO-COSTS.md)"
   },
@@ -2563,6 +2563,70 @@
       ],
       "force" : false,
       "reason" : "the settings of the new rows were first written at the time of the setup (2026-11-13), so the JEDataProcessor computed the history without them (counter readings instead of consumption); the settings are now written at the configuration time stamp and the values computed before are deleted to be computed again"
+    },
+    {
+      "type" : "REPLACE_HISTORY",
+      "profile" : "CHARGING_POINT",
+      "seed" : "row id",
+      "from" : "2025-11-01T00:00:00.000+01:00",
+      "until" : "setup",
+      "verify" : [
+        {
+          "from" : "2025-11-03T00:00:00.000+01:00",
+          "until" : "2025-11-17T00:00:00.000+01:00"
+        },
+        {
+          "from" : "2026-10-05T00:00:00.000+02:00",
+          "until" : "2026-10-19T00:00:00.000+02:00"
+        }
+      ],
+      "rowSettings" : {
+        "Period" : "PT15M"
+      },
+      "cleanSettings" : {
+        "Enabled" : true,
+        "Conversion to Differential" : false,
+        "Value is a Quantity" : true,
+        "Period" : "PT15M"
+      },
+      "rows" : [
+        {
+          "id" : 23922,
+          "class" : "Data",
+          "name" : "Strom - Ladestrom - Ladepunkt 1",
+          "parent" : 23677,
+          "clean" : 23925
+        },
+        {
+          "id" : 23920,
+          "class" : "Data",
+          "name" : "Strom - Ladestrom - Ladepunkt 2",
+          "parent" : 23677,
+          "clean" : 23927
+        },
+        {
+          "id" : 23919,
+          "class" : "Data",
+          "name" : "Strom - Ladestrom - Ladepunkt 3",
+          "parent" : 23677,
+          "clean" : 23923
+        }
+      ],
+      "derived" : [
+        {
+          "id" : 23921,
+          "class" : "Data",
+          "name" : "Strom - Ladestrom Summe",
+          "parent" : 23677,
+          "reason" : "output of the calculation that sums the charge points; JECalc computes it again"
+        },
+        {
+          "id" : 23924,
+          "parent" : 23921,
+          "reason" : "below the sum (its clean data): the JEDataProcessor computes it again; as a Clean Data it gets the clean settings"
+        }
+      ],
+      "reason" : "the charge point rows of case F hold unusable values (monthly sums of a few kWh, a negative month, zeros since 2026-05); JEDemo replays each raw row from its own previous year (P52W), so the replaced history is continued afterwards"
     }
   ],
   "checks" : [

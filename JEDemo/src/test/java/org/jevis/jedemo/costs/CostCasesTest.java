@@ -208,6 +208,18 @@ public class CostCasesTest {
         assertEquals(kWh1 * 28 / 100, world.value(f, rf, "Netto_LP1"), 1e-9);
         assertEquals(world.value(f, rf, "Netto_LP1") + world.value(f, rf, "Netto_LP2") + world.value(f, rf, "Netto_LP3"),
                 world.value(f, rf, "M_Netto"), 1e-9);
+        /* the charging profile: 150–250 kWh per point and month, 450–750 kWh in all, at 28–30 ct/kWh net */
+        for (YearMonth m = YearMonth.of(2025, 11); !m.isAfter(DemoWorld.LAST); m = m.plusMonths(1)) {
+            TrcResult r = world.calculate(f, m);
+            double kWh = 0;
+            for (int point = 1; point <= 3; point++) {
+                double k = world.value(f, r, "Verbrauch_LP" + point);
+                assertTrue("F " + m + " LP" + point + ": " + k, k >= 150 && k <= 250);
+                kWh += k;
+            }
+            double net = world.value(f, r, "M_Netto");
+            assertTrue("F " + m + ": " + kWh + " kWh, " + net + " EUR", kWh >= 450 && kWh <= 750 && net >= 125 && net <= 230);
+        }
     }
 
     @Test

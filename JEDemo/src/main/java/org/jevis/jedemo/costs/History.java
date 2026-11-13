@@ -44,11 +44,13 @@ import java.util.TreeMap;
  * spread over the days by heating degree days of a synthetic temperature and over the hours by a heating
  * profile;</li>
  * <li>{@value #GAS_PRICE_INDEX}, {@value #HEAT_PRICE_INDEX}: monthly price indices (2021 = 100) at the 1st 00:00 for
- * the price escalation clause of the district heating contract.</li>
+ * the price escalation clause of the district heating contract;</li>
+ * <li>{@value #CHARGING_POINT}: 15-minute kWh of a company car charge point (case F), seeded by the row id, see
+ * {@link #chargingPoint}; it replaces the history of the existing charge point rows (fix REPLACE_HISTORY).</li>
  * </ul>
  * Stand-ins for existing live rows, only for the tests and the table in docs/DEMO-COSTS.md:
  * {@link #electricityRlm} (15-minute kWh, ~37 MWh and a peak of ~115–125 kW per month), {@link #gasRlm} (15-minute
- * kWh), {@link #chargePoint} (daily kWh per charge point).
+ * kWh).
  */
 public final class History {
 
@@ -63,6 +65,12 @@ public final class History {
     public static final String HEAT_COUNTER = "HEAT_COUNTER";
     public static final String GAS_PRICE_INDEX = "GAS_PRICE_INDEX";
     public static final String HEAT_PRICE_INDEX = "HEAT_PRICE_INDEX";
+    public static final String CHARGING_POINT = "CHARGING_POINT";
+
+    /**
+     * kWh per quarter hour of a charge point at full power (11 kW)
+     */
+    public static final double CHARGE_QUARTER_KWH = 2.75;
 
     static final double ELECTRICITY_SLP_START = 15000;
     static final double GAS_SLP_START = 25000;
@@ -120,8 +128,20 @@ public final class History {
      * @throws IllegalArgumentException for an unknown profile
      */
     public static List<Point> generate(String profile, Instant from, Instant until) {
+        return generate(profile, 0, from, until);
+    }
+
+    /**
+     * The samples of a plan profile in [from, until].
+     *
+     * @param seed seed of the profiles that differ per row ({@value #CHARGING_POINT}: the row id); ignored by the others
+     * @throws IllegalArgumentException for an unknown profile
+     */
+    public static List<Point> generate(String profile, long seed, Instant from, Instant until) {
         List<Point> all;
         switch (profile) {
+            case CHARGING_POINT:
+                return chargingPoint(seed, from, until);
             case ELECTRICITY_SLP_COUNTER:
                 all = monthlyCounter(ELECTRICITY_SLP_START, History::electricitySlpKWh, until);
                 break;
@@ -363,19 +383,174 @@ public final class History {
         return points;
     }
 
+    // ------------------------------------------------------------------------------------------ charge points
+
     /**
-     * Stand-in for a charge point (case F, 1–3): daily kWh at the start of each day in [from, until).
+     * A charging session of a company car: a partial first quarter hour, full quarter hours at 11 kW and a taper of
+     * two quarter hours (1–3 h in all).
      */
-    public static List<Point> chargePoint(int number, LocalDate from, LocalDate until) {
-        double[] workday = {16, 12, 8};
-        double[] weekend = {2, 1, 0.5};
+    private static final class Session {
+        final LocalDate day;
+        final int quarter;
+        final double[] values;
+        final double energy;
+        final double rank;
+
+        Session(long seed, LocalDate day, boolean morning, int draw) {
+            this.day = day;
+            long d = day.toEpochDay();
+            double a = unit(seed, d, 20 + draw);
+            double b = unit(seed, d, 30 + draw);
+            double c = unit(seed, d, 40 + draw);
+            /* arrival 07:00–09:30 or 16:00–18:00 */
+            quarter = morning ? 28 + (int) (a * 10.999) : 64 + (int) (a * 8.999);
+            /* first + full + 2 taper quarters, mostly short */
+            int full = 1 + (int) (8.999 * b * b);
+            values = new double[full + 3];
+            values[0] = round(CHARGE_QUARTER_KWH * (0.3 + 0.7 * c), 3);
+            for (int i = 1; i <= full; i++) values[i] = CHARGE_QUARTER_KWH;
+            values[full + 1] = round(CHARGE_QUARTER_KWH * (0.45 + 0.25 * unit(seed, d, 50 + draw)), 3);
+            values[full + 2] = round(CHARGE_QUARTER_KWH * (0.1 + 0.2 * unit(seed, d, 60 + draw)), 3);
+            double sum = 0;
+            for (double v : values) sum += v;
+            energy = sum;
+            rank = unit(seed, d, 70 + draw);
+        }
+
+        Instant start() {
+            return day.atStartOfDay(ZONE).plusMinutes(15L * quarter).toInstant();
+        }
+    }
+
+    /**
+     * @return a deterministic value in [0, 1)
+     */
+    private static double unit(long seed, long a, long b) {
+        return (noise(seed, a, b) + 1) / 2;
+    }
+
+    /**
+     * @return the monthly energy a charge point aims at: 182–218 kWh per point, ±5 % by season (more in winter) and
+     * ±5 % per month
+     */
+    static double chargingTarget(long seed, YearMonth month) {
+        double level = 200 + 18 * noise(seed, 1, 0);
+        double season = 1 + 0.05 * Math.cos(2 * Math.PI * (month.getMonthValue() - 1) / 12);
+        return level * season * (1 + 0.05 * noise(seed, index(month), 2));
+    }
+
+    /**
+     * @return true for Saturdays, Sundays, nationwide German public holidays and 24 / 31 December
+     */
+    static boolean dayOff(LocalDate day) {
+        if (day.getDayOfWeek() == DayOfWeek.SATURDAY || day.getDayOfWeek() == DayOfWeek.SUNDAY) return true;
+        int m = day.getMonthValue();
+        int d = day.getDayOfMonth();
+        if (m == 1 && d == 1 || m == 5 && d == 1 || m == 10 && d == 3 || m == 12 && (d == 24 || d == 25 || d == 26 || d == 31)) {
+            return true;
+        }
+        LocalDate easter = easter(day.getYear());
+        for (int offset : new int[]{-2, 1, 39, 50}) if (day.equals(easter.plusDays(offset))) return true;
+        return false;
+    }
+
+    /**
+     * @return Easter Sunday (Gregorian calendar)
+     */
+    static LocalDate easter(int year) {
+        int a = year % 19, b = year / 100, c = year % 100, d = b / 4, e = b % 4, f = (b + 8) / 25, g = (b - f + 1) / 3;
+        int h = (19 * a + b - d - g + 15) % 30, i = c / 4, k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+        int m = (a + 11 * h + 22 * l) / 451;
+        int month = (h + l - 7 * m + 114) / 31;
+        int day = (h + l - 7 * m + 114) % 31 + 1;
+        return LocalDate.of(year, month, day);
+    }
+
+    /**
+     * The sessions of a charge point in a month. On working days one session with probability 0.62 (arrival mostly in
+     * the morning, otherwise in the afternoon), on 12 % of them a second one in the other half of the day; on days off
+     * rarely (3 %). Then sessions are dropped or added (on working days, a second one only if needed) until the month is within 8 kWh
+     * of {@link #chargingTarget}. Depends only on the seed and the month.
+     */
+    private static List<Session> chargingSessions(long seed, YearMonth month) {
+        List<Session> active = new ArrayList<>();
+        List<Session> spare = new ArrayList<>();
+        for (LocalDate day = month.atDay(1); !day.isAfter(month.atEndOfMonth()); day = day.plusDays(1)) {
+            long d = day.toEpochDay();
+            boolean off = dayOff(day);
+            boolean morning = unit(seed, d, 11) < 0.7;
+            if (unit(seed, d, 10) < (off ? 0.03 : 0.62)) {
+                active.add(new Session(seed, day, morning, 0));
+                if (!off && unit(seed, d, 12) < 0.12) {
+                    active.add(new Session(seed, day, !morning, 1));
+                } else if (!off) {
+                    spare.add(new Session(seed, day, !morning, 1));
+                }
+            } else if (!off) {
+                spare.add(new Session(seed, day, morning, 0));
+            }
+        }
+        double target = chargingTarget(seed, month);
+        double total = 0;
+        for (Session s : active) total += s.energy;
+        for (int iteration = 0; iteration < 100; iteration++) {
+            double diff = total - target;
+            if (Math.abs(diff) <= 8) break;
+            List<Session> pool = diff > 0 ? active : spare;
+            Session best = null;
+            double bestLeft = Math.abs(diff);
+            for (Session s : pool) {
+                double left = Math.abs(Math.abs(diff) - s.energy);
+                if (left < bestLeft - 1e-9 || best != null && Math.abs(left - bestLeft) < 1e-9 && s.rank < best.rank) {
+                    best = s;
+                    bestLeft = left;
+                }
+            }
+            if (best == null) break;
+            pool.remove(best);
+            if (diff > 0) {
+                total -= best.energy;
+            } else {
+                active.add(best);
+                total += best.energy;
+            }
+        }
+        return active;
+    }
+
+    /**
+     * Synthetic company car charge point (case F): kWh per quarter hour (not a counter) at every quarter hour in
+     * [from, until], zero outside the charging sessions. Sessions at 11 kW ({@value #CHARGE_QUARTER_KWH} kWh per
+     * quarter hour) for 1–3 h with a short taper, on working days 1–2 per day (some days without), on weekends and
+     * holidays rarely; 150–250 kWh per month, a bit different per point. Deterministic: depends only on the seed (the
+     * row id) and the date, not on from / until.
+     */
+    public static List<Point> chargingPoint(long seed, Instant from, Instant until) {
         List<Point> points = new ArrayList<>();
-        for (LocalDate day = from; day.isBefore(until); day = day.plusDays(1)) {
-            boolean work = day.getDayOfWeek().getValue() <= 5;
-            double base = work ? workday[number - 1] : weekend[number - 1];
-            double kWh = Math.max(0, base * (1 + 0.25 * noise(70 + number, day.toEpochDay(), 0)));
-            points.add(new Point(day.atStartOfDay(ZONE).toInstant(), round(kWh, 2)));
+        for (YearMonth m = YearMonth.from(from.atZone(ZONE)); !start(m).isAfter(until); m = m.plusMonths(1)) {
+            Map<Instant, Double> values = new TreeMap<>();
+            for (Session s : chargingSessions(seed, m)) {
+                Instant t = s.start();
+                for (double v : s.values) {
+                    values.merge(t, v, Double::sum);
+                    t = t.plus(15, ChronoUnit.MINUTES);
+                }
+            }
+            Instant end = start(m.plusMonths(1));
+            for (Instant t = start(m); t.isBefore(end); t = t.plus(15, ChronoUnit.MINUTES)) {
+                if (t.isBefore(from) || t.isAfter(until)) continue;
+                points.add(new Point(t, values.getOrDefault(t, 0d)));
+            }
         }
         return points;
+    }
+
+    /**
+     * @return the sum of the values per month (local time)
+     */
+    public static Map<YearMonth, Double> monthlySums(List<Point> points) {
+        Map<YearMonth, Double> sums = new TreeMap<>();
+        for (Point p : points) sums.merge(YearMonth.from(p.ts.atZone(ZONE)), p.value, Double::sum);
+        return sums;
     }
 }

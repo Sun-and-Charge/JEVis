@@ -175,6 +175,10 @@ public final class CostSetup {
     private List<JEVisObject> subtreeCache;
     private SetupBackup backup;
     private JEVisObject service;
+    /**
+     * {clean rows of the raw rows, calculation id or null, clean rows of the derived rows} of the fix REPLACE_HISTORY, for the manual steps
+     */
+    private String[] chargeSteps;
 
     /**
      * @param apply           false: dry run (nothing is written)
@@ -531,7 +535,7 @@ public final class CostSetup {
                              DateTime start) throws JEVisException {
         String wanted = display(value);
         if (config) {
-            planConfigSetting(key, obj, name, value, note, start);
+            planConfigSetting(OBJECTS, key, obj, name, value, note, start);
             return;
         }
         SetupReport.Kind kind = SetupReport.Kind.WRITE;
@@ -549,15 +553,15 @@ public final class CostSetup {
             }
             backupObject(obj, "setting " + name);
         }
-        addSettingStep(key, name, value, kind, text, new DateTime(now.toEpochMilli()));
+        addSettingStep(OBJECTS, key, name, value, kind, text, new DateTime(now.toEpochMilli()));
     }
 
-    private void planConfigSetting(String key, JEVisObject obj, String name, JsonNode value, String note, DateTime start)
+    private void planConfigSetting(String section, String key, JEVisObject obj, String name, JsonNode value, String note, DateTime start)
             throws JEVisException {
         String wanted = display(value);
         String at = " @ " + CONFIG_TIMESTAMP.toDateTime(org.joda.time.DateTimeZone.UTC) + " (configuration time stamp)";
         if (obj == null) {
-            addSettingStep(key, name, value, SetupReport.Kind.WRITE, paths.get(key) + " · " + name + " = " + wanted + note + at, CONFIG_TIMESTAMP);
+            addSettingStep(section, key, name, value, SetupReport.Kind.WRITE, paths.get(key) + " · " + name + " = " + wanted + note + at, CONFIG_TIMESTAMP);
             return;
         }
         JEVisAttribute att = existingAttribute(key, obj, name);
@@ -579,26 +583,27 @@ public final class CostSetup {
             JEVisSample atConfig = sampleAt(att, CONFIG_TIMESTAMP);
             String before = effective == null ? "no value at the start of the history" + (start != null ? " (" + start + ")" : "")
                     : "value at the start of the history " + shorten(effective.getValueAsString());
-            addSettingStep(key, name, value, atConfig == null ? SetupReport.Kind.WRITE : SetupReport.Kind.UPDATE,
+            addSettingStep(section, key, name, value, atConfig == null ? SetupReport.Kind.WRITE : SetupReport.Kind.UPDATE,
                     paths.get(key) + " · " + name + ": " + before + " → " + wanted + note + at, CONFIG_TIMESTAMP);
         }
         if (!latestOk && latest != null && latest.getTimestamp().isAfter(CONFIG_TIMESTAMP)) {
-            addSettingStep(key, name, value, SetupReport.Kind.UPDATE, paths.get(key) + " · " + name + ": "
+            addSettingStep(section, key, name, value, SetupReport.Kind.UPDATE, paths.get(key) + " · " + name + ": "
                     + shorten(latest.getValueAsString()) + " → " + wanted + note + " (latest value)", new DateTime(now.toEpochMilli()));
         }
     }
 
-    private void addSettingStep(String key, String name, JsonNode value, SetupReport.Kind kind, String text, DateTime ts) {
+    private void addSettingStep(String section, String key, String name, JsonNode value, SetupReport.Kind kind, String text, DateTime ts) {
         ObjectNode data = F.objectNode();
         data.put("object", paths.get(key));
         data.put("attribute", name);
         data.set("value", value);
         data.put("ts", ts.toString());
-        report.add(kind, OBJECTS, text, data);
-        steps.add(new Step(OBJECTS, "@" + key + " · " + name, () -> {
+        report.add(kind, section, text, data);
+        steps.add(new Step(section, (key.startsWith("#") ? key : "@" + key) + " · " + name, () -> {
             JEVisAttribute att = writable(key, name);
             att.buildSample(ts, toWrite(resolveNow(value), att)).commit();
-            return "@" + key + " · " + name + " = " + display(resolveNow(value)) + " @ " + ts;
+            return (key.startsWith("#") ? paths.get(key) + " [" + ids.get(key) + "]" : "@" + key) + " · " + name + " = "
+                    + display(resolveNow(value)) + " @ " + ts;
         }));
     }
 
@@ -677,14 +682,7 @@ public final class CostSetup {
                 + (points.size() < total ? " (" + (total - points.size()) + " present)" : ""), data);
         List<History.Point> write = points;
         steps.add(new Step(OBJECTS, "@" + key + " history " + profile, () -> {
-            JEVisAttribute att = writable(key, "Value");
-            for (int from0 = 0; from0 < write.size(); from0 += WRITE_CHUNK) {
-                List<JEVisSample> chunk = new ArrayList<>();
-                for (History.Point p : write.subList(from0, Math.min(write.size(), from0 + WRITE_CHUNK))) {
-                    chunk.add(att.buildSample(new DateTime(p.getTs().toEpochMilli()), p.getValue()));
-                }
-                att.addSamples(chunk);
-            }
+            writePoints(writable(key, "Value"), write);
             return "@" + key + " · Value: " + write.size() + " history samples (" + profile + ")";
         }));
     }
@@ -831,6 +829,10 @@ public final class CostSetup {
                 planCleanReprocess(fix);
                 continue;
             }
+            if (SetupPlan.FIX_REPLACE_HISTORY.equals(type)) {
+                planReplaceHistory(fix);
+                continue;
+            }
             if (!SetupPlan.FIX_REMOVE_DASHBOARD_WIDGET.equals(type)) {
                 problem(FIXES, "unknown fix type '" + type + "'");
                 continue;
@@ -923,6 +925,322 @@ public final class CostSetup {
                 if (!target.getAttribute("Value").deleteAllSample()) throw new IllegalStateException("deleting the values of " + id + " failed");
                 return text + " [" + id + "] · Value: all samples deleted";
             }));
+        }
+    }
+
+    /**
+     * A row whose values are deleted so they are computed again (clean data row, calculation output).
+     */
+    private static final class Clear {
+        final long id;
+        final String text;
+        final boolean hasValues;
+
+        Clear(long id, String text, boolean hasValues) {
+            this.id = id;
+            this.text = text;
+            this.hasValues = hasValues;
+        }
+    }
+
+    /**
+     * Fix {@value SetupPlan#FIX_REPLACE_HISTORY}: each raw row of the fix that does not hold the profile yet (checked
+     * at every quarter hour of the "verify" windows) loses all its values and gets the profile (seeded by the row id)
+     * from "from" up to the time of the run. The settings of the raw rows ("rowSettings") and of their clean rows
+     * ("cleanSettings") are written at the configuration time stamp where they do not hold from the start; the values
+     * of the clean rows and of the "derived" rows (calculation output and its clean row) are deleted, once before the
+     * replacement and again after it (in case a service computed something from half-written data), so the
+     * JEDataProcessor and JECalc compute them again. Rows that do not match the plan are skipped with a report line.
+     */
+    private void planReplaceHistory(JsonNode fix) throws JEVisException {
+        String profile = fix.path("profile").asText();
+        Instant from = timestamp(fix.path("from").asText()).toDate().toInstant();
+        String untilText = fix.path("until").asText();
+        Instant until = "setup".equals(untilText) ? now : timestamp(untilText).toDate().toInstant();
+        try {
+            History.generate(profile, 0, from, from);
+        } catch (IllegalArgumentException e) {
+            problem(FIXES, FIX_TEXT + e.getMessage());
+            return;
+        }
+        DateTime newStart = new DateTime(from.toEpochMilli());
+        List<Step> replacements = new ArrayList<>();
+        List<Clear> clears = new ArrayList<>();
+        List<String> cleanIds = new ArrayList<>();
+        List<String> derivedCleanIds = new ArrayList<>();
+        boolean anyReprocess = false;
+        for (JsonNode r : fix.path("rows")) {
+            long id = r.path("id").asLong();
+            String text = FIX_TEXT + "row " + id + " '" + r.path("name").asText() + "'";
+            JEVisObject raw = object(id);
+            String mismatch = raw == null ? "not found" : mismatch(raw, r, true);
+            if (mismatch != null) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": " + mismatch + "; left as it is");
+                continue;
+            }
+            JEVisAttribute value = raw.getAttribute("Value");
+            if (value == null) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": has no attribute 'Value'; left as it is");
+                continue;
+            }
+            String key = fixKey(raw);
+            int[] checked = new int[1];
+            String differs = historyDiffers(value, profile, id, fix.path("verify"), from, checked);
+            boolean replace = differs != null;
+            if (replace) {
+                List<History.Point> points = History.generate(profile, id, from, until);
+                if (points.isEmpty()) {
+                    report.add(SetupReport.Kind.SKIP, FIXES, text + ": the profile has no values up to " + until);
+                    continue;
+                }
+                backupObject(raw, "Value samples (history replaced)");
+                boolean has = value.hasSample();
+                ObjectNode data = F.objectNode();
+                data.put("object", paths.get(key));
+                data.put("profile", profile);
+                data.put("deleted", has ? value.getSampleCount() : 0);
+                data.put("count", points.size());
+                data.put("from", points.get(0).getTs().toString());
+                data.put("to", points.get(points.size() - 1).getTs().toString());
+                report.add(SetupReport.Kind.UPDATE, FIXES, text + " [" + id + "] · Value: " + differs + "; delete all "
+                        + (has ? value.getSampleCount() + " samples " + value.getTimestampOfFirstSample() + " .. "
+                        + value.getTimestampOfLastSample() : "0 samples") + ", write " + points.size() + " samples " + profile
+                        + " " + points.get(0).getTs() + " .. " + points.get(points.size() - 1).getTs() + " (" + monthly(points)
+                        + ")", data);
+                replacements.add(new Step(FIXES, text + " · Value: replace history", () -> {
+                    JEVisObject target = object(id);
+                    if (target == null) throw new IllegalStateException(text + " missing");
+                    guard(target);
+                    String current = mismatch(target, r, true);
+                    if (current != null) throw new IllegalStateException(text + ": " + current);
+                    JEVisAttribute att = target.getAttribute("Value");
+                    long old = att.hasSample() ? att.getSampleCount() : 0;
+                    if (old > 0 && !att.deleteAllSample()) throw new IllegalStateException("deleting the values of " + id + " failed");
+                    writePoints(att, points);
+                    return text + " [" + id + "] · Value: " + old + " samples deleted, " + points.size() + " samples " + profile + " written";
+                }));
+            } else {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": history " + profile + " in place (" + checked[0]
+                        + " values of the check windows match)");
+            }
+            DateTime start = replace ? newStart : historyStart(raw);
+            planSettings(key, raw, fix.path("rowSettings"), start);
+
+            String cleanKey = null;
+            long cleanId = r.path("clean").asLong(0);
+            if (cleanId > 0) {
+                JEVisObject clean = object(cleanId);
+                String cm = clean == null ? "not found" : !CLEAN_DATA_CLASS.equals(clean.getJEVisClassName())
+                        ? "is a '" + clean.getJEVisClassName() + "', not a Clean Data" : firstParentMismatch(clean, id);
+                if (cm == null && !inOrganisation(clean)) cm = "is not below the organisation";
+                if (cm != null) {
+                    report.add(SetupReport.Kind.WARNING, FIXES, text + ": clean row " + cleanId + " " + cm
+                            + "; its settings and values are left as they are (check by hand)");
+                } else {
+                    cleanKey = fixKey(clean);
+                    cleanIds.add(String.valueOf(cleanId));
+                    planSettings(cleanKey, clean, fix.path("cleanSettings"), start);
+                }
+            }
+            boolean reprocess = replace || settingsRepaired.contains(key) || cleanKey != null && settingsRepaired.contains(cleanKey);
+            anyReprocess |= reprocess;
+            if (cleanKey != null && reprocess) clears.add(clear(object(cleanId), cleanKey, replace ? "the raw row is replaced" : "its settings did not hold from the start"));
+        }
+
+        String calculation = null;
+        for (JsonNode d : fix.path("derived")) {
+            long id = d.path("id").asLong();
+            String text = FIX_TEXT + "derived row " + id + (d.has("name") ? " '" + d.path("name").asText() + "'" : "");
+            JEVisObject obj = object(id);
+            String mismatch = obj == null ? "not found" : mismatch(obj, d, true);
+            if (mismatch == null && !d.has("class") && !ROW_CLASSES.contains(obj.getJEVisClassName())) {
+                mismatch = "is a '" + obj.getJEVisClassName() + "', not a data row";
+            }
+            if (mismatch != null) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": " + mismatch + "; left as it is");
+                continue;
+            }
+            String key = fixKey(obj);
+            boolean clean = CLEAN_DATA_CLASS.equals(obj.getJEVisClassName());
+            if (clean) {
+                derivedCleanIds.add(String.valueOf(id));
+                planSettings(key, obj, fix.path("cleanSettings"), historyStart(obj));
+            } else {
+                JEVisObject calc = calculationOf(id);
+                if (calc != null) {
+                    calculation = String.valueOf(calc.getID());
+                    report.add(SetupReport.Kind.INFO, FIXES, text + " is the output of the Calculation '" + path(calc) + "' ["
+                            + calc.getID() + "]: JECalc computes it again");
+                } else {
+                    report.add(SetupReport.Kind.INFO, FIXES, text + ": no readable Calculation has it as output; the jecalc "
+                            + "service computes it again in its next cycle");
+                }
+            }
+            if (anyReprocess || settingsRepaired.contains(key)) {
+                clears.add(clear(obj, key, d.path("reason").asText(anyReprocess ? "computed from the replaced rows" : "")));
+            }
+        }
+
+        for (Clear c : clears) {
+            if (c.hasValues && !replacements.isEmpty()) steps.add(clearStep(c, "before the replacement"));
+        }
+        steps.addAll(replacements);
+        for (Clear c : clears) steps.add(clearStep(c, replacements.isEmpty() ? "" : "after the replacement"));
+        if (!cleanIds.isEmpty() || calculation != null) {
+            chargeSteps = new String[]{String.join(",", cleanIds), calculation, String.join(",", derivedCleanIds)};
+        }
+    }
+
+    private static final String FIX_TEXT = "REPLACE_HISTORY ";
+
+    private Clear clear(JEVisObject obj, String key, String reason) throws JEVisException {
+        JEVisAttribute value = obj.getAttribute("Value");
+        boolean has = value != null && value.hasSample();
+        String text = FIX_TEXT + "'" + paths.get(key) + "' [" + obj.getID() + "]";
+        if (has) {
+            backupObject(obj, "Value samples (computed again)");
+            report.add(SetupReport.Kind.UPDATE, FIXES, text + " · Value: delete all " + value.getSampleCount() + " samples "
+                    + value.getTimestampOfFirstSample() + " .. " + value.getTimestampOfLastSample() + " (" + reason
+                    + "); computed again by the services");
+        } else {
+            report.add(SetupReport.Kind.INFO, FIXES, text + " · Value: no values yet (" + reason + ")");
+        }
+        return new Clear(obj.getID(), text, has);
+    }
+
+    private Step clearStep(Clear c, String when) {
+        String suffix = when.isEmpty() ? "" : " " + when;
+        return new Step(FIXES, c.text + " · Value: delete samples" + suffix, () -> {
+            JEVisObject target = object(c.id);
+            if (target == null) throw new IllegalStateException(c.text + " missing");
+            guard(target);
+            JEVisAttribute value = target.getAttribute("Value");
+            if (value == null || !value.hasSample()) return c.text + " · Value: no values" + suffix;
+            long n = value.getSampleCount();
+            if (!value.deleteAllSample()) throw new IllegalStateException("deleting the values of " + c.id + " failed");
+            return c.text + " · Value: " + n + " samples deleted" + suffix;
+        });
+    }
+
+    private void planSettings(String key, JEVisObject obj, JsonNode settings, DateTime start) throws JEVisException {
+        for (String name : (Iterable<String>) settings::fieldNames) {
+            planConfigSetting(FIXES, key, obj, name, settings.get(name), "", start);
+        }
+    }
+
+    /**
+     * Registers an existing object of a fix like a plan object (for the settings), key "#id".
+     */
+    private String fixKey(JEVisObject obj) throws JEVisException {
+        String key = "#" + obj.getID();
+        ids.put(key, obj.getID());
+        paths.put(key, path(obj));
+        return key;
+    }
+
+    /**
+     * @return why the row is not the one the fix describes (class, name, first parent, organisation), null if it is
+     */
+    private String mismatch(JEVisObject obj, JsonNode d, boolean inOrg) throws JEVisException {
+        String m = mismatch(obj, d);
+        if (m == null && d.has("parent")) m = firstParentMismatch(obj, d.get("parent").asLong());
+        if (m == null && inOrg && !inOrganisation(obj)) m = "is not below the organisation";
+        return m;
+    }
+
+    private static String firstParentMismatch(JEVisObject obj, long parent) throws JEVisException {
+        List<JEVisObject> parents = obj.getParents();
+        Long first = parents == null || parents.isEmpty() ? null : parents.get(0).getID();
+        return first != null && first == parent ? null : "has the parent " + first + ", the plan expects " + parent;
+    }
+
+    /**
+     * @return null if the attribute holds the profile at every quarter hour of the check windows (clipped to now; the
+     * first week from {@code from} if none is left), otherwise the first difference
+     */
+    private String historyDiffers(JEVisAttribute att, String profile, long seed, JsonNode verify, Instant from, int[] checked)
+            throws JEVisException {
+        List<Instant[]> windows = new ArrayList<>();
+        for (JsonNode w : verify) {
+            Instant a = timestamp(w.path("from").asText()).toDate().toInstant();
+            Instant b = timestamp(w.path("until").asText()).toDate().toInstant();
+            if (b.isAfter(now)) b = now;
+            if (a.isBefore(b)) windows.add(new Instant[]{a, b});
+        }
+        if (windows.isEmpty()) {
+            Instant b = from.plus(java.time.Duration.ofDays(7));
+            windows.add(new Instant[]{from, b.isAfter(now) ? now : b});
+        }
+        for (Instant[] w : windows) {
+            Instant last = w[1].minusMillis(1);
+            List<History.Point> points = History.generate(profile, seed, w[0], last);
+            Map<Long, JEVisSample> have = new HashMap<>();
+            for (JEVisSample s : att.getSamples(new DateTime(w[0].toEpochMilli()), new DateTime(last.toEpochMilli()))) {
+                if (s.getTimestamp() != null) have.put(s.getTimestamp().getMillis(), s);
+            }
+            for (History.Point p : points) {
+                JEVisSample s = have.get(p.getTs().toEpochMilli());
+                if (s == null) return "no value at " + p.getTs() + " (profile " + p.getValue() + ")";
+                Double v;
+                try {
+                    v = s.getValueAsDouble();
+                } catch (Exception e) {
+                    v = null;
+                }
+                if (v == null || Math.abs(v - p.getValue()) > 1e-4) {
+                    return "value " + v + " at " + p.getTs() + ", the profile has " + p.getValue();
+                }
+                checked[0]++;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return "monthly a–b kWh" over the complete months of the points
+     */
+    private static String monthly(List<History.Point> points) {
+        Map<java.time.YearMonth, Double> sums = History.monthlySums(points);
+        java.time.YearMonth last = java.time.YearMonth.from(points.get(points.size() - 1).getTs().atZone(History.ZONE));
+        double min = Double.MAX_VALUE, max = 0;
+        for (Map.Entry<java.time.YearMonth, Double> e : sums.entrySet()) {
+            if (e.getKey().equals(last) && sums.size() > 1) continue;
+            min = Math.min(min, e.getValue());
+            max = Math.max(max, e.getValue());
+        }
+        return String.format(java.util.Locale.ROOT, "monthly %.0f–%.0f kWh", min, max);
+    }
+
+    /**
+     * @return the Calculation whose "Output" child targets the object, null if none is readable
+     */
+    private JEVisObject calculationOf(long target) {
+        try {
+            JEVisClass type = ds.getJEVisClass("Calculation");
+            if (type == null) return null;
+            Pattern id = Pattern.compile("^\\s*(\\d+)");
+            for (JEVisObject calc : ds.getObjects(type, false)) {
+                if (isDeleted(calc)) continue;
+                for (JEVisObject child : calc.getChildren()) {
+                    if (!"Output".equals(child.getJEVisClassName())) continue;
+                    String spec = latestString(child, "Output");
+                    java.util.regex.Matcher m = spec != null ? id.matcher(spec) : null;
+                    if (m != null && m.find() && Long.parseLong(m.group(1)) == target) return calc;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not look up the calculation of {}", target, e);
+        }
+        return null;
+    }
+
+    private static void writePoints(JEVisAttribute att, List<History.Point> points) throws JEVisException {
+        for (int from = 0; from < points.size(); from += WRITE_CHUNK) {
+            List<JEVisSample> chunk = new ArrayList<>();
+            for (History.Point p : points.subList(from, Math.min(points.size(), from + WRITE_CHUNK))) {
+                chunk.add(att.buildSample(new DateTime(p.getTs().toEpochMilli()), p.getValue()));
+            }
+            att.addSamples(chunk);
         }
     }
 
@@ -1215,6 +1533,26 @@ public final class CostSetup {
                 + "(the running jedataprocessor.service does it in its next cycles; at once, with the key of the services: "
                 + "`source /etc/jevis/jevis.env; java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar "
                 + "-c etc/jevis.xml -sm single -jid " + String.join(",", clean) + "`). Check that they have values from 2025-01 on.");
+        if (chargeSteps != null) {
+            String processor = "java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log "
+                    + "-jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid ";
+            String rows = chargeSteps[0];
+            String sumClean = chargeSteps[2];
+            boolean withSum = !sumClean.isEmpty();
+            StringBuilder text = new StringBuilder("Charge points (case F), after the history was replaced: with the key of the "
+                    + "services (`source /etc/jevis/jevis.env`) first the JEDataProcessor on the clean rows `" + processor
+                    + rows + "`, then JECalc for the sum ");
+            if (chargeSteps[1] != null) {
+                text.append("`java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jecalc-single.log "
+                        + "-jar JECalc/target/JECalc-1.0.1-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid ")
+                        .append(chargeSteps[1]).append('`');
+            } else {
+                text.append("(no calculation found: the jecalc service computes it in its next cycle)");
+            }
+            if (withSum) text.append(", then the JEDataProcessor on the clean row of the sum `").append(processor).append(sumClean).append('`');
+            text.append(". Without the single runs the services do it in their next cycles.");
+            report.addManualStep(text.toString());
+        }
         report.addManualStep("Invoice backfill, first dry: `source /etc/jevis/jevis.env; export JEVIS_API_KEY=\"$JEDEMO_API_KEY\"; "
                 + jar + " -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true`, then the same without `-o dryrun=true`.");
         StringBuilder checks = new StringBuilder("Checks of the plan:");
