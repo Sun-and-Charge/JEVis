@@ -224,6 +224,10 @@
             {
               "ts" : "2026-01-01T00:00:00.000+01:00",
               "value" : 0.446
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 0.451
             }
           ]
         },
@@ -237,6 +241,10 @@
             {
               "ts" : "2026-01-01T00:00:00.000+01:00",
               "value" : 1.559
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 2.027
             }
           ]
         },
@@ -250,6 +258,10 @@
             {
               "ts" : "2026-01-01T00:00:00.000+01:00",
               "value" : 0.941
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 1.143
             }
           ]
         },
@@ -263,6 +275,23 @@
             {
               "ts" : "2026-01-01T00:00:00.000+01:00",
               "value" : 1.092
+            }
+          ]
+        },
+        "Allocation 09" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.299
+            },
+            {
+              "ts" : "2025-07-01T00:00:00.000+02:00",
+              "value" : 0.289
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.0
             }
           ]
         },
@@ -293,7 +322,7 @@
           ]
         }
       },
-      "note" : "Allocation 02 = KWKG, 03 = § 19 StromNEV (up to 1 GWh), 05 = Offshore, 08 = CO2 price (BEHG 55 / 60 EUR/t)"
+      "note" : "Allocation 02 = KWKG, 03 = Aufschlag für besondere Netznutzung A (up to 1 GWh, formerly § 19 StromNEV), 05 = Offshore, 08 = CO2 price (BEHG 55 / 60 EUR/t, 2027 as 2026 until the corridor is final), 09 = gas storage levy (0 from 2026)"
     },
     {
       "key" : "A.supplier",
@@ -1944,7 +1973,7 @@
             },
             {
               "key" : "STROMNEV",
-              "text" : "§ 19 StromNEV-Umlage",
+              "text" : "Aufschlag für besondere Netznutzung",
               "type" : "ENERGY",
               "price" : {
                 "object" : 23519,
@@ -2075,7 +2104,7 @@
             },
             {
               "key" : "STROMNEV",
-              "text" : "§ 19 StromNEV-Umlage",
+              "text" : "Aufschlag für besondere Netznutzung",
               "type" : "ENERGY",
               "price" : {
                 "object" : 23519,
@@ -2184,6 +2213,16 @@
               "price" : {
                 "object" : 23519,
                 "attribute" : "Allocation 08"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "STORAGE",
+              "text" : "Gasspeicherumlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 09"
               },
               "priceUnit" : "ct/kWh"
             },
@@ -2297,6 +2336,16 @@
               "price" : {
                 "object" : 23519,
                 "attribute" : "Allocation 08"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "STORAGE",
+              "text" : "Gasspeicherumlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 09"
               },
               "priceUnit" : "ct/kWh"
             },
@@ -2627,6 +2676,16 @@
         }
       ],
       "reason" : "the charge point rows of case F hold unusable values (monthly sums of a few kWh, a negative month, zeros since 2026-05); JEDemo replays each raw row from its own previous year (P52W), so the replaced history is continued afterwards"
+    },
+    {
+      "type" : "REISSUE_INVOICES",
+      "folders" : [
+        "@C.invoices",
+        "@D.invoices"
+      ],
+      "numberPattern" : "EN-2025(0[1-9]|1[0-2])-(GR|GS)",
+      "missingLine" : "Gasspeicherumlage",
+      "reason" : "the gas invoices of 2025 were issued without the gas storage levy (2.99 EUR/MWh from 1/2025, 2.89 EUR/MWh from 7/2025, abolished from 2026); they are issued again with it"
     }
   ],
   "checks" : [

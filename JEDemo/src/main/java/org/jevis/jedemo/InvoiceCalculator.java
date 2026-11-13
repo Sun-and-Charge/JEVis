@@ -228,6 +228,9 @@ public final class InvoiceCalculator {
             Instant at = previousYear ? lastYear : start;
             if (previousYear) warnings.add("deviation: " + definition.key + " priced as " + priced);
             Line line = line(invoiceCase, definition, period, priced, at, kWh, peak, prices);
+            /* a levy at zero is not printed (e.g. the gas storage levy since 2026) */
+            if (InvoiceCase.ENERGY.equals(definition.type == null ? InvoiceCase.ENERGY : definition.type.trim().toUpperCase(Locale.ROOT))
+                    && line.price.signum() == 0) continue;
             lines.add(line);
             if (has(deviations, InvoiceCase.DUPLICATE_LINE, definition.key)) {
                 lines.add(line);

@@ -67,6 +67,12 @@ public final class SetupPlan {
      * id), make the settings of their clean data rows fit and delete the values of the rows computed from them
      */
     public static final String FIX_REPLACE_HISTORY = "REPLACE_HISTORY";
+    /**
+     * fix: invoices of the plan's invoice folders whose number matches the pattern and that lack a line (e.g. a levy
+     * added later) go to the recycle bin and their amounts are taken out of the folder's series; the invoice backfill
+     * of the JEDemo job then issues them again with the line
+     */
+    public static final String FIX_REISSUE_INVOICES = "REISSUE_INVOICES";
 
     static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
@@ -197,6 +203,14 @@ public final class SetupPlan {
                 + "now written at the configuration time stamp and the values computed before are deleted to be computed again");
 
         fixes.add(chargePoints());
+
+        ObjectNode reissue = fixes.addObject();
+        reissue.put("type", FIX_REISSUE_INVOICES);
+        reissue.putArray("folders").add("@C.invoices").add("@D.invoices");
+        reissue.put("numberPattern", "EN-2025(0[1-9]|1[0-2])-(GR|GS)");
+        reissue.put("missingLine", "Gasspeicherumlage");
+        reissue.put("reason", "the gas invoices of 2025 were issued without the gas storage levy (2.99 EUR/MWh from 1/2025, "
+                + "2.89 EUR/MWh from 7/2025, abolished from 2026); they are issued again with it");
 
         ArrayNode checks = plan.putArray("checks");
         checks.add("23946 (Gas - Brennwert) has a sample at or before 2025-01-01, otherwise add one (11.4 kWh/m³ at 2025-01-01).");

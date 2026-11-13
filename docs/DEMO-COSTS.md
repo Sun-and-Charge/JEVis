@@ -24,6 +24,22 @@ measured costs, and a line "Prüfung Rechnung" (invoiced net − contract price 
 a sample of the year of the time frame. Demand charges are ranging tables of the grid operator, read from the latest
 sample only, so they have one value for both years.
 
+**Taxes and levies** (shared "Staatliche Abgaben" object, ct/kWh net):
+
+| | 2025 | 2026 | 2027 |
+|---|---:|---:|---:|
+| KWKG-Umlage (Allocation 02) | 0.277 | 0.446 | 0.451 |
+| Aufschlag für besondere Netznutzung A, up to 1 GWh, formerly § 19 StromNEV (Allocation 03) | 1.558 | 1.559 | 2.027 |
+| Offshore-Netzumlage (Allocation 05) | 0.816 | 0.941 | 1.143 |
+| Stromsteuer | 2.05 | 2.05 | 2.05 |
+| CO₂ price BEHG, gas (Allocation 08) | 1.001 (55 €/t) | 1.092 (60 €/t) | as 2026 (corridor 55–65 €/t not final yet) |
+| Gasspeicherumlage (Allocation 09) | 0.299 (from 1/2025), 0.289 (from 7/2025) | 0 (abolished) | 0 |
+| Energiesteuer Gas | 0.55 | 0.55 | 0.55 |
+
+VAT 19 % for all media. The 2027 electricity levies are the values the transmission system operators published in
+10/2026 (netztransparenz.de). A levy at zero is not printed on the invoices (the gas storage levy from 2026 on); the
+cost calculation still shows its line with 0.
+
 **Deliberate invoice errors** (the "Differenz" is ≈ 0 in all other months, cents from rounding):
 
 | Case | Month | Error |
@@ -43,8 +59,8 @@ charge point profile from 2025-01 on (on live it starts 2025-11): 150–250 kWh 
 
 | Monat | A Messung | A Rechnung | B Messung | B Rechnung | C Messung | C Rechnung | D Messung | D Rechnung | E Messung | E Rechnung | F Messung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2025-01 | 9.127,00 | 9.126,99 | 1.003,65 | 1.003,65 | 3.194,71 | 3.194,70 | 1.022,31 | 1.022,29 | 4.300,47 | 4.300,45 | 182,31 |
-| 2025-07 | 9.250,76 | 9.250,69 | 832,40 | 832,42 | 565,57 | 565,56 | 114,94 | 114,90 | 937,41 | 937,41 | 160,04 |
+| 2025-01 | 9.127,00 | 9.126,99 | 1.003,65 | 1.003,65 | 3.335,07 | 3.335,06 | 1.051,81 | 1.051,79 | 4.300,47 | 4.300,45 | 182,31 |
+| 2025-07 | 9.250,76 | 9.250,69 | 832,40 | 832,42 | 582,53 | 582,52 | 117,45 | 117,40 | 937,41 | 937,41 | 160,04 |
 | 2026-01 | 8.637,47 | 8.637,48 | 955,53 | 955,41 | 2.989,91 | 2.989,94 | 1.000,29 | 1.049,96 | 4.136,47 | 4.136,46 | 195,91 |
 | 2026-02 | 7.983,56 | 7.983,62 | 951,23 | 951,25 | 2.487,11 | 2.579,07 | 863,30 | 863,27 | 3.661,48 | 3.661,53 | 197,49 |
 | 2026-03 | 8.657,24 | 8.695,47 | 944,44 | 944,53 | 2.220,51 | 2.220,50 | 671,21 | 671,18 | 3.141,36 | 3.141,39 | 193,42 |
@@ -157,6 +173,11 @@ plan that does not exist yet; numbers are existing ids of the live demo. The JED
    in force at the start of the row's history (and was therefore written early in step 2), all "Value" samples of the
    clean row are deleted (backed up first) so the JEDataProcessor computes it again from the first raw value.
    `REPLACE_HISTORY` (charge points of case F, see "Charge point data (case F)" below).
+   `REISSUE_INVOICES` (folders of C and D): the gas invoices `EN-2025MM-GR` / `-GS` that were issued without the gas
+   storage levy go to the recycle bin, and their amounts are taken out of the folder's series (the sample whose note
+   names the invoice number: deleted if it holds only this invoice, else reduced and the number removed from the note,
+   in the same step, so a repeated run never subtracts twice). The invoice backfill (step 7) then issues them again
+   with the levy; invoices that already have the line are skipped.
 6. **Delete** (recycle bin) what the plan lists, only after everything above was written and only if its checks pass:
    the old templates and configuration once the new ones exist (`AFTER_CREATED`), the empty duplicate grid operator
    and the manual invoice values if no template, configuration or dashboard names them (`NOT_REFERENCED`), their

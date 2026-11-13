@@ -2399,6 +2399,7 @@ public interface JC {
         String a_Allocation08 = "Allocation 08";
         String a_Allocation09 = "Allocation 09";
         String a_Allocation10 = "Allocation 10";
+        String a_Allocation11 = "Allocation 11";
     }
 
     interface Group {
