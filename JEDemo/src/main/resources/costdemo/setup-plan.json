@@ -2678,6 +2678,277 @@
       "reason" : "the charge point rows of case F hold unusable values (monthly sums of a few kWh, a negative month, zeros since 2026-05); JEDemo replays each raw row from its own previous year (P52W), so the replaced history is continued afterwards"
     },
     {
+      "type" : "REMAP_DASHBOARD_ROWS",
+      "dashboard" : 24057,
+      "class" : "Dashboard Analysis",
+      "name" : "Sankey",
+      "attribute" : "Data Model File",
+      "toClass" : "Clean Data",
+      "site" : "Musterwerk",
+      "rows" : [
+        {
+          "widget" : "25",
+          "row" : 0,
+          "from" : 23393,
+          "to" : 23716,
+          "toPath" : "Daten/Strom/Verwaltung/Strom - Verwaltung/Bereinigte Daten"
+        },
+        {
+          "widget" : "70",
+          "row" : 0,
+          "from" : 23269,
+          "to" : 23939,
+          "toPath" : "Daten/Gesamtenergie/Gesamtenergie/Bereinigte Daten"
+        },
+        {
+          "widget" : "338",
+          "row" : 0,
+          "from" : 23578,
+          "to" : 23684,
+          "toPath" : "Daten/Strom/Strom - Gesamt/Bereinigte Daten"
+        },
+        {
+          "widget" : "357",
+          "row" : 0,
+          "from" : 23614,
+          "to" : 23711,
+          "toPath" : "Daten/Strom/Verwaltung/Administration/Strom - Verwaltung - Administration/Bereinigte Daten"
+        },
+        {
+          "widget" : "361",
+          "row" : 0,
+          "from" : 23387,
+          "to" : 23723,
+          "toPath" : "Daten/Strom/Verwaltung/Sales & Marketing/Strom - Verwaltung - Sales & Marketing/Bereinigte Daten"
+        },
+        {
+          "widget" : "392",
+          "row" : 0,
+          "from" : 23297,
+          "to" : 23572,
+          "toPath" : "Daten/Gas/Gas - Hauptzähler (Energie)/Bereinigte Daten"
+        },
+        {
+          "widget" : "394",
+          "row" : 0,
+          "from" : 23391,
+          "to" : 23863,
+          "toPath" : "Daten/Strom/Produktion/Strom - Produktion/Bereinigte Daten"
+        },
+        {
+          "widget" : "395",
+          "row" : 0,
+          "from" : 23393,
+          "to" : 23716,
+          "toPath" : "Daten/Strom/Verwaltung/Strom - Verwaltung/Bereinigte Daten"
+        },
+        {
+          "widget" : "396",
+          "row" : 0,
+          "from" : 23607,
+          "to" : 23756,
+          "toPath" : "Daten/Strom/Drittmengen/Strom - Drittmengen/Bereinigte Daten"
+        },
+        {
+          "widget" : "397",
+          "row" : 0,
+          "from" : 23633,
+          "to" : 23769,
+          "toPath" : "Daten/Strom/Drittmengen/Gastronomie/Strom - Drittmengen - Gastronomie/Bereinigte Daten"
+        },
+        {
+          "widget" : "398",
+          "row" : 0,
+          "from" : 23625,
+          "to" : 23744,
+          "toPath" : "Daten/Strom/Drittmengen/Infrastruktur/Strom - Drittmengen - Infrastruktur/Bereinigte Daten"
+        },
+        {
+          "widget" : "399",
+          "row" : 0,
+          "from" : 23622,
+          "to" : 23754,
+          "toPath" : "Daten/Strom/Drittmengen/Mieter/Strom - Drittmengen - Mieter/Bereinigte Daten"
+        },
+        {
+          "widget" : "400",
+          "row" : 0,
+          "from" : 23614,
+          "to" : 23711,
+          "toPath" : "Daten/Strom/Verwaltung/Administration/Strom - Verwaltung - Administration/Bereinigte Daten"
+        },
+        {
+          "widget" : "401",
+          "row" : 0,
+          "from" : 23387,
+          "to" : 23723,
+          "toPath" : "Daten/Strom/Verwaltung/Sales & Marketing/Strom - Verwaltung - Sales & Marketing/Bereinigte Daten"
+        },
+        {
+          "widget" : "402",
+          "row" : 0,
+          "from" : 23640,
+          "to" : 23843,
+          "toPath" : "Daten/Strom/Produktion/Fertigung/Strom - Produktion - Fertigung/Bereinigte Daten"
+        },
+        {
+          "widget" : "403",
+          "row" : 0,
+          "from" : 23649,
+          "to" : 23896,
+          "toPath" : "Daten/Strom/Produktion/FuE/Strom - Produktion - FuE/Bereinigte Daten"
+        },
+        {
+          "widget" : "404",
+          "row" : 0,
+          "from" : 23656,
+          "to" : 23878,
+          "toPath" : "Daten/Strom/Produktion/IT/Strom - Produktion - IT/Bereinigte Daten"
+        },
+        {
+          "widget" : "405",
+          "row" : 0,
+          "from" : 23552,
+          "to" : 23905,
+          "toPath" : "Daten/Strom/Produktion/Logistik/Strom - Produktion - Logistik/Bereinigte Daten"
+        },
+        {
+          "widget" : "406",
+          "row" : 0,
+          "from" : 23667,
+          "to" : 23861,
+          "toPath" : "Daten/Strom/Produktion/QS-Labor/Strom - Produktion - QS-Labor/Bereinigte Daten"
+        },
+        {
+          "widget" : "407",
+          "row" : 0,
+          "from" : 23399,
+          "to" : 23917,
+          "toPath" : "Daten/Strom/Produktion/Service Center/Strom - Produktion - Service-Center/Bereinigte Daten"
+        },
+        {
+          "widget" : "408",
+          "row" : 0,
+          "from" : 23368,
+          "to" : 23806,
+          "toPath" : "Daten/Strom/Produktion/Verpackung/Strom - Produktion - Verpackung/Bereinigte Daten"
+        },
+        {
+          "widget" : "332",
+          "row" : 0,
+          "from" : 23607,
+          "to" : 23756,
+          "toPath" : "Daten/Strom/Drittmengen/Strom - Drittmengen/Bereinigte Daten"
+        },
+        {
+          "widget" : "341",
+          "row" : 0,
+          "from" : 23633,
+          "to" : 23769,
+          "toPath" : "Daten/Strom/Drittmengen/Gastronomie/Strom - Drittmengen - Gastronomie/Bereinigte Daten"
+        },
+        {
+          "widget" : "347",
+          "row" : 0,
+          "from" : 23625,
+          "to" : 23744,
+          "toPath" : "Daten/Strom/Drittmengen/Infrastruktur/Strom - Drittmengen - Infrastruktur/Bereinigte Daten"
+        },
+        {
+          "widget" : "349",
+          "row" : 0,
+          "from" : 23622,
+          "to" : 23754,
+          "toPath" : "Daten/Strom/Drittmengen/Mieter/Strom - Drittmengen - Mieter/Bereinigte Daten"
+        },
+        {
+          "widget" : "377",
+          "row" : 0,
+          "from" : 23552,
+          "to" : 23905,
+          "toPath" : "Daten/Strom/Produktion/Logistik/Strom - Produktion - Logistik/Bereinigte Daten"
+        },
+        {
+          "widget" : "378",
+          "row" : 0,
+          "from" : 23656,
+          "to" : 23878,
+          "toPath" : "Daten/Strom/Produktion/IT/Strom - Produktion - IT/Bereinigte Daten"
+        },
+        {
+          "widget" : "379",
+          "row" : 0,
+          "from" : 23649,
+          "to" : 23896,
+          "toPath" : "Daten/Strom/Produktion/FuE/Strom - Produktion - FuE/Bereinigte Daten"
+        },
+        {
+          "widget" : "380",
+          "row" : 0,
+          "from" : 23640,
+          "to" : 23843,
+          "toPath" : "Daten/Strom/Produktion/Fertigung/Strom - Produktion - Fertigung/Bereinigte Daten"
+        },
+        {
+          "widget" : "381",
+          "row" : 0,
+          "from" : 23368,
+          "to" : 23806,
+          "toPath" : "Daten/Strom/Produktion/Verpackung/Strom - Produktion - Verpackung/Bereinigte Daten"
+        },
+        {
+          "widget" : "382",
+          "row" : 0,
+          "from" : 23399,
+          "to" : 23917,
+          "toPath" : "Daten/Strom/Produktion/Service Center/Strom - Produktion - Service-Center/Bereinigte Daten"
+        },
+        {
+          "widget" : "383",
+          "row" : 0,
+          "from" : 23667,
+          "to" : 23861,
+          "toPath" : "Daten/Strom/Produktion/QS-Labor/Strom - Produktion - QS-Labor/Bereinigte Daten"
+        },
+        {
+          "widget" : "27",
+          "row" : 0,
+          "from" : 23391,
+          "to" : 23863,
+          "toPath" : "Daten/Strom/Produktion/Strom - Produktion/Bereinigte Daten"
+        },
+        {
+          "widget" : "24",
+          "row" : 0,
+          "from" : 23297,
+          "to" : 23572,
+          "toPath" : "Daten/Gas/Gas - Hauptzähler (Energie)/Bereinigte Daten"
+        },
+        {
+          "widget" : "23",
+          "row" : 0,
+          "from" : 23578,
+          "to" : 23684,
+          "toPath" : "Daten/Strom/Strom - Gesamt/Bereinigte Daten"
+        },
+        {
+          "widget" : "68",
+          "row" : 0,
+          "from" : 23102,
+          "to" : 23662,
+          "toPath" : "Daten/EnPI/EnPI - Gas - Gesamt/Bereinigte Daten"
+        },
+        {
+          "widget" : "117",
+          "row" : 0,
+          "from" : 23460,
+          "to" : 23658,
+          "toPath" : "Daten/EnPI/EnPI - Strom - Gesamt/Bereinigte Daten"
+        }
+      ],
+      "reason" : "the widgets show the values of the rows named in their titles again (the file of the old demo server was imported without the id mapping)"
+    },
+    {
       "type" : "REISSUE_INVOICES",
       "folders" : [
         "@C.invoices",

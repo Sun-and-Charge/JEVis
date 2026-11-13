@@ -775,6 +775,51 @@ public class CostSetupTest {
         assertEquals(actions(again), 0, again.actions());
     }
 
+    // ================================================================================================ dashboard rows
+
+    private static String sankeyWidget(String uuid, long id) {
+        return "{\"uuid\":" + uuid + ",\"WidgetType\":\"Value\",\"title\":\"t" + uuid + "\",\"dataHandler\":{\"type\":"
+                + "\"AnalysisHandler\",\"chartModels\":[{\"chartId\":-1,\"chartData\":[{\"id\":" + id + ",\"calculation\":true,"
+                + "\"calculationId\":5}]}]},\"percent\":{\"source\":70}}";
+    }
+
+    @Test
+    public void sankeyRowsGetTheRightObjects() throws Exception {
+        Node site = tree.path(org, CostCases.MUSTERWERK);
+        Node verwaltung = ensure(tree, site, "x / Daten / Strom / Verwaltung");
+        Node data = tree.add(23704, "Strom - Verwaltung", "Data", verwaltung);
+        Node clean = tree.add(23716, "Bereinigte Daten", "Clean Data", data);
+        Node gesamt = ensure(tree, site, "x / Daten / Gesamtenergie");
+        Node gData = tree.add(23938, "Gesamtenergie", "Data", gesamt);
+        tree.add(23939, "Bereinigte Daten", "Clean Data", gData);
+        /* 25: wrong id → right one; 70: already right; 338: another id now; 396: the target is missing */
+        String file = "{\"version\":\"1.2\",\"Zoom Factor\":1.0,\"widget\":[" + sankeyWidget("25", 23393) + ","
+                + sankeyWidget("70", 23939) + "," + sankeyWidget("338", 999) + "," + sankeyWidget("396", 23607) + "]}";
+        Node dashboards = ensure(tree, site, "x / Dashboards");
+        Node sankey = tree.add(24057, "Sankey", "Dashboard Analysis", dashboards).file("Data Model File", T0, "Sankey.json", file);
+
+        int writes = tree.writeCount();
+        SetupReport dry = run(false);
+        assertFalse(problems(dry), dry.hasProblems());
+        assertEquals(writes, tree.writeCount());
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.UPDATE, "[24057] · Data Model File: 1 row(s) [widget 25 row 0 "
+                + "(Daten/Strom/Verwaltung/Strom - Verwaltung/Bereinigte Daten): 23393 → 23716]"));
+        assertTrue(has(dry, SetupReport.Kind.SKIP, "widget 338 row 0 (Daten/Strom/Strom - Gesamt/Bereinigte Daten): now 999, not 23578"));
+        assertTrue(has(dry, SetupReport.Kind.SKIP, "widget 396 row 0 (Daten/Strom/Drittmengen/Strom - Drittmengen/Bereinigte Daten): the target 23756 does not match"));
+
+        assertFalse(run(true).hasProblems());
+        JsonNode written = mapper.readTree(sankey.latestFile("Data Model File"));
+        assertEquals(23716, written.get("widget").get(0).at("/dataHandler/chartModels/0/chartData/0/id").asLong());
+        assertEquals(5, written.get("widget").get(0).at("/dataHandler/chartModels/0/chartData/0/calculationId").asLong());
+        assertEquals(70, written.get("widget").get(0).at("/percent/source").asInt());
+        assertEquals(999, written.get("widget").get(2).at("/dataHandler/chartModels/0/chartData/0/id").asLong());
+        assertEquals(4, written.get("widget").size());
+
+        SetupReport again = run(true, NOW.plusSeconds(600), temp.getRoot().toPath().resolve("again"));
+        assertFalse(problems(again), again.hasProblems());
+        assertFalse(has(again, SetupReport.Kind.UPDATE, "[24057]"));
+    }
+
     // ================================================================================================ invoices issued again
 
     private Node gasInvoice(Node folder, String number, String items, double net, double gross, double kWh) {

@@ -178,6 +178,11 @@ plan that does not exist yet; numbers are existing ids of the live demo. The JED
    names the invoice number: deleted if it holds only this invoice, else reduced and the number removed from the note,
    in the same step, so a repeated run never subtracts twice). The invoice backfill (step 7) then issues them again
    with the levy; invoices that already have the line are skipped.
+   `REMAP_DASHBOARD_ROWS` (dashboard 24057 "Sankey"): its file came from the old demo server without the id mapping
+   of the local import, so 37 value widgets pointed to unrelated objects ("Report Period Configuration", directories).
+   Each row gets the clean data row named by its path below "Musterwerk" (found in the old export), only if it still
+   holds the wrong id and the target has that class and path; the gas split rows (Verwaltung, Produktion, Gastronomie,
+   Rest, EnPI Gas) and the Solarpark row of "Prozent Strom - Mahlen" do not exist in the demo and stay empty.
 6. **Delete** (recycle bin) what the plan lists, only after everything above was written and only if its checks pass:
    the old templates and configuration once the new ones exist (`AFTER_CREATED`), the empty duplicate grid operator
    and the manual invoice values if no template, configuration or dashboard names them (`NOT_REFERENCED`), their
