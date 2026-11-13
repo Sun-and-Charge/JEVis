@@ -183,7 +183,7 @@ describe('reading page', () => {
     const { wrapper: w } = await mountView()
     expect(sp(w.find('h1').text())).toBe('Ablesung')
     expect(sp(w.find('.rd-head-count').text())).toBe('2 fällig, davon 1 überfällig')
-    expect(w.findAll('[role="tab"]').map((t) => sp(t.text()))).toEqual(['Musterwerk 2/4', 'Lager Nord 0/1'])
+    expect(w.findAll('.reg-tab').map((t) => sp(t.text()))).toEqual(['Musterwerk 2/4', 'Lager Nord 0/1'])
     expect(button(w, 'Fällig 2')!.attributes('aria-pressed')).toBe('true')
     expect(names(w)).toEqual(['Hauptzähler Strom', 'Unterzähler Halle 2'])
     expect(w.findAll('.rd-row .rd-due').map((b) => sp(b.text()))).toEqual(['Überfällig', 'Fällig'])
@@ -198,7 +198,7 @@ describe('reading page', () => {
     expect(names(w)).toEqual(['Wasser Kantine'])
 
     /* a site without due meters starts with "Alle" */
-    await w.findAll('[role="tab"]')[1].trigger('click')
+    await w.findAll('.reg-tab')[1].trigger('click')
     expect(button(w, 'Alle 1')!.attributes('aria-pressed')).toBe('true')
   })
 
