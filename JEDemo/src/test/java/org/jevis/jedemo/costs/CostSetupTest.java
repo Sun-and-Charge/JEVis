@@ -775,6 +775,73 @@ public class CostSetupTest {
         assertEquals(actions(again), 0, again.actions());
     }
 
+    // ================================================================================================ invoices issued again
+
+    private Node gasInvoice(Node folder, String number, String items, double net, double gross, double kWh) {
+        return tree.add(number + " Energieversorger Nord", "Energy Invoice", folder)
+                .set("Invoice Number", T0, number).set("Line Items", T0, items)
+                .set("Net Amount", T0, String.valueOf(net)).set("Gross Amount", T0, String.valueOf(gross))
+                .set("Consumption", T0, String.valueOf(kWh));
+    }
+
+    private static void seriesSample(Node series, DateTime ts, double value, String note) {
+        series.att("Value").samples.put(ts.getMillis(), new Object[]{value, note});
+    }
+
+    @Test
+    public void gasInvoicesWithoutTheStorageLevyAreIssuedAgain() throws Exception {
+        assertFalse(run(true).hasProblems());
+        Node rlm = find("Energy Invoices Directory", "Gas RLM Musterwerk");
+        Node slp = find("Energy Invoices Directory", "Gas SLP Außenlager Süd");
+        String without = "[{\"description\":\"Arbeitspreis\"},{\"description\":\"CO2-Preis (BEHG)\"}]";
+        String with = "[{\"description\":\"Arbeitspreis\"},{\"description\":\"Gasspeicherumlage\"}]";
+        Node nov = gasInvoice(rlm, "EN-202511-GR", without, 1000.0, 1190.0, 20000.0);
+        Node jan = gasInvoice(rlm, "EN-202601-GR", without, 900.0, 1071.0, 18000.0);
+        Node mar = gasInvoice(slp, "EN-202503-GS", without, 100.0, 119.0, 1500.0);
+        Node apr = gasInvoice(slp, "EN-202504-GS", with, 80.0, 95.2, 1200.0);
+        DateTime novTs = new DateTime(2025, 11, 1, 0, 0, BERLIN);
+        DateTime marTs = new DateTime(2025, 3, 1, 0, 0, BERLIN);
+        Node rlmNet = tree.child(rlm, "Kosten netto laut Rechnung");
+        Node slpNet = tree.child(slp, "Kosten netto laut Rechnung");
+        Node slpGross = tree.child(slp, "Kosten brutto laut Rechnung");
+        seriesSample(rlmNet, novTs, 1000.0, "EN-202511-GR");
+        seriesSample(rlmNet, new DateTime(2026, 1, 1, 0, 0, BERLIN), 900.0, "EN-202601-GR");
+        /* a sample shared with another invoice of the month: reduced, the other number stays */
+        seriesSample(slpNet, marTs, 130.0, "EN-202503-GS, EN-202503-GS-K");
+        seriesSample(slpGross, marTs, 119.0, "EN-202503-GS");
+
+        int writes = tree.writeCount();
+        SetupReport dry = run(false, NOW.plusSeconds(600), temp.getRoot().toPath().resolve("dry"));
+        assertFalse(problems(dry), dry.hasProblems());
+        assertEquals(writes, tree.writeCount());
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.DELETE, "[" + nov.id + "] EN-202511-GR: without 'Gasspeicherumlage', to the recycle bin"));
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.DELETE, "[" + mar.id + "] EN-202503-GS"));
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.DELETE, "130.0 - 100.0 = 30.0"));
+        assertTrue(has(dry, SetupReport.Kind.SKIP, "1 invoice(s) matching"));
+        assertFalse(has(dry, SetupReport.Kind.DELETE, "EN-202601-GR"));
+        assertFalse(has(dry, SetupReport.Kind.DELETE, "EN-202504-GS"));
+
+        SetupReport apply = run(true, NOW.plusSeconds(1200), temp.getRoot().toPath().resolve("apply"));
+        assertFalse(problems(apply), apply.hasProblems());
+        assertTrue(nov.deleted);
+        assertTrue(mar.deleted);
+        assertFalse(jan.deleted);
+        assertFalse(apr.deleted);
+        assertFalse(rlmNet.att("Value").samples.containsKey(novTs.getMillis()));
+        assertTrue(rlmNet.att("Value").samples.containsKey(new DateTime(2026, 1, 1, 0, 0, BERLIN).getMillis()));
+        Object[] reduced = slpNet.att("Value").samples.get(marTs.getMillis());
+        assertEquals(30.0, ((Number) reduced[0]).doubleValue(), 1e-9);
+        assertEquals("EN-202503-GS-K", reduced[1]);
+        assertFalse(slpGross.att("Value").samples.containsKey(marTs.getMillis()));
+        assertTrue(Files.exists(java.nio.file.Paths.get(apply.getBackupDirectory()).resolve("objects").resolve(nov.id + ".json")));
+
+        /* the backfill issues them again with the line: nothing more to do */
+        gasInvoice(rlm, "EN-202511-GR", with, 1060.0, 1261.4, 20000.0);
+        SetupReport again = run(true, NOW.plusSeconds(1800), temp.getRoot().toPath().resolve("again"));
+        assertFalse(problems(again), again.hasProblems());
+        assertEquals(actions(again), 0, again.actions());
+    }
+
     @Test
     public void chargePointsThatDoNotMatchAreSkipped() throws Exception {
         /* point 1 renamed, point 2 another class, point 3 moved to another folder; the clean row of point 2 elsewhere */

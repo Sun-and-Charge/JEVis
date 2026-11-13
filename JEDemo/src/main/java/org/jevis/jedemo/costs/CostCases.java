@@ -165,13 +165,19 @@ public final class CostCases {
         prices(dues, "VAT Electricity", "%", 19, 19);
         prices(dues, "VAT Gas", "%", 19, 19);
         prices(dues, "VAT Community Heating", "%", 19, 19);
-        prices(dues, "Allocation 02", "ct/kWh", 0.277, 0.446);
-        prices(dues, "Allocation 03", "ct/kWh", 1.558, 1.559);
-        prices(dues, "Allocation 05", "ct/kWh", 0.816, 0.941);
+        /* electricity levies 2027 as published by the transmission system operators (netztransparenz.de, 10/2026) */
+        prices(dues, "Allocation 02", "ct/kWh", 0.277, 0.446, 0.451);
+        prices(dues, "Allocation 03", "ct/kWh", 1.558, 1.559, 2.027);
+        prices(dues, "Allocation 05", "ct/kWh", 0.816, 0.941, 1.143);
         prices(dues, "Allocation 08", "ct/kWh", 1.001, 1.092);
+        /* gas storage levy (THE): 2.99 EUR/MWh from 1/2025, 2.89 EUR/MWh from 7/2025, abolished from 1/2026 */
+        dues.unit("Allocation 09", "ct/kWh");
+        dues.sample("Allocation 09", Y2025, 0.299).sample("Allocation 09", Y2025.withMonth(7), 0.289).sample("Allocation 09", Y2026, 0.0);
         prices(dues, "Energy Tax Electricity", "ct/kWh", 2.05, 2.05);
         prices(dues, "Energy Tax Gas", "ct/kWh", 0.55, 0.55);
-        dues.note("Allocation 02 = KWKG, 03 = § 19 StromNEV (up to 1 GWh), 05 = Offshore, 08 = CO2 price (BEHG 55 / 60 EUR/t)");
+        dues.note("Allocation 02 = KWKG, 03 = Aufschlag für besondere Netznutzung A (up to 1 GWh, formerly § 19 StromNEV), "
+                + "05 = Offshore, 08 = CO2 price (BEHG 55 / 60 EUR/t, 2027 as 2026 until the corridor is final), "
+                + "09 = gas storage levy (0 from 2026)");
         list.add(dues);
 
         /* A: electricity RLM, Musterwerk */
@@ -320,6 +326,14 @@ public final class CostCases {
     }
 
     /**
+     * a price with one sample on 1 January 2025, 2026 and 2027
+     */
+    private static void prices(PlanObject o, String attribute, String unit, double y2025, double y2026, double y2027) {
+        prices(o, attribute, unit, y2025, y2026);
+        o.sample(attribute, year(2027), y2027);
+    }
+
+    /**
      * a yearly amount: one sample per year 2025 … {@value #LAST_YEAR} (2027 on as 2026)
      */
     private static void yearly(PlanObject o, String attribute, String unit, double y2025, double fromY2026) {
@@ -423,7 +437,7 @@ public final class CostCases {
 
     private static void electricityLevies(CostCase c) {
         c.positions.add(energy("KWKG", "KWKG-Umlage", dues("Allocation 02", "KWKG-Umlage")));
-        c.positions.add(energy("STROMNEV", "§ 19 StromNEV-Umlage", dues("Allocation 03", "§ 19 StromNEV-Umlage")));
+        c.positions.add(energy("STROMNEV", "Aufschlag für besondere Netznutzung", dues("Allocation 03", "Aufschlag besondere Netznutzung")));
         c.positions.add(energy("OFFSHORE", "Offshore-Netzumlage", dues("Allocation 05", "Offshore-Netzumlage")));
         c.positions.add(energy("TAX", "Stromsteuer", dues("Energy Tax Electricity", "Stromsteuer")));
         c.vat = dues("VAT Electricity", "Umsatzsteuer");
@@ -431,6 +445,7 @@ public final class CostCases {
 
     private static void gasLevies(CostCase c) {
         c.positions.add(energy("CO2", "CO2-Preis (BEHG)", dues("Allocation 08", "CO2-Preis")));
+        c.positions.add(energy("STORAGE", "Gasspeicherumlage", dues("Allocation 09", "Gasspeicherumlage")));
         c.positions.add(energy("TAX", "Energiesteuer", dues("Energy Tax Gas", "Energiesteuer")));
         c.vat = dues("VAT Gas", "Umsatzsteuer");
     }

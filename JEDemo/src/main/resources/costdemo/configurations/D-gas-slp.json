@@ -187,6 +187,16 @@
     },
     {
       "objectClass" : "Governmental Dues",
+      "id" : "30c9369c-0d9b-3ca7-8cfe-26201a913a46",
+      "attributeName" : "Allocation 09",
+      "variableName" : "STORAGE_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Governmental Dues",
       "id" : "d72884f8-b281-3cd4-bb95-f086caf3e565",
       "attributeName" : "Energy Tax Gas",
       "variableName" : "TAX_Preis",

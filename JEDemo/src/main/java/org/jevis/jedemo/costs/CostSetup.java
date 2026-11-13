@@ -837,6 +837,10 @@ public final class CostSetup {
                 planReplaceHistory(fix);
                 continue;
             }
+            if (SetupPlan.FIX_REISSUE_INVOICES.equals(type)) {
+                planReissueInvoices(fix);
+                continue;
+            }
             if (!SetupPlan.FIX_REMOVE_DASHBOARD_WIDGET.equals(type)) {
                 problem(FIXES, "unknown fix type '" + type + "'");
                 continue;
@@ -930,6 +934,163 @@ public final class CostSetup {
                 return text + " [" + id + "] · Value: all samples deleted";
             }));
         }
+    }
+
+    /**
+     * Fix {@value SetupPlan#FIX_REISSUE_INVOICES}: an invoice of the folder whose number matches and whose line items
+     * lack the line goes to the recycle bin; its share of each series sample (found by the invoice number in the note)
+     * is taken out first: the sample is deleted if it only holds this invoice, else reduced and the number removed
+     * from its note. The number leaves the note in the same step, so a run after a failure never subtracts twice.
+     */
+    private void planReissueInvoices(JsonNode fix) throws JEVisException {
+        Pattern pattern = Pattern.compile(fix.path("numberPattern").asText());
+        String line = fix.path("missingLine").asText();
+        String reason = fix.path("reason").asText();
+        for (JsonNode k : fix.path("folders")) {
+            String key = k.asText().replaceFirst("^@", "");
+            String text = "REISSUE_INVOICES @" + key;
+            if (brokenKeys.contains(key)) continue;
+            if (newKeys.contains(key) || !ids.containsKey(key)) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": created in this run, no invoices yet");
+                continue;
+            }
+            JEVisObject folder = object(ids.get(key));
+            if (folder == null || !"Energy Invoices Directory".equals(folder.getJEVisClassName())) {
+                problem(FIXES, text + ": the object " + ids.get(key) + " is not the plan's invoice folder");
+                continue;
+            }
+            if (!inOrganisation(folder)) {
+                problem(FIXES, text + ": the object " + folder.getID() + " is not below the organisation");
+                continue;
+            }
+            List<JEVisObject> invoices = new ArrayList<>();
+            List<Long> seriesIds = new ArrayList<>();
+            List<JEVisObject> series = new ArrayList<>();
+            for (JEVisObject c : folder.getChildren()) {
+                if (isDeleted(c)) continue;
+                if (INVOICE_CLASS.equals(c.getJEVisClassName())) {
+                    invoices.add(c);
+                } else if (INVOICE_DATA_CLASS.equals(c.getJEVisClassName())) {
+                    series.add(c);
+                    seriesIds.add(c.getID());
+                }
+            }
+            int current = 0;
+            for (JEVisObject invoice : invoices) {
+                String found = latestString(invoice, INVOICE_NUMBER);
+                if (found == null || !pattern.matcher(found.trim()).matches()) continue;
+                String number = found.trim();
+                String items = latestString(invoice, "Line Items");
+                if (items != null && items.contains(line)) {
+                    current++;
+                    continue;
+                }
+                List<String> changes = new ArrayList<>();
+                for (JEVisObject s : series) {
+                    SeriesShare share = seriesShare(s, invoice, number);
+                    if (share != null) changes.add(share.describe());
+                }
+                backupObject(invoice, "invoice (issued again)");
+                for (JEVisObject s : series) backupObject(s, "series samples");
+                report.add(SetupReport.Kind.DELETE, FIXES, text + " '" + path(invoice) + "' [" + invoice.getID() + "] " + number
+                        + ": without '" + line + "', to the recycle bin; series " + (changes.isEmpty() ? "without a sample of it" : changes)
+                        + " (" + reason + ")");
+                long id = invoice.getID();
+                steps.add(new Step(FIXES, text + " · " + number, () -> {
+                    JEVisObject target = object(id);
+                    if (target == null) throw new IllegalStateException(number + " [" + id + "] missing");
+                    guard(target);
+                    List<String> done = new ArrayList<>();
+                    for (Long sid : seriesIds) {
+                        JEVisObject s = object(sid);
+                        if (s == null) continue;
+                        guard(s);
+                        SeriesShare share = seriesShare(s, target, number);
+                        if (share != null) done.add(share.apply());
+                    }
+                    if (!ds.deleteObject(id, false)) throw new IllegalStateException("deleting " + id + " failed");
+                    deleted.add(id);
+                    return number + " [" + id + "] to the recycle bin; series " + done;
+                }));
+            }
+            if (current > 0) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": " + current + " invoice(s) matching " + pattern
+                        + " already have the line '" + line + "'");
+            }
+        }
+    }
+
+    /**
+     * The share of one invoice in a series sample.
+     */
+    private static final class SeriesShare {
+        final JEVisAttribute att;
+        final JEVisSample sample;
+        final BigDecimal amount;
+        final List<String> numbers;
+        final String number;
+
+        SeriesShare(JEVisAttribute att, JEVisSample sample, BigDecimal amount, List<String> numbers, String number) {
+            this.att = att;
+            this.sample = sample;
+            this.amount = amount;
+            this.numbers = numbers;
+            this.number = number;
+        }
+
+        boolean alone() {
+            return numbers.size() == 1;
+        }
+
+        BigDecimal rest() throws JEVisException {
+            return new BigDecimal(sample.getValueAsString().trim()).subtract(amount);
+        }
+
+        String describe() throws JEVisException {
+            String name = att.getObject().getName();
+            return alone() ? name + " @ " + sample.getTimestamp() + ": delete " + sample.getValueAsString()
+                    : name + " @ " + sample.getTimestamp() + ": " + sample.getValueAsString() + " - " + amount.toPlainString()
+                    + " = " + rest().toPlainString();
+        }
+
+        String apply() throws JEVisException {
+            String text = describe();
+            DateTime ts = sample.getTimestamp();
+            if (alone()) {
+                if (!att.deleteSamplesBetween(ts, ts)) throw new IllegalStateException("deleting the series sample " + text + " failed");
+            } else {
+                List<String> rest = new ArrayList<>(numbers);
+                rest.remove(number);
+                att.buildSample(ts, rest().doubleValue(), String.join(", ", rest)).commit();
+            }
+            return text;
+        }
+    }
+
+    /**
+     * @return the sample of the series whose note names the invoice number, with the invoice's amount for that series
+     * (NET: Net Amount, GROSS: Gross Amount, CONSUMPTION: Consumption), null if none
+     */
+    private static SeriesShare seriesShare(JEVisObject series, JEVisObject invoice, String number) throws JEVisException {
+        String kind = latestString(series, "Series");
+        String amountAttribute = "NET".equals(kind) ? "Net Amount" : "GROSS".equals(kind) ? "Gross Amount"
+                : "CONSUMPTION".equals(kind) ? "Consumption" : null;
+        if (amountAttribute == null) return null;
+        JEVisAttribute att = series.getAttribute("Value");
+        if (att == null || !att.hasSample()) return null;
+        for (JEVisSample s : att.getAllSamples()) {
+            String note = s.getNote();
+            if (note == null) continue;
+            List<String> numbers = new ArrayList<>();
+            for (String n : note.split(",")) if (!n.trim().isEmpty()) numbers.add(n.trim());
+            if (!numbers.contains(number)) continue;
+            String amount = latestString(invoice, amountAttribute);
+            if (amount == null && numbers.size() > 1) {
+                throw new IllegalStateException(number + " has no " + amountAttribute + " to take out of " + series.getName());
+            }
+            return new SeriesShare(att, s, amount == null ? BigDecimal.ZERO : new BigDecimal(amount.trim()), numbers, number);
+        }
+        return null;
     }
 
     /**

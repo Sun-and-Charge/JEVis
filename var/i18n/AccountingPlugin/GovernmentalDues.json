@@ -123,11 +123,11 @@
         "ar": "التخصيص 01"
       },
       "names": {
-        "de": "EEG-Umlage",
+        "de": "EEG-Umlage (bis 06/2022)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 01",
+        "en": "EEG levy (until 06/2022)",
         "ar": "التخصيص 01"
       }
     },
@@ -146,14 +146,14 @@
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 02",
+        "en": "CHP levy (KWKG)",
         "ar": "المساهمة"
       }
     },
     {
       "type": "Allocation 03",
       "descriptions": {
-        "de": "",
+        "de": "Seit 2025 Aufschlag für besondere Netznutzung (vorher § 19 Abs. 2 StromNEV-Umlage), Letztverbrauchergruppe A: die ersten 1 GWh je Abnahmestelle",
         "ru": "",
         "uk": "",
         "th": "",
@@ -161,18 +161,18 @@
         "ar": ""
       },
       "names": {
-        "de": "§ 19 Abs. 2 StromNEV (<=1 mio kWh)",
+        "de": "Aufschlag für besondere Netznutzung A (bis 1 GWh, früher § 19 StromNEV)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 03",
+        "en": "Surcharge for special grid use A (up to 1 GWh, formerly § 19 StromNEV)",
         "ar": ""
       }
     },
     {
       "type": "Allocation 04",
       "descriptions": {
-        "de": "",
+        "de": "Letztverbrauchergruppe B: Verbrauch über 1 GWh je Abnahmestelle",
         "ru": "",
         "uk": "",
         "th": "",
@@ -180,11 +180,11 @@
         "ar": ""
       },
       "names": {
-        "de": "§ 19 Abs. 2 StromNEV (>1 mio kWh)",
+        "de": "Aufschlag für besondere Netznutzung B (über 1 GWh)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 04",
+        "en": "Surcharge for special grid use B (above 1 GWh)",
         "ar": ""
       }
     },
@@ -199,11 +199,11 @@
         "ar": ""
       },
       "names": {
-        "de": "Offshore-Umlage",
+        "de": "Offshore-Netzumlage",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 05",
+        "en": "Offshore grid levy",
         "ar": ""
       }
     },
@@ -218,11 +218,11 @@
         "ar": ""
       },
       "names": {
-        "de": "§ 18 AbLaV",
+        "de": "Umlage abschaltbare Lasten § 18 AbLaV (bis 2022)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 06",
+        "en": "Interruptible loads levy § 18 AbLaV (until 2022)",
         "ar": ""
       }
     },
@@ -237,11 +237,11 @@
         "ar": ""
       },
       "names": {
-        "de": "Ökosteuer",
+        "de": "Ökosteuer (veraltet, siehe Energiesteuer Strom)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 07",
+        "en": "Eco tax (outdated, see Energy Tax Electricity)",
         "ar": ""
       }
     },
@@ -256,11 +256,11 @@
         "ar": ""
       },
       "names": {
-        "de": "CO2-Abgabe",
+        "de": "CO2-Preis (BEHG)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 08",
+        "en": "CO2 price (BEHG)",
         "ar": ""
       }
     },
@@ -275,11 +275,11 @@
         "ar": ""
       },
       "names": {
-        "de": "Gasspeicherumlage",
+        "de": "Gasspeicherumlage (seit 2026: 0)",
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 09",
+        "en": "Gas storage levy (0 since 2026)",
         "ar": ""
       }
     },
@@ -298,7 +298,26 @@
         "ru": "",
         "uk": "",
         "th": "",
-        "en": "Allocation 10",
+        "en": "Balancing levy",
+        "ar": ""
+      }
+    },
+    {
+      "type": "Allocation 11",
+      "descriptions": {
+        "de": "Letztverbrauchergruppe C: Unternehmen des produzierenden Gewerbes mit hohen Stromkosten, Verbrauch über 1 GWh",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "",
+        "ar": ""
+      },
+      "names": {
+        "de": "Aufschlag für besondere Netznutzung C (stromkostenintensive Unternehmen)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Surcharge for special grid use C (electricity-intensive companies)",
         "ar": ""
       }
     }

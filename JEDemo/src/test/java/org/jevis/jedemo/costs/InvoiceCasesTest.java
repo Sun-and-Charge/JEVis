@@ -99,7 +99,7 @@ public class InvoiceCasesTest {
         assertEquals(d("9.34"), line(spec, "Messstellenbetrieb").getNet());              // 110 €/a × 31/365
         assertEquals(d("47.70"), line(spec, "Konzessionsabgabe").getNet());              // 1.59 ct
         assertEquals(d("13.38"), line(spec, "KWKG-Umlage").getNet());                    // 0.446 ct
-        assertEquals(d("46.77"), line(spec, "§ 19 StromNEV-Umlage").getNet());           // 1.559 ct
+        assertEquals(d("46.77"), line(spec, "Aufschlag für besondere Netznutzung").getNet());           // 1.559 ct
         assertEquals(d("28.23"), line(spec, "Offshore-Netzumlage").getNet());            // 0.941 ct
         assertEquals(d("61.50"), line(spec, "Stromsteuer").getNet());                    // 2.05 ct
         Amounts amounts = InvoiceBuilder.amounts(spec);

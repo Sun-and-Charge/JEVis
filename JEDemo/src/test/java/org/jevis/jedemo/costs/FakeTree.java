@@ -297,6 +297,14 @@ final class FakeTree {
                         samples.clear();
                         writes.add("deleteSamples " + owner.id + " " + this.name);
                         return true;
+                    case "deleteSamplesBetween": {
+                        check();
+                        long from = ((DateTime) args[0]).getMillis();
+                        long to = ((DateTime) args[1]).getMillis();
+                        samples.subMap(from, true, to, true).clear();
+                        writes.add("deleteSamplesBetween " + owner.id + " " + this.name + " " + from + " " + to);
+                        return true;
+                    }
                     case "getSampleCount":
                         return (long) samples.size();
                     case "buildSample": {
