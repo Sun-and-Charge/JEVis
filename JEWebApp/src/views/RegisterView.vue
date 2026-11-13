@@ -3,7 +3,9 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { loadRegisters, type RegisterKind, type RegisterRow } from '../api/registers'
+import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
 import RegisterDetails from '../components/registers/RegisterDetails.vue'
+import RegisterEditDialog from '../components/registers/RegisterEditDialog.vue'
 import { sortRows, type ColumnContext, type SortDirection } from '../iso/columns'
 import { useLoader } from '../iso/useLoader'
 import { useNarrow } from '../modules/useNarrow'
@@ -21,15 +23,18 @@ import {
 import { registerCsv, registerCsvName } from '../registers/csv'
 import { ALL, defaultFilter, filterRows, meterOptions, meterSummary, yearOptions, type RegisterFilter } from '../registers/filter'
 import { verificationState } from '../registers/format'
+import { useRegisterEditing } from '../registers/useRegisterEditing'
 import { useAuthStore } from '../stores/auth'
 import '../styles/modules.css'
 import '../styles/iso.css'
 import '../styles/registers.css'
+import '../styles/edit.css'
 
 /*
  * Meters, base data and equipment (W4.3, view only): one tab per group, a sortable table with column chooser
  * (cards on phone width), search, the meter filters and key figures of the Control Center, CSV export of the
- * visible columns and a detail panel per row.
+ * visible columns and a detail panel per row. E5: "Neu" per group, "Bearbeiten" / "Löschen" / "Zählerwechsel" in the
+ * details of meters and equipment, as far as the rights of the list allow.
  */
 
 const props = defineProps<{ kind: RegisterKind }>()
@@ -47,6 +52,30 @@ const sortId = ref<string | null>(null)
 const sortDir = ref<SortDirection>('asc')
 const expanded = ref(new Set<number>())
 
+const {
+  editable,
+  writable,
+  editing,
+  deleting,
+  deleteError,
+  deleteBusy,
+  message,
+  openCreate,
+  openEdit,
+  close: closeEdit,
+  onSaved,
+  askDelete,
+  confirmDelete,
+  cancelDelete,
+} = useRegisterEditing(
+  () => props.kind,
+  data,
+  reload,
+  (id) => {
+    expanded.value = new Set([...expanded.value, id])
+  },
+)
+
 /* the year of "due until end of" starts with the server's year, once per kind */
 let yearSet = false
 
@@ -62,6 +91,9 @@ watch(
     choice.value = loadColumnChoice(kind)
     sortId.value = null
     expanded.value = new Set()
+    editing.value = null
+    deleting.value = null
+    message.value = null
     reload()
   },
 )
@@ -196,7 +228,11 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
     <div class="mod-head">
       <h1 :id="id('title')">{{ title }}</h1>
     </div>
-    <p class="muted read-only">{{ t('registers.readOnly') }}</p>
+    <p v-if="writable" class="muted read-only">{{ t('registerEdit.hint.' + kind) }}</p>
+    <p v-else class="muted read-only">{{ t('registers.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result reg-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">
+      {{ message.text }}
+    </p>
 
     <p v-if="state === 'loading' && !data" class="muted" role="status">{{ t('registers.loading') }}</p>
     <div v-else-if="state === 'error'" class="alert alert-error" role="alert">
@@ -305,6 +341,15 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
         <div class="iso-toolbar">
           <p class="mod-count muted" role="status">{{ t('modules.count', { shown: rows.length, total: allRows.length }) }}</p>
           <div class="reg-actions">
+            <button
+              v-if="editable && group.canCreate"
+              type="button"
+              class="btn btn-primary reg-new"
+              :aria-label="t('registerEdit.newLabel.' + kind, { group: group.name })"
+              @click="openCreate(group)"
+            >
+              {{ t('registerEdit.new') }}
+            </button>
             <button type="button" class="reg-export" :disabled="!rows.length" :aria-label="t('registers.export.csvLabel', { name: group.name })" @click="exportCsv">
               {{ t('registers.export.csv') }}
             </button>
@@ -355,7 +400,15 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
               <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
             </button>
             <div v-if="expanded.has(row.id)" :id="id('c-' + row.id)" class="mod-details">
-              <RegisterDetails :kind="kind" :row="row" :columns="group.columns" :today="today" @changed="reload" />
+              <RegisterDetails
+                :kind="kind"
+                :row="row"
+                :columns="group.columns"
+                :today="today"
+                @changed="reload"
+                @edit="openEdit(group, row)"
+                @remove="askDelete(row)"
+              />
             </div>
           </li>
         </ul>
@@ -396,7 +449,15 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
                 </tr>
                 <tr v-if="expanded.has(row.id)" :id="id('d-' + row.id)" class="mod-detail">
                   <td :colspan="visible.length + 1">
-                    <RegisterDetails :kind="kind" :row="row" :columns="group.columns" :today="today" @changed="reload" />
+                    <RegisterDetails
+                :kind="kind"
+                :row="row"
+                :columns="group.columns"
+                :today="today"
+                @changed="reload"
+                @edit="openEdit(group, row)"
+                @remove="askDelete(row)"
+              />
                   </td>
                 </tr>
               </template>
@@ -405,5 +466,27 @@ const showDetails = (row: RegisterRow) => t('modules.showDetails', { title: row.
         </div>
       </div>
     </template>
+
+    <RegisterEditDialog
+      v-if="editing && editable"
+      :key="editing.row ? 'e' + editing.row.id : 'n' + editing.group.key"
+      :kind="editable"
+      :group="editing.group"
+      :row="editing.row"
+      @close="closeEdit"
+      @saved="onSaved"
+      @changed="reload"
+    />
+    <ConfirmDialog
+      v-if="deleting"
+      :title="t('registerEdit.deleteTitle.' + kind)"
+      :message="t('registerEdit.deleteQuestion', { name: deleting.name })"
+      :confirm-label="t('registerEdit.delete')"
+      :busy="deleteBusy"
+      :error="deleteError"
+      danger
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </section>
 </template>

@@ -146,7 +146,9 @@ public class ResourceWebRegisters {
             } else {
                 groups = equipmentGroups(lookup, classes, translations, data);
             }
-            addCanEnter(kind, groups, lookup, WebEdit.sqlRights(ds.getUserManager()));
+            WebEdit.Rights rights = WebEdit.sqlRights(ds.getUserManager());
+            addCanEnter(kind, groups, lookup, rights);
+            ResourceWebEditRegisters.addEditInfo(kind, groups, lookup, classes, rights, data);
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("kind", kind);
             result.put("today", today.toString());
@@ -328,27 +330,53 @@ public class ResourceWebRegisters {
 
         List<Map<String, Object>> groups = new ArrayList<>();
         for (Map.Entry<JsonObject, List<JsonObject>> entry : metersByDirectory.entrySet()) {
-            JsonObject directory = entry.getKey();
-            List<JsonObject> meters = entry.getValue();
-            List<String> meterClassNames = new ArrayList<>();
-            List<Map<String, JsonAttribute>> attributes = new ArrayList<>();
-            for (JsonObject meter : meters) {
-                if (!meterClassNames.contains(meter.getJevisClass())) meterClassNames.add(meter.getJevisClass());
-                attributes.add(data.attributes(meter.getId()));
-            }
-            List<Map<String, Object>> columns = columns(meterClassNames, classes, translations,
-                    METER_DEFAULT_COLUMNS::contains, attributes);
-            List<Map<String, Object>> rows = new ArrayList<>();
-            for (int i = 0; i < meters.size(); i++) {
-                rows.add(meterRow(meters.get(i), attributes.get(i), columns, lookup, classes, translations, data,
-                        decimalsByTarget, today));
-            }
-            JsonObject building = nearestOfClass(directory, ResourceWebNavigation.CLASS_BUILDING, lookup);
-            groups.add(group(String.valueOf(directory.getId()),
-                    building != null ? building.getName() : directory.getName(), lookup.site(directory), columns, rows));
+            groups.add(meterGroup(entry.getKey(), entry.getValue(), lookup, classes, translations, data,
+                    decimalsByTarget, today));
         }
         sortGroups(groups);
         return groups;
+    }
+
+    /**
+     * The group of one "Measurement Directory" (stage E5: also for the answer of a single changed meter; then the
+     * decimal places of other meters pointing to the same data are only taken from the meters of this group).
+     *
+     * @param directory        the directory, null for meters outside of any "Measurement Directory" (group key "")
+     * @param meters           the readable meters of the group
+     * @param decimalsByTarget decimal places of meters by the data object their "Online ID" points to; null to take
+     *                         them from the meters of the group
+     */
+    static Map<String, Object> meterGroup(JsonObject directory, List<JsonObject> meters,
+                                          ResourceWebModules.Lookup lookup, Classes classes, Translations translations,
+                                          Data data, Map<Long, Integer> decimalsByTarget, LocalDate today) {
+        if (decimalsByTarget == null) {
+            decimalsByTarget = new HashMap<>();
+            for (JsonObject meter : meters) {
+                Map<String, JsonAttribute> attributes = data.attributes(meter.getId());
+                Integer decimals = ValueFormat.parse(text(attributes, ValueFormat.ATTRIBUTE_NAME));
+                Long[] target = new Long[1];
+                if (decimals != null && parseTarget(text(attributes, ATTRIBUTE_ONLINE_ID), target, new String[1])) {
+                    decimalsByTarget.putIfAbsent(target[0], decimals);
+                }
+            }
+        }
+        List<String> meterClassNames = new ArrayList<>();
+        List<Map<String, JsonAttribute>> attributes = new ArrayList<>();
+        for (JsonObject meter : meters) {
+            if (!meterClassNames.contains(meter.getJevisClass())) meterClassNames.add(meter.getJevisClass());
+            attributes.add(data.attributes(meter.getId()));
+        }
+        List<Map<String, Object>> columns = columns(meterClassNames, classes, translations,
+                METER_DEFAULT_COLUMNS::contains, attributes);
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int i = 0; i < meters.size(); i++) {
+            rows.add(meterRow(meters.get(i), attributes.get(i), columns, lookup, classes, translations, data,
+                    decimalsByTarget, today));
+        }
+        if (directory == null) return group("", "", null, columns, rows);
+        JsonObject building = nearestOfClass(directory, ResourceWebNavigation.CLASS_BUILDING, lookup);
+        return group(String.valueOf(directory.getId()),
+                building != null ? building.getName() : directory.getName(), lookup.site(directory), columns, rows);
     }
 
     /**
@@ -388,21 +416,31 @@ public class ResourceWebRegisters {
         }
         List<Map<String, Object>> groups = new ArrayList<>();
         for (Map.Entry<String, List<JsonObject>> entry : byClass.entrySet()) {
-            List<Map<String, JsonAttribute>> attributes = new ArrayList<>();
-            for (JsonObject object : entry.getValue()) attributes.add(data.attributes(object.getId()));
-            List<Map<String, Object>> columns = columns(Collections.singletonList(entry.getKey()), classes,
-                    translations, name -> true, attributes);
-            List<Map<String, Object>> rows = new ArrayList<>();
-            for (int i = 0; i < entry.getValue().size(); i++) {
-                JsonObject object = entry.getValue().get(i);
-                Map<String, Object> row = rowHeader(object, lookup, translations);
-                row.put("values", values(columns, attributes.get(i), lookup));
-                rows.add(row);
-            }
-            groups.add(group(entry.getKey(), translations.className(entry.getKey()), null, columns, rows));
+            groups.add(equipmentGroup(entry.getKey(), entry.getValue(), lookup, classes, translations, data));
         }
         sortGroups(groups);
         return groups;
+    }
+
+    /**
+     * The group of one equipment class with its readable objects.
+     */
+    static Map<String, Object> equipmentGroup(String className, List<JsonObject> objects,
+                                              ResourceWebModules.Lookup lookup, Classes classes,
+                                              Translations translations, Data data) {
+        List<Map<String, JsonAttribute>> attributes = new ArrayList<>();
+        for (JsonObject object : objects) attributes.add(data.attributes(object.getId()));
+        List<Map<String, Object>> columns = columns(Collections.singletonList(className), classes,
+                translations, name -> true, attributes);
+        Set<String> typeNames = typeNames(classes, className);
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int i = 0; i < objects.size(); i++) {
+            JsonObject object = objects.get(i);
+            Map<String, Object> row = rowHeader(object, lookup, translations);
+            row.put("values", values(columns, attributes.get(i), lookup, typeNames));
+            rows.add(row);
+        }
+        return group(className, translations.className(className), null, columns, rows);
     }
 
     private static Map<String, Object> group(String key, String name, Map<String, Object> site,
@@ -521,7 +559,7 @@ public class ResourceWebRegisters {
                                         Map<Long, Integer> decimalsByTarget, LocalDate today) {
         Map<String, Object> row = rowHeader(meter, lookup, translations);
         row.put("medium", medium(meter.getJevisClass(), classes));
-        row.put("values", values(columns, attributes, lookup));
+        row.put("values", values(columns, attributes, lookup, typeNames(classes, meter.getJevisClass())));
 
         Long[] targetId = new Long[1];
         String[] targetAttribute = new String[1];
@@ -629,6 +667,13 @@ public class ResourceWebRegisters {
                     }
                 }
             }
+            String inputUnit = null;
+            if ("NUMBER".equals(columnType) || "INTEGER".equals(columnType)) {
+                for (Map<String, JsonAttribute> rowAttributes : attributes) {
+                    inputUnit = inputUnitLabel(rowAttributes.get(type.getName()));
+                    if (inputUnit != null) break;
+                }
+            }
             Map<String, Object> column = new LinkedHashMap<>();
             column.put("key", type.getName());
             column.put("name", translations.typeName(classOfType.get(type.getName()), type.getName()));
@@ -636,9 +681,55 @@ public class ResourceWebRegisters {
             column.put("unit", unit);
             column.put("position", type.getGUIPosition());
             column.put("visible", visible.test(type.getName()));
+            /* stage E5 */
+            column.put("primitiveType", primitiveTypeName(type.getPrimitiveType()));
+            column.put("guiType", type.getGuiType());
+            column.put("editable", ResourceWebEditRegisters.editable(type));
+            column.put("inputUnit", inputUnit);
+            column.put("required", false);
             columns.add(column);
         }
         return columns;
+    }
+
+    /**
+     * @return the name of the primitive type ({@code STRING, DOUBLE, LONG, FILE, BOOLEAN, SELECTION, MULTI_SELECTION,
+     * PASSWORD_PBKDF2}), {@code UNKNOWN} for other numbers
+     */
+    static String primitiveTypeName(int primitiveType) {
+        switch (primitiveType) {
+            case JEVisConstants.PrimitiveType.STRING:
+                return "STRING";
+            case JEVisConstants.PrimitiveType.DOUBLE:
+                return "DOUBLE";
+            case JEVisConstants.PrimitiveType.LONG:
+                return "LONG";
+            case JEVisConstants.PrimitiveType.FILE:
+                return "FILE";
+            case JEVisConstants.PrimitiveType.BOOLEAN:
+                return "BOOLEAN";
+            case JEVisConstants.PrimitiveType.SELECTION:
+                return "SELECTION";
+            case JEVisConstants.PrimitiveType.MULTI_SELECTION:
+                return "MULTI_SELECTION";
+            case JEVisConstants.PrimitiveType.PASSWORD_PBKDF2:
+                return "PASSWORD_PBKDF2";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
+    /**
+     * @return the names of the types of the class, null if the class has no types (unknown)
+     */
+    static Set<String> typeNames(Classes classes, String className) {
+        List<JsonType> types = classes.types(className);
+        if (types.isEmpty()) return null;
+        Set<String> names = new HashSet<>();
+        for (JsonType type : types) {
+            if (type.getName() != null) names.add(type.getName());
+        }
+        return names;
     }
 
     /**
@@ -676,17 +767,20 @@ public class ResourceWebRegisters {
     }
 
     /**
-     * @return latest value per column key, typed by the column type; missing or empty values are left out
+     * @param typeNames the types of the row's class (stage E5: their missing or empty values are given as null so the
+     *                  editor shows them); null to leave out all missing or empty values
+     * @return latest value per column key, typed by the column type; missing or empty values of columns the row's
+     * class does not have are left out
      */
     static Map<String, Object> values(List<Map<String, Object>> columns, Map<String, JsonAttribute> attributes,
-                                      ResourceWebModules.Lookup lookup) {
+                                      ResourceWebModules.Lookup lookup, Set<String> typeNames) {
         Map<String, Object> values = new LinkedHashMap<>();
         for (Map<String, Object> column : columns) {
             String key = (String) column.get("key");
             JsonAttribute attribute = attributes.get(key);
             JsonSample sample = attribute != null ? attribute.getLatestValue() : null;
             Object value = sample != null ? value((String) column.get("type"), sample.getValue(), lookup) : null;
-            if (value != null) values.put(key, value);
+            if (value != null || (typeNames != null && typeNames.contains(key))) values.put(key, value);
         }
         return values;
     }
@@ -801,7 +895,7 @@ public class ResourceWebRegisters {
         return false;
     }
 
-    private static String text(Map<String, JsonAttribute> attributes, String name) {
+    static String text(Map<String, JsonAttribute> attributes, String name) {
         JsonAttribute attribute = attributes.get(name);
         JsonSample sample = attribute != null ? attribute.getLatestValue() : null;
         return sample != null ? sample.getValue() : null;
@@ -817,7 +911,16 @@ public class ResourceWebRegisters {
         return label != null && !label.trim().isEmpty() && !"one".equalsIgnoreCase(label.trim()) ? label.trim() : null;
     }
 
-    private static String isoTimestamp(String ts) {
+    /**
+     * @return the label of the input unit, null if none
+     */
+    static String inputUnitLabel(JsonAttribute attribute) {
+        JsonUnit unit = attribute != null ? attribute.getInputUnit() : null;
+        String label = unit != null ? unit.getLabel() : null;
+        return label != null && !label.trim().isEmpty() && !"one".equalsIgnoreCase(label.trim()) ? label.trim() : null;
+    }
+
+    static String isoTimestamp(String ts) {
         if (ts == null) return null;
         try {
             return ISODateTimeFormat.dateTime().print(JsonFactory.sampleDTF.withOffsetParsed().parseDateTime(ts));
@@ -1093,7 +1196,7 @@ public class ResourceWebRegisters {
         Integer decimals(long id, Map<Long, Integer> meterDecimalsByTarget);
     }
 
-    private static final class SqlData implements Data {
+    static final class SqlData implements Data {
         private final SQLDataSource ds;
         private final Map<Long, Map<String, JsonAttribute>> cache = new HashMap<>();
         private LocalDataSource local;
@@ -1146,6 +1249,51 @@ public class ResourceWebRegisters {
                 logger.debug("Could not read the class cache", e);
                 return new Classes(Collections.emptyMap());
             }
+        }
+
+        /**
+         * @return whether the class is known
+         */
+        boolean exists(String className) {
+            return className != null && classes.containsKey(className);
+        }
+
+        /**
+         * @return the classes with an OK_PARENT relationship from the class itself (not inherited) to them, found in
+         * any class ({@code EquipmentDialog}: possible parents)
+         */
+        Set<String> okParents(String className) {
+            Set<String> result = new TreeSet<>();
+            for (JsonJEVisClass jevisClass : classes.values()) {
+                if (jevisClass == null || jevisClass.getRelationships() == null) continue;
+                for (JsonClassRelationship rel : jevisClass.getRelationships()) {
+                    if (rel != null && rel.getType() == JEVisConstants.ClassRelationship.OK_PARENT
+                            && className != null && className.equals(rel.getStart()) && rel.getEnd() != null) {
+                        result.add(rel.getEnd());
+                    }
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Like {@code JEVisClass.getValidParents}: the OK_PARENT ends of the class and of its parent classes and all
+         * heirs of these ends.
+         */
+        Set<String> validParents(String className) {
+            Set<String> result = new HashSet<>();
+            for (String name : chain(className)) {
+                for (String end : okParents(name)) result.addAll(withHeirs(end));
+            }
+            return result;
+        }
+
+        /**
+         * @return whether an object of the class may be created below an object of the parent class
+         * ({@code JEVisClass.isAllowedUnder})
+         */
+        boolean isAllowedUnder(String className, String parentClassName) {
+            return parentClassName != null && validParents(className).contains(parentClassName);
         }
 
         /**

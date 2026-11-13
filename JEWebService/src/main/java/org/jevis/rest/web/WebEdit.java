@@ -327,6 +327,12 @@ final class WebEdit {
          * Waits until the time is reached (two saves in the same second would overwrite each other's file sample).
          */
         void waitUntil(DateTime time) throws InterruptedException;
+
+        /**
+         * Stage E5: the attributes (latest value, input and display unit) of readable objects for the register rows,
+         * read freshly (not cached across calls, so an answer after a write shows the new values).
+         */
+        ResourceWebRegisters.Data registerData();
     }
 
     static Store sqlStore(SQLDataSource ds) {
@@ -477,6 +483,11 @@ final class WebEdit {
             public void waitUntil(DateTime time) throws InterruptedException {
                 long wait = time.getMillis() - System.currentTimeMillis();
                 if (wait > 0) Thread.sleep(wait);
+            }
+
+            @Override
+            public ResourceWebRegisters.Data registerData() {
+                return new ResourceWebRegisters.SqlData(ds);
             }
         };
     }

@@ -9,6 +9,7 @@ import { formatEntryTime } from '../../edit/entry'
 import { formatNumber } from '../../analysis/format'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EntryDialog from '../edit/EntryDialog.vue'
+import MeterExchangeDialog from './MeterExchangeDialog.vue'
 import '../../styles/edit.css'
 import { formatAttribute, formatByPeriod, formatLast, historyLines, isFileValue, isTargetValue, mediumLabel, rowPeriod, targetText, verificationState, verificationText } from '../../registers/format'
 import { useAuthStore } from '../../stores/auth'
@@ -22,8 +23,8 @@ import RegisterFile from './RegisterFile.vue'
  */
 
 const props = defineProps<{ kind: RegisterKind; row: RegisterRow; columns: readonly RegisterColumn[]; today: string }>()
-/* E1: a value was entered or deleted (the view reloads the last values) */
-const emit = defineEmits<{ changed: [] }>()
+/* E1: a value was entered or deleted (the view reloads the last values); E5: edit / delete the object */
+const emit = defineEmits<{ changed: []; edit: []; remove: [] }>()
 const { t, te, locale } = useI18n()
 const auth = useAuthStore()
 const tr = (key: string) => t(key)
@@ -99,6 +100,22 @@ async function confirmDelete() {
   })
 }
 
+/* ---- E5: edit, delete, meter exchange (meters and equipment only; the view opens edit / delete) ---- */
+
+const editableKind = computed(() => props.kind === 'meters' || props.kind === 'equipment')
+const canWrite = computed(() => editableKind.value && props.row.canWrite === true)
+const canRemove = computed(() => editableKind.value && props.row.canDelete === true)
+/* the exchange writes into the meter's data row: the same right as entering a value there */
+const canExchange = computed(() => meter.value && canEnter.value)
+const exchangeOpen = ref(false)
+
+function exchangeSaved(timestamp: string) {
+  exchangeOpen.value = false
+  entryMessage.value = { ok: true, text: t('registerEdit.exchange.saved', { time: formatEntryTime(timestamp, 'SPECIFIC_DATETIME', locale.value) }) }
+  void loadHistory()
+  emit('changed')
+}
+
 const lines = computed(() =>
   historyLines(history.value, { meter: meter.value, period: rowPeriod(props.row), decimals: props.row.last?.decimals, unit: props.row.last?.unit }, locale.value),
 )
@@ -156,8 +173,17 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
           </dd>
         </template>
       </dl>
-      <div v-if="canEnter" class="edit-actions">
-        <button type="button" class="edit-btn reg-entry" :aria-label="t('entry.actionLabel', { name: row.name })" @click="entryOpen = true">{{ t('entry.action') }}</button>
+      <div v-if="canEnter || canWrite || canRemove" class="edit-actions">
+        <button v-if="canWrite" type="button" class="edit-btn reg-edit" :aria-label="t('registerEdit.editLabel', { name: row.name })" @click="emit('edit')">
+          {{ t('registerEdit.edit') }}
+        </button>
+        <button v-if="canEnter" type="button" class="edit-btn reg-entry" :aria-label="t('entry.actionLabel', { name: row.name })" @click="entryOpen = true">{{ t('entry.action') }}</button>
+        <button v-if="canExchange" type="button" class="edit-btn reg-exchange-btn" :aria-label="t('registerEdit.exchange.actionLabel', { name: row.name })" @click="exchangeOpen = true">
+          {{ t('registerEdit.exchange.action') }}
+        </button>
+        <button v-if="canRemove" type="button" class="edit-btn is-danger reg-delete" :aria-label="t('registerEdit.deleteLabel', { name: row.name })" @click="emit('remove')">
+          {{ t('registerEdit.delete') }}
+        </button>
       </div>
       <p v-if="entryMessage" class="alert edit-result reg-entry-message" :class="entryMessage.ok ? 'alert-ok' : 'alert-error'" role="status">{{ entryMessage.text }}</p>
     </section>
@@ -225,6 +251,7 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
       <MeterQr :meter-id="row.id" :name="row.name" />
     </section>
 
+    <MeterExchangeDialog v-if="exchangeOpen" :row="row" @close="exchangeOpen = false" @saved="exchangeSaved" />
     <EntryDialog v-if="entryOpen && entryRowId != null" :row-id="entryRowId" :row-name="row.name" @close="entryOpen = false" @saved="entrySaved" />
     <ConfirmDialog
       v-if="toDelete"

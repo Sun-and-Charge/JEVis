@@ -1580,3 +1580,153 @@ app; the rules are those of the generic `/objects` endpoints (`ResourceObject`),
   `409 parentGone`) a dialog offers the directories with `canCreate` (`GET /web/analyses/directories` or
   `/web/dashboards/directories`). "Endgültig löschen" after a red confirmation. After a change the list and the
   navigation are reloaded; the success message links to the restored item.
+
+## Editing, stage E5: meters and equipment
+
+Create, change and delete meters ("Measurement Instrument" classes) and equipment ("Building Equipment" and
+subclasses), upload files and photos, pick the data row of a meter, and record a meter exchange — as the Control
+Center's Meter Plugin (`plugin/meters`: `NewMeterDialog`, `MeterFormAttributeTab`, `MeterFormReadingsTab`,
+`MetersToolbar`) and Equipment Plugin (`plugin/equipment`: `EquipmentPlugin`, `dialog/EquipmentDialog`,
+`TablePlugin`) do. Base data stay as they are: their values are entered with E1. The common rules of E1 apply
+(server-side rights, `logUserAction` with `web:<action>`, version → `409` with the current row, `400 version
+missing`, validation `400` as JSON `{ "messages": [...] }` with all problems, as in E2–E4).
+
+**Values are written at the time of saving** (as the Control Center): one timestamp per save for all changed
+attributes; the previous values stay as history. If two saves of the same object fall into the same second, the
+second waits until the next second. Numbers are entered and stored in the attribute's **input unit** (as the
+Control Center's meter form and table cells, which do not convert); the read answer gives that unit per attribute.
+
+### Reading: `GET /web/registers/{kind}` (W4.3) additionally (all additive)
+
+- per group: `canCreate` (meters: create right for a meter class below the group's directory or plan; equipment:
+  create right for the group's class below at least one allowed parent), `createTarget` (meters: id of the
+  "Measurement Directory"/plan new meters go below; equipment: `null`, see create options).
+- per column: `primitiveType` (`STRING, DOUBLE, LONG, BOOLEAN, FILE, PASSWORD_PBKDF2, SELECTION, MULTI_SELECTION,
+  TARGET`… as the class type), `guiType` (the type's GUI type, e.g. `BASIC_TEXT_MULTI`, `BASIC_TEXT_DATE_FULL`,
+  `TARGET_OBJECT`, `GPS`), `editable` (`false` for passwords, GPS and types the web does not edit — shown read-only),
+  `inputUnit` (label of the type's input unit, `null` without), `required` (always `false` for now; reserved).
+- per row: `canWrite`, `canDelete`, `canUpload` (write right; file attributes), `versions` `{ "<attribute>":
+  "<ISO timestamp of the latest sample>" }` (all attributes of the row, also those without value: then `null`),
+  `inputUnits` `{ "<attribute>": "<label>" }` where it differs from the column's (subclasses), and attributes
+  without a sample appear in `values` as `null` (instead of being left out) so the editor shows them.
+- The read value of a number stays the raw stored value; the column/row `inputUnit` names its unit (the `unit` of W4.3
+  stays the display unit label for compatibility; the web app shows `inputUnit` next to edit fields).
+
+### Editing an object: `PUT /web/registers/objects/{id}?lang=de`
+
+Body `{ "fields": { "<attribute>": { "version": "<as read or null>", "value": … } } }` — only the changed
+attributes. Types: STRING/TEXTAREA → string (empty = empty string sample); DOUBLE → number; LONG → integer; BOOLEAN
+→ boolean; DATE (guiType `BASIC_TEXT_DATE_FULL` or DATE/DATETIME columns) → `yyyy-MM-dd`, stored as the Control
+Center's meter form does (UTC midnight, check `MeterFormAttributeTab` and use the same string format; equipment
+date strings as `TablePlugin`/`AttributeValueChange` do — document the chosen format); TARGET ("Online ID" and other
+object targets) → `{ "id": 123, "attribute": "Value" }` stored as `"123:Value"` (the target must be readable and of
+a data row class as `GET /web/rows/tree` selectable; `attribute` must exist; `null` clears). FILE attributes are
+not set here (upload below). `version` per attribute: the latest sample's timestamp as read (`null` if there was
+none); a different stored version → `409` with the current row (nothing written). Needs write right. Unknown or
+read-only attributes → `400`. `name` (optional, top level) renames the object (write right). Answer: the row (read
+format). Logged as `web:register-save`.
+
+### Creating: `POST /web/registers/{kind}/objects?lang=de`
+
+- meters: `{ "groupKey": "<group key>", "class": "Electricity Measurement Instrument", "name": "…", "parentId":
+  null|<meter id>, "fields": {…} }` → as `NewMeterDialog`: without `parentId` the meter goes into the medium's
+  "<Medium> Measurement Directory" below the group's directory/plan (created if missing, as the CC does), with
+  `parentId` below that meter (must be in the same group, readable, `isAllowedUnder`). Classes:
+  `GET /web/registers/meters/create-options?groupKey=…&lang=de` → `{ "classes": [{ "class", "label", "medium" }],
+  "parents": [{ "id", "name" }] }` (the CC's seven medium classes the user may create there).
+- equipment: `{ "class": "<group class>", "parentId": <id>, "name": "…", "fields": {…} }`; options
+  `GET /web/registers/equipment/create-options?class=…&lang=de` → `{ "parents": [{ "id", "name", "path" }] }`:
+  readable objects where the class is allowed under (class relationships, as `EquipmentDialog`) and the user has the
+  create right, e.g. the "Equipment Register" folders.
+- Create right on the target parent for the class; name trimmed, 1–100 characters, no control characters. The object
+  and the given fields are written together; a failure after creating deletes the object (and a directory created by
+  the request) again. `201` with the new row. Logged as `web:register-create`.
+
+### Deleting: `DELETE /web/registers/objects/{id}?version=…`
+
+Moves the object to the recycle bin (as the CC: `deleteObject(id, false)`); needs delete right; `version` = the row's
+latest change (max of `versions`), `409` if it changed. Only meters and equipment (base data objects: `404`).
+`204`. Logged as `web:register-delete`. (Restore: Control Center recycle bin; a web recycle bin for registers is
+not part of E5.)
+
+### Files and photos: `POST /web/registers/objects/{id}/files/{attribute}` (multipart `file`)
+
+Writes a new file sample of the FILE attribute at now (as the CC's upload; the old file stays in the history); max
+25 MB; file name sanitised as E2; images for "Picture"-like attributes are not restricted to images (the CC does not
+restrict either) — the web app offers an image preview where `image` is true. Needs write right. `201` with
+`{ "attribute", "file": name, "image": bool, "version" }`. Download stays `GET …/files/{attribute}`. Logged as
+`web:register-file`.
+
+### Meter exchange: `POST /web/registers/meters/{id}/exchange?lang=de`
+
+Body `{ "timestamp": "<ISO, the time of the exchange>", "oldReading": number, "newReading": number, "confirm": false }`
+→ as `MeterFormReadingsTab`: writes the old meter's final reading at `timestamp − 1 s` and the new meter's first
+reading at `timestamp` into attribute `Value` of the meter's target row (the object of the "Online ID"; the CC always
+writes `Value`, whatever attribute the Online ID names), both with the note `Meter Tausch`. Rules of E1's manual values apply to the target row (write right on it, raw Data/Base Data rows
+only — `400` otherwise; plausibility warnings → `409` `{ "warnings": [...] }` unless `confirm`; dependent rows are
+reset as E1 does). Not allowed in the future (`400`); both readings required and ≥ 0. `201` `{ "samples": [...] }`.
+Logged as `web:meter-exchange`.
+
+### Implementation notes (server, `ResourceWebEditRegisters`)
+
+- **Date strings written** (both read back as the same day by W4.3's `yyyy-MM-dd`):
+  - meters (`MeterFormAttributeTab.toDateTime`): midnight UTC, `2026-11-13T00:00:00.000Z`;
+  - equipment (`TablePlugin`/`AttributeValueChange`: `DateTime.toString()` of midnight): midnight in the **site's**
+    time zone with offset, `2026-11-13T00:00:00.000+01:00` (the CC uses the zone of the PC).
+  - Other values as the CC's `JEVisSample.setValue(...).toString()`: DOUBLE `Double.toString` (`12.5`, `3.0`), LONG
+    `2020`, BOOLEAN `true`/`false`, targets `<id>:<attribute>` (attribute default `Value`, as the CC's target dialog).
+- **Clearing:** `value: null` (and `""` for texts/dates) writes an **empty string sample** for every type — this is
+  what the CC does when a text field of the meter form is emptied (`buildSample(ts, "")`, whatever the primitive
+  type). Read back as `null`.
+- **Editable** (`editable` per column): STRING (text, text area, date, data row target), DOUBLE, LONG, BOOLEAN; FILE
+  only via upload (PUT answers `400`). Not editable: passwords (no column), GPS, SELECTION/MULTI_SELECTION, LONG
+  "Target Selector", unknown primitive types (e.g. "Conversion Factor" with primitive type 8 in the class file; the CC
+  form writes nothing for it either). `primitiveType` is `UNKNOWN` for such numbers (there is no `TARGET` primitive).
+  `inputUnit` per column: input unit of the first row having one (NUMBER/INTEGER columns), `inputUnits` per row only
+  where it differs.
+- **Targets:** readable row outside the bin of a row-picker class (`Data, Clean Data, Base Data, Math Data,
+  Forecast Data, String Data`), attribute must be a type of the row's class (stored with the type's spelling).
+- **Versions:** per attribute ISO (server zone) or `null`; `version: null` matches only when the attribute has no
+  sample, a missing `version` key → `400 version missing`. Rows additionally carry `version` = newest of `versions`
+  or `"none"` (no sample at all). `DELETE` accepts that value, the newest of `versions`, `none`, or an **empty
+  `version`** when the object has no sample at all (e.g. a meter just created); empty otherwise → `400 version
+  missing`; any other mismatch → `409` with the row.
+- **Order of checks:** PUT `400` invalid JSON, `404`, `403`, `400 version missing`, `400 {messages}`, `400 Invalid
+  version`, `409` (current row, read format, same keys as in the list). Create: `400` JSON/`groupKey`, `404` group
+  (or equipment parent), `400 {messages}` (class, name, parent, fields), `403`. Exchange: `404` meter, `400` no Online
+  ID, `404` row not readable, `400` row not `Data`/`Base Data`, `403` (write right on the meter **and** the row; the CC
+  disables the form without write right on the meter), `400 {messages}`, `409`.
+- **409 bodies:** PUT/DELETE: the current row. Exchange: `{ timestamp, oldReading, newReading, warnings: [...] }`;
+  resend with `confirm: true` writes. Answer `201 { rowId, samples: [{timestamp, value, note}], warnings }`.
+- **Exchange plausibility** (texts of E1, `?lang=`): for counters ("Conversion to Differential" of the clean data) an
+  old reading below the last reading within 31 days before `timestamp − 1 s`; an existing sample at `timestamp − 1 s`
+  or `timestamp`. (No limit check: the jump at an exchange is expected; the CC checks nothing.) The timestamp is taken
+  to the second, without offset in the site's zone; in the future → `400`. Dependent rows are reset from
+  `timestamp − 1 s`.
+- **Meters create:** `class` one of the seven medium classes of `NewMeterDialog` (others `400`); without `parentId`
+  the meter goes into the first (lowest id) readable `<Medium> Measurement Directory` directly below the group's
+  directory, which is created (named like its class) if missing — needs create right for the directory class on the
+  group directory, then for the meter class on the new directory. `parentId`: a readable meter of the group whose
+  class allows the new class below it (`isAllowedUnder`: OK_PARENT of the class and its parent classes, with heirs).
+  `fields` may be `{}` / absent; values flat (`"Serial Number": "A-1"`) or `{ "value": … }`. Create options
+  `parents` carry `{ id, name, class, path }` (meters the user may create below).
+- **Equipment create:** `class` = the group key (class name); `parentId` required. Allowed parent classes = the
+  OK_PARENT relationships of exactly that class (as `EquipmentDialog`, not inherited) plus their heirs. Deviation: the
+  CC dialog offers objects of the class itself when a class has no such relationship (e.g. "Engine"); the server
+  offers no parent then (`canCreate: false`).
+- **Writes:** one time stamp per save (now, seconds); if a changed attribute already has a sample in that second the
+  save waits for the next second. Rename via `name` logged `UPDATE_OBJECT …|web:register-save`. Create failures delete
+  the meter/equipment and a directory created by the request (`DELETE_OBJECT …|web:register-create-rollback`).
+- **Not editable via E5:** base data objects (`404` on PUT/DELETE/files).
+- **Rights:** delete needs the delete right on the object (the CC's toolbar checks the right on the meter plan; the
+  server's generic delete checks the object).
+
+### Web app
+
+- Meters and equipment pages (`RegisterView`): with `canCreate` a "Neu" button per group (meters: class with medium
+  icon, name, optional parent meter; equipment: parent from the create options, name); per row in the details
+  "Bearbeiten" (with `canWrite`) opens an attribute form generated from the columns: text, multi-line text, number
+  with the input unit, integer, yes/no, date, data row picker for targets (the E3 row picker in single-select mode),
+  file fields with upload and image preview; read-only fields shown greyed. "Löschen" (with `canDelete`, confirm).
+  Meters: "Zählerwechsel" (date/time, old and new reading, warnings with "Trotzdem speichern" as E1).
+- Unsaved-changes guard and `409` handling as E2–E4; phone width usable (form as a full-width sheet).

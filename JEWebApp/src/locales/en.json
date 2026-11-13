@@ -631,6 +631,118 @@
       "error": "The QR code could not be loaded."
     }
   },
+  "registerEdit": {
+    "hint": {
+      "meters": "Meters can be created, changed and deleted here as far as your rights allow.",
+      "equipment": "Equipment can be created, changed and deleted here as far as your rights allow."
+    },
+    "new": "New",
+    "newLabel": {
+      "meters": "Create a new meter in “{group}”",
+      "equipment": "Create new equipment in “{group}”"
+    },
+    "newTitle": {
+      "meters": "New meter",
+      "equipment": "New equipment"
+    },
+    "edit": "Edit",
+    "editLabel": "Edit “{name}”",
+    "editTitle": "Edit “{name}”",
+    "delete": "Delete",
+    "deleteLabel": "Delete “{name}”",
+    "deleteTitle": {
+      "meters": "Delete meter",
+      "equipment": "Delete equipment"
+    },
+    "deleteQuestion": "Move “{name}” to the recycle bin? It can be restored in the recycle bin of the Control Center.",
+    "deleted": "“{name}” was moved to the recycle bin.",
+    "conflictDelete": "“{name}” was changed in the meantime and not deleted. The list was reloaded – please check and try again.",
+    "created": "“{name}” was created.",
+    "saved": "“{name}” was saved.",
+    "create": "Create",
+    "nothingChanged": "No changes.",
+    "unsaved": "Unsaved changes",
+    "noChanges": "No changes",
+    "uploadedState": "File uploaded",
+    "reloaded": "The current version was loaded.",
+    "group": "Group",
+    "meterClass": "Kind of meter",
+    "parent": "Location in the tree",
+    "choose": "Please choose …",
+    "parentMeter": "Sub-meter of",
+    "noParentMeter": "– no sub-meter –",
+    "parentMeterHint": "Without a choice the meter is created in the directory of its medium.",
+    "meterAttributesLater": "The attributes (serial number, data point, pictures …) are maintained with “Edit” after creating.",
+    "attributes": "Attributes",
+    "readOnlyHint": "Greyed fields can only be changed in the Control Center.",
+    "readOnlyField": "Read only",
+    "filesAfterCreate": "Files and pictures can be uploaded after creating.",
+    "invalidTitle": "The input was not accepted:",
+    "options": {
+      "loading": "Loading the choice …",
+      "error": "The choice could not be loaded.",
+      "none": {
+        "meters": "You may not create meters in this group.",
+        "equipment": "There is no location where you may create this equipment."
+      }
+    },
+    "target": {
+      "none": "No data point",
+      "choose": "Choose …",
+      "change": "Change …",
+      "clear": "Remove",
+      "clearLabel": "Remove the data point of “{name}”",
+      "pickTitle": "{name}: choose a data point"
+    },
+    "file": {
+      "none": "No file",
+      "upload": "Upload file",
+      "replace": "Upload new file",
+      "hint": "At most 25 MB; the previous file stays in the history.",
+      "uploading": "Uploading “{name}” …",
+      "uploaded": "“{name}” was uploaded.",
+      "uploadError": "“{name}” could not be uploaded.",
+      "tooLarge": "“{name}” is larger than 25 MB."
+    },
+    "conflict": {
+      "title": "Changed in the meantime",
+      "message": "Someone else changed the object in the meantime. “Reload” shows the current version (your changes are lost); “Keep editing” keeps your changes, the other fields show the current version.",
+      "noRow": "The object was changed in the meantime. Please close the dialog and open it again.",
+      "reload": "Reload",
+      "keep": "Keep editing"
+    },
+    "leave": {
+      "title": "Unsaved changes",
+      "message": "The changes have not been saved. Do you want to discard them?",
+      "confirm": "Discard"
+    },
+    "problem": {
+      "number": "Please enter a number.",
+      "integer": "Please enter a whole number.",
+      "nameRequired": "Please enter a name.",
+      "nameLength": "At most {max} characters.",
+      "nameChars": "The name must not contain control characters.",
+      "parentRequired": "Please choose a location."
+    },
+    "exchange": {
+      "action": "Meter exchange",
+      "actionLabel": "Record a meter exchange for “{name}”",
+      "title": "Meter exchange",
+      "intro": "Enter the meter readings: the last reading of the old meter (one second before the exchange) and the first reading of the new meter are saved with the note “Meter Tausch”.",
+      "time": "Time of the exchange",
+      "timeHint": "Date and time, not in the future.",
+      "oldReading": "Old meter reading",
+      "oldHint": "Last reading of the removed meter.",
+      "newReading": "New meter reading",
+      "newHint": "First reading of the installed meter.",
+      "saved": "Meter exchange of {time} saved.",
+      "problem": {
+        "time": "Please enter a valid time.",
+        "future": "The time must not be in the future.",
+        "reading": "Please enter a meter reading of at least 0."
+      }
+    }
+  },
   "notes": {
     "title": "Notes",
     "note": "Note",
@@ -1430,7 +1542,8 @@
       "attribute": "Attribute of {name}",
       "present": "already in the chart",
       "add": "Add ({n})",
-      "selected": "{n} selected"
+      "selected": "{n} selected",
+      "choose": "Apply"
     },
     "nameDialog": {
       "saveAsTitle": "Save analysis as",
