@@ -580,11 +580,15 @@ public final class CostSetup {
         backupObject(obj, "setting " + name);
         if (!earlyOk) {
             settingsRepaired.add(key);
-            JEVisSample atConfig = sampleAt(att, CONFIG_TIMESTAMP);
+            /* a later sample before the start (e.g. 2001 in the demo) would stay in force over one at the configuration
+               time stamp: that sample is overwritten at its own time stamp (live 2026-11-13, charge points 1 and 3) */
+            DateTime ts = effective != null && effective.getTimestamp().isAfter(CONFIG_TIMESTAMP) ? effective.getTimestamp() : CONFIG_TIMESTAMP;
+            String writeAt = ts.equals(CONFIG_TIMESTAMP) ? at : " @ " + ts.toDateTime(org.joda.time.DateTimeZone.UTC) + " (time stamp of that value)";
+            JEVisSample existing = sampleAt(att, ts);
             String before = effective == null ? "no value at the start of the history" + (start != null ? " (" + start + ")" : "")
                     : "value at the start of the history " + shorten(effective.getValueAsString());
-            addSettingStep(section, key, name, value, atConfig == null ? SetupReport.Kind.WRITE : SetupReport.Kind.UPDATE,
-                    paths.get(key) + " · " + name + ": " + before + " → " + wanted + note + at, CONFIG_TIMESTAMP);
+            addSettingStep(section, key, name, value, existing == null ? SetupReport.Kind.WRITE : SetupReport.Kind.UPDATE,
+                    paths.get(key) + " · " + name + ": " + before + " → " + wanted + note + writeAt, ts);
         }
         if (!latestOk && latest != null && latest.getTimestamp().isAfter(CONFIG_TIMESTAMP)) {
             addSettingStep(section, key, name, value, SetupReport.Kind.UPDATE, paths.get(key) + " · " + name + ": "
