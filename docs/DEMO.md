@@ -158,3 +158,5 @@ java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -s
 
 `-sm single -jid <ids>` runs one cycle for the given organisations (settings from the service object), `-sm complete`
 one cycle for the configured ones, `-sm service` (systemd) runs every Cycle Time while the service object is enabled.
+`-sm single -jid <organisation id> -o costSetup=dryrun|apply` runs the one-time setup of the demo cost cases instead of
+a cycle (report in `var/log/costdemo-setup-*.md`, backup in `var/backup/`), see docs/DEMO-COSTS.md, "Setup on live".
