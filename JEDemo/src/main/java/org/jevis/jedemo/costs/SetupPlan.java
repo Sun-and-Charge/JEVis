@@ -33,9 +33,30 @@ import java.util.Map;
  * The setup plan of the demo cost cases (setup-plan.json): what step 3 creates, changes and deletes on the live
  * server, with symbolic keys ({@code "@key"}) for the objects that do not exist yet. Read top to bottom: objects
  * (parents first), templates, configurations, the "Invoice Cases" of the JEDemo service object, the invoice backfill,
- * the objects to delete and the checks.
+ * the objects to delete (each with the checks that must pass first), the fixes of existing objects and the checks to do
+ * by hand. {@link CostSetup} carries it out.
  */
 public final class SetupPlan {
+
+    /**
+     * delete check: the objects of these plan keys exist (the replacements were created)
+     */
+    public static final String CHECK_AFTER_CREATED = "AFTER_CREATED";
+    /**
+     * delete check: the object has no children (left after the deletions before it)
+     */
+    public static final String CHECK_NO_CHILDREN = "NO_CHILDREN";
+    /**
+     * delete check: no template, configuration or dashboard of the organisation (except those deleted before) names
+     * the id in its file
+     */
+    public static final String CHECK_NOT_REFERENCED = "NOT_REFERENCED";
+    /**
+     * delete check of an invoice folder: only invoices whose number matches the pattern are deleted; the folder (with
+     * its series) only if nothing else is in it
+     */
+    public static final String CHECK_OLD_INVOICES = "OLD_INVOICES";
+    public static final String FIX_REMOVE_DASHBOARD_WIDGET = "REMOVE_DASHBOARD_WIDGET";
 
     static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
@@ -61,6 +82,12 @@ public final class SetupPlan {
                 + "samples = samples with these time stamps (Europe/Berlin)");
         refs.put("history", "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to "
                 + "'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows");
+        refs.put("delete", "objects go to the recycle bin, in this order and only after everything above was written; "
+                + "with checkFirst every check must pass: AFTER_CREATED (the objects of the keys exist), NO_CHILDREN, "
+                + "NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), "
+                + "OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)");
+        refs.put("fixes", "changes of existing objects, skipped if the object no longer looks as described");
+        refs.put("setup", "carried out by JEDemo: -sm single -jid <organisation id> -o costSetup=dryrun|apply (docs/DEMO-COSTS.md)");
 
         ArrayNode objects = plan.putArray("objects");
         for (PlanObject o : CostCases.objects()) objects.add(object(o));
@@ -102,21 +129,51 @@ public final class SetupPlan {
                 + "-jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true   (first with -o dryrun=true)");
 
         ArrayNode delete = plan.putArray("delete");
-        delete(delete, 23951, "Result Calculation Template", "Kostenrechnung - E-Mobilität", "replaced by template F", false);
-        delete(delete, 23952, "Result Calculation Template", "stromrechnung", "replaced by template A (delete after the new templates exist: they are created next to it)", false);
-        delete(delete, 23518, "Accounting Configuration", "Strom - Gesamt", "replaced by configuration A; also removes its linked outputs", false);
-        delete(delete, 23517, "Electricity Grid Operator", "Netzbetreiber Nord", "empty duplicate of 23515", false);
-        delete(delete, 23950, "Base Data", "Strom - Hauptzähler", "manual invoice values (folder Rechnungswerte), replaced by the invoice series", false);
-        delete(delete, 23948, "Base Data", "Strom - Ladestrom", "manual invoice values (folder Rechnungswerte); only used as an option of the old templates", true);
-        delete(delete, 23943, "Base Data Directory", "Rechnungswerte", "only if empty after 23950 and 23948", true);
+        ArrayNode allTemplates = F.arrayNode();
+        for (CostCase c : CostCases.cases()) allTemplates.add("@" + TemplateFactory.templateKey(c));
+        delete(delete, 23951, "Result Calculation Template", "Kostenrechnung - E-Mobilität", "replaced by template F",
+                check(CHECK_AFTER_CREATED).set("keys", F.arrayNode().add("@" + TemplateFactory.templateKey(CostCases.caseF()))));
+        delete(delete, 23952, "Result Calculation Template", "stromrechnung", "replaced by template A (delete after the new templates exist: they are created next to it)",
+                check(CHECK_AFTER_CREATED).set("keys", allTemplates));
+        delete(delete, 23518, "Accounting Configuration", "Strom - Gesamt", "replaced by configuration A; also removes its linked outputs",
+                check(CHECK_AFTER_CREATED).set("keys", F.arrayNode().add("@" + TemplateFactory.configurationKey(CostCases.caseA()))));
+        delete(delete, 23517, "Electricity Grid Operator", "Netzbetreiber Nord", "empty duplicate of 23515",
+                check(CHECK_NO_CHILDREN), check(CHECK_NOT_REFERENCED));
+        delete(delete, 23950, "Base Data", "Strom - Hauptzähler", "manual invoice values (folder Rechnungswerte), replaced by the invoice series",
+                check(CHECK_NOT_REFERENCED));
+        delete(delete, 23948, "Base Data", "Strom - Ladestrom", "manual invoice values (folder Rechnungswerte); only used as an option of the old templates",
+                check(CHECK_NOT_REFERENCED));
+        delete(delete, 23943, "Base Data Directory", "Rechnungswerte", "only if empty after 23950 and 23948",
+                check(CHECK_NO_CHILDREN));
         /* the linked outputs of 23518 point to 23705 (Data Directory "Sales & Marketing") and 24239 (an Alarm Directory):
          * wrongly mapped by the 2026-11-06 import, the objects themselves are in use — they go away with 23518, the
          * objects stay */
-        ObjectNode oldInvoices = delete.addObject();
-        oldInvoices.put("path", CostCases.MW_CONTRACTS + " / Energierechnungen / Strom");
-        oldInvoices.put("also", "the folder \"Gas\" (24593) next to it");
-        oldInvoices.put("reason", "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices and their series; the cases use their own folders");
-        oldInvoices.put("checkFirst", true);
+        String oldInvoices = "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if "
+                + "nothing else is in it; the cases use their own folders";
+        ObjectNode electricity = delete.addObject();
+        electricity.put("path", CostCases.MW_CONTRACTS + " / Energierechnungen / Strom");
+        electricity.put("class", "Energy Invoices Directory");
+        electricity.put("name", "Strom");
+        electricity.put("reason", oldInvoices);
+        electricity.put("checkFirst", true);
+        electricity.putArray("checks").add(oldInvoicesCheck("S"));
+        delete(delete, 24593, "Energy Invoices Directory", "Gas", oldInvoices, oldInvoicesCheck("G"));
+
+        /* declarative fixes of existing objects, each skipped (with a report line) if the object no longer matches */
+        ArrayNode fixes = plan.putArray("fixes");
+        ObjectNode widget = fixes.addObject();
+        widget.put("type", FIX_REMOVE_DASHBOARD_WIDGET);
+        widget.put("dashboard", 24054);
+        widget.put("class", "Dashboard Analysis");
+        widget.put("name", "01 - Übersicht");
+        widget.put("attribute", "Data Model File");
+        widget.put("widgetUuid", 21);
+        widget.put("widgetType", "Image");
+        widget.put("widgetTitle", "Neues Bild");
+        widget.put("targetField", "image.objectID");
+        widget.put("target", 23723);
+        widget.put("targetClass", "Clean Data");
+        widget.put("reason", "image widget whose image points to a Clean Data row (23723) instead of an image; it shows nothing");
 
         ArrayNode checks = plan.putArray("checks");
         checks.add("23946 (Gas - Brennwert) has a sample at or before 2025-01-01, otherwise add one (11.4 kWh/m³ at 2025-01-01).");
@@ -131,13 +188,29 @@ public final class SetupPlan {
         return plan;
     }
 
-    private static void delete(ArrayNode list, long id, String jevisClass, String name, String reason, boolean checkFirst) {
+    private static void delete(ArrayNode list, long id, String jevisClass, String name, String reason, ObjectNode... checks) {
         ObjectNode d = list.addObject();
         d.put("id", id);
         d.put("class", jevisClass);
         d.put("name", name);
         d.put("reason", reason);
-        if (checkFirst) d.put("checkFirst", true);
+        if (checks.length > 0) {
+            d.put("checkFirst", true);
+            ArrayNode array = d.putArray("checks");
+            for (ObjectNode check : checks) array.add(check);
+        }
+    }
+
+    private static ObjectNode check(String type) {
+        ObjectNode check = F.objectNode();
+        check.put("type", type);
+        return check;
+    }
+
+    private static ObjectNode oldInvoicesCheck(String suffix) {
+        ObjectNode check = check(CHECK_OLD_INVOICES);
+        check.put("numberPattern", "EN-[0-9]{6}-" + suffix);
+        return check;
     }
 
     static ObjectNode object(PlanObject o) {

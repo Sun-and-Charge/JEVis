@@ -57,7 +57,8 @@ From the test `CostCasesTest` with synthetic stand-ins for the live rows (writte
 | `CostCases` | the cases, the objects they need (new site, contracts, rows, base data, invoice folders) and the invoice cases |
 | `TemplateFactory` | builds the Result Calculation Template of a case (inputs, formulas, output grid) and its Accounting Configuration |
 | `History` | deterministic synthetic histories of the new rows (SLP counters, heat meter, price indices) |
-| `SetupPlan` | the setup plan: objects, templates, configurations, invoice cases, backfill, deletions, checks |
+| `SetupPlan` | the setup plan: objects, templates, configurations, invoice cases, backfill, deletions (with their checks), fixes, checks |
+| `CostSetup`, `SetupReport`, `SetupBackup`, `DashboardWidgetFix` | carry out the plan on the server (`-o costSetup=dryrun` or `apply`): report, backup, writes, deletions, the dashboard fix |
 | `CostDemoGenerator` | writes `JEDemo/src/main/resources/costdemo/` (templates, configurations, `setup-plan.json`) |
 | `InvoiceCase`, `InvoiceCalculator`, `ContractValues` (package `org.jevis.jedemo`) | the monthly invoices of the JEDemo job: lines from the contract prices of the case, deviations per month |
 
@@ -74,23 +75,96 @@ start of the fixed time frame to the end of the requested one (peak of the year 
 ## Setup on a server (one time)
 
 `setup-plan.json` lists, top to bottom, what is created, changed and deleted. `"@key"` stands for an object of the
-plan that does not exist yet; numbers are existing ids of the live demo.
+plan that does not exist yet; numbers are existing ids of the live demo. The JEDemo job carries it out
+(`-o costSetup=dryrun|apply`, class `CostSetup`):
 
-1. **Backup** the objects that are changed or deleted (templates 23951/23952, configuration 23518, the base data and
-   invoice folders in `delete`) and the JEDemo service object.
-2. **Objects** in plan order (parents first) with their attribute samples, units and the synthetic histories;
-   the clean data rows copy the settings named in the plan (e.g. hourly view of gas from 23686).
+1. **Backup** of every existing object that is changed or deleted (with all objects below a deleted one), the JEDemo
+   service object and the dashboard of the fix: per object a JSON file with all attributes, units and samples, file
+   samples (templates, dashboard, invoice PDFs) as files, into `var/backup/costdemo-<time>/` (`manifest.json` lists
+   them). If the backup fails, nothing is written.
+2. **Objects** in plan order (parents first) with their attribute samples, units and the synthetic histories (up to
+   the time of the run); the clean data rows copy the settings named in the plan (e.g. hourly view of gas from 23686).
 3. **Templates** (attribute "Template File") next to the old template, then the **configurations** with the keys
    resolved to the new ids.
 4. **JEDemo service object:** write "Invoice Cases" (keys resolved). From then on the old attributes Invoice Directory,
    Electricity/Gas Row and the prices are ignored.
-5. Let JEDataProcessor process the new clean data rows for the whole history, then **backfill the invoices** (first
-   with `-o dryrun=true`):
-   `java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true`
-6. **Delete** what the plan lists (old templates, old configuration and its broken linked outputs, empty duplicate
-   grid operator, manual invoice values, the invoices of the old fixed electricity/gas billing), each only after the
-   check named there.
-7. Work through the **checks** of the plan, then open each configuration for a month of 2026 in the Control Center and
-   the web app: "Differenz Netto" ≈ 0 except in the deviation months.
+5. **Fixes** of existing objects: dashboard 24054 "01 - Übersicht" loses the image widget 21 whose image points to a
+   Clean Data row (new "Data Model File" sample, every other key kept); skipped if the widget no longer looks like that.
+6. **Delete** (recycle bin) what the plan lists, only after everything above was written and only if its checks pass:
+   the old templates and configuration once the new ones exist (`AFTER_CREATED`), the empty duplicate grid operator
+   and the manual invoice values if no template, configuration or dashboard names them (`NOT_REFERENCED`), their
+   folder if it is empty then (`NO_CHILDREN`), and from the old invoice folders "Strom"/"Gas" only the invoices
+   `EN-yyyyMM-S` / `EN-yyyyMM-G` (`OLD_INVOICES`; the folder with its series only if nothing else is in it).
+7. By hand afterwards: JEDataProcessor for the new clean data rows, the **invoice backfill** (first with
+   `-o dryrun=true`), the **checks** of the plan, then open each configuration for a month of 2026 in the Control
+   Center and the web app: "Differenz Netto" ≈ 0 except in the deviation months.
 
-The live server needs the new JEDemo jar (invoice cases) and web service (calculation fixes) before step 5.
+The live server needs the new JEDemo jar (invoice cases, cost setup) and web service (calculation fixes) first.
+
+**How it matches and why it can run twice.** New objects are found by parent + class + name (an existing one is
+used, two of them are a problem); existing ones by id, and their class must be the one in the plan. Samples are only
+added where the time stamp has none, a different value at the same time stamp is an update (old → new in the report),
+a setting is written only if the latest value differs, a template / configuration file only if its content (keys
+resolved) differs, a unit only if the attribute has none (a different unit is reported and kept). Histories are
+generated up to the time of the run and only missing time stamps are written. Deleted objects are not found again,
+a fix whose widget is gone is skipped. A second run therefore reports "nothing to do"; after a failure (the run
+stops at the first failing step, before any deletion) the next run continues where it stopped.
+
+**Safety.** The organisation's name must contain "Demo" and match the plan; every object that is created, written or
+deleted must be below it (checked by walking the parents while planning and again right before each write); the only
+object outside it that is written is the JEDemo service object whose "Organization" names the organisation, and only
+its "Invoice Cases". A deletion whose object has another class or name than the plan says is skipped. With any
+problem the apply writes nothing.
+
+### Setup on live (step 3)
+
+As user `jevis` in `/home/jevis/jevis`, after updating the code and building the jar as in docs/DEMO.md
+(`mvn -t <toolchains.xml> package -pl JEDemo -am`, never `-P jevisserver`) and deploying the web service:
+
+```bash
+cd /home/jevis/jevis
+sudo systemctl stop jedemo.service                       # no replay or invoices while the setup runs
+source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
+
+# 1. dry run: reads everything, writes nothing; report var/log/costdemo-setup-dryrun-<time>.md (and .json)
+java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=dryrun
+less "$(ls -t var/log/costdemo-setup-dryrun-*.md | head -1)"
+```
+
+Read the report: "Result" must not say "refused"; the sections "Problems" and "Warnings" list what blocks or what
+to check (e.g. a unit that differs, an object to delete that was renamed); "Objects" lists every object to create
+(class, name, parent path), every sample to write (histories with count and time range) and every update (old → new);
+"Delete" lists each deletion with the result of its checks. Then apply:
+
+```bash
+# 2. apply: backup to var/backup/costdemo-<time>/, then the writes, deletions last; report costdemo-setup-apply-<time>.md
+java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=apply
+less "$(ls -t var/log/costdemo-setup-apply-*.md | head -1)"
+
+# 3. a second dry run must report "nothing to do"
+java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=dryrun
+```
+
+If the apply stopped at a step, fix the cause (the report names the step and the error) and run the apply again.
+Then the manual steps (the apply report lists them with the new ids):
+
+```bash
+# 4. JEDataProcessor for the new clean data rows (ids from the report: B.clean, C.hourly, D.clean, E.clean);
+#    the running jedataprocessor.service does it as well in its next cycles. With the key of the services:
+source /etc/jevis/jevis.env
+java -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <B.clean>,<C.hourly>,<D.clean>,<E.clean>
+
+# 5. invoice backfill with the demo key, first dry
+source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
+java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true
+java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true
+
+# 6. start the job again
+sudo systemctl start jedemo.service
+tail -f var/log/jedemo.log
+```
+
+Then the checks of the plan (listed at the end of the report). Options: `-o costSetupReport=<directory>` (default
+`var/log`), `-o costSetupBackup=<directory>` (default `var/backup/costdemo-<time>`); `-o dryrun=true` turns an apply into
+a dry run. To undo a deletion, restore the object from the recycle bin (Control Center); values that were replaced
+are in the backup JSON.

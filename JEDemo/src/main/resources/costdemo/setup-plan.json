@@ -8,7 +8,10 @@
     "keys" : "\"@key\" is an object of this plan that step 3 creates; replace it by the new id everywhere (attribute values, configurations' objectKey/templateKey, the invoice cases). Numbers are existing ids.",
     "parent" : "path = object names from the organisation separated by \" / \"; key = object of this plan; id = existing object; parentOf = the parent of that existing object",
     "attributes" : "unit = input/display unit of the attribute; value = one sample written at setup time; samples = samples with these time stamps (Europe/Berlin)",
-    "history" : "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to 'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows"
+    "history" : "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to 'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows",
+    "delete" : "objects go to the recycle bin, in this order and only after everything above was written; with checkFirst every check must pass: AFTER_CREATED (the objects of the keys exist), NO_CHILDREN, NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)",
+    "fixes" : "changes of existing objects, skipped if the object no longer looks as described",
+    "setup" : "carried out by JEDemo: -sm single -jid <organisation id> -o costSetup=dryrun|apply (docs/DEMO-COSTS.md)"
   },
   "objects" : [
     {
@@ -2410,51 +2413,144 @@
       "id" : 23951,
       "class" : "Result Calculation Template",
       "name" : "Kostenrechnung - E-Mobilität",
-      "reason" : "replaced by template F"
+      "reason" : "replaced by template F",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "AFTER_CREATED",
+          "keys" : [
+            "@T.F"
+          ]
+        }
+      ]
     },
     {
       "id" : 23952,
       "class" : "Result Calculation Template",
       "name" : "stromrechnung",
-      "reason" : "replaced by template A (delete after the new templates exist: they are created next to it)"
+      "reason" : "replaced by template A (delete after the new templates exist: they are created next to it)",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "AFTER_CREATED",
+          "keys" : [
+            "@T.A",
+            "@T.B",
+            "@T.C",
+            "@T.D",
+            "@T.E",
+            "@T.F"
+          ]
+        }
+      ]
     },
     {
       "id" : 23518,
       "class" : "Accounting Configuration",
       "name" : "Strom - Gesamt",
-      "reason" : "replaced by configuration A; also removes its linked outputs"
+      "reason" : "replaced by configuration A; also removes its linked outputs",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "AFTER_CREATED",
+          "keys" : [
+            "@K.A"
+          ]
+        }
+      ]
     },
     {
       "id" : 23517,
       "class" : "Electricity Grid Operator",
       "name" : "Netzbetreiber Nord",
-      "reason" : "empty duplicate of 23515"
+      "reason" : "empty duplicate of 23515",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "NO_CHILDREN"
+        },
+        {
+          "type" : "NOT_REFERENCED"
+        }
+      ]
     },
     {
       "id" : 23950,
       "class" : "Base Data",
       "name" : "Strom - Hauptzähler",
-      "reason" : "manual invoice values (folder Rechnungswerte), replaced by the invoice series"
+      "reason" : "manual invoice values (folder Rechnungswerte), replaced by the invoice series",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "NOT_REFERENCED"
+        }
+      ]
     },
     {
       "id" : 23948,
       "class" : "Base Data",
       "name" : "Strom - Ladestrom",
       "reason" : "manual invoice values (folder Rechnungswerte); only used as an option of the old templates",
-      "checkFirst" : true
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "NOT_REFERENCED"
+        }
+      ]
     },
     {
       "id" : 23943,
       "class" : "Base Data Directory",
       "name" : "Rechnungswerte",
       "reason" : "only if empty after 23950 and 23948",
-      "checkFirst" : true
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "NO_CHILDREN"
+        }
+      ]
     },
     {
       "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Energierechnungen / Strom",
-      "also" : "the folder \"Gas\" (24593) next to it",
-      "reason" : "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices and their series; the cases use their own folders",
-      "checkFirst" : true
+      "class" : "Energy Invoices Directory",
+      "name" : "Strom",
+      "reason" : "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if nothing else is in it; the cases use their own folders",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "OLD_INVOICES",
+          "numberPattern" : "EN-[0-9]{6}-S"
+        }
+      ]
+    },
+    {
+      "id" : 24593,
+      "class" : "Energy Invoices Directory",
+      "name" : "Gas",
+      "reason" : "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if nothing else is in it; the cases use their own folders",
+      "checkFirst" : true,
+      "checks" : [
+        {
+          "type" : "OLD_INVOICES",
+          "numberPattern" : "EN-[0-9]{6}-G"
+        }
+      ]
+    }
+  ],
+  "fixes" : [
+    {
+      "type" : "REMOVE_DASHBOARD_WIDGET",
+      "dashboard" : 24054,
+      "class" : "Dashboard Analysis",
+      "name" : "01 - Übersicht",
+      "attribute" : "Data Model File",
+      "widgetUuid" : 21,
+      "widgetType" : "Image",
+      "widgetTitle" : "Neues Bild",
+      "targetField" : "image.objectID",
+      "target" : 23723,
+      "targetClass" : "Clean Data",
+      "reason" : "image widget whose image points to a Clean Data row (23723) instead of an image; it shows nothing"
     }
   ],
   "checks" : [
