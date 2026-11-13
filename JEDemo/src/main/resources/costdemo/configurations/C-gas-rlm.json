@@ -1,0 +1,216 @@
+{
+  "selectedInputs" : [
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "90ec2266-845d-3d02-8b99-59e53bf50e82",
+      "attributeName" : "name",
+      "variableName" : "Name_Lieferant",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@C.supplier"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "68ce043b-247e-3fc3-a8c6-2126173f45aa",
+      "attributeName" : "name",
+      "variableName" : "Name_Netzbetreiber",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23516
+    },
+    {
+      "objectClass" : "Gas Metering Point Operator",
+      "id" : "31323d2a-a28f-3e68-b5fa-dfa07d3a2f6e",
+      "attributeName" : "name",
+      "variableName" : "Name_Messstellenbetreiber",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@C.msb"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "5fd8b36f-c0ec-3b18-a57f-a6fd9ccb2d0f",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Zaehler",
+      "variableType" : "SUM",
+      "filter" : "Hauptzähler Energie Bereinigte",
+      "group" : false,
+      "objectID" : 23572
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "8956968f-b3b1-3e6f-b28f-e871c22d09f2",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Verbrauch laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@C.invoices.CONSUMPTION"
+    },
+    {
+      "objectClass" : "Base Data",
+      "id" : "eec1df69-695b-3b22-a74e-f7e7802d8d21",
+      "attributeName" : "Value",
+      "variableName" : "Brennwert_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : "Brennwert",
+      "group" : false,
+      "objectID" : 23946
+    },
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "0ae31e1d-6238-3e25-a187-b0b114b21283",
+      "attributeName" : "State Number",
+      "variableName" : "Zustandszahl_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@C.supplier"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "62e583b1-af46-323d-942c-795dd1ee65f1",
+      "attributeName" : "Value",
+      "variableName" : "Spitze_Stunde",
+      "variableType" : "MAX",
+      "filter" : "Hauptzähler Energie Stundenwerte",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@C.hourly"
+    },
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "3e753857-0218-3e24-9617-1aad9b779611",
+      "attributeName" : "Energy Price",
+      "variableName" : "ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@C.supplier"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "ef11f622-aa64-3097-8285-7a5edddd1523",
+      "attributeName" : "Demand Charge",
+      "variableName" : "GRID_DEMAND_Preis",
+      "variableType" : "RANGING_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23516
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "30a52405-b793-3d00-bf6b-bb5e0918e6f6",
+      "attributeName" : "Energy Price Grid",
+      "variableName" : "GRID_ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23516
+    },
+    {
+      "objectClass" : "Gas Metering Point Operator",
+      "id" : "7f5f709b-703e-3e40-a14a-bd7b80a30644",
+      "attributeName" : "Net Cost",
+      "variableName" : "MSB_Jahrespreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@C.msb"
+    },
+    {
+      "objectClass" : "Gas Metering Point Operator",
+      "id" : "a05ee2da-ff27-3492-8ea4-1237ea689721",
+      "attributeName" : "Net Cost",
+      "variableName" : "MSB_anteilig",
+      "variableType" : "YEARLY_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@C.msb"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "13af1e33-c013-349b-9a13-1d4188329aa1",
+      "attributeName" : "Franchise Tax",
+      "variableName" : "FRANCHISE_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23516
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "5bb60e38-4ba3-3732-8dda-f91f20b77f6f",
+      "attributeName" : "Allocation 08",
+      "variableName" : "CO2_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "97db125d-6c54-3540-8745-d03bcb873c79",
+      "attributeName" : "Energy Tax Gas",
+      "variableName" : "TAX_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "316074cf-d582-3459-afe1-77a91ed9b943",
+      "attributeName" : "Value",
+      "variableName" : "Netto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten netto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@C.invoices.NET"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "2f738ece-6e79-3ebe-8409-9597869a45a4",
+      "attributeName" : "Value",
+      "variableName" : "Brutto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten brutto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@C.invoices.GROSS"
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "52a0a20b-284c-3e69-bf66-2881a9820391",
+      "attributeName" : "VAT Gas",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    }
+  ],
+  "linkedOutputs" : [ ],
+  "templateSelection" : null,
+  "type" : "SimpleDataHandler",
+  "contractNumber" : "V-2025-0201",
+  "contractType" : "GAS",
+  "marketLocationNumber" : "50000000001",
+  "contractDate" : "2024-10-15T00:00:00.000+02:00",
+  "firstRate" : "2025-02-01T00:00:00.000+01:00",
+  "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",
+  "contractStart" : "2025-01-01T00:00:00.000+01:00",
+  "contractEnd" : "2027-12-31T00:00:00.000+01:00",
+  "templateKey" : "@T.C"
+}

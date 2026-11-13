@@ -60,6 +60,34 @@ public class DemoConfigTest {
     }
 
     @Test
+    public void invoiceCases() {
+        String json = "[{\"key\":\"A\",\"medium\":\"ELECTRICITY\",\"suffix\":\"SR\",\"directory\":24600,"
+                + "\"consumption\":{\"row\":23734},\"peak\":{\"row\":\"23734\",\"factor\":4},"
+                + "\"vat\":{\"object\":23519,\"attribute\":\"VAT Electricity\"},"
+                + "\"lines\":[{\"key\":\"ENERGY\",\"text\":\"Arbeitspreis\",\"type\":\"ENERGY\",\"price\":{\"object\":23510,\"attribute\":\"Energy Price HT\"},\"priceUnit\":\"ct/kWh\"}],"
+                + "\"deviations\":[{\"month\":\"2026-03\",\"type\":\"DUPLICATE_LINE\",\"line\":\"ENERGY\"},{\"month\":\"07\",\"type\":\"QUANTITY_FACTOR\",\"factor\":1.04}],"
+                + "\"unknown\":true},"
+                + "{\"key\":\"B\",\"medium\":\"GAS\",\"suffix\":\"GS\",\"directory\":\"@B.invoices\",\"consumption\":{\"row\":\"@B.clean\"},"
+                + "\"lines\":[{\"key\":\"ENERGY\",\"type\":\"ENERGY\",\"price\":{\"object\":1,\"attribute\":\"Energy Price\"}}]},"
+                + "{\"key\":\"bad\",\"directory\":{}}]";
+        java.util.List<InvoiceCase> cases = DemoConfig.parseInvoiceCases(json);
+        assertEquals("the unreadable entry is skipped", 2, cases.size());
+        InvoiceCase a = cases.get(0);
+        assertTrue(a.problems().toString(), a.problems().isEmpty());
+        assertEquals(Ref.id(23734), a.peak.row);
+        assertEquals(4, a.peak.factor, 0);
+        assertEquals(1, a.deviations(java.time.YearMonth.of(2026, 3)).size());
+        assertEquals("every July", 1, a.deviations(java.time.YearMonth.of(2027, 7)).size());
+        assertTrue(a.deviations(java.time.YearMonth.of(2027, 3)).isEmpty());
+        InvoiceCase b = cases.get(1);
+        assertEquals(Ref.key("B.invoices"), b.directory);
+        assertTrue(b.problems().toString(), b.problems().contains("directory is the unresolved key @B.invoices"));
+        assertTrue(DemoConfig.parseInvoiceCases("").isEmpty());
+        assertTrue(DemoConfig.parseInvoiceCases("{\"x\":1}").isEmpty());
+        assertEquals(2, DemoConfig.parseInvoiceCases("{\"cases\":" + json + "}").size());
+    }
+
+    @Test
     public void replayStateRoundTrip() {
         Map<Long, String> state = new TreeMap<>();
         state.put(101L, "P13W");

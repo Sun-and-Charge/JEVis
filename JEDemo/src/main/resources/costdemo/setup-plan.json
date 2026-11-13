@@ -1,0 +1,2468 @@
+{
+  "version" : 1,
+  "title" : "Demo cost cases (Kostenrechnung) of the demo organisation",
+  "organisation" : "Sun and Charge Demo",
+  "timeZone" : "Europe/Berlin",
+  "generatedBy" : "org.jevis.jedemo.costs.CostDemoGenerator (do not edit by hand, see docs/DEMO-COSTS.md)",
+  "conventions" : {
+    "keys" : "\"@key\" is an object of this plan that step 3 creates; replace it by the new id everywhere (attribute values, configurations' objectKey/templateKey, the invoice cases). Numbers are existing ids.",
+    "parent" : "path = object names from the organisation separated by \" / \"; key = object of this plan; id = existing object; parentOf = the parent of that existing object",
+    "attributes" : "unit = input/display unit of the attribute; value = one sample written at setup time; samples = samples with these time stamps (Europe/Berlin)",
+    "history" : "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to 'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows"
+  },
+  "objects" : [
+    {
+      "key" : "S.site",
+      "action" : "create",
+      "class" : "Building",
+      "name" : "Außenlager Süd",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte"
+      },
+      "attributes" : {
+        "Address" : {
+          "value" : "Lagerweg 5, 54321 Musterstadt"
+        },
+        "Timezone" : {
+          "value" : "Europe/Berlin"
+        }
+      },
+      "note" : "Second site of the demo (office and storage), see cases B, D, E"
+    },
+    {
+      "key" : "S.data",
+      "action" : "create",
+      "class" : "Data Directory",
+      "name" : "Daten",
+      "parent" : {
+        "key" : "S.site"
+      }
+    },
+    {
+      "key" : "S.data.strom",
+      "action" : "create",
+      "class" : "Data Directory",
+      "name" : "Strom",
+      "parent" : {
+        "key" : "S.data"
+      }
+    },
+    {
+      "key" : "S.data.gas",
+      "action" : "create",
+      "class" : "Data Directory",
+      "name" : "Gas",
+      "parent" : {
+        "key" : "S.data"
+      }
+    },
+    {
+      "key" : "S.data.waerme",
+      "action" : "create",
+      "class" : "Data Directory",
+      "name" : "Wärme",
+      "parent" : {
+        "key" : "S.data"
+      }
+    },
+    {
+      "key" : "S.base",
+      "action" : "create",
+      "class" : "Base Data Directory",
+      "name" : "Stammdaten",
+      "parent" : {
+        "key" : "S.site"
+      }
+    },
+    {
+      "key" : "S.base.index",
+      "action" : "create",
+      "class" : "Base Data Directory",
+      "name" : "Preisindizes",
+      "parent" : {
+        "key" : "S.base"
+      }
+    },
+    {
+      "key" : "S.base.contract",
+      "action" : "create",
+      "class" : "Base Data Directory",
+      "name" : "Vertragsdaten",
+      "parent" : {
+        "key" : "S.base"
+      }
+    },
+    {
+      "key" : "S.contracts",
+      "action" : "create",
+      "class" : "Energy Contracting Directory",
+      "name" : "Energieverträge",
+      "parent" : {
+        "key" : "S.site"
+      }
+    },
+    {
+      "key" : "S.supply",
+      "action" : "create",
+      "class" : "Energy Supply Directory",
+      "name" : "Energielieferverträge",
+      "parent" : {
+        "key" : "S.contracts"
+      }
+    },
+    {
+      "key" : "S.grid",
+      "action" : "create",
+      "class" : "Energy Grid Operation Directory",
+      "name" : "Netzbetrieb",
+      "parent" : {
+        "key" : "S.contracts"
+      }
+    },
+    {
+      "key" : "S.msb",
+      "action" : "create",
+      "class" : "Energy Metering Point Operation Directory",
+      "name" : "Messstellenbetrieb",
+      "parent" : {
+        "key" : "S.contracts"
+      }
+    },
+    {
+      "key" : "S.partners",
+      "action" : "create",
+      "class" : "Energy Contractor Directory",
+      "name" : "Vertragspartner",
+      "parent" : {
+        "key" : "S.contracts"
+      }
+    },
+    {
+      "key" : "S.configs",
+      "action" : "create",
+      "class" : "Accounting Configuration Directory",
+      "name" : "Verträge",
+      "parent" : {
+        "key" : "S.contracts"
+      }
+    },
+    {
+      "key" : "S.invoices",
+      "action" : "create",
+      "class" : "Energy Invoices Directory",
+      "name" : "Energierechnungen",
+      "parent" : {
+        "key" : "S.contracts"
+      }
+    },
+    {
+      "key" : "M.base.cars",
+      "action" : "create",
+      "class" : "Base Data Directory",
+      "name" : "Dienstwagen",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Stammdaten"
+      }
+    },
+    {
+      "key" : "dues",
+      "action" : "update",
+      "id" : 23519,
+      "class" : "Governmental Dues",
+      "name" : "Staatliche Abgaben",
+      "attributes" : {
+        "VAT Electricity" : {
+          "unit" : "%",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 19.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 19.0
+            }
+          ]
+        },
+        "VAT Gas" : {
+          "unit" : "%",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 19.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 19.0
+            }
+          ]
+        },
+        "VAT Community Heating" : {
+          "unit" : "%",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 19.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 19.0
+            }
+          ]
+        },
+        "Allocation 02" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.277
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.446
+            }
+          ]
+        },
+        "Allocation 03" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 1.558
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 1.559
+            }
+          ]
+        },
+        "Allocation 05" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.816
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.941
+            }
+          ]
+        },
+        "Allocation 08" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 1.001
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 1.092
+            }
+          ]
+        },
+        "Energy Tax Electricity" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 2.05
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 2.05
+            }
+          ]
+        },
+        "Energy Tax Gas" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.55
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.55
+            }
+          ]
+        }
+      },
+      "note" : "Allocation 02 = KWKG, 03 = § 19 StromNEV (up to 1 GWh), 05 = Offshore, 08 = CO2 price (BEHG 55 / 60 EUR/t)"
+    },
+    {
+      "key" : "A.supplier",
+      "action" : "update",
+      "id" : 23510,
+      "class" : "Electricity Supply Contractor",
+      "name" : "Energieversorger Nord",
+      "attributes" : {
+        "Energy Price HT" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 14.8
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 13.5
+            }
+          ]
+        }
+      },
+      "note" : "Flat work price (no HT/NT split)"
+    },
+    {
+      "key" : "A.grid",
+      "action" : "update",
+      "id" : 23515,
+      "class" : "Electricity Grid Operator",
+      "name" : "Netzbetreiber Nord",
+      "attributes" : {
+        "Franchise Tax" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.11
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.11
+            }
+          ]
+        },
+        "Energy Price Grid" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 1.08
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 1.15
+            }
+          ]
+        },
+        "Demand Charge" : {
+          "unit" : "EUR/kW/a",
+          "samples" : [
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : "{\"rangingValues\":[{\"from\":0.0,\"to\":1.0E9,\"value\":135.0}]}"
+            }
+          ]
+        }
+      },
+      "note" : "Medium voltage; demand charge 135 EUR/kW/a as a one-range table (the calculation reads the latest table only)"
+    },
+    {
+      "key" : "A.msb",
+      "action" : "update",
+      "id" : 23511,
+      "class" : "Electricity Metering Point Operator",
+      "name" : "Netzbetreiber Nord",
+      "attributes" : {
+        "Net Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 420.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 450.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 450.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 450.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 450.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 450.0
+            }
+          ]
+        }
+      },
+      "note" : "Interval metering (RLM)"
+    },
+    {
+      "key" : "A.invoices",
+      "action" : "create",
+      "class" : "Energy Invoices Directory",
+      "name" : "Strom RLM Hauptanschluss",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Energierechnungen"
+      },
+      "attributes" : {
+        "Medium" : {
+          "value" : "ELECTRICITY"
+        }
+      },
+      "note" : "Invoice folder of case A; the import uses it directly because its Medium is ELECTRICITY"
+    },
+    {
+      "key" : "A.invoices.CONSUMPTION",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Verbrauch laut Rechnung",
+      "parent" : {
+        "key" : "A.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "CONSUMPTION"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "A.invoices.NET",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten netto laut Rechnung",
+      "parent" : {
+        "key" : "A.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "NET"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "A.invoices.GROSS",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten brutto laut Rechnung",
+      "parent" : {
+        "key" : "A.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "GROSS"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "B.supplier",
+      "action" : "create",
+      "class" : "Electricity Supply Contractor",
+      "name" : "Energieversorger Nord - Gewerbestrom",
+      "parent" : {
+        "key" : "S.supply"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "23513"
+        },
+        "Energy Price HT" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 18.4
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 17.5
+            }
+          ]
+        },
+        "Additional Fix Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 168.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            }
+          ]
+        }
+      },
+      "note" : "Additional Fix Cost = Grundpreis (14 / 15 EUR per month, billed per day)"
+    },
+    {
+      "key" : "B.grid",
+      "action" : "create",
+      "class" : "Electricity Grid Operator",
+      "name" : "Netzbetreiber Nord - Niederspannung",
+      "parent" : {
+        "key" : "S.grid"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "23514"
+        },
+        "Energy Grid Operator Code Number" : {
+          "value" : "9900000000002"
+        },
+        "Franchise Tax" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 1.59
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 1.59
+            }
+          ]
+        },
+        "Energy Price Grid" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 8.3
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 7.9
+            }
+          ]
+        },
+        "Net Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 55.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 60.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 60.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 60.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 60.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 60.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "B.msb",
+      "action" : "create",
+      "class" : "Electricity Metering Point Operator",
+      "name" : "Netzbetreiber Nord - Messstelle Außenlager Süd",
+      "parent" : {
+        "key" : "S.msb"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "23512"
+        },
+        "Energy Metering Point Operator Code Number" : {
+          "value" : "9900000000002"
+        },
+        "Net Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 100.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 110.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 110.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 110.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 110.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 110.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "B.row",
+      "action" : "create",
+      "class" : "Data",
+      "name" : "Strom - Außenlager Süd",
+      "parent" : {
+        "key" : "S.data.strom"
+      },
+      "attributes" : {
+        "Period" : {
+          "value" : "P1M"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      },
+      "history" : {
+        "profile" : "ELECTRICITY_SLP_COUNTER",
+        "from" : "2025-01-01T00:00:00.000+01:00",
+        "until" : "setup"
+      },
+      "note" : "Monthly meter reading (counter) at the 1st 00:00"
+    },
+    {
+      "key" : "B.clean",
+      "action" : "create",
+      "class" : "Clean Data",
+      "name" : "Bereinigte Daten",
+      "parent" : {
+        "key" : "B.row"
+      },
+      "attributes" : {
+        "Enabled" : {
+          "value" : true
+        },
+        "Conversion to Differential" : {
+          "value" : true
+        },
+        "Value is a Quantity" : {
+          "value" : true
+        },
+        "Period" : {
+          "value" : "P1M"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "B.invoices",
+      "action" : "create",
+      "class" : "Energy Invoices Directory",
+      "name" : "Strom SLP Außenlager Süd",
+      "parent" : {
+        "key" : "S.invoices"
+      },
+      "attributes" : {
+        "Medium" : {
+          "value" : "ELECTRICITY"
+        }
+      },
+      "note" : "Invoice folder of case B; the import uses it directly because its Medium is ELECTRICITY"
+    },
+    {
+      "key" : "B.invoices.CONSUMPTION",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Verbrauch laut Rechnung",
+      "parent" : {
+        "key" : "B.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "CONSUMPTION"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "B.invoices.NET",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten netto laut Rechnung",
+      "parent" : {
+        "key" : "B.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "NET"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "B.invoices.GROSS",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten brutto laut Rechnung",
+      "parent" : {
+        "key" : "B.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "GROSS"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "gas.contractor",
+      "action" : "create",
+      "class" : "Energy Grid Operation Contractor",
+      "name" : "Gasnetzbetreiber Nord",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Vertragspartner"
+      },
+      "attributes" : {
+        "Company" : {
+          "value" : "Gasnetzbetreiber Nord"
+        }
+      }
+    },
+    {
+      "key" : "C.supplier",
+      "action" : "create",
+      "class" : "Gas Supply Contractor",
+      "name" : "Energieversorger Nord - Erdgas Musterwerk",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Energielieferverträge"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "23513"
+        },
+        "Energy Price" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 4.4
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 3.9
+            }
+          ]
+        },
+        "State Number" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 1.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 1.0
+            }
+          ]
+        }
+      },
+      "note" : "State number 1: the meter has a volume corrector"
+    },
+    {
+      "key" : "C.grid",
+      "action" : "update",
+      "id" : 23516,
+      "class" : "Gas Grid Operator",
+      "name" : "Gasnetzbetreiber Nord",
+      "attributes" : {
+        "Contractor" : {
+          "value" : "@gas.contractor"
+        },
+        "Energy Grid Operator Code Number" : {
+          "value" : "9800000000001"
+        },
+        "Franchise Tax" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.03
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.03
+            }
+          ]
+        },
+        "Energy Price Grid" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.42
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.45
+            }
+          ]
+        },
+        "Demand Charge" : {
+          "unit" : "EUR/kW/a",
+          "samples" : [
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : "{\"rangingValues\":[{\"from\":0.0,\"to\":1.0E9,\"value\":18.0}]}"
+            }
+          ]
+        }
+      },
+      "note" : "Demand charge 18 EUR per kWh/h and year as a one-range table"
+    },
+    {
+      "key" : "C.msb",
+      "action" : "create",
+      "class" : "Gas Metering Point Operator",
+      "name" : "Gasnetzbetreiber Nord - Messstelle Musterwerk",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Messstellenbetrieb"
+      },
+      "attributes" : {
+        "Energy Metering Point Operator Code Number" : {
+          "value" : "9800000000001"
+        },
+        "Net Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 380.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 400.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 400.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 400.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 400.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 400.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "C.hourly",
+      "action" : "create",
+      "class" : "Clean Data",
+      "name" : "Stundenwerte",
+      "parent" : {
+        "id" : 23572
+      },
+      "copyAttributesFrom" : 23686,
+      "attributes" : {
+        "Period" : {
+          "value" : "PT1H"
+        },
+        "Value is a Quantity" : {
+          "value" : true
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      },
+      "note" : "Hourly sums of the 15-minute gas energy (kWh/h) for the demand charge; settings as 23686 (Strom - Gesamt \\ Stundenwerte)"
+    },
+    {
+      "key" : "C.invoices",
+      "action" : "create",
+      "class" : "Energy Invoices Directory",
+      "name" : "Gas RLM Musterwerk",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Energierechnungen"
+      },
+      "attributes" : {
+        "Medium" : {
+          "value" : "GAS"
+        }
+      },
+      "note" : "Invoice folder of case C; the import uses it directly because its Medium is GAS"
+    },
+    {
+      "key" : "C.invoices.CONSUMPTION",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Verbrauch laut Rechnung",
+      "parent" : {
+        "key" : "C.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "CONSUMPTION"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "C.invoices.NET",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten netto laut Rechnung",
+      "parent" : {
+        "key" : "C.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "NET"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "C.invoices.GROSS",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten brutto laut Rechnung",
+      "parent" : {
+        "key" : "C.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "GROSS"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "D.supplier",
+      "action" : "create",
+      "class" : "Gas Supply Contractor",
+      "name" : "Energieversorger Nord - Erdgas Gewerbe",
+      "parent" : {
+        "key" : "S.supply"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "23513"
+        },
+        "Energy Price" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 6.9
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 6.4
+            }
+          ]
+        },
+        "Additional Fix Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 132.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 144.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 144.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 144.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 144.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 144.0
+            }
+          ]
+        },
+        "State Number" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.9535
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.9535
+            }
+          ]
+        }
+      },
+      "note" : "Additional Fix Cost = Grundpreis (11 / 12 EUR per month, billed per day)"
+    },
+    {
+      "key" : "D.grid",
+      "action" : "create",
+      "class" : "Gas Grid Operator",
+      "name" : "Gasnetzbetreiber Nord - Außenlager Süd",
+      "parent" : {
+        "key" : "S.grid"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "@gas.contractor"
+        },
+        "Energy Grid Operator Code Number" : {
+          "value" : "9800000000001"
+        },
+        "Franchise Tax" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 0.03
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 0.03
+            }
+          ]
+        },
+        "Energy Price Grid" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 1.6
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 1.7
+            }
+          ]
+        },
+        "Net Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 170.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 180.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "D.msb",
+      "action" : "create",
+      "class" : "Gas Metering Point Operator",
+      "name" : "Gasnetzbetreiber Nord - Messstelle Außenlager Süd",
+      "parent" : {
+        "key" : "S.msb"
+      },
+      "attributes" : {
+        "Energy Metering Point Operator Code Number" : {
+          "value" : "9800000000001"
+        },
+        "Net Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 23.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 25.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 25.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 25.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 25.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 25.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "D.row",
+      "action" : "create",
+      "class" : "Data",
+      "name" : "Gas - Außenlager Süd (Volumen)",
+      "parent" : {
+        "key" : "S.data.gas"
+      },
+      "attributes" : {
+        "Period" : {
+          "value" : "P1M"
+        },
+        "Value" : {
+          "unit" : "m³"
+        }
+      },
+      "history" : {
+        "profile" : "GAS_SLP_COUNTER",
+        "from" : "2025-01-01T00:00:00.000+01:00",
+        "until" : "setup"
+      },
+      "note" : "Monthly meter reading (m³, counter) at the 1st 00:00"
+    },
+    {
+      "key" : "D.clean",
+      "action" : "create",
+      "class" : "Clean Data",
+      "name" : "Bereinigte Daten",
+      "parent" : {
+        "key" : "D.row"
+      },
+      "attributes" : {
+        "Enabled" : {
+          "value" : true
+        },
+        "Conversion to Differential" : {
+          "value" : true
+        },
+        "Value is a Quantity" : {
+          "value" : true
+        },
+        "Period" : {
+          "value" : "P1M"
+        },
+        "Value" : {
+          "unit" : "m³"
+        }
+      }
+    },
+    {
+      "key" : "D.invoices",
+      "action" : "create",
+      "class" : "Energy Invoices Directory",
+      "name" : "Gas SLP Außenlager Süd",
+      "parent" : {
+        "key" : "S.invoices"
+      },
+      "attributes" : {
+        "Medium" : {
+          "value" : "GAS"
+        }
+      },
+      "note" : "Invoice folder of case D; the import uses it directly because its Medium is GAS"
+    },
+    {
+      "key" : "D.invoices.CONSUMPTION",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Verbrauch laut Rechnung",
+      "parent" : {
+        "key" : "D.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "CONSUMPTION"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "D.invoices.NET",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten netto laut Rechnung",
+      "parent" : {
+        "key" : "D.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "NET"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "D.invoices.GROSS",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten brutto laut Rechnung",
+      "parent" : {
+        "key" : "D.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "GROSS"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "E.contractor",
+      "action" : "create",
+      "class" : "Energy Supply Contractor",
+      "name" : "Wärmeversorgung Nord",
+      "parent" : {
+        "key" : "S.partners"
+      },
+      "attributes" : {
+        "Company" : {
+          "value" : "Wärmeversorgung Nord"
+        }
+      }
+    },
+    {
+      "key" : "E.supplier",
+      "action" : "create",
+      "class" : "Community Heating Supply Contractor",
+      "name" : "Wärmeversorgung Nord - Fernwärme Außenlager Süd",
+      "parent" : {
+        "key" : "S.supply"
+      },
+      "attributes" : {
+        "Contractor" : {
+          "value" : "@E.contractor"
+        },
+        "Energy Price" : {
+          "unit" : "EUR/MWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 95.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 95.0
+            }
+          ]
+        },
+        "Demand Charge" : {
+          "unit" : "EUR/kW/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 46.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 48.0
+            }
+          ]
+        },
+        "Additional Fix Cost" : {
+          "unit" : "EUR/a",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 230.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 240.0
+            },
+            {
+              "ts" : "2027-01-01T00:00:00.000+01:00",
+              "value" : 240.0
+            },
+            {
+              "ts" : "2028-01-01T00:00:00.000+01:00",
+              "value" : 240.0
+            },
+            {
+              "ts" : "2029-01-01T00:00:00.000+01:00",
+              "value" : 240.0
+            },
+            {
+              "ts" : "2030-01-01T00:00:00.000+01:00",
+              "value" : 240.0
+            }
+          ]
+        }
+      },
+      "note" : "Energy Price = base work price AP0 of the escalation clause AP = AP0 × (0.35 + 0.40 × G/G0 + 0.25 × W/W0), G0 = W0 = 100 (indices 2021 = 100); Additional Fix Cost = Messpreis. Story: action \"MW 018 - Neuer Fernwärmevertrag\""
+    },
+    {
+      "key" : "E.capacity",
+      "action" : "create",
+      "class" : "Base Data",
+      "name" : "Fernwärme - Anschlusswert",
+      "parent" : {
+        "key" : "S.base.contract"
+      },
+      "attributes" : {
+        "Value" : {
+          "unit" : "kW",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 150.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "E.indexGas",
+      "action" : "create",
+      "class" : "Base Data",
+      "name" : "Preisindex Erdgas (2021 = 100)",
+      "parent" : {
+        "key" : "S.base.index"
+      },
+      "history" : {
+        "profile" : "GAS_PRICE_INDEX",
+        "from" : "2024-01-01T00:00:00.000+01:00",
+        "until" : "2030-12-01T00:00:00.000+01:00"
+      },
+      "note" : "Synthetic monthly index 2024-01 … 2030-12 at the 1st 00:00"
+    },
+    {
+      "key" : "E.indexHeat",
+      "action" : "create",
+      "class" : "Base Data",
+      "name" : "Preisindex Wärme (2021 = 100)",
+      "parent" : {
+        "key" : "S.base.index"
+      },
+      "history" : {
+        "profile" : "HEAT_PRICE_INDEX",
+        "from" : "2024-01-01T00:00:00.000+01:00",
+        "until" : "2030-12-01T00:00:00.000+01:00"
+      },
+      "note" : "Synthetic monthly index 2024-01 … 2030-12 at the 1st 00:00"
+    },
+    {
+      "key" : "E.row",
+      "action" : "create",
+      "class" : "Data",
+      "name" : "Fernwärme - Außenlager Süd",
+      "parent" : {
+        "key" : "S.data.waerme"
+      },
+      "attributes" : {
+        "Period" : {
+          "value" : "PT1H"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      },
+      "history" : {
+        "profile" : "HEAT_COUNTER",
+        "from" : "2025-01-01T00:00:00.000+01:00",
+        "until" : "setup"
+      },
+      "note" : "Hourly heat meter reading (counter); about 180 MWh per year"
+    },
+    {
+      "key" : "E.clean",
+      "action" : "create",
+      "class" : "Clean Data",
+      "name" : "Bereinigte Daten",
+      "parent" : {
+        "key" : "E.row"
+      },
+      "attributes" : {
+        "Enabled" : {
+          "value" : true
+        },
+        "Conversion to Differential" : {
+          "value" : true
+        },
+        "Value is a Quantity" : {
+          "value" : true
+        },
+        "Period" : {
+          "value" : "PT1H"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "E.invoices",
+      "action" : "create",
+      "class" : "Energy Invoices Directory",
+      "name" : "Fernwärme Außenlager Süd",
+      "parent" : {
+        "key" : "S.invoices"
+      },
+      "attributes" : {
+        "Medium" : {
+          "value" : "DISTRICT_HEATING"
+        }
+      },
+      "note" : "Invoice folder of case E; the import uses it directly because its Medium is DISTRICT_HEATING"
+    },
+    {
+      "key" : "E.invoices.CONSUMPTION",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Verbrauch laut Rechnung",
+      "parent" : {
+        "key" : "E.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "CONSUMPTION"
+        },
+        "Value" : {
+          "unit" : "kWh"
+        }
+      }
+    },
+    {
+      "key" : "E.invoices.NET",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten netto laut Rechnung",
+      "parent" : {
+        "key" : "E.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "NET"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "E.invoices.GROSS",
+      "action" : "create",
+      "class" : "Energy Invoice Data",
+      "name" : "Kosten brutto laut Rechnung",
+      "parent" : {
+        "key" : "E.invoices"
+      },
+      "attributes" : {
+        "Series" : {
+          "value" : "GROSS"
+        },
+        "Value" : {
+          "unit" : "€"
+        }
+      }
+    },
+    {
+      "key" : "F.price",
+      "action" : "create",
+      "class" : "Base Data",
+      "name" : "Ladestrompreis Dienstwagen",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "unit" : "ct/kWh",
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : 28.0
+            },
+            {
+              "ts" : "2026-01-01T00:00:00.000+01:00",
+              "value" : 30.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp1.plate",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 1 - Kennzeichen",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "DE-MO 101E"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp1.cost",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 1 - Kostenstelle",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "4100 Vertrieb"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp1.person",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 1 - Personalnummer",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "P-1001"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp2.plate",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 2 - Kennzeichen",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "DE-MO 102E"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp2.cost",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 2 - Kostenstelle",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "4200 Service"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp2.person",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 2 - Personalnummer",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "P-1002"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp3.plate",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 3 - Kennzeichen",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "DE-MO 103E"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp3.cost",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 3 - Kostenstelle",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "4300 Technik"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key" : "F.lp3.person",
+      "action" : "create",
+      "class" : "String Data",
+      "name" : "Ladepunkt 3 - Personalnummer",
+      "parent" : {
+        "key" : "M.base.cars"
+      },
+      "attributes" : {
+        "Value" : {
+          "samples" : [
+            {
+              "ts" : "2025-01-01T00:00:00.000+01:00",
+              "value" : "P-1003"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "templates" : [
+    {
+      "key" : "T.A",
+      "class" : "Result Calculation Template",
+      "name" : "Kostenrechnung Strom RLM",
+      "parent" : {
+        "parentOf" : 23952
+      },
+      "templateFile" : "templates/A-strom-rlm.json"
+    },
+    {
+      "key" : "T.B",
+      "class" : "Result Calculation Template",
+      "name" : "Kostenrechnung Strom SLP",
+      "parent" : {
+        "parentOf" : 23952
+      },
+      "templateFile" : "templates/B-strom-slp.json"
+    },
+    {
+      "key" : "T.C",
+      "class" : "Result Calculation Template",
+      "name" : "Kostenrechnung Gas RLM",
+      "parent" : {
+        "parentOf" : 23952
+      },
+      "templateFile" : "templates/C-gas-rlm.json"
+    },
+    {
+      "key" : "T.D",
+      "class" : "Result Calculation Template",
+      "name" : "Kostenrechnung Gas SLP",
+      "parent" : {
+        "parentOf" : 23952
+      },
+      "templateFile" : "templates/D-gas-slp.json"
+    },
+    {
+      "key" : "T.E",
+      "class" : "Result Calculation Template",
+      "name" : "Kostenrechnung Fernwärme",
+      "parent" : {
+        "parentOf" : 23952
+      },
+      "templateFile" : "templates/E-fernwaerme.json"
+    },
+    {
+      "key" : "T.F",
+      "class" : "Result Calculation Template",
+      "name" : "Ladestrom-Abrechnung Dienstwagen",
+      "parent" : {
+        "parentOf" : 23952
+      },
+      "templateFile" : "templates/F-ladestrom.json"
+    }
+  ],
+  "configurations" : [
+    {
+      "key" : "K.A",
+      "class" : "Accounting Configuration",
+      "name" : "Strom RLM - Musterwerk Hauptanschluss",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Verträge"
+      },
+      "templateFile" : "configurations/A-strom-rlm.json",
+      "template" : "@T.A"
+    },
+    {
+      "key" : "K.B",
+      "class" : "Accounting Configuration",
+      "name" : "Strom SLP - Außenlager Süd",
+      "parent" : {
+        "key" : "S.configs"
+      },
+      "templateFile" : "configurations/B-strom-slp.json",
+      "template" : "@T.B"
+    },
+    {
+      "key" : "K.C",
+      "class" : "Accounting Configuration",
+      "name" : "Gas RLM - Musterwerk",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Verträge"
+      },
+      "templateFile" : "configurations/C-gas-rlm.json",
+      "template" : "@T.C"
+    },
+    {
+      "key" : "K.D",
+      "class" : "Accounting Configuration",
+      "name" : "Gas SLP - Außenlager Süd",
+      "parent" : {
+        "key" : "S.configs"
+      },
+      "templateFile" : "configurations/D-gas-slp.json",
+      "template" : "@T.D"
+    },
+    {
+      "key" : "K.E",
+      "class" : "Accounting Configuration",
+      "name" : "Fernwärme - Außenlager Süd",
+      "parent" : {
+        "key" : "S.configs"
+      },
+      "templateFile" : "configurations/E-fernwaerme.json",
+      "template" : "@T.E"
+    },
+    {
+      "key" : "K.F",
+      "class" : "Accounting Configuration",
+      "name" : "Ladestrom - Dienstwagen Musterwerk",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Verträge"
+      },
+      "templateFile" : "configurations/F-ladestrom.json",
+      "template" : "@T.F"
+    }
+  ],
+  "service" : {
+    "class" : "JEDemo",
+    "note" : "Write \"Invoice Cases\" (keys resolved) to the JEDemo service object. Once it is set, the old attributes Invoice Directory / Electricity Row / Gas Row / prices are ignored; they may be cleared.",
+    "attributes" : {
+      "Invoice Cases" : [
+        {
+          "key" : "A",
+          "name" : "Strom RLM - Musterwerk Hauptanschluss",
+          "medium" : "ELECTRICITY",
+          "suffix" : "SR",
+          "directory" : "@A.invoices",
+          "seller" : "Energieversorger Nord",
+          "sellerVatId" : "DE000000000",
+          "meterPointLabel" : "Zählpunkt",
+          "meterPoint" : "DE0000000000000000000000000000001",
+          "consumption" : {
+            "row" : 23734
+          },
+          "peak" : {
+            "row" : 23734,
+            "factor" : 4.0,
+            "yearToDate" : true
+          },
+          "vat" : {
+            "object" : 23519,
+            "attribute" : "VAT Electricity"
+          },
+          "lines" : [
+            {
+              "key" : "ENERGY",
+              "text" : "Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23510,
+                "attribute" : "Energy Price HT"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "GRID_DEMAND",
+              "text" : "Netzentgelt Leistungspreis",
+              "type" : "DEMAND",
+              "price" : {
+                "object" : 23515,
+                "attribute" : "Demand Charge"
+              }
+            },
+            {
+              "key" : "GRID_ENERGY",
+              "text" : "Netzentgelt Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23515,
+                "attribute" : "Energy Price Grid"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "MSB",
+              "text" : "Messstellenbetrieb",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : 23511,
+                "attribute" : "Net Cost"
+              }
+            },
+            {
+              "key" : "FRANCHISE",
+              "text" : "Konzessionsabgabe",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23515,
+                "attribute" : "Franchise Tax"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "KWKG",
+              "text" : "KWKG-Umlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 02"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "STROMNEV",
+              "text" : "§ 19 StromNEV-Umlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 03"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "OFFSHORE",
+              "text" : "Offshore-Netzumlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 05"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "TAX",
+              "text" : "Stromsteuer",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Energy Tax Electricity"
+              },
+              "priceUnit" : "ct/kWh"
+            }
+          ],
+          "deviations" : [
+            {
+              "month" : "2026-03",
+              "type" : "DUPLICATE_LINE",
+              "line" : "MSB",
+              "note" : "Messstellenbetrieb doppelt berechnet"
+            },
+            {
+              "month" : "2026-07",
+              "type" : "PREVIOUS_YEAR_PRICE",
+              "line" : "ENERGY",
+              "note" : "Arbeitspreis des Vorjahres berechnet"
+            }
+          ]
+        },
+        {
+          "key" : "B",
+          "name" : "Strom SLP - Außenlager Süd",
+          "medium" : "ELECTRICITY",
+          "suffix" : "SS",
+          "directory" : "@B.invoices",
+          "seller" : "Energieversorger Nord",
+          "sellerVatId" : "DE000000000",
+          "meterPointLabel" : "Zählpunkt",
+          "meterPoint" : "DE0000000000000000000000000000002",
+          "consumption" : {
+            "row" : "@B.clean"
+          },
+          "vat" : {
+            "object" : 23519,
+            "attribute" : "VAT Electricity"
+          },
+          "lines" : [
+            {
+              "key" : "ENERGY",
+              "text" : "Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@B.supplier",
+                "attribute" : "Energy Price HT"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "BASE",
+              "text" : "Grundpreis",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@B.supplier",
+                "attribute" : "Additional Fix Cost"
+              }
+            },
+            {
+              "key" : "GRID_BASE",
+              "text" : "Netzentgelt Grundpreis",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@B.grid",
+                "attribute" : "Net Cost"
+              }
+            },
+            {
+              "key" : "GRID_ENERGY",
+              "text" : "Netzentgelt Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@B.grid",
+                "attribute" : "Energy Price Grid"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "MSB",
+              "text" : "Messstellenbetrieb",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@B.msb",
+                "attribute" : "Net Cost"
+              }
+            },
+            {
+              "key" : "FRANCHISE",
+              "text" : "Konzessionsabgabe",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@B.grid",
+                "attribute" : "Franchise Tax"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "KWKG",
+              "text" : "KWKG-Umlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 02"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "STROMNEV",
+              "text" : "§ 19 StromNEV-Umlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 03"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "OFFSHORE",
+              "text" : "Offshore-Netzumlage",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 05"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "TAX",
+              "text" : "Stromsteuer",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Energy Tax Electricity"
+              },
+              "priceUnit" : "ct/kWh"
+            }
+          ],
+          "deviations" : [ ]
+        },
+        {
+          "key" : "C",
+          "name" : "Gas RLM - Musterwerk",
+          "medium" : "GAS",
+          "suffix" : "GR",
+          "directory" : "@C.invoices",
+          "seller" : "Energieversorger Nord",
+          "sellerVatId" : "DE000000000",
+          "meterPointLabel" : "Marktlokation",
+          "meterPoint" : "50000000001",
+          "consumption" : {
+            "row" : 23572
+          },
+          "peak" : {
+            "row" : "@C.hourly",
+            "factor" : 1.0,
+            "yearToDate" : true
+          },
+          "vat" : {
+            "object" : 23519,
+            "attribute" : "VAT Gas"
+          },
+          "lines" : [
+            {
+              "key" : "ENERGY",
+              "text" : "Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@C.supplier",
+                "attribute" : "Energy Price"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "GRID_DEMAND",
+              "text" : "Netzentgelt Leistungspreis",
+              "type" : "DEMAND",
+              "price" : {
+                "object" : 23516,
+                "attribute" : "Demand Charge"
+              }
+            },
+            {
+              "key" : "GRID_ENERGY",
+              "text" : "Netzentgelt Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23516,
+                "attribute" : "Energy Price Grid"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "MSB",
+              "text" : "Messstellenbetrieb",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@C.msb",
+                "attribute" : "Net Cost"
+              }
+            },
+            {
+              "key" : "FRANCHISE",
+              "text" : "Konzessionsabgabe",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23516,
+                "attribute" : "Franchise Tax"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "CO2",
+              "text" : "CO2-Preis (BEHG)",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 08"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "TAX",
+              "text" : "Energiesteuer",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Energy Tax Gas"
+              },
+              "priceUnit" : "ct/kWh"
+            }
+          ],
+          "deviations" : [
+            {
+              "month" : "2026-02",
+              "type" : "QUANTITY_FACTOR",
+              "factor" : 1.04,
+              "note" : "Verbrauch geschätzt (+4 %)"
+            }
+          ]
+        },
+        {
+          "key" : "D",
+          "name" : "Gas SLP - Außenlager Süd",
+          "medium" : "GAS",
+          "suffix" : "GS",
+          "directory" : "@D.invoices",
+          "seller" : "Energieversorger Nord",
+          "sellerVatId" : "DE000000000",
+          "meterPointLabel" : "Marktlokation",
+          "meterPoint" : "50000000002",
+          "consumption" : {
+            "row" : "@D.clean",
+            "heatingValue" : {
+              "object" : 23946,
+              "attribute" : "Value"
+            },
+            "stateNumber" : {
+              "object" : "@D.supplier",
+              "attribute" : "State Number"
+            }
+          },
+          "vat" : {
+            "object" : 23519,
+            "attribute" : "VAT Gas"
+          },
+          "lines" : [
+            {
+              "key" : "ENERGY",
+              "text" : "Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@D.supplier",
+                "attribute" : "Energy Price"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "BASE",
+              "text" : "Grundpreis",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@D.supplier",
+                "attribute" : "Additional Fix Cost"
+              }
+            },
+            {
+              "key" : "GRID_BASE",
+              "text" : "Netzentgelt Grundpreis",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@D.grid",
+                "attribute" : "Net Cost"
+              }
+            },
+            {
+              "key" : "GRID_ENERGY",
+              "text" : "Netzentgelt Arbeitspreis",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@D.grid",
+                "attribute" : "Energy Price Grid"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "MSB",
+              "text" : "Messung",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@D.msb",
+                "attribute" : "Net Cost"
+              }
+            },
+            {
+              "key" : "FRANCHISE",
+              "text" : "Konzessionsabgabe",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : "@D.grid",
+                "attribute" : "Franchise Tax"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "CO2",
+              "text" : "CO2-Preis (BEHG)",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Allocation 08"
+              },
+              "priceUnit" : "ct/kWh"
+            },
+            {
+              "key" : "TAX",
+              "text" : "Energiesteuer",
+              "type" : "ENERGY",
+              "price" : {
+                "object" : 23519,
+                "attribute" : "Energy Tax Gas"
+              },
+              "priceUnit" : "ct/kWh"
+            }
+          ],
+          "deviations" : [
+            {
+              "month" : "2026-01",
+              "type" : "PREVIOUS_YEAR_PRICE",
+              "line" : "ENERGY",
+              "note" : "Arbeitspreis des Vorjahres berechnet"
+            }
+          ]
+        },
+        {
+          "key" : "E",
+          "name" : "Fernwärme - Außenlager Süd",
+          "medium" : "DISTRICT_HEATING",
+          "suffix" : "FW",
+          "directory" : "@E.invoices",
+          "seller" : "Wärmeversorgung Nord",
+          "sellerVatId" : "DE000000002",
+          "meterPointLabel" : "Verbrauchsstelle",
+          "meterPoint" : "WMZ-0001 Außenlager Süd",
+          "consumption" : {
+            "row" : "@E.clean"
+          },
+          "vat" : {
+            "object" : 23519,
+            "attribute" : "VAT Community Heating"
+          },
+          "lines" : [
+            {
+              "key" : "ENERGY",
+              "text" : "Arbeitspreis (Preisgleitklausel)",
+              "type" : "INDEXED",
+              "price" : {
+                "object" : "@E.supplier",
+                "attribute" : "Energy Price"
+              },
+              "priceUnit" : "EUR/MWh",
+              "index" : {
+                "constant" : 0.35,
+                "terms" : [
+                  {
+                    "weight" : 0.4,
+                    "value" : {
+                      "object" : "@E.indexGas",
+                      "attribute" : "Value"
+                    },
+                    "base" : 100.0
+                  },
+                  {
+                    "weight" : 0.25,
+                    "value" : {
+                      "object" : "@E.indexHeat",
+                      "attribute" : "Value"
+                    },
+                    "base" : 100.0
+                  }
+                ]
+              }
+            },
+            {
+              "key" : "CAPACITY",
+              "text" : "Leistungspreis",
+              "type" : "CAPACITY",
+              "price" : {
+                "object" : "@E.supplier",
+                "attribute" : "Demand Charge"
+              },
+              "capacity" : {
+                "object" : "@E.capacity",
+                "attribute" : "Value"
+              }
+            },
+            {
+              "key" : "MEASURE",
+              "text" : "Messpreis",
+              "type" : "YEARLY",
+              "price" : {
+                "object" : "@E.supplier",
+                "attribute" : "Additional Fix Cost"
+              }
+            }
+          ],
+          "deviations" : [
+            {
+              "month" : "2026-04",
+              "type" : "DUPLICATE_LINE",
+              "line" : "MEASURE",
+              "note" : "Messpreis doppelt berechnet"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "invoiceBackfill" : {
+    "from" : "2025-01",
+    "when" : "after the JEDataProcessor has processed the new clean data rows (B.clean, D.clean, E.clean, C.hourly) for the whole history",
+    "command" : "java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true   (first with -o dryrun=true)"
+  },
+  "delete" : [
+    {
+      "id" : 23951,
+      "class" : "Result Calculation Template",
+      "name" : "Kostenrechnung - E-Mobilität",
+      "reason" : "replaced by template F"
+    },
+    {
+      "id" : 23952,
+      "class" : "Result Calculation Template",
+      "name" : "stromrechnung",
+      "reason" : "replaced by template A (delete after the new templates exist: they are created next to it)"
+    },
+    {
+      "id" : 23518,
+      "class" : "Accounting Configuration",
+      "name" : "Strom - Gesamt",
+      "reason" : "replaced by configuration A; also removes its linked outputs"
+    },
+    {
+      "id" : 23517,
+      "class" : "Electricity Grid Operator",
+      "name" : "Netzbetreiber Nord",
+      "reason" : "empty duplicate of 23515"
+    },
+    {
+      "id" : 23950,
+      "class" : "Base Data",
+      "name" : "Strom - Hauptzähler",
+      "reason" : "manual invoice values (folder Rechnungswerte), replaced by the invoice series"
+    },
+    {
+      "id" : 23948,
+      "class" : "Base Data",
+      "name" : "Strom - Ladestrom",
+      "reason" : "manual invoice values (folder Rechnungswerte); only used as an option of the old templates",
+      "checkFirst" : true
+    },
+    {
+      "id" : 23943,
+      "class" : "Base Data Directory",
+      "name" : "Rechnungswerte",
+      "reason" : "only if empty after 23950 and 23948",
+      "checkFirst" : true
+    },
+    {
+      "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Energierechnungen / Strom",
+      "also" : "the folder \"Gas\" (24593) next to it",
+      "reason" : "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices and their series; the cases use their own folders",
+      "checkFirst" : true
+    }
+  ],
+  "checks" : [
+    "23946 (Gas - Brennwert) has a sample at or before 2025-01-01, otherwise add one (11.4 kWh/m³ at 2025-01-01).",
+    "Units of the charge point rows 23925, 23927, 23923 (kWh per interval) and that each is the clean data of Ladepunkt 1, 2, 3.",
+    "C.hourly: after copying the settings of 23686 the period is PT1H and the JEDataProcessor fills hourly sums of 23572.",
+    "Monthly counters B and D: the clean value of a month is stored at the 1st of the month or of the next month, depending on the processor; templates and invoices read the same row, so the costs agree either way. If invoices wait one month too long, set the invoice case's consumption.completeRow to the raw row (B.row / D.row).",
+    "Action \"MW 018 - Neuer Fernwärmevertrag\" (story of case E): refer to the new contract E.supplier.",
+    "After the backfill: open each configuration for a month of 2026 and check Differenz Netto ≈ 0 (cents) except the deviation months listed in the invoice cases."
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "selectedInputs" : [
+    {
+      "objectClass" : "Base Data",
+      "id" : "80c7fd85-e239-3a4c-8346-8e61ea36cc41",
+      "attributeName" : "Value",
+      "variableName" : "Ladestrompreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : "Ladestrompreis",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.price"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "d42b4488-b65b-38a8-896e-f1d74e34ec35",
+      "attributeName" : "Value",
+      "variableName" : "Kennzeichen_LP1",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 1 Kennzeichen",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp1.plate"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "8c6f232b-25e0-314e-8cc0-6b086039bd33",
+      "attributeName" : "Value",
+      "variableName" : "Kostenstelle_LP1",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 1 Kostenstelle",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp1.cost"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "d3040551-3730-36ec-87de-9d8433b44c82",
+      "attributeName" : "Value",
+      "variableName" : "Personalnummer_LP1",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 1 Personalnummer",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp1.person"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "0367bf04-3fae-3f90-8796-a250b7055614",
+      "attributeName" : "Value",
+      "variableName" : "Ladestrom_LP1",
+      "variableType" : "SUM",
+      "filter" : "Ladepunkt 1",
+      "group" : false,
+      "objectID" : 23925
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "ae980b26-78f4-3ec0-ac44-3157698265e5",
+      "attributeName" : "Value",
+      "variableName" : "Kennzeichen_LP2",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 2 Kennzeichen",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp2.plate"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "0ee04e8c-2d28-3bcb-abe6-cb1deec1005b",
+      "attributeName" : "Value",
+      "variableName" : "Kostenstelle_LP2",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 2 Kostenstelle",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp2.cost"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "00cf86fc-05db-372f-b22a-3d43c2aadfe1",
+      "attributeName" : "Value",
+      "variableName" : "Personalnummer_LP2",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 2 Personalnummer",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp2.person"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "3bde9e94-fa37-310b-a346-621f6088e46a",
+      "attributeName" : "Value",
+      "variableName" : "Ladestrom_LP2",
+      "variableType" : "SUM",
+      "filter" : "Ladepunkt 2",
+      "group" : false,
+      "objectID" : 23927
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "82831d27-5581-345b-b38b-31a0ca884e77",
+      "attributeName" : "Value",
+      "variableName" : "Kennzeichen_LP3",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 3 Kennzeichen",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp3.plate"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "c660daf3-bc14-3fd6-995e-b4aa88b4fa91",
+      "attributeName" : "Value",
+      "variableName" : "Kostenstelle_LP3",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 3 Kostenstelle",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp3.cost"
+    },
+    {
+      "objectClass" : "String Data",
+      "id" : "28bfd733-c071-3068-89d8-d7315c33d69c",
+      "attributeName" : "Value",
+      "variableName" : "Personalnummer_LP3",
+      "variableType" : "STRING",
+      "filter" : "Ladepunkt 3 Personalnummer",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@F.lp3.person"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "3f239f48-9770-3219-a304-a84e1d8506ba",
+      "attributeName" : "Value",
+      "variableName" : "Ladestrom_LP3",
+      "variableType" : "SUM",
+      "filter" : "Ladepunkt 3",
+      "group" : false,
+      "objectID" : 23923
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "6f90dbd0-1025-3523-ba51-1fcfe0ae5bb0",
+      "attributeName" : "VAT Electricity",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    }
+  ],
+  "linkedOutputs" : [ ],
+  "templateSelection" : null,
+  "type" : "SimpleDataHandler",
+  "contractNumber" : "V-2025-0401",
+  "contractType" : "ELECTRICITY",
+  "marketLocationNumber" : "",
+  "contractDate" : "2024-10-15T00:00:00.000+02:00",
+  "firstRate" : "2025-02-01T00:00:00.000+01:00",
+  "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",
+  "contractStart" : "2025-01-01T00:00:00.000+01:00",
+  "contractEnd" : "2027-12-31T00:00:00.000+01:00",
+  "templateKey" : "@T.F"
+}

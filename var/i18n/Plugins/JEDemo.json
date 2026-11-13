@@ -189,6 +189,17 @@
         "de": "Wiedergabe-Status",
         "en": "Replay State"
       }
+    },
+    {
+      "type": "Invoice Cases",
+      "descriptions": {
+        "de": "Monatliche Demo-Rechnungen als JSON-Liste (je Fall: Medium, Rechnungsordner, Verbrauchs- und Leistungsreihe, Positionen mit Preisen aus den Vertragsobjekten, gewollte Abweichungen), siehe docs/DEMO.md. Wenn gesetzt, werden Rechnungsordner, Stromreihe, Gasreihe und die Preis-Attribute nicht mehr verwendet.",
+        "en": "Monthly demo invoices as a JSON list (per case: medium, invoice folder, consumption and peak row, lines priced from the contract objects, deliberate deviations), see docs/DEMO.md. If set, the invoice directory, electricity row, gas row and the price attributes are no longer used."
+      },
+      "names": {
+        "de": "Rechnungsfälle",
+        "en": "Invoice Cases"
+      }
     }
   ]
 }
