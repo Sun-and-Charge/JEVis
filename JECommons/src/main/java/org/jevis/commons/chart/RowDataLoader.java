@@ -278,7 +278,9 @@ public class RowDataLoader {
                 return samples;
             }
 
-            if (!calculation || (aggregation == AggregationPeriod.NONE && !absolute)) {
+            /* without aggregation the stored values of the calculation are used, also for the manipulation of value
+               widgets (peak = maximum of the stored values) */
+            if (!calculation || (aggregation == AggregationPeriod.NONE && (!absolute || perPeriodManipulation(manipulation)))) {
                 List<JEVisSample> unmodifiedSamples = attribute.getSamples(start, end, customWorkDay, aggregation.toString(),
                         manipulation.toString(), zone.getID());
                 if (!stringData) {
@@ -308,6 +310,21 @@ public class RowDataLoader {
 
                 CalcJobFactory calcJobCreator = new CalcJobFactory();
                 CalcJob calcJob;
+                if (absolute && aggregation != AggregationPeriod.NONE && perPeriodManipulation(manipulation)) {
+                    /* value widgets: the absolute calculation is the total of the time frame and knows no
+                       manipulation; for mean/min/max/median the calculation runs per aggregation period and the
+                       manipulation is applied to these values, as for rows without calculation (demo 2026-11-13:
+                       sum, daily mean and peak were the same value) */
+                    calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
+                    List<ChartSample> perPeriod = applyDayFilter(factorizeSamples(copy(calcJob.getResults(), false)));
+                    samples = new ArrayList<>();
+                    if (!perPeriod.isEmpty()) {
+                        newest = perPeriod.get(perPeriod.size() - 1).getTimestamp();
+                        count = perPeriod.size();
+                        samples.add(new ChartSample(perPeriod.get(0).getTimestamp(), getManipulatedData(perPeriod), null));
+                    }
+                    return samples;
+                }
                 if (!absolute) {
                     calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
                 } else {
@@ -324,6 +341,11 @@ public class RowDataLoader {
                 }
             }
             return samples;
+        }
+
+        private boolean perPeriodManipulation(ManipulationMode mode) {
+            return mode == ManipulationMode.AVERAGE || mode == ManipulationMode.MIN || mode == ManipulationMode.MAX
+                    || mode == ManipulationMode.MEDIAN;
         }
 
         private List<ChartSample> copy(List<JEVisSample> source, boolean asString) {

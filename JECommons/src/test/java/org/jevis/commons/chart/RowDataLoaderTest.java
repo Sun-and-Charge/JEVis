@@ -276,6 +276,26 @@ public class RowDataLoaderTest {
         verify(data.value).getSamples(START, END, true, "DAILY", "NONE", "Europe/Berlin");
     }
 
+    /**
+     * Value widget "Peak" on a calculated row (demo 2026-11-13): without aggregation the stored values of the
+     * calculation are read and the maximum is taken, instead of the absolute total of the calculation.
+     */
+    @Test
+    public void calculatedRowWithoutAggregationTakesTheManipulationOfTheStoredValues() throws Exception {
+        DataFake data = data(ds, 314, "Sum", "Data", unit("kWh"), samples(START, 15, 1, 5, 2));
+        CalculationLookup lookup = mock(CalculationLookup.class);
+        when(lookup.isObjectCalculated(any())).thenReturn(77L);
+        RowDefinition row = row("k", 314, "kWh");
+        row.setCalculation(true);
+        row.setCalculationId(77);
+
+        RowResult result = new RowDataLoader(ds, lookup).load(row, null, RANGE, null,
+                settings().setAbsolute(true).setManipulation(ManipulationMode.MAX));
+        assertEquals(RowStatus.OK, result.getStatus());
+        assertEquals(Collections.singletonList(5d), values(result));
+        verify(data.value).getSamples(START, END, true, "NONE", "MAX", "Europe/Berlin");
+    }
+
     @Test
     public void rowIntervalReplacesTheTimeFrame() throws Exception {
         DataFake data = data(ds, 313, "Meter", "Data", unit("kWh"), samples(START, 15, 1));

@@ -841,6 +841,10 @@ public final class CostSetup {
                 planReissueInvoices(fix);
                 continue;
             }
+            if (SetupPlan.FIX_REMAP_DASHBOARD_ROWS.equals(type)) {
+                planRemapDashboardRows(fix);
+                continue;
+            }
             if (!SetupPlan.FIX_REMOVE_DASHBOARD_WIDGET.equals(type)) {
                 problem(FIXES, "unknown fix type '" + type + "'");
                 continue;
@@ -1413,6 +1417,70 @@ public final class CostSetup {
         JEVisAttribute att = dashboard.getAttribute(fix.path("attribute").asText());
         JsonNode root = att != null ? latestJson(att) : null;
         return DashboardWidgetFix.apply(root, fix, this::classOf);
+    }
+
+    /**
+     * Fix {@value SetupPlan#FIX_REMAP_DASHBOARD_ROWS}, see {@link DashboardRowRemap}. The new target of a row must
+     * exist, be readable, have the class "toClass", lie below the organisation and have the path "toPath" below the site
+     * named "site".
+     */
+    private void planRemapDashboardRows(JsonNode fix) throws JEVisException {
+        long id = fix.path("dashboard").asLong();
+        String text = "REMAP_DASHBOARD_ROWS dashboard " + id + " '" + fix.path("name").asText() + "'";
+        JEVisObject dashboard = object(id);
+        String mismatch = dashboard == null ? "dashboard not found" : mismatch(dashboard, fix);
+        if (mismatch != null) {
+            report.add(SetupReport.Kind.SKIP, FIXES, text + ": " + mismatch);
+            return;
+        }
+        if (!inOrganisation(dashboard)) {
+            problem(FIXES, text + ": the dashboard is not below the organisation");
+            return;
+        }
+        DashboardRowRemap.Result result = rowRemap(dashboard, fix);
+        for (String s : result.skipped) report.add(SetupReport.Kind.SKIP, FIXES, text + ", " + s);
+        if (!result.done.isEmpty()) {
+            report.add(SetupReport.Kind.SKIP, FIXES, text + ": " + result.done.size() + " row(s) already right");
+        }
+        if (result.updated == null) return;
+        backupObject(dashboard, fix.path("attribute").asText());
+        report.add(SetupReport.Kind.UPDATE, FIXES, "'" + path(dashboard) + "' [" + id + "] · " + fix.path("attribute").asText()
+                + ": " + result.changed.size() + " row(s) " + result.changed + "; every other key kept (" + fix.path("reason").asText() + ")");
+        steps.add(new Step(FIXES, text, () -> {
+            JEVisObject target = object(id);
+            if (target == null) throw new IllegalStateException("dashboard " + id + " missing");
+            guard(target);
+            DashboardRowRemap.Result current = rowRemap(target, fix);
+            if (current.updated == null) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": nothing to change any more");
+                return null;
+            }
+            writeFile(target.getAttribute(fix.path("attribute").asText()), target.getName(), current.updated);
+            return text + ": " + current.changed.size() + " row(s) set";
+        }));
+    }
+
+    private DashboardRowRemap.Result rowRemap(JEVisObject dashboard, JsonNode fix) throws JEVisException {
+        JEVisAttribute att = dashboard.getAttribute(fix.path("attribute").asText());
+        JsonNode root = att != null ? latestJson(att) : null;
+        String toClass = fix.path("toClass").asText();
+        String site = fix.path("site").asText();
+        return DashboardRowRemap.apply(root, fix, r -> {
+            try {
+                JEVisObject o = object(r.path("to").asLong());
+                if (o == null || !toClass.equals(o.getJEVisClassName()) || !inOrganisation(o)) return false;
+                String[] names = r.path("toPath").asText().split("/");
+                JEVisObject x = o;
+                for (int i = names.length - 1; i >= 0; i--) {
+                    if (x == null || !names[i].trim().equals(x.getName().trim())) return false;
+                    List<JEVisObject> parents = x.getParents();
+                    x = parents == null || parents.isEmpty() ? null : parents.get(0);
+                }
+                return x != null && site.equals(x.getName());
+            } catch (JEVisException e) {
+                return false;
+            }
+        });
     }
 
     private String classOf(Long id) {

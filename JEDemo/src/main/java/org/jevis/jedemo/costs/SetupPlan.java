@@ -73,6 +73,11 @@ public final class SetupPlan {
      * of the JEDemo job then issues them again with the line
      */
     public static final String FIX_REISSUE_INVOICES = "REISSUE_INVOICES";
+    /**
+     * fix: data rows of dashboard widgets that point to a wrong object get the right one (each row only if it still
+     * holds the wrong id and the new target has the expected class and path below the site)
+     */
+    public static final String FIX_REMAP_DASHBOARD_ROWS = "REMAP_DASHBOARD_ROWS";
 
     static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
@@ -204,6 +209,8 @@ public final class SetupPlan {
 
         fixes.add(chargePoints());
 
+        fixes.add(sankeyRows());
+
         ObjectNode reissue = fixes.addObject();
         reissue.put("type", FIX_REISSUE_INVOICES);
         reissue.putArray("folders").add("@C.invoices").add("@D.invoices");
@@ -229,6 +236,72 @@ public final class SetupPlan {
      * Fix of case F: the live charge point rows hold unusable values (tiny or negative monthly sums, zeros); they get
      * a synthetic company car charging profile, their clean rows and the sum of the calculation are computed again.
      */
+    /**
+     * The dashboard "Sankey" (24057): its file came from the old demo server without the id mapping of the local
+     * import, so 37 value widgets point to unrelated objects (e.g. "Report Period Configuration"). The right rows were
+     * found by the path below the site in the old export (2026-11-13); the calculation ids were already right.
+     */
+    static ObjectNode sankeyRows() {
+        ObjectNode fix = F.objectNode();
+        fix.put("type", FIX_REMAP_DASHBOARD_ROWS);
+        fix.put("dashboard", 24057);
+        fix.put("class", "Dashboard Analysis");
+        fix.put("name", "Sankey");
+        fix.put("attribute", "Data Model File");
+        fix.put("toClass", "Clean Data");
+        fix.put("site", "Musterwerk");
+        ArrayNode rows = fix.putArray("rows");
+        remapRow(rows, "25", 0, 23393, 23716, "Daten/Strom/Verwaltung/Strom - Verwaltung/Bereinigte Daten");
+        remapRow(rows, "70", 0, 23269, 23939, "Daten/Gesamtenergie/Gesamtenergie/Bereinigte Daten");
+        remapRow(rows, "338", 0, 23578, 23684, "Daten/Strom/Strom - Gesamt/Bereinigte Daten");
+        remapRow(rows, "357", 0, 23614, 23711, "Daten/Strom/Verwaltung/Administration/Strom - Verwaltung - Administration/Bereinigte Daten");
+        remapRow(rows, "361", 0, 23387, 23723, "Daten/Strom/Verwaltung/Sales & Marketing/Strom - Verwaltung - Sales & Marketing/Bereinigte Daten");
+        remapRow(rows, "392", 0, 23297, 23572, "Daten/Gas/Gas - Hauptzähler (Energie)/Bereinigte Daten");
+        remapRow(rows, "394", 0, 23391, 23863, "Daten/Strom/Produktion/Strom - Produktion/Bereinigte Daten");
+        remapRow(rows, "395", 0, 23393, 23716, "Daten/Strom/Verwaltung/Strom - Verwaltung/Bereinigte Daten");
+        remapRow(rows, "396", 0, 23607, 23756, "Daten/Strom/Drittmengen/Strom - Drittmengen/Bereinigte Daten");
+        remapRow(rows, "397", 0, 23633, 23769, "Daten/Strom/Drittmengen/Gastronomie/Strom - Drittmengen - Gastronomie/Bereinigte Daten");
+        remapRow(rows, "398", 0, 23625, 23744, "Daten/Strom/Drittmengen/Infrastruktur/Strom - Drittmengen - Infrastruktur/Bereinigte Daten");
+        remapRow(rows, "399", 0, 23622, 23754, "Daten/Strom/Drittmengen/Mieter/Strom - Drittmengen - Mieter/Bereinigte Daten");
+        remapRow(rows, "400", 0, 23614, 23711, "Daten/Strom/Verwaltung/Administration/Strom - Verwaltung - Administration/Bereinigte Daten");
+        remapRow(rows, "401", 0, 23387, 23723, "Daten/Strom/Verwaltung/Sales & Marketing/Strom - Verwaltung - Sales & Marketing/Bereinigte Daten");
+        remapRow(rows, "402", 0, 23640, 23843, "Daten/Strom/Produktion/Fertigung/Strom - Produktion - Fertigung/Bereinigte Daten");
+        remapRow(rows, "403", 0, 23649, 23896, "Daten/Strom/Produktion/FuE/Strom - Produktion - FuE/Bereinigte Daten");
+        remapRow(rows, "404", 0, 23656, 23878, "Daten/Strom/Produktion/IT/Strom - Produktion - IT/Bereinigte Daten");
+        remapRow(rows, "405", 0, 23552, 23905, "Daten/Strom/Produktion/Logistik/Strom - Produktion - Logistik/Bereinigte Daten");
+        remapRow(rows, "406", 0, 23667, 23861, "Daten/Strom/Produktion/QS-Labor/Strom - Produktion - QS-Labor/Bereinigte Daten");
+        remapRow(rows, "407", 0, 23399, 23917, "Daten/Strom/Produktion/Service Center/Strom - Produktion - Service-Center/Bereinigte Daten");
+        remapRow(rows, "408", 0, 23368, 23806, "Daten/Strom/Produktion/Verpackung/Strom - Produktion - Verpackung/Bereinigte Daten");
+        remapRow(rows, "332", 0, 23607, 23756, "Daten/Strom/Drittmengen/Strom - Drittmengen/Bereinigte Daten");
+        remapRow(rows, "341", 0, 23633, 23769, "Daten/Strom/Drittmengen/Gastronomie/Strom - Drittmengen - Gastronomie/Bereinigte Daten");
+        remapRow(rows, "347", 0, 23625, 23744, "Daten/Strom/Drittmengen/Infrastruktur/Strom - Drittmengen - Infrastruktur/Bereinigte Daten");
+        remapRow(rows, "349", 0, 23622, 23754, "Daten/Strom/Drittmengen/Mieter/Strom - Drittmengen - Mieter/Bereinigte Daten");
+        remapRow(rows, "377", 0, 23552, 23905, "Daten/Strom/Produktion/Logistik/Strom - Produktion - Logistik/Bereinigte Daten");
+        remapRow(rows, "378", 0, 23656, 23878, "Daten/Strom/Produktion/IT/Strom - Produktion - IT/Bereinigte Daten");
+        remapRow(rows, "379", 0, 23649, 23896, "Daten/Strom/Produktion/FuE/Strom - Produktion - FuE/Bereinigte Daten");
+        remapRow(rows, "380", 0, 23640, 23843, "Daten/Strom/Produktion/Fertigung/Strom - Produktion - Fertigung/Bereinigte Daten");
+        remapRow(rows, "381", 0, 23368, 23806, "Daten/Strom/Produktion/Verpackung/Strom - Produktion - Verpackung/Bereinigte Daten");
+        remapRow(rows, "382", 0, 23399, 23917, "Daten/Strom/Produktion/Service Center/Strom - Produktion - Service-Center/Bereinigte Daten");
+        remapRow(rows, "383", 0, 23667, 23861, "Daten/Strom/Produktion/QS-Labor/Strom - Produktion - QS-Labor/Bereinigte Daten");
+        remapRow(rows, "27", 0, 23391, 23863, "Daten/Strom/Produktion/Strom - Produktion/Bereinigte Daten");
+        remapRow(rows, "24", 0, 23297, 23572, "Daten/Gas/Gas - Hauptzähler (Energie)/Bereinigte Daten");
+        remapRow(rows, "23", 0, 23578, 23684, "Daten/Strom/Strom - Gesamt/Bereinigte Daten");
+        remapRow(rows, "68", 0, 23102, 23662, "Daten/EnPI/EnPI - Gas - Gesamt/Bereinigte Daten");
+        remapRow(rows, "117", 0, 23460, 23658, "Daten/EnPI/EnPI - Strom - Gesamt/Bereinigte Daten");
+        fix.put("reason", "the widgets show the values of the rows named in their titles again (the file of the old demo "
+                + "server was imported without the id mapping)");
+        return fix;
+    }
+
+    private static void remapRow(ArrayNode rows, String widget, int row, long from, long to, String toPath) {
+        ObjectNode r = rows.addObject();
+        r.put("widget", widget);
+        r.put("row", row);
+        r.put("from", from);
+        r.put("to", to);
+        r.put("toPath", toPath);
+    }
+
     static ObjectNode chargePoints() {
         ObjectNode fix = F.objectNode();
         fix.put("type", FIX_REPLACE_HISTORY);

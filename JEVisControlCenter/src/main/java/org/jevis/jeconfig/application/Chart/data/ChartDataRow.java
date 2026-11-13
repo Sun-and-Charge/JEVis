@@ -403,7 +403,11 @@ public class ChartDataRow extends ChartData {
 
                 if (getSelectedStart().isBefore(getSelectedEnd()) || getSelectedStart().equals(getSelectedEnd())) {
                     try {
-                        if (!isCalculation() || (aggregationPeriod.equals(AggregationPeriod.NONE) && !absolute)) {
+                        boolean perPeriodManipulation = manipulationMode == ManipulationMode.AVERAGE || manipulationMode == ManipulationMode.MIN
+                                || manipulationMode == ManipulationMode.MAX || manipulationMode == ManipulationMode.MEDIAN;
+                        /* without aggregation the stored values of the calculation are used, also for the manipulation
+                           of value widgets (peak = maximum of the stored values) */
+                        if (!isCalculation() || (aggregationPeriod.equals(AggregationPeriod.NONE) && (!absolute || perPeriodManipulation))) {
                             List<JEVisSample> unmodifiedSamples = attribute.getSamples(selectedStart, selectedEnd, customWorkDay, aggregationPeriod.toString(), manipulationMode.toString(), DateTimeZone.getDefault().getID());
                             if (!isStringData) {
                                 samples = factorizeSamples(unmodifiedSamples);
@@ -425,6 +429,7 @@ public class ChartDataRow extends ChartData {
                             CalcJobFactory calcJobCreator = new CalcJobFactory();
 
                             CalcJob calcJob;
+                            List<JEVisSample> perPeriodSamples = null;
 
                             if (!getAbsolute()) {
                                 if (getCalculationObject() == null) {
@@ -440,6 +445,17 @@ public class ChartDataRow extends ChartData {
                                         aggregationPeriod.toString());
                                 calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
                                         selectedStart, selectedEnd, aggregationPeriod);
+                            } else if (perPeriodManipulation) {
+                                /* value widgets: the absolute calculation is the total of the time frame and knows no
+                                   manipulation; for mean/min/max/median the calculation runs per aggregation period and
+                                   the manipulation is applied to these values, as for rows without calculation */
+                                calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
+                                        selectedStart, selectedEnd, aggregationPeriod);
+                                List<JEVisSample> perPeriod = applyDayFilter(factorizeSamples(calcJob.getResults()));
+                                perPeriodSamples = new ArrayList<>();
+                                if (!perPeriod.isEmpty()) {
+                                    perPeriodSamples.add(new VirtualSample(perPeriod.get(0).getTimestamp(), getManipulatedData(perPeriod), getUnit()));
+                                }
                             } else {
                                 logger.debug("Getting calc job absolute for object {}:{} from {} to {} with period {}",
                                         getCalculationObject().getName(), getCalculationObject().getID(),
@@ -449,7 +465,7 @@ public class ChartDataRow extends ChartData {
                                         selectedStart, selectedEnd, true);
                             }
 
-                            samples = calcJob.getResults();
+                            samples = perPeriodSamples != null ? perPeriodSamples : calcJob.getResults();
                             if (!getAbsolute()) {
                                 samples = applyDayFilter(samples);
                             }
