@@ -193,6 +193,21 @@ public class CostSetupTest {
         return x;
     }
 
+    /** JEVis stores booleans as 1/0 (live 2026-11-13): a stored "1" must count as true, or reruns repair settings again */
+    @Test
+    public void storedBooleansAsOneAndZeroMatch() {
+        CostSetup setup = new CostSetup(tree.ds, false, Clock.fixed(NOW, ZoneOffset.UTC), plan, name -> null, temp.getRoot().toPath());
+        com.fasterxml.jackson.databind.node.JsonNodeFactory f = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance;
+        assertTrue(setup.same("1", f.booleanNode(true)));
+        assertTrue(setup.same("0", f.booleanNode(false)));
+        assertTrue(setup.same("true", f.booleanNode(true)));
+        assertFalse(setup.same("1", f.booleanNode(false)));
+        assertFalse(setup.same("0", f.booleanNode(true)));
+        assertTrue("numbers still compare as numbers", setup.same("1", f.numberNode(1)));
+        assertEquals(Boolean.TRUE, CostSetup.asBoolean(" 1 "));
+        assertNull(CostSetup.asBoolean("2"));
+    }
+
     private SetupReport run(boolean apply) throws Exception {
         return run(apply, NOW, temp.getRoot().toPath().resolve("backup" + (++backups)));
     }

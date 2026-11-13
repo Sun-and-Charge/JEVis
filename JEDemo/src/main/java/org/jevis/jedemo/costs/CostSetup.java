@@ -1914,6 +1914,15 @@ public final class CostSetup {
      * @return true if the stored value equals the wanted one (numbers numerically, booleans ignoring case, JSON as
      * tree)
      */
+    /** true/false, also 1/0 as JEVis stores booleans; null for anything else */
+    static Boolean asBoolean(String v) {
+        if (v == null) return null;
+        String t = v.trim();
+        if (t.equalsIgnoreCase("true") || t.equals("1")) return Boolean.TRUE;
+        if (t.equalsIgnoreCase("false") || t.equals("0")) return Boolean.FALSE;
+        return null;
+    }
+
     boolean same(String existing, JsonNode wanted) {
         if (existing == null || wanted == null || wanted.isNull()) return false;
         String a = existing.trim();
@@ -1922,7 +1931,10 @@ public final class CostSetup {
         Double x = number(a);
         Double y = number(b);
         if (x != null && y != null) return Math.abs(x - y) <= 1e-9 * Math.max(1, Math.abs(y));
-        if (isBoolean(a) && isBoolean(b)) return a.equalsIgnoreCase(b);
+        /* JEVis stores boolean attributes as 1/0 (live 2026-11-13): "1" equals true, "0" equals false */
+        Boolean ba = asBoolean(a);
+        Boolean bb = asBoolean(b);
+        if (ba != null && bb != null && (isBoolean(a) || isBoolean(b))) return ba.equals(bb);
         if ((a.startsWith("{") || a.startsWith("[")) && (b.startsWith("{") || b.startsWith("["))) {
             try {
                 return mapper.readTree(a).equals(mapper.readTree(b)) || mapper.readTree(a).equals(wanted);
