@@ -1851,3 +1851,134 @@ Needs write right on the meter and the attribute (`403`/`400`). `201` `{ "timest
 - "Ableseliste drucken": print view of the filtered list (name, location, serial number, last reading and date,
   expected range, empty boxes for reading, date, initials); browser print, A4 portrait.
 - Offline is not part of the web page (the app has it).
+
+## Editing, stage E8.2: reading rounds and route sheet
+
+Reading rounds assign meters to readers (tender requirements 14.8 "Ableseaufträge je Ableser nach Turnus" and 14.11
+"PDF-Laufzettel mit Erwartungswerten und Kästchen"). A round is an object of its own; the "order" of a period is not
+stored but computed from the readings. Mails (E8.3) and the app (later) build on the same objects. Rules of E1–E8.1
+apply (server-side rights, `version` → `409` with the current round, `400` JSON `{ "messages": [...] }`,
+`logUserAction` with `web:<action>`, deletes to the recycle bin).
+
+### Classes (`var/classes/MeterPlugin`, i18n in `var/i18n/MeterPlugin`, icons copied from the meter classes)
+
+- **"Reading Round Directory"** (de "Ableserunden", en "Reading rounds"): unique per parent, allowed under
+  "Building" and "Organization" (as "Appointment Directory"), parent of "Reading Round".
+- **"Reading Round"** (de "Ableserunde", en "Reading round"), allowed under "Reading Round Directory"; attributes:
+
+| Attribute | Type | Meaning |
+|---|---|---|
+| `Enabled` | Boolean | round active (inactive rounds are listed, never due, no mails) |
+| `Meters` | String (JSON array of ids) | meters in reading order |
+| `Readers` | String (JSON array of ids) | users or groups (as appointment recipients) |
+| `Supervisor` | String (JSON array of ids) | users or groups for the escalation (E8.3) |
+| `Start Date` | String `yyyy-MM-dd` | first due date |
+| `Period` | String ISO period | `P1W`, `P2W`, `P1M`, `P3M`, `P6M`, `P1Y` |
+| `Lead Days` | Long | readings this many days before the due date count for it (default 3) |
+| `Reminder Days` | Long | E8.3: reminder this many days after the due date (default 3) |
+| `Escalation Days` | Long | E8.3: mail to the supervisor this many days after the due date (default 7) |
+| `Remarks` | String | free text, printed on the route sheet |
+| `Mail State` | String (JSON) | E8.3: sent mails per due date (as appointments) |
+
+### Order of a period (computed)
+
+`due` = the latest of `Start Date` + n × `Period` (n ≥ 0) that is not after today (site time zone); `null` before the
+start date (then `nextDue` = start date). `nextDue` = `due` + `Period`. A meter of the round is **done** for `due` when
+its row has a sample with a timestamp in [`due` − `Lead Days`, `nextDue`) (any sample, manual or not; automatic meters
+(`AUTOMATIC` in E8.1) count as done and are marked `automatic`). The round's `state`:
+
+- `INACTIVE` (`Enabled` false), `NOT_STARTED` (`due` null), `DONE` (all meters done),
+- `OPEN` (not all done, today < `due` + `Reminder Days`), `LATE` (from `due` + `Reminder Days`),
+- `ESCALATED` (from `due` + `Escalation Days`).
+
+Details as built: `nextDue` is `Start Date` + (n + 1) × `Period` (not `due` + `Period`, so a round starting on the 31st
+stays on month ends: 28.02, then 31.03); `done`, `total` and `state` are the same for every user (all meters of the
+round, meters in the recycle bin left out; a meter without usable row is never done); "Lead Days" must be below the
+shortest length of the period (P1W 7, P1M 28, P3M 84, P1Y 365 days).
+
+### `GET /web/reading-rounds?lang=de` (`?site=<building id>` optional)
+
+```json
+{
+  "today": "2026-11-13",
+  "rounds": [
+    {
+      "id": 7001, "name": "Monatsablesung Musterwerk", "site": { "id": 1001, "name": "Musterwerk" },
+      "directoryId": 7000, "enabled": true, "period": "P1M", "startDate": "2026-01-01",
+      "leadDays": 3, "reminderDays": 3, "escalationDays": 7, "remarks": "Schlüssel beim Pförtner",
+      "readers": [ { "id": 41, "name": "Max Mustermann", "kind": "USER" } ],
+      "supervisor": [ { "id": 42, "name": "Energieteam", "kind": "GROUP" } ],
+      "due": "2026-11-01", "nextDue": "2026-12-01", "state": "LATE", "done": 3, "total": 5,
+      "meters": [
+        { "id": 5101, "name": "Hauptzähler Strom", "location": "Keller", "done": true, "automatic": false,
+          "last": { "timestamp": "2026-11-02T00:00:00.000+01:00", "value": 12345.6, "unit": "kWh" }, "readable": true }
+      ],
+      "mine": true, "canWrite": true, "canDelete": true, "version": "2026-11-10T09:00:00.000+01:00"
+    }
+  ]
+}
+```
+
+- Only rounds the user may read. `meters`: in round order; meters the user may not read appear as
+  `{ "id", "readable": false }` only (no name); deleted meters are left out. `readers`/`supervisor`: names only of
+  users/groups the user may read (others `{ "id", "kind", "name": null }`).
+  User names are "First Last" (else the account name), group names the object name; on change, ids already in the round
+  that the user may not read may stay, new ones must be readable.
+- `mine`: the user is a reader directly or by membership of a reader group.
+- `version`: latest change of any attribute of the round except `Mail State` (mails of E8.3 do not invalidate an
+  open editor).
+- Sorted: rounds with `mine` first, then by state (ESCALATED, LATE, OPEN, NOT_STARTED, DONE, INACTIVE), then name.
+
+### `GET /web/reading-rounds/options?site=<building id>&lang=de`
+
+What the editor needs: `{ "canCreate": bool, "directoryId": id | null, "meters": [ { "id", "name", "location",
+"medium", "automatic" } ], "people": [ { "id", "name", "kind": "USER"|"GROUP", "email": bool } ] }`. `meters`: the
+readable meters of the site (as `GET /web/readings`), in register order. `people`: users and groups the user may read
+(users: `email` = has an "E-Mail"). `canCreate`: create right for "Reading Round" in the site's "Reading Round
+Directory", or (if there is none) create right for that directory below the building; `directoryId` = the existing
+directory.
+
+### `POST /web/reading-rounds` / `PUT /web/reading-rounds/{id}` / `DELETE /web/reading-rounds/{id}?version=…`
+
+Body (POST also `"site": <building id>`; PUT also `"version"`): `{ "name", "enabled", "meters": [ids], "readers":
+[ids], "supervisor": [ids], "startDate": "yyyy-MM-dd", "period": "P1M", "leadDays", "reminderDays", "escalationDays",
+"remarks" }`. Validation (all problems in one `400`): name 1–100 characters, no control characters, unique among the
+rounds of the directory; `meters` 1–500, readable meters of the site (`Measurement Instrument`), no duplicates;
+`readers` ≥ 1 and `supervisor` ≥ 0 readable users/groups; `period` one of the list; days 0–60 with lead < period
+length; remarks ≤ 1000. POST creates the directory below the building if missing (as E5 creates the medium directory;
+deleted again if the round fails) and the round with all attributes at now; `201` with the round (list format).
+PUT writes changed attributes at now (`version` → `409` with the current round), may rename; `200` with the round.
+DELETE: delete right, `version`, recycle bin; `204`. Logged as `web:round-create`, `web:round-save`,
+`web:round-delete`. The `Mail State` attribute is never written here.
+
+### Route sheet: `GET /web/reading-rounds/{id}/sheet.pdf?lang=de&due=yyyy-MM-dd`
+
+PDF (PDFBox, A4 portrait, `Content-Disposition: inline; filename="Laufzettel_<round>_<due>.pdf"`), for `due` (default
+the round's current `due`, else its `nextDue`):
+
+- Header: "Laufzettel" / "Route sheet", round name, site, due date and period, readers, remarks; printed date.
+- One row per readable, not automatic meter in round order: position number, name, location, serial number,
+  meter point, QR code (link `https://<host>/app/readings?meter=<id>`, host from the request's `Host`/forwarded
+  headers), last reading with date, expected range (E8.1 `expected` at the due date), unit, and empty boxes
+  "Zählerstand", "Datum", "Kürzel", "Bemerkung". Rows are not split across pages; page footer "Seite x von y".
+- Texts de/en by `lang`. Read right on the round; meters the user may not read are left out (with a note "n Zähler
+  ohne Leserecht nicht aufgeführt").
+
+### Readings by round: `GET /web/readings?round=<id>` (E8.1, additive)
+
+Only the round's meters, one group named after the round, meters in round order (not sorted by name); `round`:
+`{ "id", "name", "due", "nextDue", "state" }` at the top level of the answer, and per meter `doneInRound` (bool).
+
+### Web app
+
+- Ablesung page gets a second view "Runden" next to the meter list (tabs "Zähler" | "Runden"; `?view=rounds`):
+  cards/table of the rounds with state badge (Erledigt green, Offen neutral, Verspätet amber, Eskaliert red, Nicht
+  gestartet / Inaktiv grey), due date, progress "3 von 5", readers; "Meine Runden" filter (default if the user has
+  any). Actions: "Ablesen" (opens the meter list filtered to the round, `?round=<id>`, in round order with done marks
+  and "Speichern & weiter" following the round order), "Laufzettel" (opens the PDF), "Bearbeiten", "Löschen", "Neue
+  Runde".
+- Round editor (side panel / full-width sheet): name, site (new rounds), active, start date, period (select with
+  readable labels: wöchentlich, alle 2 Wochen, monatlich, vierteljährlich, halbjährlich, jährlich), lead/reminder/
+  escalation days, readers and supervisor (searchable multi-select of people, groups marked, warning for users
+  without e-mail), meters (add from the site's meters, automatic ones marked, reorder by drag and by up/down buttons,
+  remove), remarks; unsaved-changes guard, `409` handling as E2–E5.

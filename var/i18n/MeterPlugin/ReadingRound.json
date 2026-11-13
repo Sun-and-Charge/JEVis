@@ -1,0 +1,206 @@
+{
+  "jevisclass": "Reading Round",
+  "names": {
+    "de": "Ableserunde",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Reading round"
+  },
+  "descriptions": {
+    "de": "Ableserunde: Zähler in Ablesereihenfolge, Ableser und Turnus",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Meter reading round: meters in reading order, readers and period"
+  },
+  "types": [
+    {
+      "type": "Enabled",
+      "descriptions": {
+        "de": "Inaktive Runden werden nie fällig und versenden keine E-Mails",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Inactive rounds are never due and send no mails"
+      },
+      "names": {
+        "de": "Aktiv",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enabled"
+      }
+    },
+    {
+      "type": "Meters",
+      "descriptions": {
+        "de": "Zähler der Runde in Ablesereihenfolge (JSON-Liste der IDs)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Meters of the round in reading order (JSON list of ids)"
+      },
+      "names": {
+        "de": "Zähler",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Meters"
+      }
+    },
+    {
+      "type": "Readers",
+      "descriptions": {
+        "de": "Benutzer oder Gruppen, die die Runde ablesen (JSON-Liste der IDs)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Users or groups reading the round (JSON list of ids)"
+      },
+      "names": {
+        "de": "Ableser",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Readers"
+      }
+    },
+    {
+      "type": "Supervisor",
+      "descriptions": {
+        "de": "Benutzer oder Gruppen für die Eskalation (JSON-Liste der IDs)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Users or groups for the escalation (JSON list of ids)"
+      },
+      "names": {
+        "de": "Verantwortliche",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Supervisor"
+      }
+    },
+    {
+      "type": "Start Date",
+      "descriptions": {
+        "de": "Erster Fälligkeitstag (yyyy-MM-dd)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "First due date (yyyy-MM-dd)"
+      },
+      "names": {
+        "de": "Startdatum",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Start Date"
+      }
+    },
+    {
+      "type": "Period",
+      "descriptions": {
+        "de": "Turnus als ISO-Periode (P1W, P2W, P1M, P3M, P6M, P1Y)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Period as ISO period (P1W, P2W, P1M, P3M, P6M, P1Y)"
+      },
+      "names": {
+        "de": "Turnus",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Period"
+      }
+    },
+    {
+      "type": "Lead Days",
+      "descriptions": {
+        "de": "Ablesungen so viele Tage vor dem Fälligkeitstag zählen für ihn",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Readings this many days before the due date count for it"
+      },
+      "names": {
+        "de": "Vorlauftage",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Lead Days"
+      }
+    },
+    {
+      "type": "Reminder Days",
+      "descriptions": {
+        "de": "Erinnerung so viele Tage nach dem Fälligkeitstag",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Reminder this many days after the due date"
+      },
+      "names": {
+        "de": "Erinnerung nach Tagen",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Reminder Days"
+      }
+    },
+    {
+      "type": "Escalation Days",
+      "descriptions": {
+        "de": "E-Mail an die Verantwortlichen so viele Tage nach dem Fälligkeitstag",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mail to the supervisor this many days after the due date"
+      },
+      "names": {
+        "de": "Eskalation nach Tagen",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Escalation Days"
+      }
+    },
+    {
+      "type": "Remarks",
+      "descriptions": {
+        "de": "Freitext, wird auf den Laufzettel gedruckt",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Free text, printed on the route sheet"
+      },
+      "names": {
+        "de": "Bemerkungen",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Remarks"
+      }
+    },
+    {
+      "type": "Mail State",
+      "descriptions": {
+        "de": "Versendete E-Mails je Fälligkeitstag (JSON), wird vom Dienst JENotifier geschrieben",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mails sent per due date (JSON), written by the JENotifier service"
+      },
+      "names": {
+        "de": "Mail-Status",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Mail State"
+      }
+    }
+  ]
+}

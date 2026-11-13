@@ -84,9 +84,10 @@ public class ResourceWebReadings {
     @Path("readings")
     @Produces(MediaType.APPLICATION_JSON)
     public Response list(@Context HttpHeaders httpHeaders, @QueryParam("lang") String lang,
-                         @QueryParam("site") Long site) {
-        return WebEdit.run(httpHeaders, "load the meter readings",
-                store -> list(store, translations(store, lang), site, DateTime.now()));
+                         @QueryParam("site") Long site, @QueryParam("round") Long round) {
+        return WebEdit.run(httpHeaders, "load the meter readings", store -> round != null
+                ? ResourceWebReadingRounds.readings(store, translations(store, lang), round, DateTime.now())
+                : list(store, translations(store, lang), site, DateTime.now()));
     }
 
     @POST
@@ -131,7 +132,7 @@ public class ResourceWebReadings {
         return file[0] != null ? file[0] : response;
     }
 
-    private static ResourceWebRegisters.Translations translations(WebEdit.Store store, String lang) {
+    static ResourceWebRegisters.Translations translations(WebEdit.Store store, String lang) {
         return new ResourceWebRegisters.Translations(ResourceI18n.cached(), ResourceWebRegisters.language(lang),
                 store.classes());
     }
@@ -284,6 +285,21 @@ public class ResourceWebReadings {
     }
 
     /**
+     * @param automatic rows written by data sources or calculations ({@link #writtenAutomatically})
+     * @param samples   the last readings of the row
+     * @return whether the row is filled automatically ({@value #PROBLEM_AUTOMATIC}): written by a data source or
+     * calculation, or with a period shorter than a day and no manual reading among the samples
+     */
+    static boolean isAutomatic(Set<Long> automatic, long rowId, Period period, List<JsonSample> samples) {
+        if (automatic.contains(rowId)) return true;
+        if (!subDaily(period)) return false;
+        for (JsonSample sample : samples) {
+            if (ResourceWebEditValues.isManual(sample.getNote())) return false;
+        }
+        return true;
+    }
+
+    /**
      * @return true if the period is shorter than a day (no years, months, weeks or days)
      */
     static boolean subDaily(Period period) {
@@ -351,9 +367,7 @@ public class ResourceWebReadings {
         DateTime last = lastMillis != null ? new DateTime(lastMillis, zone) : null;
         DateTime suggested = last != null ? ResourceWebEditValues.suggested(last, info.period, info.workDay) : null;
 
-        boolean anyManual = false;
-        for (JsonSample sample : samples) anyManual |= ResourceWebEditValues.isManual(sample.getNote());
-        boolean isAutomatic = automatic.contains(row.getId()) || (subDaily(info.period) && !anyManual);
+        boolean isAutomatic = isAutomatic(automatic, row.getId(), info.period, samples);
         json.put("due", isAutomatic ? ReadingExpectation.Due.NONE.name()
                 : ReadingExpectation.due(last, info.period, info.workDay, now).name());
         json.put("suggestedTimestamp", suggested != null ? WebEdit.iso(suggested.getMillis(), zone) : null);

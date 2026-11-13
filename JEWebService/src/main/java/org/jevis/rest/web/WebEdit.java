@@ -31,6 +31,7 @@ import org.jevis.commons.datetime.WorkDays;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.commons.ws.json.JsonFactory;
 import org.jevis.commons.ws.json.JsonObject;
+import org.jevis.commons.ws.json.JsonRelationship;
 import org.jevis.commons.ws.json.JsonSample;
 import org.jevis.commons.ws.sql.CachedAccessControl;
 import org.jevis.commons.ws.sql.Config;
@@ -346,6 +347,14 @@ final class WebEdit {
          * read freshly (not cached across calls, so an answer after a write shows the new values).
          */
         ResourceWebRegisters.Data registerData();
+
+        /**
+         * Stage E8.2: the id of the logged-in user and of the groups the user is a member of (any membership
+         * relationship), e.g. for "my" reading rounds. This default (no user) is meant for tests.
+         */
+        default Set<Long> userAndGroups() throws Exception {
+            return Collections.emptySet();
+        }
     }
 
     static Store sqlStore(SQLDataSource ds) {
@@ -507,7 +516,29 @@ final class WebEdit {
             public ResourceWebRegisters.Data registerData() {
                 return new ResourceWebRegisters.SqlData(ds);
             }
+
+            @Override
+            public Set<Long> userAndGroups() throws Exception {
+                long userId = ds.getCurrentUser().getUserID();
+                Set<Long> ids = new HashSet<>();
+                ids.add(userId);
+                for (JsonRelationship rel : ds.getUserManager().getMemberships(userId)) {
+                    if (isMembership(rel.getType())) ids.add(rel.getTo());
+                }
+                return ids;
+            }
         };
+    }
+
+    /**
+     * @return whether the relationship type is a group membership ({@code MEMBER_READ} … {@code MEMBER_DELETE})
+     */
+    static boolean isMembership(int type) {
+        return type == JEVisConstants.ObjectRelationship.MEMBER_READ
+                || type == JEVisConstants.ObjectRelationship.MEMBER_WRITE
+                || type == JEVisConstants.ObjectRelationship.MEMBER_EXECUTE
+                || type == JEVisConstants.ObjectRelationship.MEMBER_CREATE
+                || type == JEVisConstants.ObjectRelationship.MEMBER_DELETE;
     }
 
     /**

@@ -59,6 +59,10 @@ class FakeEditStore implements WebEdit.Store {
     String userName = "Demo User";
     boolean failFileWrites = false;
     WebEdit.WorkDay workDay = WebEdit.WorkDay.standard(ZONE);
+    /**
+     * Stage E8.2: the logged-in user and its groups
+     */
+    final Set<Long> userAndGroups = new HashSet<>();
     private ResourceWebModules.Lookup lookup;
     private long nextId = 9000;
 
@@ -271,6 +275,11 @@ class FakeEditStore implements WebEdit.Store {
     @Override
     public String unit(long id, String attribute) {
         return "kWh";
+    }
+
+    @Override
+    public Set<Long> userAndGroups() {
+        return userAndGroups;
     }
 
     @Override
