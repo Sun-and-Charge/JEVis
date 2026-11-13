@@ -12,11 +12,16 @@ import '../../../styles/analysisEdit.css'
  * Row picker of the analysis editor (E3, as the Control Center's TreeSelectionDialog): the tree of GET
  * /web/rows/tree, loaded level by level, and a search by name (from 2 characters). Selectable rows (data classes)
  * get a checkbox and, with more than one attribute, an attribute choice; rows already in the chart are disabled.
+ * `single` (E5: data row of a meter / target attribute): radio buttons, one row, emitted as a list of one.
  */
 
 const props = defineProps<{
   /** "objectId|attribute" of the rows already in the chart */
   present: readonly string[]
+  /** single-select mode: one row is chosen */
+  single?: boolean
+  /** dialog title (default: "Datenreihen hinzufügen") */
+  title?: string
 }>()
 const emit = defineEmits<{ close: []; add: [rows: PickedRow[]] }>()
 const { t, locale } = useI18n()
@@ -100,7 +105,7 @@ const attributeOf = (node: RowTreeNode) => selected.value.get(node.id)?.attribut
 const isPresent = (node: RowTreeNode, attribute = attributeOf(node)) => props.present.includes(`${node.id}|${attribute}`)
 
 function choose(node: RowTreeNode, checked: boolean) {
-  const next = new Map(selected.value)
+  const next = props.single ? new Map<number, PickedRow>() : new Map(selected.value)
   if (checked) next.set(node.id, { node, attribute: attributeOf(node) })
   else next.delete(node.id)
   selected.value = next
@@ -110,15 +115,22 @@ function setAttribute(node: RowTreeNode, attribute: string) {
   const next = new Map(selected.value)
   const current = next.get(node.id)
   if (current) next.set(node.id, { node, attribute })
-  else if (!isPresent(node, attribute)) next.set(node.id, { node, attribute })
+  else if (!isPresent(node, attribute)) {
+    if (props.single) next.clear()
+    next.set(node.id, { node, attribute })
+  }
   selected.value = next
 }
 
 const picked = computed(() => [...selected.value.values()].filter((p) => !isPresent(p.node, p.attribute)))
 
 function submit() {
-  if (picked.value.length) emit('add', picked.value)
+  if (picked.value.length) emit('add', props.single ? picked.value.slice(0, 1) : picked.value)
 }
+
+const inputType = computed(() => (props.single ? 'radio' : 'checkbox'))
+const dialogTitle = computed(() => props.title || t('analysisEdit.picker.title'))
+const submitLabel = computed(() => (props.single ? t('analysisEdit.picker.choose') : t('analysisEdit.picker.add', { n: picked.value.length })))
 
 /* flat list of the shown tree (keyboard and screen readers get a plain list with levels) */
 interface Line {
@@ -141,7 +153,7 @@ const statusOf = (node: RowTreeNode) => (expanded.value.has(node.id) ? children[
 </script>
 
 <template>
-  <EditDialog :title="t('analysisEdit.picker.title')" wide @close="emit('close')">
+  <EditDialog :title="dialogTitle" wide @close="emit('close')">
     <div class="edit-field rp-search">
       <label :for="uid + '-q'">{{ t('analysisEdit.picker.search') }}</label>
       <input :id="uid + '-q'" v-model="query" type="search" autocomplete="off" :aria-describedby="uid + '-qh'" autofocus />
@@ -159,7 +171,8 @@ const statusOf = (node: RowTreeNode) => (expanded.value.has(node.id) ? children[
             <div class="rp-node">
               <label v-if="node.selectable">
                 <input
-                  type="checkbox"
+                  :type="inputType"
+                  :name="single ? uid + '-pick' : undefined"
                   :checked="selected.has(node.id) || isPresent(node)"
                   :disabled="isPresent(node)"
                   @change="choose(node, ($event.target as HTMLInputElement).checked)"
@@ -213,7 +226,8 @@ const statusOf = (node: RowTreeNode) => (expanded.value.has(node.id) ? children[
               <span v-else class="rp-spacer" aria-hidden="true" />
               <label v-if="node.selectable">
                 <input
-                  type="checkbox"
+                  :type="inputType"
+                  :name="single ? uid + '-pick' : undefined"
                   :checked="selected.has(node.id) || isPresent(node)"
                   :disabled="isPresent(node)"
                   @change="choose(node, ($event.target as HTMLInputElement).checked)"
@@ -248,7 +262,7 @@ const statusOf = (node: RowTreeNode) => (expanded.value.has(node.id) ? children[
     <template #footer>
       <button type="button" class="edit-btn" @click="emit('close')">{{ t('edit.cancel') }}</button>
       <button type="button" class="btn btn-primary edit-submit rp-submit" :disabled="!picked.length" @click="submit">
-        {{ t('analysisEdit.picker.add', { n: picked.length }) }}
+        {{ submitLabel }}
       </button>
     </template>
   </EditDialog>

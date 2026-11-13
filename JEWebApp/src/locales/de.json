@@ -631,6 +631,118 @@
       "error": "Der QR-Code konnte nicht geladen werden."
     }
   },
+  "registerEdit": {
+    "hint": {
+      "meters": "Messstellen können hier angelegt, geändert und gelöscht werden, soweit Ihre Rechte es erlauben.",
+      "equipment": "Anlagen können hier angelegt, geändert und gelöscht werden, soweit Ihre Rechte es erlauben."
+    },
+    "new": "Neu",
+    "newLabel": {
+      "meters": "Neue Messstelle in „{group}“ anlegen",
+      "equipment": "Neue Anlage in „{group}“ anlegen"
+    },
+    "newTitle": {
+      "meters": "Neue Messstelle",
+      "equipment": "Neue Anlage"
+    },
+    "edit": "Bearbeiten",
+    "editLabel": "„{name}“ bearbeiten",
+    "editTitle": "„{name}“ bearbeiten",
+    "delete": "Löschen",
+    "deleteLabel": "„{name}“ löschen",
+    "deleteTitle": {
+      "meters": "Messstelle löschen",
+      "equipment": "Anlage löschen"
+    },
+    "deleteQuestion": "„{name}“ in den Papierkorb verschieben? Wiederherstellen ist im Papierkorb des Control Centers möglich.",
+    "deleted": "„{name}“ wurde in den Papierkorb verschoben.",
+    "conflictDelete": "„{name}“ wurde inzwischen geändert und nicht gelöscht. Die Liste wurde neu geladen – bitte prüfen und erneut versuchen.",
+    "created": "„{name}“ wurde angelegt.",
+    "saved": "„{name}“ wurde gespeichert.",
+    "create": "Anlegen",
+    "nothingChanged": "Keine Änderungen.",
+    "unsaved": "Ungespeicherte Änderungen",
+    "noChanges": "Keine Änderungen",
+    "uploadedState": "Datei hochgeladen",
+    "reloaded": "Die aktuelle Fassung wurde geladen.",
+    "group": "Gruppe",
+    "meterClass": "Art der Messstelle",
+    "parent": "Ablageort",
+    "choose": "Bitte wählen …",
+    "parentMeter": "Unterzähler von",
+    "noParentMeter": "– kein Unterzähler –",
+    "parentMeterHint": "Ohne Auswahl wird die Messstelle im Verzeichnis ihres Mediums angelegt.",
+    "meterAttributesLater": "Die Attribute (Seriennummer, Datenpunkt, Bilder …) werden nach dem Anlegen über „Bearbeiten“ gepflegt.",
+    "attributes": "Attribute",
+    "readOnlyHint": "Grau dargestellte Felder können nur im Control Center geändert werden.",
+    "readOnlyField": "Nur lesbar",
+    "filesAfterCreate": "Dateien und Bilder können nach dem Anlegen hochgeladen werden.",
+    "invalidTitle": "Die Eingaben wurden nicht angenommen:",
+    "options": {
+      "loading": "Auswahl wird geladen …",
+      "error": "Die Auswahl konnte nicht geladen werden.",
+      "none": {
+        "meters": "Sie dürfen in dieser Gruppe keine Messstellen anlegen.",
+        "equipment": "Es gibt keinen Ablageort, an dem Sie diese Anlage anlegen dürfen."
+      }
+    },
+    "target": {
+      "none": "Kein Datenpunkt",
+      "choose": "Auswählen …",
+      "change": "Ändern …",
+      "clear": "Entfernen",
+      "clearLabel": "Datenpunkt von „{name}“ entfernen",
+      "pickTitle": "{name}: Datenpunkt auswählen"
+    },
+    "file": {
+      "none": "Keine Datei",
+      "upload": "Datei hochladen",
+      "replace": "Neue Datei hochladen",
+      "hint": "Höchstens 25 MB; die bisherige Datei bleibt im Verlauf erhalten.",
+      "uploading": "„{name}“ wird hochgeladen …",
+      "uploaded": "„{name}“ wurde hochgeladen.",
+      "uploadError": "„{name}“ konnte nicht hochgeladen werden.",
+      "tooLarge": "„{name}“ ist größer als 25 MB."
+    },
+    "conflict": {
+      "title": "Inzwischen geändert",
+      "message": "Das Objekt wurde inzwischen von jemand anderem geändert. „Neu laden“ zeigt die aktuelle Fassung (Ihre Änderungen gehen verloren); „Weiter bearbeiten“ behält Ihre Änderungen, die übrigen Felder zeigen die aktuelle Fassung.",
+      "noRow": "Das Objekt wurde inzwischen geändert. Bitte den Dialog schließen und erneut öffnen.",
+      "reload": "Neu laden",
+      "keep": "Weiter bearbeiten"
+    },
+    "leave": {
+      "title": "Ungespeicherte Änderungen",
+      "message": "Die Änderungen wurden nicht gespeichert. Möchten Sie sie verwerfen?",
+      "confirm": "Verwerfen"
+    },
+    "problem": {
+      "number": "Bitte eine Zahl eingeben (Dezimalkomma erlaubt).",
+      "integer": "Bitte eine ganze Zahl eingeben.",
+      "nameRequired": "Bitte einen Namen eingeben.",
+      "nameLength": "Höchstens {max} Zeichen.",
+      "nameChars": "Der Name darf keine Steuerzeichen enthalten.",
+      "parentRequired": "Bitte einen Ablageort wählen."
+    },
+    "exchange": {
+      "action": "Zählerwechsel",
+      "actionLabel": "Zählerwechsel für „{name}“ erfassen",
+      "title": "Zählerwechsel",
+      "intro": "Zählerstände eingeben: der letzte Stand des alten Zählers (eine Sekunde vor dem Wechsel) und der erste Stand des neuen Zählers werden mit der Notiz „Meter Tausch“ gespeichert.",
+      "time": "Zeitpunkt des Wechsels",
+      "timeHint": "Datum und Uhrzeit, nicht in der Zukunft.",
+      "oldReading": "Alter Zählerstand",
+      "oldHint": "Letzter Stand des ausgebauten Zählers.",
+      "newReading": "Neuer Zählerstand",
+      "newHint": "Erster Stand des eingebauten Zählers.",
+      "saved": "Zählerwechsel vom {time} gespeichert.",
+      "problem": {
+        "time": "Bitte einen gültigen Zeitpunkt angeben.",
+        "future": "Der Zeitpunkt darf nicht in der Zukunft liegen.",
+        "reading": "Bitte einen Zählerstand von mindestens 0 eingeben."
+      }
+    }
+  },
   "notes": {
     "title": "Notizen",
     "note": "Notiz",
@@ -1430,7 +1542,8 @@
       "attribute": "Attribut von {name}",
       "present": "bereits im Diagramm",
       "add": "Übernehmen ({n})",
-      "selected": "{n} ausgewählt"
+      "selected": "{n} ausgewählt",
+      "choose": "Übernehmen"
     },
     "nameDialog": {
       "saveAsTitle": "Analyse speichern unter",

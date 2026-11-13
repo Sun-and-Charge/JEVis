@@ -1,0 +1,192 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Editing of meters and equipment (E5): object form, class choice, file and target fields, meter exchange */
+
+.reg-edit-backdrop .edit-dialog.is-wide {
+  width: min(46rem, 100%);
+}
+
+/* phone width: the form as a full-width sheet */
+@media (max-width: 800px) {
+  .reg-edit-backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .reg-edit-backdrop .edit-dialog,
+  .reg-edit-backdrop .edit-dialog.is-wide {
+    width: 100%;
+    min-height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reg-edit-backdrop .edit-body {
+    flex: 1;
+  }
+
+  .reg-edit-backdrop .edit-foot {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+  }
+}
+
+.reg-edit-hint {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.reg-edit-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+/* read-only types: greyed */
+.edit-field.reg-edit-readonly input {
+  color: var(--muted);
+  background: var(--bg);
+  border-style: dashed;
+  cursor: default;
+}
+
+/* class of a new meter: medium icon + label */
+.reg-classes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.4rem;
+  border: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+}
+
+.reg-classes legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+  padding: 0;
+}
+
+.reg-class {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--blueberry);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.reg-class.is-selected {
+  border-color: var(--blueberry);
+  box-shadow: inset 0 0 0 1px var(--blueberry);
+  background: rgb(255 222 0 / 18%);
+}
+
+.reg-class input {
+  margin: 0;
+  accent-color: var(--blueberry);
+}
+
+.reg-class:focus-within {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.reg-medium-icon {
+  flex: none;
+}
+
+/* target field */
+.reg-target-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.reg-target-value {
+  flex: 1 1 12rem;
+  min-height: 2.1rem;
+  display: flex;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+/* file field */
+.reg-file-upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.reg-file-upload input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.reg-file-upload input[type='file']:focus-visible + label {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.reg-file-upload .edit-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.reg-file-none {
+  margin: 0;
+}
+
+.reg-file-message {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+}
+
+.reg-file-message.is-ok {
+  color: var(--ok, var(--ink));
+}
+
+/* state in the footer, conflict box */
+.reg-edit-state {
+  font-size: 0.82rem;
+  color: var(--muted);
+  align-self: center;
+}
+
+.reg-edit-state.is-dirty {
+  color: var(--blueberry);
+  font-weight: 600;
+}
+
+.reg-conflict p {
+  margin: 0.35rem 0;
+}
+
+.reg-message {
+  margin: 0 0 0.75rem;
+}
+
+.reg-actions .reg-new {
+  min-height: 2.1rem;
+  padding: 0.25rem 0.9rem;
+}
