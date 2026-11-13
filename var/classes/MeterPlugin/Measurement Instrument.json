@@ -168,6 +168,15 @@
       "jevisClass": "Measurement Instrument"
     },
     {
+      "name": "Reading Photo",
+      "primitiveType": 3,
+      "guiType": "File Selector",
+      "guiposition": 35,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Measurement Instrument"
+    },
+    {
       "name": "Accuracy",
       "primitiveType": 0,
       "guiType": "Text",

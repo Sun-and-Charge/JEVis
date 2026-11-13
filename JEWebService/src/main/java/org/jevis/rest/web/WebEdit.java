@@ -254,6 +254,19 @@ final class WebEdit {
         JsonSample latest(long id, String attribute) throws Exception;
 
         /**
+         * Stage E8.1: the latest samples of the attribute, newest first (production: {@code getLatestSamples}; this
+         * default reads all samples and is meant for tests).
+         */
+        default List<JsonSample> latestSamples(long id, String attribute, int limit) throws Exception {
+            List<JsonSample> all = samples(id, attribute, new DateTime(0L, DateTimeZone.UTC),
+                    new DateTime(4102444800000L, DateTimeZone.UTC), Long.MAX_VALUE);
+            List<JsonSample> result = new ArrayList<>();
+            if (all == null) return result;
+            for (int i = all.size() - 1; i >= 0 && result.size() < limit; i--) result.add(all.get(i));
+            return result;
+        }
+
+        /**
          * Inserts or overwrites samples (same time stamp) of the attribute.
          *
          * @return number of changed rows
@@ -372,6 +385,11 @@ final class WebEdit {
             @Override
             public JsonSample latest(long id, String attribute) throws Exception {
                 return ds.getLastSample(id, attribute);
+            }
+
+            @Override
+            public List<JsonSample> latestSamples(long id, String attribute, int limit) throws Exception {
+                return ds.getLatestSamples(id, attribute, limit);
             }
 
             @Override
