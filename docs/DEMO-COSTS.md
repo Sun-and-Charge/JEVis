@@ -14,7 +14,7 @@ generated from it, and JEDemo creates the supplier invoices of each month, so me
 | C | Gas RLM - Musterwerk | Musterwerk | 15-min gas energy (clean 23572), hourly view | demand charge on the hourly peak, CO₂ price, energy tax; from 11/2025 (the live row 23572 has data only from then on, the invoice backfill skips the months before with a warning) |
 | D | Gas SLP - Außenlager Süd | Außenlager Süd | monthly volume reading | energy = m³ × state number × heating value (23946) |
 | E | Fernwärme - Außenlager Süd | Außenlager Süd | hourly heat meter | work price with price escalation clause (gas and heat price index), capacity price on the connected load, metering price |
-| F | Ladestrom - Dienstwagen Musterwerk | Musterwerk | charge points 1–3 (23925, 23927, 23923) | charging bill per company car (plate, cost centre, personnel no.); no supplier invoice |
+| F | Ladestrom - Dienstwagen Musterwerk | Musterwerk | charge points 1–3 (clean 23925, 23927, 23923 of the raw rows 23922, 23920, 23919; synthetic 15-min history, see below) | charging bill per company car (plate, cost centre, personnel no.); no supplier invoice |
 
 Every case except F has a column "Rechnung" (from the imported invoices of the case) and "Differenz" next to the
 measured costs, and a line "Prüfung Rechnung" (invoiced net − contract price × invoiced quantity).
@@ -37,18 +37,77 @@ sample only, so they have one value for both years.
 ## Monthly net amounts
 
 From the test `CostCasesTest` with synthetic stand-ins for the live rows (written to
-`JEDemo/target/costdemo-table.md`); the live values differ with the real demo data, the shape is the same.
+`JEDemo/target/costdemo-table.md`); the live values differ with the real demo data, the shape is the same. F uses the
+charge point profile from 2025-01 on (on live it starts 2025-11): 150–250 kWh per point and month, 28 ct/kWh net in
+2025 and 30 ct/kWh in 2026.
 
 | Monat | A Messung | A Rechnung | B Messung | B Rechnung | C Messung | C Rechnung | D Messung | D Rechnung | E Messung | E Rechnung | F Messung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2025-01 | 9.127,00 | 9.126,99 | 1.003,65 | 1.003,65 | 3.194,71 | 3.194,70 | 1.022,31 | 1.022,29 | 4.300,47 | 4.300,45 | 238,34 |
-| 2025-07 | 9.250,76 | 9.250,69 | 832,40 | 832,42 | 565,57 | 565,56 | 114,94 | 114,90 | 937,41 | 937,41 | 240,88 |
-| 2026-01 | 8.637,47 | 8.637,48 | 955,53 | 955,41 | 2.989,91 | 2.989,94 | 1.000,29 | 1.049,96 | 4.136,47 | 4.136,46 | 251,83 |
-| 2026-02 | 7.983,56 | 7.983,62 | 951,23 | 951,25 | 2.487,11 | 2.579,07 | 863,30 | 863,27 | 3.661,48 | 3.661,53 | 219,49 |
-| 2026-03 | 8.657,24 | 8.695,47 | 944,44 | 944,53 | 2.220,51 | 2.220,50 | 671,21 | 671,18 | 3.141,36 | 3.141,39 | 250,26 |
-| 2026-04 | 8.555,88 | 8.555,87 | 904,28 | 904,23 | 1.538,19 | 1.538,21 | 447,80 | 447,81 | 2.198,77 | 2.218,55 | 244,10 |
-| 2026-07 | 8.832,42 | 9.322,93 | 807,74 | 807,64 | 544,91 | 544,94 | 113,82 | 113,78 | 959,86 | 959,85 | 259,46 |
-| 2026-10 | 8.669,46 | 8.669,49 | 879,43 | 879,28 | 1.447,49 | 1.447,46 | 428,32 | 428,33 | 2.087,57 | 2.087,62 | 249,37 |
+| 2025-01 | 9.127,00 | 9.126,99 | 1.003,65 | 1.003,65 | 3.194,71 | 3.194,70 | 1.022,31 | 1.022,29 | 4.300,47 | 4.300,45 | 182,31 |
+| 2025-07 | 9.250,76 | 9.250,69 | 832,40 | 832,42 | 565,57 | 565,56 | 114,94 | 114,90 | 937,41 | 937,41 | 160,04 |
+| 2026-01 | 8.637,47 | 8.637,48 | 955,53 | 955,41 | 2.989,91 | 2.989,94 | 1.000,29 | 1.049,96 | 4.136,47 | 4.136,46 | 195,91 |
+| 2026-02 | 7.983,56 | 7.983,62 | 951,23 | 951,25 | 2.487,11 | 2.579,07 | 863,30 | 863,27 | 3.661,48 | 3.661,53 | 197,49 |
+| 2026-03 | 8.657,24 | 8.695,47 | 944,44 | 944,53 | 2.220,51 | 2.220,50 | 671,21 | 671,18 | 3.141,36 | 3.141,39 | 193,42 |
+| 2026-04 | 8.555,88 | 8.555,87 | 904,28 | 904,23 | 1.538,19 | 1.538,21 | 447,80 | 447,81 | 2.198,77 | 2.218,55 | 184,87 |
+| 2026-07 | 8.832,42 | 9.322,93 | 807,74 | 807,64 | 544,91 | 544,94 | 113,82 | 113,78 | 959,86 | 959,85 | 176,00 |
+| 2026-10 | 8.669,46 | 8.669,49 | 879,43 | 879,28 | 1.447,49 | 1.447,46 | 428,32 | 428,33 | 2.087,57 | 2.087,62 | 188,38 |
+
+## Charge point data (case F)
+
+The live charge point rows hold unusable values (read 2026-11-13): 23922 "Strom - Ladestrom - Ladepunkt 1" monthly
+6–17 kWh (values like 0.0000955) and its clean row 23925 only 0.3–3.7 kWh; 23920 "… Ladepunkt 2" 8–35 kWh (clean
+23927); 23919 "… Ladepunkt 3" zeros since 2026-05 and a negative month 2025-12 (clean 23923). 23921 "Strom - Ladestrom
+Summe" (Data, below 23677 like the three rows) is the output of a calculation that sums the points, 23924 below it its
+clean row. The plan fix `REPLACE_HISTORY` replaces them:
+
+1. **Raw rows** 23922, 23920, 23919 (checked by id, class Data, exact name, parent 23677 and below the organisation;
+   otherwise skipped with a report line): all "Value" samples are deleted and the profile `CHARGING_POINT`
+   (`History.chargingPoint`, seeded by the row id) is written from 2025-11-01 00:00 (Europe/Berlin) up to the time of
+   the run: kWh per quarter hour (not a counter) at every quarter hour, zero outside the sessions. Company car
+   charging: on working days mostly one session (arrival 07:00–09:30 or 16:00–18:00, sometimes a second one in the
+   other half of the day, some days without), 11 kW (2.75 kWh per quarter hour) for 1–3 h with a partial first
+   quarter hour and a short taper, weekends and public holidays rarely. Per month 150–250 kWh per point: Ladepunkt 1
+   ≈ 190–222 kWh, Ladepunkt 2 ≈ 185–214 kWh, Ladepunkt 3 ≈ 208–230 kWh (2025-11 … 2026-10), together ≈ 600–675 kWh,
+   i.e. ≈ 170–200 € net per month in configuration F. The raw rows' "Period" is set to PT15M from the start.
+2. **Clean rows** 23925, 23927, 23923 (must be Clean Data below their raw row): Enabled = true, Conversion to
+   Differential = false, Value is a Quantity = true, Period = PT15M, written at the configuration time stamp where they
+   do not hold from the start of the history; then all their values are deleted.
+3. **Sum** 23921 and its clean row 23924: all values deleted; 23924 gets the same clean settings. The dry run names
+   the calculation whose "Output" targets 23921 ("is the output of the Calculation … [id]").
+
+The values of the clean rows and of the sum are deleted before the replacement and again after it (something a
+service computed from half-written rows meanwhile). Everything is backed up first (`var/backup/costdemo-<time>/`, the
+raw rows with all their old samples). A second run checks the raw rows at every quarter hour of two fixed windows
+(2025-11-03 … 2025-11-16 and 2026-10-05 … 2026-10-18): if they hold the profile, it reports "history CHARGING_POINT in
+place" and does nothing. Template F and configuration F stay as they are (they read the clean rows). JEDemo replays
+each raw row from its own previous year (P52W), so the new history is continued afterwards.
+
+```bash
+cd /home/jevis/jevis
+git pull
+mvn -t <toolchains.xml> package -pl JEDemo -am           # never -P jevisserver
+sudo systemctl stop jedemo.service
+source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
+JEDEMO="java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid 23048"
+
+# dry run: section "Fixes" lists the REPLACE_HISTORY lines and the calculation of 23921
+$JEDEMO -o costSetup=dryrun
+less "$(ls -t var/log/costdemo-setup-dryrun-*.md | head -1)"
+$JEDEMO -o costSetup=apply
+less "$(ls -t var/log/costdemo-setup-apply-*.md | head -1)"
+$JEDEMO -o costSetup=dryrun                              # must say "nothing to do"
+sudo systemctl start jedemo.service
+
+# with the key of the services: clean rows of the points, then the sum (JECalc), then the clean row of the sum
+source /etc/jevis/jevis.env
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid 23925,23927,23923
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jecalc-single.log -jar JECalc/target/JECalc-1.0.1-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <calculation id from the report>
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid 23924
+```
+
+If the report finds no calculation for 23921 (not readable for the demo user), skip the JECalc line: the jecalc
+service computes the sum again in its next cycle, the JEDataProcessor then 23924. The apply report lists the same
+commands under "Manual steps". Then open configuration F for a month of 2026: about 190–220 kWh per charge point.
 
 ## Code and generated files
 
@@ -56,7 +115,7 @@ From the test `CostCasesTest` with synthetic stand-ins for the live rows (writte
 |---|---|
 | `CostCases` | the cases, the objects they need (new site, contracts, rows, base data, invoice folders) and the invoice cases |
 | `TemplateFactory` | builds the Result Calculation Template of a case (inputs, formulas, output grid) and its Accounting Configuration |
-| `History` | deterministic synthetic histories of the new rows (SLP counters, heat meter, price indices) |
+| `History` | deterministic synthetic histories of the new rows (SLP counters, heat meter, price indices) and the charge point profile of case F |
 | `SetupPlan` | the setup plan: objects, templates, configurations, invoice cases, backfill, deletions (with their checks), fixes, checks |
 | `CostSetup`, `SetupReport`, `SetupBackup`, `DashboardWidgetFix` | carry out the plan on the server (`-o costSetup=dryrun` or `apply`): report, backup, writes, deletions, the dashboard fix |
 | `CostDemoGenerator` | writes `JEDemo/src/main/resources/costdemo/` (templates, configurations, `setup-plan.json`) |
@@ -97,6 +156,7 @@ plan that does not exist yet; numbers are existing ids of the live demo. The JED
    `CLEAN_REPROCESS` (rows B.clean, C.hourly, D.clean, E.clean): if a setting of such a row or of its raw row was not
    in force at the start of the row's history (and was therefore written early in step 2), all "Value" samples of the
    clean row are deleted (backed up first) so the JEDataProcessor computes it again from the first raw value.
+   `REPLACE_HISTORY` (charge points of case F, see "Charge point data (case F)" below).
 6. **Delete** (recycle bin) what the plan lists, only after everything above was written and only if its checks pass:
    the old templates and configuration once the new ones exist (`AFTER_CREATED`), the empty duplicate grid operator
    and the manual invoice values if no template, configuration or dashboard names them (`NOT_REFERENCED`), their

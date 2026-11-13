@@ -109,6 +109,7 @@ public class CostSetupTest {
                 .set("Enabled", T0, true).set("Period", T0, "PT1H").set("Period Alignment", T0, "{\"aggregation\":\"HOURLY\"}")
                 .set("Value is a Quantity", T0, true).set("Value", T0, 12.5);
         t.add(23723, "Bereinigte Daten", "Clean Data", data);
+        chargePoints(t, data, organisation);
 
         Node templates = t.add("Vorlagen", "Result Calculation Template Directory", contracts);
         t.add(CostCases.OLD_TEMPLATE, "stromrechnung", "Result Calculation Template", templates)
@@ -143,6 +144,38 @@ public class CostSetupTest {
         Node services = t.add(2, "Service Directory", "Service Directory", system);
         t.add(SERVICE, "JEDemo", "JEDemo", services).set("Organization", T0, String.valueOf(ORG));
         return t;
+    }
+
+    static final long CALCULATION = 24500;
+    static final long[][] CHARGE = {{CostCases.CHARGE_POINT_1, CostCases.CLEAN_CHARGE_POINT_1},
+            {CostCases.CHARGE_POINT_2, CostCases.CLEAN_CHARGE_POINT_2}, {CostCases.CHARGE_POINT_3, CostCases.CLEAN_CHARGE_POINT_3}};
+
+    /**
+     * Case F as on live: the charge point rows with unusable hourly values, their clean rows (point 1 converted to
+     * differential), the sum of the calculation and its clean row.
+     */
+    private static void chargePoints(FakeTree t, Node data, Node organisation) {
+        DateTime config = CostSetup.CONFIG_TIMESTAMP;
+        Node parent = t.add(CostCases.CHARGE_POINT_PARENT, "Ladestrom", "Data Directory", data);
+        for (int i = 0; i < CHARGE.length; i++) {
+            Node raw = t.add(CHARGE[i][0], CostCases.CHARGE_POINT_NAME + (i + 1), "Data", parent);
+            /* point 3 got its period only later */
+            raw.set("Period", i == 2 ? new DateTime(2026, 5, 1, 0, 0, BERLIN) : config, "PT15M");
+            for (DateTime ts = new DateTime(2025, 11, 5, 0, 0, BERLIN); ts.isBefore(T0); ts = ts.plusHours(1)) {
+                raw.set("Value", ts, 0.0000955 * (i + 1));
+            }
+            Node clean = t.add(CHARGE[i][1], "Bereinigte Daten", "Clean Data", raw)
+                    .set("Enabled", config, "true").set("Conversion to Differential", config, i == 0 ? "true" : "false")
+                    .set("Value is a Quantity", config, "true").set("Period", config, "PT15M");
+            for (DateTime ts = new DateTime(2025, 11, 5, 0, 0, BERLIN); ts.isBefore(T0); ts = ts.plusDays(1)) clean.set("Value", ts, 0.01);
+        }
+        Node sum = t.add(CostCases.CHARGE_SUM, CostCases.CHARGE_SUM_NAME, "Data", parent).set("Value", T0, 0.5);
+        t.add(CostCases.CHARGE_SUM_CLEAN, "Bereinigte Daten", "Clean Data", sum)
+                .set("Enabled", config, "true").set("Conversion to Differential", config, "false")
+                .set("Value is a Quantity", config, "true").set("Period", config, "PT15M").set("Value", T0, 0.5);
+        Node calculations = t.add("Berechnungen", "Calculation Directory", organisation);
+        Node calculation = t.add(CALCULATION, "Ladestrom Summe", "Calculation", calculations);
+        t.add("Output", "Output", calculation).set("Output", T0, CostCases.CHARGE_SUM + ":Value");
     }
 
     private static void invoice(FakeTree t, Node folder, String number) {
@@ -602,5 +635,131 @@ public class CostSetupTest {
         assertFalse(problems(report), report.hasProblems());
         assertTrue(has(report, SetupReport.Kind.SKIP, "dashboard 24054 '01 - Übersicht', widget 21: widget 21 image.objectID is now '23999', not 23723"));
         assertFalse(tree.writes.stream().anyMatch(w -> w.startsWith("sample 24054 ")));
+    }
+
+    // ================================================================================================ charge points (case F)
+
+    private static String manual(SetupReport report) {
+        return String.join("\n", report.getManualSteps());
+    }
+
+    private int firstWrite(String prefix) {
+        for (int i = 0; i < tree.writes.size(); i++) if (tree.writes.get(i).startsWith(prefix)) return i;
+        return -1;
+    }
+
+    @Test
+    public void chargePointsDryRunReportsTheReplacement() throws Exception {
+        int old = tree.node(CostCases.CHARGE_POINT_1).att("Value").samples.size();
+        SetupReport report = run(false);
+        assertFalse(problems(report), report.hasProblems());
+        assertTrue(tree.writes.isEmpty());
+        assertTrue(actions(report), has(report, SetupReport.Kind.UPDATE, "REPLACE_HISTORY row 23922 'Strom - Ladestrom - Ladepunkt 1' [23922] · Value: no value at "));
+        assertTrue(actions(report), has(report, SetupReport.Kind.UPDATE, "delete all " + old + " samples"));
+        assertTrue(actions(report), has(report, SetupReport.Kind.UPDATE, "samples CHARGING_POINT 2025-10-31T23:00:00Z .. 2026-11-13T10:00:00Z (monthly "));
+        assertTrue(actions(report), has(report, SetupReport.Kind.UPDATE, "Bereinigte Daten · Conversion to Differential: value at the start of the history true → false"));
+        assertTrue(actions(report), has(report, SetupReport.Kind.WRITE, "Strom - Ladestrom - Ladepunkt 3 · Period: no value at the start of the history"));
+        for (long id : new long[]{CostCases.CLEAN_CHARGE_POINT_1, CostCases.CLEAN_CHARGE_POINT_2, CostCases.CLEAN_CHARGE_POINT_3,
+                CostCases.CHARGE_SUM, CostCases.CHARGE_SUM_CLEAN}) {
+            assertTrue(id + " " + actions(report), has(report, SetupReport.Kind.UPDATE, "[" + id + "] · Value: delete all"));
+        }
+        assertTrue(has(report, SetupReport.Kind.INFO, "is the output of the Calculation 'Sun and Charge Demo / Berechnungen / Ladestrom Summe' [24500]"));
+        String manual = manual(report);
+        assertTrue(manual, manual.contains("-sm single -jid 23925,23927,23923`"));
+        assertTrue(manual, manual.contains("JECalc-1.0.1-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid 24500`"));
+        assertTrue(manual, manual.contains("-sm single -jid 23924`"));
+    }
+
+    @Test
+    public void chargePointsApplyReplacesTheHistoryAndASecondRunIsANoOp() throws Exception {
+        int oldCount = tree.node(CostCases.CHARGE_POINT_1).att("Value").samples.size();
+        SetupReport report = run(true);
+        assertFalse(problems(report), report.hasProblems());
+        assertTrue(report.getResult(), report.getResult().startsWith("applied"));
+        Instant from = CostCases.CHARGE_FROM.toInstant();
+        for (long[] cp : CHARGE) {
+            FakeTree.Att value = tree.node(cp[0]).att("Value");
+            List<History.Point> expected = History.chargingPoint(cp[0], from, NOW);
+            assertEquals(expected.size(), value.samples.size());
+            assertEquals(from.toEpochMilli(), (long) value.samples.firstKey());
+            for (History.Point p : expected) {
+                assertEquals(p.toString(), p.getValue(), (Double) value.samples.get(p.getTs().toEpochMilli())[0], 0);
+            }
+            for (double kWh : History.monthlySums(expected).values()) assertTrue("month " + kWh, kWh > 0);
+            assertTrue(cp[1] + " clean values deleted", tree.node(cp[1]).att("Value").samples.isEmpty());
+            /* the clean values were deleted before the replacement (nothing computed from half-written rows) */
+            assertTrue(firstWrite("deleteSamples " + cp[1] + " Value") < firstWrite("deleteSamples " + cp[0] + " Value"));
+        }
+        long config = CostSetup.CONFIG_TIMESTAMP.getMillis();
+        assertEquals("false", tree.node(CostCases.CLEAN_CHARGE_POINT_1).att("Conversion to Differential").samples.get(config)[0]);
+        assertEquals("PT15M", tree.node(CostCases.CHARGE_POINT_3).att("Period").samples.get(config)[0]);
+        assertTrue(tree.node(CostCases.CHARGE_SUM).att("Value").samples.isEmpty());
+        assertTrue(tree.node(CostCases.CHARGE_SUM_CLEAN).att("Value").samples.isEmpty());
+        assertTrue("the calculation is not touched", tree.writes.stream().noneMatch(w -> w.contains(" " + CALCULATION + " ")));
+        Path backup = java.nio.file.Paths.get(report.getBackupDirectory()).resolve("objects");
+        for (long id : new long[]{CostCases.CHARGE_POINT_1, CostCases.CLEAN_CHARGE_POINT_1, CostCases.CHARGE_SUM, CostCases.CHARGE_SUM_CLEAN}) {
+            assertTrue(id + " backed up", Files.exists(backup.resolve(id + ".json")));
+        }
+        JsonNode old = mapper.readTree(backup.resolve(CostCases.CHARGE_POINT_1 + ".json").toFile());
+        assertEquals(oldCount, old.get("attributes").get("Value").get("samples").size());
+
+        /* the services compute the rows again, the JEDemo job continues the raw rows: still nothing to do */
+        for (long[] cp : CHARGE) {
+            tree.node(cp[1]).set("Value", new DateTime(2025, 11, 3, 8, 0, BERLIN), 2.75);
+            tree.node(cp[0]).set("Value", new DateTime(NOW.toEpochMilli()).plusHours(1), 1.5);
+        }
+        tree.node(CostCases.CHARGE_SUM).set("Value", T0, 4.0);
+        int writes = tree.writeCount();
+        SetupReport again = run(true, NOW.plusSeconds(600), temp.getRoot().toPath().resolve("again"));
+        assertFalse(problems(again), again.hasProblems());
+        assertEquals(actions(again), 0, again.actions());
+        assertTrue(again.getResult(), again.getResult().startsWith("nothing to do"));
+        assertEquals(writes, tree.writeCount());
+        assertTrue(has(again, SetupReport.Kind.SKIP, "REPLACE_HISTORY row 23922 'Strom - Ladestrom - Ladepunkt 1': history CHARGING_POINT in place (2688 values"));
+    }
+
+    @Test
+    public void chargePointsThatDoNotMatchAreSkipped() throws Exception {
+        /* point 1 renamed, point 2 another class, point 3 moved to another folder; the clean row of point 2 elsewhere */
+        rebuild(CostCases.CHARGE_POINT_1, "Strom - Ladestrom - Ladepunkt 1 (alt)", "Data");
+        rebuild(CostCases.CHARGE_POINT_2, CostCases.CHARGE_POINT_NAME + "2", "Base Data");
+        Node p3 = tree.node(CostCases.CHARGE_POINT_3);
+        p3.parent.children.remove(p3);
+        p3.parent = tree.node(CostCases.CHARGE_POINT_PARENT).parent;
+        p3.parent.children.add(p3);
+        SetupReport report = run(true);
+        assertFalse(problems(report), report.hasProblems());
+        assertTrue(has(report, SetupReport.Kind.SKIP, "row 23922 'Strom - Ladestrom - Ladepunkt 1': is named 'Strom - Ladestrom - Ladepunkt 1 (alt)'"));
+        assertTrue(has(report, SetupReport.Kind.SKIP, "row 23920 'Strom - Ladestrom - Ladepunkt 2': is a 'Base Data', the plan expects 'Data'"));
+        assertTrue(has(report, SetupReport.Kind.SKIP, "row 23919 'Strom - Ladestrom - Ladepunkt 3': has the parent"));
+        for (long[] cp : CHARGE) {
+            for (long id : cp) assertTrue(tree.writes.stream().noneMatch(w -> w.startsWith("sample " + id + " ") || w.startsWith("deleteSamples " + id + " ")));
+        }
+        assertTrue("nothing replaced, the sum stays", tree.writes.stream().noneMatch(w -> w.contains(" " + CostCases.CHARGE_SUM + " ")));
+    }
+
+    @Test
+    public void chargePointsOutsideTheOrganisationAreSkipped() throws Exception {
+        Node folder = tree.node(CostCases.CHARGE_POINT_PARENT);
+        folder.parent.children.remove(folder);
+        folder.parent = tree.node(OTHER_ORG);
+        tree.node(OTHER_ORG).children.add(folder);
+        SetupReport report = run(true);
+        assertFalse(problems(report), report.hasProblems());
+        assertTrue(has(report, SetupReport.Kind.SKIP, "row 23922 'Strom - Ladestrom - Ladepunkt 1': is not below the organisation"));
+        assertTrue(has(report, SetupReport.Kind.SKIP, "derived row 23921 'Strom - Ladestrom Summe': is not below the organisation"));
+        assertTrue(tree.writes.stream().noneMatch(w -> w.matches("(sample|deleteSamples|unit) 239(19|2[0-7]) .*")));
+    }
+
+    private void rebuild(long id, String name, String jevisClass) {
+        Node old = tree.node(id);
+        tree.nodes.remove(id);
+        old.parent.children.remove(old);
+        Node n = tree.add(id, name, jevisClass, old.parent);
+        for (Node c : old.children) {
+            c.parent = n;
+            n.children.add(c);
+        }
+        n.attributes.putAll(old.attributes);
     }
 }

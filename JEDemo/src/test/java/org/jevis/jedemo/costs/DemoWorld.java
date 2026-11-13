@@ -77,11 +77,15 @@ final class DemoWorld {
         data.object(Ref.key("C.hourly"), "Stundenwerte", "Clean Data").add(History.hourlySums(gas));
         data.object(Ref.id(CostCases.HEATING_VALUE), "Gas - Brennwert", "Base Data")
                 .set(LocalDate.of(2020, 1, 1).atStartOfDay(History.ZONE).toInstant(), 11.4);
-        LocalDate fromDay = History.FROM;
-        LocalDate untilDay = LAST.plusMonths(2).atDay(1);
-        data.object(Ref.id(CostCases.CLEAN_CHARGE_POINT_1), "Bereinigte Daten", "Clean Data").add(History.chargePoint(1, fromDay, untilDay));
-        data.object(Ref.id(CostCases.CLEAN_CHARGE_POINT_2), "Bereinigte Daten", "Clean Data").add(History.chargePoint(2, fromDay, untilDay));
-        data.object(Ref.id(CostCases.CLEAN_CHARGE_POINT_3), "Bereinigte Daten", "Clean Data").add(History.chargePoint(3, fromDay, untilDay));
+        /* charge points: the clean rows equal the replaced raw rows (15-minute kWh, no differential conversion); the
+         * live rows start 2025-11, the stand-ins with the other rows so every month of the table has values */
+        Instant last = until.minusSeconds(900);
+        data.object(Ref.id(CostCases.CLEAN_CHARGE_POINT_1), "Bereinigte Daten", "Clean Data")
+                .add(History.chargingPoint(CostCases.CHARGE_POINT_1, from, last));
+        data.object(Ref.id(CostCases.CLEAN_CHARGE_POINT_2), "Bereinigte Daten", "Clean Data")
+                .add(History.chargingPoint(CostCases.CHARGE_POINT_2, from, last));
+        data.object(Ref.id(CostCases.CLEAN_CHARGE_POINT_3), "Bereinigte Daten", "Clean Data")
+                .add(History.chargingPoint(CostCases.CHARGE_POINT_3, from, last));
 
         /* new rows: clean values as the processor would write them (consumption at the start of the interval) */
         YearMonth end = LAST.plusMonths(2);

@@ -91,6 +91,24 @@ public final class CostCases {
     public static final long CLEAN_CHARGE_POINT_2 = 23927;
     public static final long CLEAN_CHARGE_POINT_3 = 23923;
     /**
+     * raw rows (Data, 15-minute kWh) of the charge points 1–3, parent {@link #CHARGE_POINT_PARENT}
+     */
+    public static final long CHARGE_POINT_1 = 23922;
+    public static final long CHARGE_POINT_2 = 23920;
+    public static final long CHARGE_POINT_3 = 23919;
+    public static final String CHARGE_POINT_NAME = "Strom - Ladestrom - Ladepunkt ";
+    static final long CHARGE_POINT_PARENT = 23677;
+    /**
+     * "Strom - Ladestrom Summe" (Data, output of a calculation summing the charge points) and its child (clean data)
+     */
+    public static final long CHARGE_SUM = 23921;
+    public static final String CHARGE_SUM_NAME = "Strom - Ladestrom Summe";
+    public static final long CHARGE_SUM_CLEAN = 23924;
+    /**
+     * start of the replaced charge point histories
+     */
+    static final ZonedDateTime CHARGE_FROM = ZonedDateTime.of(2025, 11, 1, 0, 0, 0, 0, History.ZONE);
+    /**
      * the current template "stromrechnung", its directory receives the new templates
      */
     static final long OLD_TEMPLATE = 23952;

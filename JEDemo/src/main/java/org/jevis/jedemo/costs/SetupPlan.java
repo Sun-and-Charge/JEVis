@@ -62,6 +62,11 @@ public final class SetupPlan {
      * (the JEDataProcessor computes them again); with "force" always
      */
     public static final String FIX_CLEAN_REPROCESS = "CLEAN_REPROCESS";
+    /**
+     * fix: replace the whole "Value" history of existing raw rows by a profile of {@link History} (seeded by the row
+     * id), make the settings of their clean data rows fit and delete the values of the rows computed from them
+     */
+    public static final String FIX_REPLACE_HISTORY = "REPLACE_HISTORY";
 
     static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
@@ -91,7 +96,10 @@ public final class SetupPlan {
                 + "with checkFirst every check must pass: AFTER_CREATED (the objects of the keys exist), NO_CHILDREN, "
                 + "NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), "
                 + "OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)");
-        refs.put("fixes", "changes of existing objects, skipped if the object no longer looks as described");
+        refs.put("fixes", "changes of existing objects, skipped if the object no longer looks as described; REPLACE_HISTORY: "
+                + "all values of each raw row are deleted and the profile (seeded by the row id) is written from 'from' to 'until', "
+                + "unless the row already holds the profile at every quarter hour of the 'verify' windows; then the settings "
+                + "of the clean rows are checked and the values of the clean rows and of 'derived' are deleted (computed again)");
         refs.put("settings", "attribute 'value' entries of data rows (Data, Clean Data) are written at the configuration time "
                 + "stamp 1989-12-31T23:00:00Z like the Control Center does, so they hold for the whole history; other objects at setup time");
         refs.put("setup", "carried out by JEDemo: -sm single -jid <organisation id> -o costSetup=dryrun|apply (docs/DEMO-COSTS.md)");
@@ -188,6 +196,8 @@ public final class SetupPlan {
                 + "JEDataProcessor computed the history without them (counter readings instead of consumption); the settings are "
                 + "now written at the configuration time stamp and the values computed before are deleted to be computed again");
 
+        fixes.add(chargePoints());
+
         ArrayNode checks = plan.putArray("checks");
         checks.add("23946 (Gas - Brennwert) has a sample at or before 2025-01-01, otherwise add one (11.4 kWh/m³ at 2025-01-01).");
         checks.add("Units of the charge point rows 23925, 23927, 23923 (kWh per interval) and that each is the clean data of Ladepunkt 1, 2, 3.");
@@ -199,6 +209,62 @@ public final class SetupPlan {
         checks.add("After the backfill: open each configuration for a month of 2026 and check Differenz Netto ≈ 0 (cents) except the "
                 + "deviation months listed in the invoice cases.");
         return plan;
+    }
+
+    /**
+     * Fix of case F: the live charge point rows hold unusable values (tiny or negative monthly sums, zeros); they get
+     * a synthetic company car charging profile, their clean rows and the sum of the calculation are computed again.
+     */
+    static ObjectNode chargePoints() {
+        ObjectNode fix = F.objectNode();
+        fix.put("type", FIX_REPLACE_HISTORY);
+        fix.put("profile", History.CHARGING_POINT);
+        fix.put("seed", "row id");
+        fix.put("from", ts(CostCases.CHARGE_FROM));
+        fix.put("until", "setup");
+        ArrayNode verify = fix.putArray("verify");
+        window(verify, ZonedDateTime.of(2025, 11, 3, 0, 0, 0, 0, History.ZONE));
+        window(verify, ZonedDateTime.of(2026, 10, 5, 0, 0, 0, 0, History.ZONE));
+        ObjectNode rowSettings = fix.putObject("rowSettings");
+        rowSettings.put("Period", "PT15M");
+        ObjectNode cleanSettings = fix.putObject("cleanSettings");
+        cleanSettings.put("Enabled", true);
+        cleanSettings.put("Conversion to Differential", false);
+        cleanSettings.put("Value is a Quantity", true);
+        cleanSettings.put("Period", "PT15M");
+        ArrayNode rows = fix.putArray("rows");
+        long[][] points = {{CostCases.CHARGE_POINT_1, CostCases.CLEAN_CHARGE_POINT_1}, {CostCases.CHARGE_POINT_2, CostCases.CLEAN_CHARGE_POINT_2},
+                {CostCases.CHARGE_POINT_3, CostCases.CLEAN_CHARGE_POINT_3}};
+        for (int i = 0; i < points.length; i++) {
+            ObjectNode row = rows.addObject();
+            row.put("id", points[i][0]);
+            row.put("class", "Data");
+            row.put("name", CostCases.CHARGE_POINT_NAME + (i + 1));
+            row.put("parent", CostCases.CHARGE_POINT_PARENT);
+            row.put("clean", points[i][1]);
+        }
+        ArrayNode derived = fix.putArray("derived");
+        ObjectNode sum = derived.addObject();
+        sum.put("id", CostCases.CHARGE_SUM);
+        sum.put("class", "Data");
+        sum.put("name", CostCases.CHARGE_SUM_NAME);
+        sum.put("parent", CostCases.CHARGE_POINT_PARENT);
+        sum.put("reason", "output of the calculation that sums the charge points; JECalc computes it again");
+        ObjectNode sumClean = derived.addObject();
+        sumClean.put("id", CostCases.CHARGE_SUM_CLEAN);
+        sumClean.put("parent", CostCases.CHARGE_SUM);
+        sumClean.put("reason", "below the sum (its clean data): the JEDataProcessor computes it again; as a Clean Data it "
+                + "gets the clean settings");
+        fix.put("reason", "the charge point rows of case F hold unusable values (monthly sums of a few kWh, a negative month, "
+                + "zeros since 2026-05); JEDemo replays each raw row from its own previous year (P52W), so the replaced history "
+                + "is continued afterwards");
+        return fix;
+    }
+
+    private static void window(ArrayNode list, ZonedDateTime from) {
+        ObjectNode w = list.addObject();
+        w.put("from", ts(from));
+        w.put("until", ts(from.plusWeeks(2)));
     }
 
     private static void delete(ArrayNode list, long id, String jevisClass, String name, String reason, ObjectNode... checks) {
