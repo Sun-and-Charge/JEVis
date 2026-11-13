@@ -445,6 +445,87 @@ public class CostSetupTest {
         assertTrue(has(report, SetupReport.Kind.CHECK, "23943 (Base Data Directory 'Rechnungswerte'): NO_CHILDREN failed"));
     }
 
+    // ================================================================================================ settings
+
+    private Node row(String path) {
+        Node n = tree.path(org, "Sun and Charge Demo / Standorte / " + path);
+        assertNotNull(path, n);
+        return n;
+    }
+
+    @Test
+    public void rowSettingsHoldFromTheStartOfTheHistory() throws Exception {
+        SetupReport report = run(true);
+        assertFalse(problems(report), report.hasProblems());
+        long config = CostSetup.CONFIG_TIMESTAMP.getMillis();
+        assertEquals(Instant.parse("1989-12-31T23:00:00Z").toEpochMilli(), config);
+        Node rawB = row("Außenlager Süd / Daten / Strom / Strom - Außenlager Süd");
+        Node cleanB = tree.child(rawB, "Bereinigte Daten");
+        assertEquals("P1M", rawB.att("Period").samples.get(config)[0]);
+        assertEquals(1, rawB.att("Period").samples.size());
+        for (String setting : new String[]{"Enabled", "Conversion to Differential", "Value is a Quantity", "Period"}) {
+            assertEquals(setting, new java.util.TreeSet<>(java.util.Collections.singleton(config)), cleanB.att(setting).samples.keySet());
+        }
+        assertEquals("true", cleanB.att("Conversion to Differential").samples.get(config)[0]);
+        Node hourly = tree.child(tree.node(CostCases.CLEAN_GAS_ENERGY), "Stundenwerte");
+        assertTrue(hourly.att("Period Alignment").samples.containsKey(config));
+        assertTrue(hourly.att("Period").samples.containsKey(config));
+        /* settings of other objects at the time of the run, dated prices at their dates */
+        assertTrue(row("Außenlager Süd").att("Address").samples.containsKey(NOW.toEpochMilli()));
+        assertEquals(2, find("Electricity Supply Contractor", "Energieversorger Nord - Gewerbestrom").att("Energy Price HT").samples.size());
+    }
+
+    /**
+     * The state on live after the first apply: settings of the new rows dated at the time of the setup, the clean rows
+     * computed without them.
+     */
+    @Test
+    public void repairWritesTheSettingsEarlyAndClearsTheComputedValues() throws Exception {
+        assertFalse(run(true).hasProblems());
+        long config = CostSetup.CONFIG_TIMESTAMP.getMillis();
+        long setup = NOW.toEpochMilli();
+        Node rawB = row("Außenlager Süd / Daten / Strom / Strom - Außenlager Süd");
+        Node cleanB = tree.child(rawB, "Bereinigte Daten");
+        Node cleanD = tree.child(row("Außenlager Süd / Daten / Gas / Gas - Außenlager Süd (Volumen)"), "Bereinigte Daten");
+        Node hourly = tree.child(tree.node(CostCases.CLEAN_GAS_ENERGY), "Stundenwerte");
+        for (Node n : new Node[]{rawB, cleanB, cleanD, hourly}) {
+            for (FakeTree.Att a : n.attributes.values()) {
+                Object[] early = a.samples.remove(config);
+                if (early != null) a.samples.put(setup, early);
+            }
+        }
+        /* clean B computed without the differential conversion: the counter readings */
+        cleanB.set("Value", new DateTime(2025, 1, 1, 0, 0, BERLIN), 15000.0).set("Value", new DateTime(2025, 2, 1, 0, 0, BERLIN), 17959.0);
+
+        int writes = tree.writeCount();
+        SetupReport dry = run(false);
+        assertFalse(problems(dry), dry.hasProblems());
+        assertEquals(writes, tree.writeCount());
+        assertTrue(has(dry, SetupReport.Kind.WRITE, "Bereinigte Daten · Conversion to Differential: no value at the start of the history"));
+        assertTrue(has(dry, SetupReport.Kind.WRITE, "Strom - Außenlager Süd · Period: no value at the start of the history"));
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.UPDATE, "@B.clean 'Sun and Charge Demo / Standorte / Außenlager Süd / Daten / Strom / Strom - Außenlager Süd / Bereinigte Daten' ["
+                + cleanB.id + "] · Value: delete all 2 samples"));
+        assertTrue(has(dry, SetupReport.Kind.SKIP, "@D.clean '"));
+        assertTrue(has(dry, SetupReport.Kind.SKIP, "no values yet, nothing to delete"));
+        assertTrue(has(dry, SetupReport.Kind.SKIP, "@E.clean '"));
+
+        SetupReport apply = run(true);
+        assertFalse(problems(apply), apply.hasProblems());
+        assertEquals("true", cleanB.att("Conversion to Differential").samples.get(config)[0]);
+        assertEquals("the later sample stays", "true", cleanB.att("Conversion to Differential").samples.get(setup)[0]);
+        assertEquals("P1M", rawB.att("Period").samples.get(config)[0]);
+        assertTrue(hourly.att("Period").samples.containsKey(config));
+        assertTrue("clean values deleted", cleanB.att("Value").samples.isEmpty());
+        assertTrue(tree.writes.contains("deleteSamples " + cleanB.id + " Value"));
+        assertTrue("values backed up first", Files.exists(java.nio.file.Paths.get(apply.getBackupDirectory()).resolve("objects").resolve(cleanB.id + ".json")));
+
+        /* again: nothing to do, also after the processor has computed the row again */
+        cleanB.set("Value", new DateTime(2025, 1, 1, 0, 0, BERLIN), 2959.0);
+        SetupReport again = run(true);
+        assertEquals(actions(again), 0, again.actions());
+        assertTrue(again.getResult().startsWith("nothing to do"));
+    }
+
     // ================================================================================================ units
 
     @Test

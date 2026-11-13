@@ -101,6 +101,18 @@ public final class CostSetup {
     static final String INVOICE_DATA_CLASS = "Energy Invoice Data";
     static final String INVOICE_NUMBER = "Invoice Number";
     static final String LINK_CLASS = "Link";
+    static final String CLEAN_DATA_CLASS = "Clean Data";
+    /**
+     * classes whose settings are configuration of the data processing (period, differential conversion, ...): the
+     * JEDataProcessor applies a setting only from its time stamp on, so they are written at {@link #CONFIG_TIMESTAMP}
+     */
+    static final Set<String> ROW_CLASSES = new HashSet<>(Arrays.asList("Data", CLEAN_DATA_CLASS));
+    /**
+     * Time stamp of configuration samples, as the Control Center writes them (1990-01-01 00:00 Europe/Berlin): the
+     * setting holds for the whole history of the row. Settings of data rows (Data, Clean Data) are written here; other
+     * objects get their settings at the time of the run, dated prices keep their own time stamps.
+     */
+    public static final DateTime CONFIG_TIMESTAMP = new DateTime(Instant.parse("1989-12-31T23:00:00Z").toEpochMilli());
     /**
      * classes whose file attribute may name an object (check {@value SetupPlan#CHECK_NOT_REFERENCED})
      */
@@ -152,6 +164,14 @@ public final class CostSetup {
      */
     private final Set<Long> deleted = new HashSet<>();
     private final Set<Long> verified = new HashSet<>();
+    /**
+     * keys of existing rows whose settings were not effective from the start of their history (written early now)
+     */
+    private final Set<String> settingsRepaired = new HashSet<>();
+    /**
+     * plan key → the plan object
+     */
+    private final Map<String, JsonNode> planObjects = new HashMap<>();
     private List<JEVisObject> subtreeCache;
     private SetupBackup backup;
     private JEVisObject service;
@@ -290,6 +310,7 @@ public final class CostSetup {
     // ================================================================================================ objects
 
     private void planObjects() throws JEVisException {
+        for (JsonNode o : plan.path("objects")) planObjects.put(o.path("key").asText(), o);
         for (JsonNode o : plan.path("objects")) {
             String key = o.path("key").asText();
             try {
@@ -429,6 +450,8 @@ public final class CostSetup {
      */
     private void planAttributes(JsonNode o, String key, JEVisObject obj) throws JEVisException {
         Set<String> planned = attributeNames(o);
+        boolean row = ROW_CLASSES.contains(o.path("class").asText());
+        DateTime start = row && obj != null ? historyStart(obj) : null;
         if (o.has("copyAttributesFrom")) {
             long sourceId = o.get("copyAttributesFrom").asLong();
             JEVisObject source = object(sourceId);
@@ -439,7 +462,7 @@ public final class CostSetup {
                     if (planned.contains(att.getName()) || SetupBackup.isFile(att)) continue;
                     JEVisSample latest = att.getLatestSample();
                     if (latest == null || latest.getValueAsString() == null) continue;
-                    planSetting(key, obj, att.getName(), F.textNode(latest.getValueAsString()), " (copied from " + sourceId + ")");
+                    planSetting(key, obj, att.getName(), F.textNode(latest.getValueAsString()), " (copied from " + sourceId + ")", row, start);
                 }
             }
         }
@@ -447,7 +470,7 @@ public final class CostSetup {
         for (String name : (Iterable<String>) attributes::fieldNames) {
             JsonNode spec = attributes.get(name);
             if (spec.has("unit")) planUnit(key, obj, name, spec.get("unit").asText());
-            if (spec.has("value")) planSetting(key, obj, name, spec.get("value"), "");
+            if (spec.has("value")) planSetting(key, obj, name, spec.get("value"), "", row, start);
             if (spec.has("samples")) planSamples(key, obj, name, spec.get("samples"));
         }
         if (o.has("history")) planHistory(key, obj, o.get("history"));
@@ -484,8 +507,33 @@ public final class CostSetup {
         }));
     }
 
-    private void planSetting(String key, JEVisObject obj, String name, JsonNode value, String note) throws JEVisException {
+    /**
+     * @return the first time stamp of the row's history: the first raw value (for a clean data row the parent's), null
+     * if there is none
+     */
+    private DateTime historyStart(JEVisObject row) throws JEVisException {
+        JEVisObject raw = row;
+        if (CLEAN_DATA_CLASS.equals(row.getJEVisClassName())) {
+            List<JEVisObject> parents = row.getParents();
+            raw = parents == null || parents.isEmpty() ? row : parents.get(0);
+        }
+        JEVisAttribute value = raw.getAttribute("Value");
+        return value != null && value.hasSample() ? value.getTimestampOfFirstSample() : null;
+    }
+
+    /**
+     * A setting written once.
+     *
+     * @param config true for the settings of a data row: written at {@link #CONFIG_TIMESTAMP}, and an existing row is
+     *               repaired if the value in force at the start of its history ({@code start}) is not the wanted one
+     */
+    private void planSetting(String key, JEVisObject obj, String name, JsonNode value, String note, boolean config,
+                             DateTime start) throws JEVisException {
         String wanted = display(value);
+        if (config) {
+            planConfigSetting(key, obj, name, value, note, start);
+            return;
+        }
         SetupReport.Kind kind = SetupReport.Kind.WRITE;
         String text = paths.get(key) + " · " + name + " = " + wanted + note;
         if (obj != null) {
@@ -501,15 +549,56 @@ public final class CostSetup {
             }
             backupObject(obj, "setting " + name);
         }
+        addSettingStep(key, name, value, kind, text, new DateTime(now.toEpochMilli()));
+    }
+
+    private void planConfigSetting(String key, JEVisObject obj, String name, JsonNode value, String note, DateTime start)
+            throws JEVisException {
+        String wanted = display(value);
+        String at = " @ " + CONFIG_TIMESTAMP.toDateTime(org.joda.time.DateTimeZone.UTC) + " (configuration time stamp)";
+        if (obj == null) {
+            addSettingStep(key, name, value, SetupReport.Kind.WRITE, paths.get(key) + " · " + name + " = " + wanted + note + at, CONFIG_TIMESTAMP);
+            return;
+        }
+        JEVisAttribute att = existingAttribute(key, obj, name);
+        if (att == null) return;
+        JsonNode resolved = SetupPlan.resolveKeys(value, this::knownId);
+        boolean unresolved = hasPlanKeys(resolved);
+        DateTime until = start != null && start.isAfter(CONFIG_TIMESTAMP) ? start : CONFIG_TIMESTAMP;
+        JEVisSample effective = null;
+        for (JEVisSample s : att.getSamples(new DateTime(0L), until)) {
+            if (effective == null || !s.getTimestamp().isBefore(effective.getTimestamp())) effective = s;
+        }
+        JEVisSample latest = att.getLatestSample();
+        boolean earlyOk = effective != null && !unresolved && same(effective.getValueAsString(), resolved);
+        boolean latestOk = latest != null && !unresolved && same(latest.getValueAsString(), resolved);
+        if (earlyOk && latestOk) return;
+        backupObject(obj, "setting " + name);
+        if (!earlyOk) {
+            settingsRepaired.add(key);
+            JEVisSample atConfig = sampleAt(att, CONFIG_TIMESTAMP);
+            String before = effective == null ? "no value at the start of the history" + (start != null ? " (" + start + ")" : "")
+                    : "value at the start of the history " + shorten(effective.getValueAsString());
+            addSettingStep(key, name, value, atConfig == null ? SetupReport.Kind.WRITE : SetupReport.Kind.UPDATE,
+                    paths.get(key) + " · " + name + ": " + before + " → " + wanted + note + at, CONFIG_TIMESTAMP);
+        }
+        if (!latestOk && latest != null && latest.getTimestamp().isAfter(CONFIG_TIMESTAMP)) {
+            addSettingStep(key, name, value, SetupReport.Kind.UPDATE, paths.get(key) + " · " + name + ": "
+                    + shorten(latest.getValueAsString()) + " → " + wanted + note + " (latest value)", new DateTime(now.toEpochMilli()));
+        }
+    }
+
+    private void addSettingStep(String key, String name, JsonNode value, SetupReport.Kind kind, String text, DateTime ts) {
         ObjectNode data = F.objectNode();
         data.put("object", paths.get(key));
         data.put("attribute", name);
         data.set("value", value);
+        data.put("ts", ts.toString());
         report.add(kind, OBJECTS, text, data);
         steps.add(new Step(OBJECTS, "@" + key + " · " + name, () -> {
             JEVisAttribute att = writable(key, name);
-            att.buildSample(new DateTime(now.toEpochMilli()), toWrite(resolveNow(value), att)).commit();
-            return "@" + key + " · " + name + " = " + display(resolveNow(value));
+            att.buildSample(ts, toWrite(resolveNow(value), att)).commit();
+            return "@" + key + " · " + name + " = " + display(resolveNow(value)) + " @ " + ts;
         }));
     }
 
@@ -738,6 +827,10 @@ public final class CostSetup {
     private void planFixes() throws JEVisException {
         for (JsonNode fix : plan.path("fixes")) {
             String type = fix.path("type").asText();
+            if (SetupPlan.FIX_CLEAN_REPROCESS.equals(type)) {
+                planCleanReprocess(fix);
+                continue;
+            }
             if (!SetupPlan.FIX_REMOVE_DASHBOARD_WIDGET.equals(type)) {
                 problem(FIXES, "unknown fix type '" + type + "'");
                 continue;
@@ -773,6 +866,62 @@ public final class CostSetup {
                 }
                 writeFile(target.getAttribute(fix.path("attribute").asText()), target.getName(), current.updated);
                 return text + ": removed";
+            }));
+        }
+    }
+
+    /**
+     * Fix {@value SetupPlan#FIX_CLEAN_REPROCESS}: the values of a clean data row of the plan that were computed while
+     * its settings (or those of its raw row) were not in force from the start are deleted, so the JEDataProcessor
+     * computes the row again from its first raw value.
+     */
+    private void planCleanReprocess(JsonNode fix) throws JEVisException {
+        boolean force = fix.path("force").asBoolean(false);
+        for (JsonNode k : fix.path("rows")) {
+            String key = k.asText().replaceFirst("^@", "");
+            String text = "@" + key;
+            JsonNode o = planObjects.get(key);
+            if (o == null || "update".equals(o.path("action").asText()) || !CLEAN_DATA_CLASS.equals(o.path("class").asText())) {
+                problem(FIXES, text + ": not a clean data row created by the plan");
+                continue;
+            }
+            if (brokenKeys.contains(key)) continue;
+            if (newKeys.contains(key) || !ids.containsKey(key)) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + ": created in this run, no values to recompute");
+                continue;
+            }
+            JEVisObject row = object(ids.get(key));
+            if (row == null || !CLEAN_DATA_CLASS.equals(row.getJEVisClassName()) || !o.path("name").asText().equals(row.getName())) {
+                problem(FIXES, text + ": the object " + ids.get(key) + " is not the plan's clean data row");
+                continue;
+            }
+            if (!inOrganisation(row)) {
+                problem(FIXES, text + ": the object " + row.getID() + " is not below the organisation");
+                continue;
+            }
+            String parentKey = o.path("parent").path("key").asText(null);
+            boolean repaired = settingsRepaired.contains(key) || parentKey != null && settingsRepaired.contains(parentKey);
+            JEVisAttribute value = row.getAttribute("Value");
+            if (!repaired && !force) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + " '" + paths.get(key) + "': settings in force from the start, values kept");
+                continue;
+            }
+            if (value == null || !value.hasSample()) {
+                report.add(SetupReport.Kind.SKIP, FIXES, text + " '" + paths.get(key) + "': no values yet, nothing to delete");
+                continue;
+            }
+            backupObject(row, "Value samples (recomputed)");
+            report.add(SetupReport.Kind.UPDATE, FIXES, text + " '" + paths.get(key) + "' [" + row.getID() + "] · Value: delete all "
+                    + value.getSampleCount() + " samples " + value.getTimestampOfFirstSample() + " .. " + value.getTimestampOfLastSample()
+                    + ", computed " + (repaired ? "before its settings held from the start" : "(force)")
+                    + "; the JEDataProcessor computes the row again from its first raw value");
+            long id = row.getID();
+            steps.add(new Step(FIXES, text + " · Value: delete samples", () -> {
+                JEVisObject target = object(id);
+                if (target == null) throw new IllegalStateException(text + " [" + id + "] missing");
+                guard(target);
+                if (!target.getAttribute("Value").deleteAllSample()) throw new IllegalStateException("deleting the values of " + id + " failed");
+                return text + " [" + id + "] · Value: all samples deleted";
             }));
         }
     }

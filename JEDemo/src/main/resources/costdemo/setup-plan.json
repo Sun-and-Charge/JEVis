@@ -11,6 +11,7 @@
     "history" : "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to 'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows",
     "delete" : "objects go to the recycle bin, in this order and only after everything above was written; with checkFirst every check must pass: AFTER_CREATED (the objects of the keys exist), NO_CHILDREN, NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)",
     "fixes" : "changes of existing objects, skipped if the object no longer looks as described",
+    "settings" : "attribute 'value' entries of data rows (Data, Clean Data) are written at the configuration time stamp 1989-12-31T23:00:00Z like the Control Center does, so they hold for the whole history; other objects at setup time",
     "setup" : "carried out by JEDemo: -sm single -jid <organisation id> -o costSetup=dryrun|apply (docs/DEMO-COSTS.md)"
   },
   "objects" : [
@@ -2551,6 +2552,17 @@
       "target" : 23723,
       "targetClass" : "Clean Data",
       "reason" : "image widget whose image points to a Clean Data row (23723) instead of an image; it shows nothing"
+    },
+    {
+      "type" : "CLEAN_REPROCESS",
+      "rows" : [
+        "@B.clean",
+        "@C.hourly",
+        "@D.clean",
+        "@E.clean"
+      ],
+      "force" : false,
+      "reason" : "the settings of the new rows were first written at the time of the setup (2026-11-13), so the JEDataProcessor computed the history without them (counter readings instead of consumption); the settings are now written at the configuration time stamp and the values computed before are deleted to be computed again"
     }
   ],
   "checks" : [
