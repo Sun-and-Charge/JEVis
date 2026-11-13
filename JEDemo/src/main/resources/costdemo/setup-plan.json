@@ -2406,7 +2406,7 @@
   "invoiceBackfill" : {
     "from" : "2025-01",
     "when" : "after the JEDataProcessor has processed the new clean data rows (B.clean, D.clean, E.clean, C.hourly) for the whole history",
-    "command" : "java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true   (first with -o dryrun=true)"
+    "command" : "java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true   (first with -o dryrun=true)"
   },
   "delete" : [
     {
@@ -2513,7 +2513,7 @@
     {
       "id" : 24598,
       "class" : "Energy Invoices Directory",
-      "name" : "Strom",
+      "name" : "Electricity",
       "reason" : "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if nothing else is in it; the cases use their own folders",
       "checkFirst" : true,
       "checks" : [

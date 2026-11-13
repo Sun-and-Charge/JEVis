@@ -127,7 +127,7 @@ sudo systemctl stop jedemo.service                       # no replay or invoices
 source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
 
 # 1. dry run: reads everything, writes nothing; report var/log/costdemo-setup-dryrun-<time>.md (and .json)
-java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=dryrun
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=dryrun
 less "$(ls -t var/log/costdemo-setup-dryrun-*.md | head -1)"
 ```
 
@@ -138,11 +138,11 @@ to check (e.g. a unit that differs, an object to delete that was renamed); "Obje
 
 ```bash
 # 2. apply: backup to var/backup/costdemo-<time>/, then the writes, deletions last; report costdemo-setup-apply-<time>.md
-java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=apply
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=apply
 less "$(ls -t var/log/costdemo-setup-apply-*.md | head -1)"
 
 # 3. a second dry run must report "nothing to do"
-java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=dryrun
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o costSetup=dryrun
 ```
 
 If the apply stopped at a step, fix the cause (the report names the step and the error) and run the apply again.
@@ -152,12 +152,12 @@ Then the manual steps (the apply report lists them with the new ids):
 # 4. JEDataProcessor for the new clean data rows (ids from the report: B.clean, C.hourly, D.clean, E.clean);
 #    the running jedataprocessor.service does it as well in its next cycles. With the key of the services:
 source /etc/jevis/jevis.env
-java -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <B.clean>,<C.hourly>,<D.clean>,<E.clean>
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <B.clean>,<C.hourly>,<D.clean>,<E.clean>
 
 # 5. invoice backfill with the demo key, first dry
 source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
-java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true
-java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true
 
 # 6. start the job again
 sudo systemctl start jedemo.service

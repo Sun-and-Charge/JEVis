@@ -60,7 +60,7 @@ writes **raw data**, clean data, calculations and alarms follow from the normal 
      `QUANTITY_FACTOR` (estimated consumption, e.g. 1.04).
    - Backfill: `-o invoicesFrom=2025-01` also bills all months from then on (existing invoices are skipped),
      `-o invoicesOnly=true` skips replay and date rolling. Example:
-     `java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true`
+     `java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true`
    - Without "Invoice Cases" the old fixed pair is created as before: electricity and gas of **Electricity Row** /
      **Gas Row**, supplier "Energieversorger Nord", work and base price from the service object, 19 % VAT, number
      `EN-<yyyyMM>-S` / `-G`, imported into **Invoice Directory**.
@@ -138,6 +138,11 @@ the objects exist, such a case is refused with an error in the log):
    job as `JEVIS_API_KEY` and refuses to start without it. Do **not** use the shared `JEVIS_API_KEY` of the other
    services: the job would then run with their rights, and they with the job's.
 
+**Logging of single runs:** started directly with `java -jar` the job has no log configuration and log4j prints only
+errors. The commands therefore pass the service log configuration (`-Dlog4j.configurationFile=etc/log4j2_service.xml`)
+and a log file (`-DserviceLogFile=var/log/jedemo-single.log`); read it with `tail -80 var/log/jedemo-single.log`. The
+cost setup also writes its own report file (see docs/DEMO-COSTS.md).
+
 ## Installation (Linux)
 
 ```bash
@@ -153,7 +158,7 @@ Dry run first (one cycle, nothing written), as user jevis:
 
 ```bash
 source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
-java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o dryrun=true
+java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o dryrun=true
 ```
 
 `-sm single -jid <ids>` runs one cycle for the given organisations (settings from the service object), `-sm complete`
