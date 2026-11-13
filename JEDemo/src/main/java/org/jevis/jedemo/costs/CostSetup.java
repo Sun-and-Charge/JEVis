@@ -1061,10 +1061,10 @@ public final class CostSetup {
                 clean.add(ids.containsKey(key) ? String.valueOf(ids.get(key)) : "@" + key);
             }
         }
-        String jar = "java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid " + org;
+        String jar = "java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid " + org;
         report.addManualStep("JEDataProcessor: let it process the new clean data rows " + clean + " for the whole history "
                 + "(the running jedataprocessor.service does it in its next cycles; at once, with the key of the services: "
-                + "`source /etc/jevis/jevis.env; java -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar "
+                + "`source /etc/jevis/jevis.env; java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedataprocessor-single.log -jar JEDataProcessor/target/JEDataProcessor-1.5-jar-with-dependencies.jar "
                 + "-c etc/jevis.xml -sm single -jid " + String.join(",", clean) + "`). Check that they have values from 2025-01 on.");
         report.addManualStep("Invoice backfill, first dry: `source /etc/jevis/jevis.env; export JEVIS_API_KEY=\"$JEDEMO_API_KEY\"; "
                 + jar + " -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true`, then the same without `-o dryrun=true`.");

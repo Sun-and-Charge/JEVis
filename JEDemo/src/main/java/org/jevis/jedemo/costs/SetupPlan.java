@@ -125,7 +125,7 @@ public final class SetupPlan {
         backfill.put("from", "2025-01");
         backfill.put("when", "after the JEDataProcessor has processed the new clean data rows (B.clean, D.clean, E.clean, C.hourly) "
                 + "for the whole history");
-        backfill.put("command", "java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single "
+        backfill.put("command", "java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single "
                 + "-jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true   (first with -o dryrun=true)");
 
         ArrayNode delete = plan.putArray("delete");
@@ -151,7 +151,8 @@ public final class SetupPlan {
         String oldInvoices = "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if "
                 + "nothing else is in it; the cases use their own folders";
         /* both old folders by id (the path lookup did not find "Strom" on live, 2026-11-13) */
-        delete(delete, 24598, "Energy Invoices Directory", "Strom", oldInvoices, oldInvoicesCheck("S"));
+        /* object name "Electricity" (the invoice import names the folder by medium; "Strom" is its German local name) */
+        delete(delete, 24598, "Energy Invoices Directory", "Electricity", oldInvoices, oldInvoicesCheck("S"));
         delete(delete, 24593, "Energy Invoices Directory", "Gas", oldInvoices, oldInvoicesCheck("G"));
 
         /* declarative fixes of existing objects, each skipped (with a report line) if the object no longer matches */

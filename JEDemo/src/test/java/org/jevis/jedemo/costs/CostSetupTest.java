@@ -123,7 +123,7 @@ public class CostSetupTest {
         t.add(23948, "Strom - Ladestrom", "Base Data", values).set("Value", T0, 99.0);
 
         Node invoices = ensure(t, organisation, CostCases.MW_CONTRACTS + " / Energierechnungen");
-        Node electricity = t.add(24598, "Strom", "Energy Invoices Directory", invoices);
+        Node electricity = t.add(24598, "Electricity", "Energy Invoices Directory", invoices);
         Node gas = t.add(24593, "Gas", "Energy Invoices Directory", invoices);
         for (int month = 1; month <= 3; month++) {
             String m = String.format("2026%02d", month);
@@ -216,7 +216,7 @@ public class CostSetupTest {
 
         Set<Long> deletes = new HashSet<>();
         for (SetupReport.Entry e : report.entries(SetupReport.Kind.DELETE)) deletes.add(e.getData().get("id").asLong());
-        long electricityFolder = tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen / Strom").id;
+        long electricityFolder = tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen / Electricity").id;
         assertEquals(new HashSet<>(java.util.Arrays.asList(23951L, 23952L, 23518L, 23517L, 23950L, 23948L, 23943L,
                 electricityFolder, 24593L)), deletes);
         assertTrue(has(report, SetupReport.Kind.CHECK, "23943 (Base Data Directory 'Rechnungswerte'): NO_CHILDREN passed"));
@@ -294,7 +294,7 @@ public class CostSetupTest {
         for (long id : new long[]{23951, 23952, 23518, 23517, 23950, 23948, 23943, 24593}) {
             assertTrue(id + " deleted", tree.node(id).deleted);
         }
-        assertNull(tree.child(tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen"), "Strom"));
+        assertNull(tree.child(tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen"), "Electricity"));
         assertFalse("the other organisation is untouched", tree.writes.stream().anyMatch(w -> w.contains(" " + OTHER_ORG)));
         for (String w : tree.writes) {
             if (w.startsWith("sample " + SERVICE)) assertTrue(w, w.contains("Invoice Cases"));
@@ -426,7 +426,7 @@ public class CostSetupTest {
         for (Node c : gas.children) if (!c.deleted) left.add(c.name);
         assertEquals("[Kosten netto laut Rechnung, RE-4711 Energieversorger Nord]", left.toString());
         assertTrue(has(report, SetupReport.Kind.CHECK, "4 invoice(s) matching EN-[0-9]{6}-G(-GS[0-9]+)? are deleted; the folder and its 1 series are kept"));
-        assertNull("the electricity folder held only old invoices", tree.child(tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen"), "Strom"));
+        assertNull("the electricity folder held only old invoices", tree.child(tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen"), "Electricity"));
 
         /* again: nothing to do, the kept objects are reported */
         SetupReport again = run(true);
