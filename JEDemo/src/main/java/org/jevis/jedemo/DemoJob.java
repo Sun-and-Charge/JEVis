@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,14 +83,37 @@ public class DemoJob {
     private final boolean dryRun;
     private final Clock clock;
     /**
-     * last billing month for which both invoices were handled (created or already present)
+     * last billing month for which both invoices of the old attributes were handled (created or already present)
      */
     private YearMonth invoicedMonth;
+    /**
+     * billing month → keys of the invoice cases handled in this process (created, already present or skipped)
+     */
+    private final Map<YearMonth, Set<String>> invoicedCases = new HashMap<>();
+    /**
+     * first month to bill (backfill), null = only the previous month
+     */
+    private final YearMonth invoicesFrom;
+    /**
+     * only invoices: no replay, no date rolling
+     */
+    private final boolean invoicesOnly;
 
     public DemoJob(JEVisDataSource ds, boolean dryRun, Clock clock) {
+        this(ds, dryRun, clock, null, false);
+    }
+
+    /**
+     * @param invoicesFrom first month for which the invoice cases are billed (backfill of the history), null for the
+     *                     previous month only
+     * @param invoicesOnly true: only the invoices, no replay and no date rolling
+     */
+    public DemoJob(JEVisDataSource ds, boolean dryRun, Clock clock, YearMonth invoicesFrom, boolean invoicesOnly) {
         this.ds = ds;
         this.dryRun = dryRun;
         this.clock = clock;
+        this.invoicesFrom = invoicesFrom;
+        this.invoicesOnly = invoicesOnly;
     }
 
     /**
@@ -135,8 +159,12 @@ public class DemoJob {
         }
         if (objects.isEmpty()) return;
 
-        replay(objects, config, now);
-        rollDates(service, objects, config, today);
+        if (invoicesOnly) {
+            logger.info("Invoices only: no replay, no date rolling");
+        } else {
+            replay(objects, config, now);
+            rollDates(service, objects, config, today);
+        }
         invoices(config, allowed, now);
 
         if (!config.replayState.equals(stateBefore)) {
@@ -489,33 +517,47 @@ public class DemoJob {
     // ------------------------------------------------------------------------------------------------ invoices
 
     private void invoices(DemoConfig config, Map<Long, String> allowed, Instant now) {
+        if (!config.invoiceCases.isEmpty()) {
+            caseInvoices(config, allowed, now);
+            return;
+        }
         if (config.invoiceDirectory == null) return;
         YearMonth current = YearMonth.from(now.atZone(ReplayPlanner.ZONE));
         YearMonth billed = current.minusMonths(1);
         if (billed.equals(invoicedMonth)) return;
 
         Long directory = config.invoiceDirectory;
-        String buyer = allowed.get(directory);
-        try {
-            JEVisObject dir = ds.getObject(directory);
-            if (dir == null || buyer == null) {
-                logger.error("Invoice directory {} is not below a configured demo organisation, no invoices", directory);
-                return;
-            }
-            if (!INVOICE_DIRECTORY_CLASS.equals(dir.getJEVisClassName())) {
-                logger.error("Invoice directory {} [{}] is no '{}', no invoices", dir.getName(), directory, INVOICE_DIRECTORY_CLASS);
-                return;
-            }
-        } catch (JEVisException e) {
-            logger.error("Could not read invoice directory {}", directory, e);
-            return;
-        }
+        String buyer = invoiceDirectory(directory, allowed);
+        if (buyer == null) return;
 
         boolean complete = invoice(InvoiceBuilder.Medium.ELECTRICITY, config.electricityRow, config.electricityPrice,
                 config.electricityFee, billed, current, buyer, directory, now);
         complete &= invoice(InvoiceBuilder.Medium.GAS, config.gasRow, config.gasPrice, config.gasFee, billed, current,
                 buyer, directory, now);
         if (complete) invoicedMonth = billed;
+    }
+
+    /**
+     * @return the name of the demo organisation of the invoice directory, null (with an error in the log) if the
+     * directory is not below an accepted demo organisation or no Energy Invoices Directory
+     */
+    private String invoiceDirectory(Long directory, Map<Long, String> allowed) {
+        String buyer = allowed.get(directory);
+        try {
+            JEVisObject dir = ds.getObject(directory);
+            if (dir == null || buyer == null) {
+                logger.error("Invoice directory {} is not below a configured demo organisation, no invoices", directory);
+                return null;
+            }
+            if (!INVOICE_DIRECTORY_CLASS.equals(dir.getJEVisClassName())) {
+                logger.error("Invoice directory {} [{}] is no '{}', no invoices", dir.getName(), directory, INVOICE_DIRECTORY_CLASS);
+                return null;
+            }
+        } catch (JEVisException e) {
+            logger.error("Could not read invoice directory {}", directory, e);
+            return null;
+        }
+        return buyer;
     }
 
     /**
@@ -554,37 +596,107 @@ public class DemoJob {
             }
             InvoiceBuilder.Spec spec = new InvoiceBuilder.Spec(medium, billed, BigDecimal.valueOf(sum), price, fee, buyer,
                     now.atZone(ReplayPlanner.ZONE).toLocalDate());
-            InvoiceBuilder.Amounts amounts = InvoiceBuilder.amounts(spec);
-            if (dryRun) {
-                logger.info("[dry run] would import invoice {}: {} kWh, {}", number, spec.getKWh(), amounts);
-                return true;
-            }
-            if (!(ds instanceof JEVisDataSourceWS)) {
-                logger.error("Invoice import needs the web service data source");
-                return true;
-            }
-            Path dir = Files.createTempDirectory("jedemo");
-            File file = dir.resolve(InvoiceBuilder.fileName(spec)).toFile();
-            try {
-                Files.write(file.toPath(), InvoiceBuilder.pdf(spec));
-                ((JEVisDataSourceWS) ds).importInvoice(file, directory, medium.name());
-                logger.info("Imported invoice {}: {} kWh, {}", number, spec.getKWh(), amounts);
-            } catch (InvoiceRequestException e) {
-                if (e.getHttpStatus() == 409) {
-                    logger.info("Invoice {} already exists, skipped", number);
-                } else {
-                    logger.error("Import of invoice {} failed: HTTP {} {} {}", number, e.getHttpStatus(), e.getErrorCode(), e.getMessage());
-                    return false;
-                }
-            } finally {
-                Files.deleteIfExists(file.toPath());
-                Files.deleteIfExists(dir);
-            }
-            return true;
+            return importInvoice(spec, directory, medium.name());
         } catch (Exception e) {
             logger.error("Invoice {} failed", number, e);
             return false;
         }
+    }
+
+    /**
+     * The invoice cases ("Invoice Cases"): each case for the previous month, or for every month from the backfill
+     * month on; months already handled by this process are skipped.
+     */
+    private void caseInvoices(DemoConfig config, Map<Long, String> allowed, Instant now) {
+        YearMonth current = YearMonth.from(now.atZone(ReplayPlanner.ZONE));
+        YearMonth billed = current.minusMonths(1);
+        YearMonth first = invoicesFrom != null && invoicesFrom.isBefore(billed) ? invoicesFrom : billed;
+        LocalDate today = now.atZone(ReplayPlanner.ZONE).toLocalDate();
+        ContractValues values = new ContractValues(ds);
+        Set<String> keys = new HashSet<>();
+        for (InvoiceCase invoiceCase : config.invoiceCases) {
+            List<String> problems = invoiceCase.problems();
+            if (!keys.add(String.valueOf(invoiceCase.key))) problems.add("duplicate key");
+            if (!problems.isEmpty()) {
+                logger.error("Invoice case {} skipped: {}", invoiceCase, String.join("; ", problems));
+                continue;
+            }
+            String buyer = invoiceDirectory(invoiceCase.directory.getId(), allowed);
+            if (buyer == null) continue;
+            for (YearMonth month = first; !month.isAfter(billed); month = month.plusMonths(1)) {
+                Set<String> done = invoicedCases.computeIfAbsent(month, m -> new HashSet<>());
+                if (done.contains(invoiceCase.key)) continue;
+                if (caseInvoice(invoiceCase, month, buyer, values, today)) done.add(invoiceCase.key);
+            }
+        }
+        invoicedCases.keySet().removeIf(month -> month.isBefore(first));
+    }
+
+    /**
+     * @return true if the invoice of the case is done for the month (created, already present, or skipped for good)
+     */
+    private boolean caseInvoice(InvoiceCase invoiceCase, YearMonth month, String buyer, ContractValues values, LocalDate today) {
+        String number = InvoiceBuilder.number(month, invoiceCase.suffix);
+        try {
+            Instant end = InvoiceCalculator.end(month);
+            Ref completeRow = invoiceCase.consumption.completeRow != null ? invoiceCase.consumption.completeRow : invoiceCase.consumption.row;
+            Instant latest = values.latest(completeRow);
+            if (latest == null || latest.isBefore(end)) {
+                logger.info("Invoice {}: waiting until the data of {} are complete", number, month);
+                return false;
+            }
+            InvoiceCalculator.Measurement measured = InvoiceCalculator.measure(invoiceCase, month, values);
+            if (measured.getProblem() != null) {
+                logger.warn("Invoice {}: {} for {}, skipped", number, measured.getProblem(), month);
+                return true;
+            }
+            InvoiceCalculator.Result result = InvoiceCalculator.calculate(invoiceCase, month, measured.getConsumption(),
+                    measured.getPeak(), InvoiceCalculator.Prices.of(values), buyer, InvoiceCalculator.issueDate(month, today));
+            for (String warning : result.getWarnings()) logger.info("Invoice {}: {}", number, warning);
+            return importInvoice(result.getSpec(), invoiceCase.directory.getId(), result.getSpec().getMedium().name());
+        } catch (IllegalStateException e) {
+            logger.error("Invoice {} of case {}: {}", number, invoiceCase, e.getMessage());
+            return false;
+        } catch (Exception e) {
+            logger.error("Invoice {} of case {} failed", number, invoiceCase, e);
+            return false;
+        }
+    }
+
+    /**
+     * Imports the invoice into the directory (dry run: only logs it).
+     *
+     * @return true if it was imported or already exists
+     */
+    private boolean importInvoice(InvoiceBuilder.Spec spec, long directory, String medium) throws Exception {
+        String number = spec.getNumber();
+        InvoiceBuilder.Amounts amounts = InvoiceBuilder.amounts(spec);
+        if (dryRun) {
+            logger.info("[dry run] would import invoice {}: {} kWh, {}", number, spec.getKWh(), amounts);
+            return true;
+        }
+        if (!(ds instanceof JEVisDataSourceWS)) {
+            logger.error("Invoice import needs the web service data source");
+            return true;
+        }
+        Path dir = Files.createTempDirectory("jedemo");
+        File file = dir.resolve(InvoiceBuilder.fileName(spec)).toFile();
+        try {
+            Files.write(file.toPath(), InvoiceBuilder.pdf(spec));
+            ((JEVisDataSourceWS) ds).importInvoice(file, directory, medium);
+            logger.info("Imported invoice {}: {} kWh, {}", number, spec.getKWh(), amounts);
+        } catch (InvoiceRequestException e) {
+            if (e.getHttpStatus() == 409) {
+                logger.info("Invoice {} already exists, skipped", number);
+            } else {
+                logger.error("Import of invoice {} failed: HTTP {} {} {}", number, e.getHttpStatus(), e.getErrorCode(), e.getMessage());
+                return false;
+            }
+        } finally {
+            Files.deleteIfExists(file.toPath());
+            Files.deleteIfExists(dir);
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------------------------------------ helpers

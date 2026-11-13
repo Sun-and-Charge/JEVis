@@ -1,0 +1,209 @@
+{
+  "selectedInputs" : [
+    {
+      "objectClass" : "Electricity Supply Contractor",
+      "id" : "4293a9d2-976d-336d-b776-5bad323567c7",
+      "attributeName" : "name",
+      "variableName" : "Name_Lieferant",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23510
+    },
+    {
+      "objectClass" : "Electricity Grid Operator",
+      "id" : "2915bc3d-f346-3e0b-aded-98eb5fe688c0",
+      "attributeName" : "name",
+      "variableName" : "Name_Netzbetreiber",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23515
+    },
+    {
+      "objectClass" : "Electricity Metering Point Operator",
+      "id" : "72ed7e0a-7d3b-3646-a0c3-34dc231f6d6c",
+      "attributeName" : "name",
+      "variableName" : "Name_Messstellenbetreiber",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23511
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "93f53422-e6c0-3320-9715-23772fff84b5",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Zaehler",
+      "variableType" : "SUM",
+      "filter" : "Bezug",
+      "group" : false,
+      "objectID" : 23734
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "ea0e4deb-f422-375e-a2c4-de50f007321b",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Verbrauch laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@A.invoices.CONSUMPTION"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "077d834a-71d7-35ec-bb39-532f78c258a0",
+      "attributeName" : "Value",
+      "variableName" : "Spitze_Viertelstunde",
+      "variableType" : "MAX",
+      "filter" : "Bezug",
+      "group" : false,
+      "objectID" : 23734
+    },
+    {
+      "objectClass" : "Electricity Supply Contractor",
+      "id" : "6191dd93-8c9b-330c-90d7-4783dc51b907",
+      "attributeName" : "Energy Price HT",
+      "variableName" : "ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23510
+    },
+    {
+      "objectClass" : "Electricity Grid Operator",
+      "id" : "3c54353b-e402-3a23-8df7-2bbc5c3eaec4",
+      "attributeName" : "Demand Charge",
+      "variableName" : "GRID_DEMAND_Preis",
+      "variableType" : "RANGING_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23515
+    },
+    {
+      "objectClass" : "Electricity Grid Operator",
+      "id" : "0f152497-8bcc-3aa3-961d-153656e0ef12",
+      "attributeName" : "Energy Price Grid",
+      "variableName" : "GRID_ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23515
+    },
+    {
+      "objectClass" : "Electricity Metering Point Operator",
+      "id" : "38f67df4-fe02-3502-b20b-9e10e21e584e",
+      "attributeName" : "Net Cost",
+      "variableName" : "MSB_Jahrespreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23511
+    },
+    {
+      "objectClass" : "Electricity Metering Point Operator",
+      "id" : "d3e5183a-903d-3a7e-aab0-d4024d722ff0",
+      "attributeName" : "Net Cost",
+      "variableName" : "MSB_anteilig",
+      "variableType" : "YEARLY_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23511
+    },
+    {
+      "objectClass" : "Electricity Grid Operator",
+      "id" : "01bcc4d4-6850-3d63-b0d8-49660e533f42",
+      "attributeName" : "Franchise Tax",
+      "variableName" : "FRANCHISE_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23515
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "f6a2f052-7446-30de-bbc3-ad6fb0fc8edf",
+      "attributeName" : "Allocation 02",
+      "variableName" : "KWKG_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "7e1a8706-8e4e-3b06-b8ac-66d6b20fd6d4",
+      "attributeName" : "Allocation 03",
+      "variableName" : "STROMNEV_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "5df874e4-4f10-3bd3-ba68-21d98c8b4afe",
+      "attributeName" : "Allocation 05",
+      "variableName" : "OFFSHORE_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "91f2628e-3cb6-30ec-a22e-a166cc47041b",
+      "attributeName" : "Energy Tax Electricity",
+      "variableName" : "TAX_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "c8e91cb2-e537-38d8-99bd-b86cf434f3de",
+      "attributeName" : "Value",
+      "variableName" : "Netto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten netto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@A.invoices.NET"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "844ab42b-fed0-323e-8305-640cdb31b796",
+      "attributeName" : "Value",
+      "variableName" : "Brutto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten brutto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@A.invoices.GROSS"
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "54b295cd-2abf-339c-b866-8af5ca7a8818",
+      "attributeName" : "VAT Electricity",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    }
+  ],
+  "linkedOutputs" : [ ],
+  "templateSelection" : null,
+  "type" : "SimpleDataHandler",
+  "contractNumber" : "V-2025-0101",
+  "contractType" : "ELECTRICITY",
+  "marketLocationNumber" : "10000000001",
+  "contractDate" : "2024-10-15T00:00:00.000+02:00",
+  "firstRate" : "2025-02-01T00:00:00.000+01:00",
+  "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",
+  "contractStart" : "2025-01-01T00:00:00.000+01:00",
+  "contractEnd" : "2027-12-31T00:00:00.000+01:00",
+  "templateKey" : "@T.A"
+}

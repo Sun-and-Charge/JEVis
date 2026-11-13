@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import NewDashboardButton from '../components/dashboard/edit/NewDashboardButton.vue'
 import ItemOverview from '../components/nav/ItemOverview.vue'
+import RecycleBinLink from '../components/recycle/RecycleBinLink.vue'
 
 /* Overview of all dashboards with "Neues Dashboard" (E4) in the header. */
 </script>
@@ -9,6 +10,7 @@ import ItemOverview from '../components/nav/ItemOverview.vue'
 <template>
   <ItemOverview kind="dashboard">
     <template #actions>
+      <RecycleBinLink kind="dashboards" />
       <NewDashboardButton />
     </template>
   </ItemOverview>

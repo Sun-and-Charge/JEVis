@@ -26,6 +26,8 @@ import org.jevis.api.JEVisObject;
 import org.jevis.commons.cli.AbstractCliApp;
 
 import java.time.Clock;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -36,13 +38,17 @@ import java.util.List;
  * <li>{@code -sm single -jid <organisation ids>}: one cycle for the given organisations (settings from the service
  * object).</li>
  * </ul>
- * {@code -o dryrun=true} only logs what would be written.
+ * {@code -o dryrun=true} only logs what would be written. {@code -o invoicesFrom=2025-01} also bills the invoice cases of
+ * the months from then on (backfill, existing invoices are skipped), {@code -o invoicesOnly=true} skips the replay and
+ * the date rolling.
  */
 public class Launcher extends AbstractCliApp {
 
     private static final Logger logger = LogManager.getLogger(Launcher.class);
     private static final String APP_INFO = "JEDemo";
     static final String OPTION_DRY_RUN = "dryrun";
+    static final String OPTION_INVOICES_FROM = "invoicesFrom";
+    static final String OPTION_INVOICES_ONLY = "invoicesOnly";
     private static final int DEFAULT_CYCLE_TIME = 3600000;
 
     private final Command commands = new Command();
@@ -71,7 +77,18 @@ public class Launcher extends AbstractCliApp {
         cycleTime = DEFAULT_CYCLE_TIME;
         boolean dryRun = Boolean.parseBoolean(settings.options.getOrDefault(OPTION_DRY_RUN, "false").trim());
         if (dryRun) logger.info("Dry run: nothing is written");
-        job = new DemoJob(ds, dryRun, Clock.systemUTC());
+        YearMonth invoicesFrom = null;
+        String from = settings.options.get(OPTION_INVOICES_FROM);
+        if (from != null && !from.trim().isEmpty()) {
+            try {
+                invoicesFrom = YearMonth.parse(from.trim());
+                logger.info("Invoice cases are billed from {} on", invoicesFrom);
+            } catch (DateTimeParseException e) {
+                logger.error("Invalid option {}={} (expected yyyy-MM), ignored", OPTION_INVOICES_FROM, from);
+            }
+        }
+        boolean invoicesOnly = Boolean.parseBoolean(settings.options.getOrDefault(OPTION_INVOICES_ONLY, "false").trim());
+        job = new DemoJob(ds, dryRun, Clock.systemUTC(), invoicesFrom, invoicesOnly);
     }
 
     private JEVisObject serviceObject() throws JEVisException {

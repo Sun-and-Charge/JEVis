@@ -1728,5 +1728,58 @@
       "color": "Ungültige Farbe.",
       "tooMany": "Höchstens 1000 Widgets."
     }
+  },
+  "recycle": {
+    "title": "Papierkorb",
+    "link": "Papierkorb",
+    "intro": "Gelöschte Dashboards und Analysen bleiben im Papierkorb, bis sie wiederhergestellt oder endgültig gelöscht werden.",
+    "kindsLabel": "Papierkorb: Art",
+    "kinds": {
+      "dashboards": "Dashboards",
+      "analyses": "Analysen"
+    },
+    "listLabel": "Gelöschte {kind}",
+    "back": {
+      "dashboards": "Zurück zu den Dashboards",
+      "analyses": "Zurück zu den Analysen"
+    },
+    "loading": "Papierkorb wird geladen …",
+    "loadError": "Der Papierkorb konnte nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "empty": {
+      "dashboards": "Keine gelöschten Dashboards im Papierkorb.",
+      "analyses": "Keine gelöschten Analysen im Papierkorb."
+    },
+    "origin": "Ursprünglicher Ort: {path}",
+    "originGone": "Ursprünglicher Ort existiert nicht mehr",
+    "originHidden": "Ursprünglicher Ort nicht sichtbar",
+    "deleted": "Gelöscht am {date} von {user}",
+    "deletedNoUser": "Gelöscht am {date}",
+    "deletedByOnly": "Gelöscht von {user}",
+    "restore": "Wiederherstellen",
+    "restoreTo": "Wiederherstellen nach …",
+    "restoreOf": "„{name}“ wiederherstellen",
+    "deleteForever": "Endgültig löschen",
+    "deleteForeverOf": "„{name}“ endgültig löschen",
+    "noRights": "Keine Berechtigung zum Wiederherstellen oder Löschen",
+    "restored": "„{name}“ wurde wiederhergestellt in {path}.",
+    "restoredNoPath": "„{name}“ wurde wiederhergestellt.",
+    "deletedForever": "„{name}“ wurde endgültig gelöscht.",
+    "open": "Öffnen",
+    "target": {
+      "title": "Ziel für die Wiederherstellung wählen",
+      "message": "Der ursprüngliche Ort von „{name}“ existiert nicht mehr. Bitte wählen Sie ein Verzeichnis.",
+      "directory": "Verzeichnis",
+      "loading": "Verzeichnisse werden geladen …",
+      "none": "Es gibt kein Verzeichnis, in dem Sie anlegen dürfen."
+    },
+    "confirm": {
+      "title": "Endgültig löschen",
+      "message": "„{name}“ wird unwiderruflich gelöscht. Das kann nicht rückgängig gemacht werden."
+    },
+    "error": {
+      "parentGone": "Der ursprüngliche Ort existiert nicht mehr. Bitte wählen Sie ein Ziel.",
+      "notFound": "Der Eintrag ist nicht mehr im Papierkorb. Die Liste wurde neu geladen."
+    }
   }
 }

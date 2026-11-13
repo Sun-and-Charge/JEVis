@@ -1,0 +1,243 @@
+{
+  "selectedInputs" : [
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "b2de0e26-9554-3edf-8d5c-dbfebcb204e8",
+      "attributeName" : "name",
+      "variableName" : "Name_Lieferant",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.supplier"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "77896311-f077-32cd-b0c9-a5c20a4d3a89",
+      "attributeName" : "name",
+      "variableName" : "Name_Netzbetreiber",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.grid"
+    },
+    {
+      "objectClass" : "Gas Metering Point Operator",
+      "id" : "21c79af4-83e3-3742-88b9-3a122f730802",
+      "attributeName" : "name",
+      "variableName" : "Name_Messstellenbetreiber",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.msb"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "35281b34-917d-39ed-888d-e5d98af45a71",
+      "attributeName" : "Value",
+      "variableName" : "Volumen_Zaehler",
+      "variableType" : "SUM",
+      "filter" : "Gas Außenlager Volumen",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@D.clean"
+    },
+    {
+      "objectClass" : "Base Data",
+      "id" : "1723a6e8-5f25-3aff-a4eb-a8196652c01d",
+      "attributeName" : "Value",
+      "variableName" : "Brennwert_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : "Brennwert",
+      "group" : false,
+      "objectID" : 23946
+    },
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "bdd7f1bd-4f74-3866-b964-c13a87d55c24",
+      "attributeName" : "State Number",
+      "variableName" : "Zustandszahl_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.supplier"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "9ac4e644-3e42-32f4-8b6b-4617a476d606",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Verbrauch laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@D.invoices.CONSUMPTION"
+    },
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "1b06e66e-0433-3b6e-bd7a-c87667d91452",
+      "attributeName" : "Energy Price",
+      "variableName" : "ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.supplier"
+    },
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "a03bc8f9-5fab-356a-bcf0-ea35f44464e3",
+      "attributeName" : "Additional Fix Cost",
+      "variableName" : "BASE_Jahrespreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.supplier"
+    },
+    {
+      "objectClass" : "Gas Supply Contractor",
+      "id" : "8b2aab25-542d-3d49-87de-33124fe04388",
+      "attributeName" : "Additional Fix Cost",
+      "variableName" : "BASE_anteilig",
+      "variableType" : "YEARLY_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.supplier"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "bcc8df2a-6c60-3799-aaa9-1211d9a20423",
+      "attributeName" : "Net Cost",
+      "variableName" : "GRID_BASE_Jahrespreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.grid"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "bb0e9fb3-1705-3bde-be33-1caf22746d94",
+      "attributeName" : "Net Cost",
+      "variableName" : "GRID_BASE_anteilig",
+      "variableType" : "YEARLY_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.grid"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "68a70234-f779-329a-a545-fbdc87abc07a",
+      "attributeName" : "Energy Price Grid",
+      "variableName" : "GRID_ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.grid"
+    },
+    {
+      "objectClass" : "Gas Metering Point Operator",
+      "id" : "dd34ff9e-a74a-31ce-893e-5444d39ce370",
+      "attributeName" : "Net Cost",
+      "variableName" : "MSB_Jahrespreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.msb"
+    },
+    {
+      "objectClass" : "Gas Metering Point Operator",
+      "id" : "905c0ad5-afc4-32a2-9427-c9a0cf1e4bf8",
+      "attributeName" : "Net Cost",
+      "variableName" : "MSB_anteilig",
+      "variableType" : "YEARLY_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.msb"
+    },
+    {
+      "objectClass" : "Gas Grid Operator",
+      "id" : "d98f0f97-de4e-3cbc-868b-c5ff0566b7bf",
+      "attributeName" : "Franchise Tax",
+      "variableName" : "FRANCHISE_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@D.grid"
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "346343bd-c37b-30e6-9c77-595ba09ea2c4",
+      "attributeName" : "Allocation 08",
+      "variableName" : "CO2_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "d72884f8-b281-3cd4-bb95-f086caf3e565",
+      "attributeName" : "Energy Tax Gas",
+      "variableName" : "TAX_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "548c113e-d6f5-3edd-a72e-ed8cdb90b5c7",
+      "attributeName" : "Value",
+      "variableName" : "Netto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten netto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@D.invoices.NET"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "802240d5-d73e-3400-b9ec-61b1b374893b",
+      "attributeName" : "Value",
+      "variableName" : "Brutto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten brutto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@D.invoices.GROSS"
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "9c1a00e5-3f24-32c8-9359-fa604aa37ac7",
+      "attributeName" : "VAT Gas",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    }
+  ],
+  "linkedOutputs" : [ ],
+  "templateSelection" : null,
+  "type" : "SimpleDataHandler",
+  "contractNumber" : "V-2025-0202",
+  "contractType" : "GAS",
+  "marketLocationNumber" : "50000000002",
+  "contractDate" : "2024-10-15T00:00:00.000+02:00",
+  "firstRate" : "2025-02-01T00:00:00.000+01:00",
+  "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",
+  "contractStart" : "2025-01-01T00:00:00.000+01:00",
+  "contractEnd" : "2027-12-31T00:00:00.000+01:00",
+  "templateKey" : "@T.D"
+}

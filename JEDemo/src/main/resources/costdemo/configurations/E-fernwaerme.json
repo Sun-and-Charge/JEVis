@@ -1,0 +1,158 @@
+{
+  "selectedInputs" : [
+    {
+      "objectClass" : "Community Heating Supply Contractor",
+      "id" : "be280d1e-3f01-398a-807b-3fdaab8d21ec",
+      "attributeName" : "name",
+      "variableName" : "Name_Lieferant",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@E.supplier"
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "e74acc6d-f9be-3289-b036-7fb76e1d10a2",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Zaehler",
+      "variableType" : "SUM",
+      "filter" : "Fernwärme Außenlager",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.clean"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "d20bd6cc-3fae-329c-904e-4729350d3a5f",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Verbrauch laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.invoices.CONSUMPTION"
+    },
+    {
+      "objectClass" : "Base Data",
+      "id" : "365a6e8c-bcf7-3001-bc5b-a6a850db4845",
+      "attributeName" : "Value",
+      "variableName" : "Anschlusswert_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : "Anschlusswert",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.capacity"
+    },
+    {
+      "objectClass" : "Base Data",
+      "id" : "ed01ff3e-c8c0-39ae-9229-1ba944154849",
+      "attributeName" : "Value",
+      "variableName" : "Gaspreisindex_G_2021_100_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : "Preisindex Erdgas",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.indexGas"
+    },
+    {
+      "objectClass" : "Base Data",
+      "id" : "dd2e22fd-5836-36bb-9390-48672fef5fd2",
+      "attributeName" : "Value",
+      "variableName" : "Waermepreisindex_W_2021_100_Wert",
+      "variableType" : "NON_PERIODIC",
+      "filter" : "Preisindex Wärme",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.indexHeat"
+    },
+    {
+      "objectClass" : "Community Heating Supply Contractor",
+      "id" : "966ac1f1-89d5-3351-a0c1-e4c24fddb7e3",
+      "attributeName" : "Energy Price",
+      "variableName" : "ENERGY_Basispreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@E.supplier"
+    },
+    {
+      "objectClass" : "Community Heating Supply Contractor",
+      "id" : "6b336c5d-7bd5-3e0f-977a-6b74147f351f",
+      "attributeName" : "Demand Charge",
+      "variableName" : "CAPACITY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@E.supplier"
+    },
+    {
+      "objectClass" : "Community Heating Supply Contractor",
+      "id" : "16e3f7b4-fea4-3fe4-af78-2e509ef5e288",
+      "attributeName" : "Additional Fix Cost",
+      "variableName" : "MEASURE_Jahrespreis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@E.supplier"
+    },
+    {
+      "objectClass" : "Community Heating Supply Contractor",
+      "id" : "92585ba4-c598-3a73-9a83-2ad32d51fce0",
+      "attributeName" : "Additional Fix Cost",
+      "variableName" : "MEASURE_anteilig",
+      "variableType" : "YEARLY_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : null,
+      "objectKey" : "@E.supplier"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "7fb1138c-e49e-38f4-acea-568ded6e2fed",
+      "attributeName" : "Value",
+      "variableName" : "Netto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten netto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.invoices.NET"
+    },
+    {
+      "objectClass" : "Energy Invoice Data",
+      "id" : "5f8ccfe0-621a-30a7-bbb4-52de5f646863",
+      "attributeName" : "Value",
+      "variableName" : "Brutto_Rechnung",
+      "variableType" : "SUM",
+      "filter" : "Kosten brutto laut Rechnung",
+      "group" : false,
+      "objectID" : null,
+      "objectKey" : "@E.invoices.GROSS"
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "cbeece69-d229-3d73-a0b6-448fb21703b8",
+      "attributeName" : "VAT Community Heating",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 23519
+    }
+  ],
+  "linkedOutputs" : [ ],
+  "templateSelection" : null,
+  "type" : "SimpleDataHandler",
+  "contractNumber" : "V-2025-0301",
+  "contractType" : "COMMUNITY_HEATING",
+  "marketLocationNumber" : "",
+  "contractDate" : "2024-10-15T00:00:00.000+02:00",
+  "firstRate" : "2025-02-01T00:00:00.000+01:00",
+  "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",
+  "contractStart" : "2025-01-01T00:00:00.000+01:00",
+  "contractEnd" : "2027-12-31T00:00:00.000+01:00",
+  "templateKey" : "@T.E"
+}

@@ -39,14 +39,17 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Builds the monthly demo energy invoices (ZUGFeRD / Factur-X PDF, profile EN16931) with neutral names: supplier
- * "Energieversorger Nord", a work price line in kWh and a monthly base price, 19 % VAT, billing period = one month.
+ * Builds the monthly demo energy invoices (ZUGFeRD / Factur-X PDF, profile EN16931) with neutral names. An invoice is
+ * a list of {@link Line lines} (quantity × unit price, unit code of UN/ECE Rec. 20), one VAT rate, billing period = one
+ * month. The lines of the demo cost cases are made by {@link InvoiceCalculator}; the old fixed pair (work price in kWh
+ * and a monthly base price from the service object) is still available through the legacy {@link Spec} constructor.
  */
 public final class InvoiceBuilder {
 
@@ -73,7 +76,8 @@ public final class InvoiceBuilder {
      */
     public enum Medium {
         ELECTRICITY("S", "Arbeitspreis Strom", "Strom"),
-        GAS("G", "Arbeitspreis Erdgas", "Erdgas");
+        GAS("G", "Arbeitspreis Erdgas", "Erdgas"),
+        DISTRICT_HEATING("W", "Arbeitspreis Fernwärme", "Fernwärme");
 
         private final String suffix;
         private final String workPriceLine;
@@ -95,18 +99,77 @@ public final class InvoiceBuilder {
     }
 
     /**
+     * One invoice line: quantity × unit price, rounded to cents like the CII line total.
+     */
+    public static final class Line {
+        final String text;
+        final String unitCode;
+        final BigDecimal quantity;
+        final BigDecimal price;
+
+        /**
+         * @param text     line text
+         * @param unitCode UN/ECE Rec. 20 unit code: KWH, KWT (kW), DAY, MON, ...
+         * @param quantity quantity in that unit
+         * @param price    net unit price in EUR
+         */
+        public Line(String text, String unitCode, BigDecimal quantity, BigDecimal price) {
+            this.text = Objects.requireNonNull(text);
+            this.unitCode = Objects.requireNonNull(unitCode);
+            this.quantity = Objects.requireNonNull(quantity);
+            this.price = Objects.requireNonNull(price);
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getUnitCode() {
+            return unitCode;
+        }
+
+        public BigDecimal getQuantity() {
+            return quantity;
+        }
+
+        public BigDecimal getPrice() {
+            return price;
+        }
+
+        /**
+         * @return quantity × price rounded to cents (half up), as Mustang calculates the line total
+         */
+        public BigDecimal getNet() {
+            return cents(quantity.multiply(price));
+        }
+
+        @Override
+        public String toString() {
+            return text + ": " + quantity.toPlainString() + " " + unitCode + " x " + price.stripTrailingZeros().toPlainString()
+                    + " EUR = " + getNet().toPlainString() + " EUR";
+        }
+    }
+
+    /**
      * Everything one invoice needs.
      */
     public static final class Spec {
         final Medium medium;
+        final String number;
         final YearMonth period;
-        final BigDecimal kWh;
-        final BigDecimal pricePerKWh;
-        final BigDecimal monthlyFee;
+        final String seller;
+        final String sellerVatId;
+        final List<String> notes;
         final String buyerName;
         final LocalDate issueDate;
+        final BigDecimal vatPercent;
+        final List<Line> lines;
+        final BigDecimal kWh;
 
         /**
+         * The old invoice of the service attributes: work price line in kWh and a monthly base price, supplier
+         * {@value #SUPPLIER}, 19 % VAT, number "EN-yyyyMM-S" / "-G".
+         *
          * @param medium      electricity or gas
          * @param period      billing month
          * @param kWh         consumption of the month (rounded to whole kWh)
@@ -119,11 +182,57 @@ public final class InvoiceBuilder {
                     String buyerName, LocalDate issueDate) {
             this.medium = Objects.requireNonNull(medium);
             this.period = Objects.requireNonNull(period);
+            this.number = number(medium, period);
+            this.seller = SUPPLIER;
+            this.sellerVatId = SUPPLIER_VAT_ID;
             this.kWh = Objects.requireNonNull(kWh).setScale(0, RoundingMode.HALF_UP);
-            this.pricePerKWh = Objects.requireNonNull(pricePerKWh);
-            this.monthlyFee = monthlyFee != null && monthlyFee.signum() > 0 ? monthlyFee : null;
-            this.buyerName = buyerName == null || buyerName.trim().isEmpty() ? "Demo" : buyerName.trim();
+            this.buyerName = buyer(buyerName);
             this.issueDate = Objects.requireNonNull(issueDate);
+            this.vatPercent = VAT_PERCENT;
+            List<Line> list = new ArrayList<>();
+            list.add(new Line(medium.workPriceLine, "KWH", this.kWh, Objects.requireNonNull(pricePerKWh)));
+            if (monthlyFee != null && monthlyFee.signum() > 0) list.add(new Line("Grundpreis", "MON", BigDecimal.ONE, monthlyFee));
+            this.lines = Collections.unmodifiableList(list);
+            List<String> n = new ArrayList<>();
+            n.add(medium == Medium.ELECTRICITY ? "Zählpunkt " + ELECTRICITY_METER_POINT : "Marktlokation " + GAS_MARKET_LOCATION);
+            n.add(demoNote(medium.label, period));
+            this.notes = Collections.unmodifiableList(n);
+        }
+
+        /**
+         * An invoice of a demo cost case.
+         *
+         * @param number     invoice number
+         * @param notes      notes (meter point first), a "Demo-Rechnung" note is added
+         * @param vatPercent VAT rate of all lines
+         * @param lines      the lines, at least one
+         * @param kWh        billed consumption in kWh (for the log), may be null
+         */
+        public Spec(Medium medium, String number, YearMonth period, String seller, String sellerVatId, List<String> notes,
+                    String buyerName, LocalDate issueDate, BigDecimal vatPercent, List<Line> lines, BigDecimal kWh) {
+            this.medium = Objects.requireNonNull(medium);
+            this.number = Objects.requireNonNull(number);
+            this.period = Objects.requireNonNull(period);
+            this.seller = seller == null || seller.trim().isEmpty() ? SUPPLIER : seller.trim();
+            this.sellerVatId = sellerVatId == null || sellerVatId.trim().isEmpty() ? SUPPLIER_VAT_ID : sellerVatId.trim();
+            this.buyerName = buyer(buyerName);
+            this.issueDate = Objects.requireNonNull(issueDate);
+            this.vatPercent = Objects.requireNonNull(vatPercent);
+            if (lines == null || lines.isEmpty()) throw new IllegalArgumentException("An invoice needs at least one line");
+            this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
+            List<String> n = new ArrayList<>();
+            if (notes != null) n.addAll(notes);
+            n.add(demoNote(medium.label, period));
+            this.notes = Collections.unmodifiableList(n);
+            this.kWh = kWh;
+        }
+
+        private static String buyer(String name) {
+            return name == null || name.trim().isEmpty() ? "Demo" : name.trim();
+        }
+
+        private static String demoNote(String label, YearMonth period) {
+            return "Demo-Rechnung " + label + " " + String.format(Locale.ROOT, "%02d/%04d", period.getMonthValue(), period.getYear());
         }
 
         public Medium getMedium() {
@@ -134,8 +243,31 @@ public final class InvoiceBuilder {
             return period;
         }
 
+        public String getNumber() {
+            return number;
+        }
+
+        /**
+         * @return billed consumption in kWh, null if unknown
+         */
         public BigDecimal getKWh() {
             return kWh;
+        }
+
+        public List<Line> getLines() {
+            return lines;
+        }
+
+        public BigDecimal getVatPercent() {
+            return vatPercent;
+        }
+
+        public List<String> getNotes() {
+            return notes;
+        }
+
+        public LocalDate getIssueDate() {
+            return issueDate;
         }
     }
 
@@ -176,21 +308,28 @@ public final class InvoiceBuilder {
      * @return e.g. "EN-202610-S" (electricity) or "EN-202610-G" (gas)
      */
     public static String number(Medium medium, YearMonth period) {
-        return String.format(Locale.ROOT, "EN-%04d%02d-%s", period.getYear(), period.getMonthValue(), medium.suffix);
+        return number(period, medium.suffix);
+    }
+
+    /**
+     * @return e.g. "EN-202610-SR"
+     */
+    public static String number(YearMonth period, String suffix) {
+        return String.format(Locale.ROOT, "EN-%04d%02d-%s", period.getYear(), period.getMonthValue(), suffix);
     }
 
     public static String fileName(Spec spec) {
-        return number(spec.medium, spec.period) + ".pdf";
+        return spec.number + ".pdf";
     }
 
     public static Amounts amounts(Spec spec) {
-        BigDecimal net = cents(spec.kWh.multiply(spec.pricePerKWh));
-        if (spec.monthlyFee != null) net = net.add(cents(spec.monthlyFee));
-        BigDecimal vat = cents(net.multiply(VAT_PERCENT).divide(HUNDRED));
+        BigDecimal net = BigDecimal.ZERO.setScale(2);
+        for (Line line : spec.lines) net = net.add(line.getNet());
+        BigDecimal vat = cents(net.multiply(spec.vatPercent).divide(HUNDRED));
         return new Amounts(net, vat);
     }
 
-    private static BigDecimal cents(BigDecimal value) {
+    static BigDecimal cents(BigDecimal value) {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -201,32 +340,23 @@ public final class InvoiceBuilder {
         LocalDate first = spec.period.atDay(1);
         LocalDate last = spec.period.atEndOfMonth();
 
-        TradeParty seller = new TradeParty(SUPPLIER, "Hafenstraße 1", "12345", "Nordstadt", "DE");
-        seller.addVATID(SUPPLIER_VAT_ID);
+        TradeParty seller = new TradeParty(spec.seller, "Hafenstraße 1", "12345", "Nordstadt", "DE");
+        seller.addVATID(spec.sellerVatId);
         seller.setEmail("rechnung@example.org");
         TradeParty buyer = new TradeParty(spec.buyerName, "Musterstraße 2", "54321", "Musterstadt", "DE");
 
         Invoice invoice = new Invoice()
-                .setNumber(number(spec.medium, spec.period))
+                .setNumber(spec.number)
                 .setIssueDate(date(spec.issueDate))
                 .setDueDate(date(spec.issueDate.plusDays(PAYMENT_DAYS)))
                 .setSender(seller)
                 .setRecipient(buyer)
-                .setDetailedDeliveryPeriod(date(first), date(last))
-                .addNote(spec.medium == Medium.ELECTRICITY
-                        ? "Zählpunkt " + ELECTRICITY_METER_POINT
-                        : "Marktlokation " + GAS_MARKET_LOCATION)
-                .addNote("Demo-Rechnung " + spec.medium.label + " " + String.format(Locale.ROOT, "%02d/%04d",
-                        spec.period.getMonthValue(), spec.period.getYear()));
-        invoice.addItem(item(spec.medium.workPriceLine, "KWH", spec.pricePerKWh, spec.kWh));
-        if (spec.monthlyFee != null) {
-            invoice.addItem(item("Grundpreis", "MON", spec.monthlyFee, BigDecimal.ONE));
+                .setDetailedDeliveryPeriod(date(first), date(last));
+        for (String note : spec.notes) invoice.addNote(note);
+        for (Line line : spec.lines) {
+            invoice.addItem(new Item(new Product(line.text, "", line.unitCode, spec.vatPercent), line.price, line.quantity));
         }
         return invoice;
-    }
-
-    private static Item item(String name, String unit, BigDecimal price, BigDecimal quantity) {
-        return new Item(new Product(name, "", unit, VAT_PERCENT), price, quantity);
     }
 
     /**
@@ -260,17 +390,19 @@ public final class InvoiceBuilder {
     static byte[] visiblePdf(Spec spec) throws IOException {
         Amounts amounts = amounts(spec);
         List<String> lines = new ArrayList<>();
-        lines.add(SUPPLIER);
-        lines.add("Rechnung " + number(spec.medium, spec.period) + " vom " + spec.issueDate);
+        lines.add(ascii(spec.seller));
+        lines.add("Rechnung " + spec.number + " vom " + spec.issueDate);
         lines.add("Kunde: " + ascii(spec.buyerName));
         lines.add("Abrechnungszeitraum: " + spec.period.atDay(1) + " bis " + spec.period.atEndOfMonth());
-        lines.add(spec.medium == Medium.ELECTRICITY ? "Zaehlpunkt " + ELECTRICITY_METER_POINT
-                : "Marktlokation " + GAS_MARKET_LOCATION);
-        lines.add(ascii(spec.medium.workPriceLine) + ": " + spec.kWh.toPlainString() + " kWh x "
-                + spec.pricePerKWh.toPlainString() + " EUR/kWh");
-        if (spec.monthlyFee != null) lines.add("Grundpreis: " + cents(spec.monthlyFee).toPlainString() + " EUR");
-        lines.add("Netto " + amounts.getNet().toPlainString() + " EUR, USt 19 % " + amounts.getVat().toPlainString()
-                + " EUR, Brutto " + amounts.getGross().toPlainString() + " EUR");
+        for (String note : spec.notes) lines.add(ascii(note));
+        lines.add("");
+        for (Line line : spec.lines) {
+            lines.add(ascii(line.text) + ": " + line.quantity.toPlainString() + " " + unitName(line.unitCode) + " x "
+                    + line.price.stripTrailingZeros().toPlainString() + " EUR = " + line.getNet().toPlainString() + " EUR");
+        }
+        lines.add("");
+        lines.add("Netto " + amounts.getNet().toPlainString() + " EUR, USt " + spec.vatPercent.stripTrailingZeros().toPlainString()
+                + " % " + amounts.getVat().toPlainString() + " EUR, Brutto " + amounts.getGross().toPlainString() + " EUR");
         lines.add("Demo-Rechnung, automatisch erzeugt.");
 
         try (PDDocument document = new PDDocument(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -279,9 +411,9 @@ public final class InvoiceBuilder {
             document.addPage(page);
             try (PDPageContentStream content = new PDPageContentStream(document, page)) {
                 content.beginText();
-                content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 11);
-                content.setLeading(16);
-                content.newLineAtOffset(60, 720);
+                content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10);
+                content.setLeading(14);
+                content.newLineAtOffset(50, 740);
                 for (String line : lines) {
                     content.showText(line);
                     content.newLine();
@@ -290,6 +422,23 @@ public final class InvoiceBuilder {
             }
             document.save(out);
             return out.toByteArray();
+        }
+    }
+
+    private static String unitName(String code) {
+        switch (code) {
+            case "KWH":
+                return "kWh";
+            case "KWT":
+                return "kW";
+            case "DAY":
+                return "Tage";
+            case "MON":
+                return "Monat";
+            case "MTQ":
+                return "m3";
+            default:
+                return code;
         }
     }
 
@@ -307,6 +456,9 @@ public final class InvoiceBuilder {
                 case 'Ö': sb.append("Oe"); break;
                 case 'Ü': sb.append("Ue"); break;
                 case 'ß': sb.append("ss"); break;
+                case '³': sb.append('3'); break;
+                case '×': sb.append('x'); break;
+                case '–': sb.append('-'); break;
                 default: sb.append(c >= 32 && c < 127 ? c : '?');
             }
         }

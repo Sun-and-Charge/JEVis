@@ -286,8 +286,8 @@ public class ResultCalculatorTest {
         TrcResult result = calculate(template);
         assertEquals("latest value", 7d, value(result, "o1"), 1e-9);
         assertEquals("last value at or before the start", 0.25, value(result, "o2"), 1e-9);
-        /* 3650 / 365 days * 29 days (1st to 30th, as the Control Center counts) */
-        assertEquals(290d, value(result, "o3"), 1e-9);
+        /* 3650 / 365 days * 30 days of November (the old Control Center counted 29) */
+        assertEquals(300d, value(result, "o3"), 1e-9);
     }
 
     @Test
@@ -416,8 +416,8 @@ public class ResultCalculatorTest {
                         formula("f2", "Other", "year + price * 0", "o2", "y", "p")),
                 Arrays.asList(output("o1", "Sum", "kWh", 0), output("o2", "Average", "%", 1)));
         TrcResult result = calculate(template);
-        assertEquals("kWh is summed over the time steps", 290d, value(result, "o1"), 1e-9);
-        assertEquals("% is averaged", 290d / 3, value(result, "o2"), 1e-9);
+        assertEquals("kWh is summed over the time steps", 300d, value(result, "o1"), 1e-9);
+        assertEquals("% is averaged", 300d / 3, value(result, "o2"), 1e-9);
     }
 
     @Test
@@ -480,6 +480,59 @@ public class ResultCalculatorTest {
         assertEquals(new DateTime(2026, 1, 1, 0, 0, ZONE).getMillis(), cell.getAnalysisFrom().getMillis());
         assertEquals(new DateTime(2026, 10, 31, 23, 59, 59, 999, ZONE).getMillis(), cell.getAnalysisTo().getMillis());
         assertNull(result.cell("o2").getAnalysisObjectId());
+    }
+
+    @Test
+    public void wholeDaysOfTheTimeFrame() {
+        assertEquals(30, ResultCalculator.daysOfInterval(START, END));
+        assertEquals("exclusive end at midnight", 30, ResultCalculator.daysOfInterval(START, new DateTime(2026, 12, 1, 0, 0, ZONE)));
+        assertEquals(365, ResultCalculator.daysOfInterval(new DateTime(2026, 1, 1, 0, 0, ZONE),
+                new DateTime(2026, 12, 31, 23, 59, 59, 999, ZONE)));
+        assertEquals("leap year", 29, ResultCalculator.daysOfInterval(new DateTime(2028, 2, 1, 0, 0, ZONE),
+                new DateTime(2028, 2, 29, 23, 59, 59, 999, ZONE)));
+        assertEquals("March with the change to summer time", 31, ResultCalculator.daysOfInterval(
+                new DateTime(2026, 3, 1, 0, 0, ZONE), new DateTime(2026, 3, 31, 23, 59, 59, 999, ZONE)));
+        assertEquals("a started day counts", 1, ResultCalculator.daysOfInterval(START, START.plusHours(6)));
+        assertEquals(0, ResultCalculator.daysOfInterval(START, START));
+        assertEquals(1200d, ResultCalculator.prorate(14600, START, END), 1e-9);
+    }
+
+    @Test
+    public void yearlyValueOnlyFromTheYearOfTheTimeFrame() throws Exception {
+        /* as in the Control Center: a sample of the previous year is not carried into the next one */
+        object(1, "Yearly", "Value", sample(new DateTime(2025, 1, 1, 0, 0, ZONE), 3650));
+        object(2, "Yearly 2", "Value", sample(new DateTime(2025, 1, 1, 0, 0, ZONE), 3650),
+                sample(new DateTime(2026, 1, 1, 0, 0, ZONE), 7300), sample(new DateTime(2027, 1, 1, 0, 0, ZONE), 1));
+        RCTemplate template = template(Arrays.asList(input("y", "year", "YEARLY_VALUE", 1), input("z", "year2", "YEARLY_VALUE", 2)),
+                Arrays.asList(formula("f1", "F1", "year", "o1", "y"), formula("f2", "F2", "year2", "o2", "z")),
+                Arrays.asList(output("o1", "Old year only", "€", 0), output("o2", "This year", "€", 1)));
+        TrcResult result = calculate(template);
+        assertTrue(result.getWarnings().contains(new TrcResult.Warning(TrcResult.WarningType.INPUT_NO_VALUES, "F1", "year")));
+        assertEquals("the sample of 2026 prorated to November", 600d, value(result, "o2"), 1e-9);
+    }
+
+    @Test
+    public void fixedTimeFrameWithoutReduction() throws Exception {
+        /* peak of the year up to the end of the requested month: fixed "P1Y", reducing "NONE" */
+        object(1, "Meter", "Value", sample(new DateTime(2026, 2, 3, 10, 0, ZONE), 30),
+                sample(new DateTime(2026, 11, 2, 10, 0, ZONE), 20), sample(new DateTime(2026, 11, 30, 23, 45, ZONE), 25));
+        TemplateInput peak = input("p", "peak", "MAX", 1);
+        TemplateFormula year = formula("f1", "Peak of the year", "peak * 4", "o1", "p");
+        year.setTimeRestrictionEnabled(true);
+        year.setFixedTimeFrame("P1Y");
+        year.setReducingTimeFrame(TrcTimeFrames.NONE);
+        TemplateFormula month = formula("f2", "Peak of the month", "peak * 4", "o2", "p");
+        TemplateInput restrictedPeak = input("q", "restricted", "MAX", 1);
+        restrictedPeak.setTimeRestrictionEnabled(true);
+        restrictedPeak.setFixedTimeFrame("P1Y");
+        restrictedPeak.setReducingTimeFrame(TrcTimeFrames.NONE);
+        TemplateFormula input = formula("f3", "Restricted input", "restricted", "o3", "q");
+        RCTemplate template = template(Arrays.asList(peak, restrictedPeak), Arrays.asList(year, month, input),
+                Arrays.asList(output("o1", "Year", "kW", 0), output("o2", "Month", "kW", 1), output("o3", "Input", "kWh", 2)));
+        TrcResult result = calculate(template);
+        assertEquals(120d, value(result, "o1"), 1e-9);
+        assertEquals("the last quarter hour of the month is included", 100d, value(result, "o2"), 1e-9);
+        assertEquals(30d, value(result, "o3"), 1e-9);
     }
 
     @Test

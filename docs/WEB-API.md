@@ -964,7 +964,13 @@ the first time step), and variables are substituted as whole names (a variable `
 Time steps at which an input has no value are skipped; if no time step can be evaluated or the result is `0`, the
 formula is evaluated once with the first value of every input (the old fallback). Formulas without output that other
 formulas use are calculated (the old code used `0`); a formula that cannot be evaluated (e.g. division by zero) has
-no result (`null`, the other formulas use `0`) instead of a missing output. Everything else (NaN/infinite → 0, quantity units summed,
+no result (`null`, the other formulas use `0`) instead of a missing output. `YEARLY_VALUE` is prorated to the whole days
+of the time frame (November = 30 days; the old code counted from the first to the last day, i.e. one day less), and a
+time restriction with a fixed time frame and reducing time frame "none" (`NONE`, offered by the restriction dialogs)
+runs from the start of the fixed time frame to the end of the requested one, e.g. the peak of the year up to the end
+of the month (the old code had this case but never reached it and ignored the restriction). Unchanged on purpose:
+`YEARLY_VALUE` only uses a sample inside the calendar year of the start of the time frame (no sample in that year =
+no value and a warning, also in the old Control Center), so yearly amounts need one sample per year. Everything else (NaN/infinite → 0, quantity units summed,
 other units averaged over the time steps, `YEARLY_VALUE` spread over the time steps, `NON_PERIODIC` carried forward,
 `RANGING_VALUE`, time restrictions with fixed/reducing time frame, text inputs and the `Name` attribute) behaves as
 before.
@@ -1538,3 +1544,39 @@ the directory (`409 { "nameTaken": true, "id": … }`, overwrite offered by the 
 - **Input widgets** in the normal view (not edit mode): with `canEnter` they can be used (enter a value, toggle,
   slide, plus/minus) and write via `…/value`; without, read-only as before.
 - Phone width: editing is offered from tablet width on (≥ 900 px); below, the dashboard stays view-only with a hint.
+
+## Recycle bin (analyses, dashboards)
+
+Since E3/E4 deleting an analysis or dashboard (web app and Control Center) moves it to the recycle bin (`deleteTS`
+set, its PARENT relationship becomes DELETED_PARENT). These endpoints are a light-weight view of the bin for the web
+app; the rules are those of the generic `/objects` endpoints (`ResourceObject`), implemented in
+`ResourceWebRecycleBin`. Only objects of class `Analysis` and `Dashboard Analysis` are handled.
+
+- `GET /web/recycle?kind=analyses|dashboards&lang=de` → the readable objects of the class in the bin, newest first:
+  `[{ id, name, kind, deletedAt, deletedBy, path, parentGone, canRestore, canDeleteForever }]`. `name` is the local
+  name; `deletedAt` the ISO deletion time (older databases: only the day); `deletedBy` the name of the user object
+  that deleted it (also when the caller may not read it, as `addDeletedByNames`), null if unknown; `path` the path of
+  the original place (DELETED_PARENT) if it still exists and is readable, else null; `parentGone` = no original place
+  outside the bin (it was deleted with a directory above it, or the place is gone / in the bin itself);
+  `canRestore` = `canDeleteForever` = delete right. Unknown `kind` → `400`.
+- `POST /web/recycle/{id}/restore?lang=de` with optional `{ "parent": <directory id> }` → `SQLDataSource.restoreObject`
+  with `requireParent` (the object and the subtree deleted with it). Needs the delete right on the object (`403`);
+  with `parent` the target must be a readable `Analyses Directory` / `Dashboard Directory` outside the bin (`404`)
+  with create right for the class (`403`). Without `parent` and no original place → `409 { "parentGone": true }`
+  (also when the database refuses with 409). Answer `200 { id, name, kind, parentId, path }` (`path` of the
+  directory it is in now). Logged as `UPDATE_OBJECT restore <id>:<name>|web:recycle-restore`.
+- `DELETE /web/recycle/{id}` → `204`, deletes the object and its subtree for good (`SQLDataSource.deleteObject`).
+  Only for readable analyses/dashboards that are in the bin (`404` otherwise), delete right (`403`). Logged as
+  `DELETE_OBJECT <id>:<name>|web:recycle-delete`.
+- Errors (`400`, `403`, `404`) as text, `409` as JSON; the access control cache is reloaded after restore and delete.
+
+### Web app
+
+- Page `/recycle?kind=dashboards|analyses` ("Papierkorb"), linked from the header of the "Dashboards" and
+  "Analysen" overviews for every logged-in user (restoring to the original place needs only the delete right, so
+  the create rights cannot tell whether there is something to restore; the page has an empty state).
+- Switch Dashboards / Analysen; list with name, original place ("existiert nicht mehr" / "nicht sichtbar"),
+  deleted at / by. "Wiederherstellen" restores to the original place; if it is gone ("Wiederherstellen nach …", or on
+  `409 parentGone`) a dialog offers the directories with `canCreate` (`GET /web/analyses/directories` or
+  `/web/dashboards/directories`). "Endgültig löschen" after a red confirmation. After a change the list and the
+  navigation are reloaded; the success message links to the restored item.

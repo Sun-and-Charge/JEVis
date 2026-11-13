@@ -43,18 +43,34 @@ writes **raw data**, clean data, calculations and alarms follow from the normal 
      ones written; this needs the **delete** (or execute) right on the notes. Without it the job logs an error per
      notes object and changes nothing there.
    - Then **Shifted Until** moves forward by the same number of weeks.
-3. **Monthly energy invoices.** In the first cycle of a month in which the configured clean data rows reach the new
-   month, one ZUGFeRD PDF (EN16931) each for electricity and gas for the previous month is created and imported
-   into the **Invoice Directory** (same import as in the Control Center). Consumption = monthly sum of the row,
-   neutral supplier "Energieversorger Nord", work price and base price from the service object, 19 % VAT, number
-   `EN-<yyyyMM>-S` / `EN-<yyyyMM>-G`. An invoice that already exists (HTTP 409) is skipped, so restarts are
-   harmless.
+3. **Monthly energy invoices.** In the first cycle of a month, one ZUGFeRD PDF (EN16931) per **invoice case** for the
+   previous month is created and imported into the case's **Energy Invoices Directory** (same import as in the Control
+   Center), once the case's data reach the new month. Invoice number `EN-<yyyyMM>-<suffix>` (e.g. `EN-202610-SR`).
+   An invoice that already exists (HTTP 409) is skipped, so restarts are harmless.
+   - The cases are the JSON list in **Invoice Cases** (see below); the demo cost cases (docs/DEMO-COSTS.md) use them so
+     that the column "Rechnung" of the cost calculation can be compared with the measurement.
+   - Lines are priced from the contract objects exactly as the result calculation templates price them: unit prices
+     = last sample at or before the start of the month; yearly amounts (EUR/a) = sample of the calendar year × days of
+     the month / days of the year (unit DAY); demand charge = peak × ranging table of the grid operator / 12 (unit
+     KWT, peak = maximum of the peak row × factor from 1 January to the end of the month); capacity price = connected
+     load × EUR/kW/a / 12; indexed work price = base × (constant + Σ weight × index / base index). Consumption = sum of
+     the row in the month, rounded to whole kWh (for gas in m³: × state number × heating value).
+   - **Deviations** declared per case and month (`"2026-03"`, or `"03"` = every March) make deliberate billing errors:
+     `DUPLICATE_LINE` (a line billed twice), `PREVIOUS_YEAR_PRICE` (a line priced one year earlier),
+     `QUANTITY_FACTOR` (estimated consumption, e.g. 1.04).
+   - Backfill: `-o invoicesFrom=2025-01` also bills all months from then on (existing invoices are skipped),
+     `-o invoicesOnly=true` skips replay and date rolling. Example:
+     `java -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid <organisation id> -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true`
+   - Without "Invoice Cases" the old fixed pair is created as before: electricity and gas of **Electricity Row** /
+     **Gas Row**, supplier "Energieversorger Nord", work and base price from the service object, 19 % VAT, number
+     `EN-<yyyyMM>-S` / `-G`, imported into **Invoice Directory**.
 
 ## Safety
 
 - Every configured organisation must have **"Demo" in its name** (case-insensitive), otherwise it is refused with an
   error in the log and nothing below it is touched.
-- Only objects below the accepted organisations are written; the invoice directory must be one of them. On the
+- Only objects below the accepted organisations are written; the invoice directory (of every invoice case) must be
+  one of them. Prices and rows of the invoice cases are only read. On the
   service object the job writes only `Status`, `Shifted Until` and `Replay State`.
 - The service user only has write rights on the demo (see below), so a misconfiguration cannot reach customer data.
 - Dry run: `-o dryrun=true` logs what would be written and writes nothing.
@@ -70,11 +86,37 @@ Create an object of class **JEDemo** in the Service Directory:
 | Organization | the demo organisation(s) |
 | Shifted Until | the day the module dates were last moved to (e.g. the snapshot date) |
 | Excluded Objects | optional: rows or folders the job must not touch, e.g. rows with manual entries |
-| Invoice Directory | optional: an Energy Invoices Directory below the demo organisation |
+| Invoice Cases | optional: JSON list of invoice cases (below); if set, the five attributes after it and the prices are not used |
+| Invoice Directory | optional (old fixed invoices): an Energy Invoices Directory below the demo organisation |
 | Electricity Row / Gas Row | clean data rows in kWh whose monthly sums are billed |
 | Electricity Price / Gas Price | net EUR/kWh (default 0.28 / 0.09) |
 | Electricity Base Price / Gas Base Price | net EUR per month (default 12.50 / 15.00, 0 = no line) |
 | Replay State | leave empty, written by the job |
+
+An invoice case (all object references are ids; the setup plan of the demo cost cases writes them with `"@key"` until
+the objects exist, such a case is refused with an error in the log):
+
+```json
+{ "key": "A", "name": "Strom RLM - Musterwerk Hauptanschluss", "medium": "ELECTRICITY", "suffix": "SR",
+  "directory": 24700, "seller": "Energieversorger Nord", "sellerVatId": "DE000000000",
+  "meterPointLabel": "Zählpunkt", "meterPoint": "DE0000000000000000000000000000001",
+  "consumption": { "row": 23734 },
+  "peak": { "row": 23734, "factor": 4.0, "yearToDate": true },
+  "vat": { "object": 23519, "attribute": "VAT Electricity" },
+  "lines": [
+    { "key": "ENERGY", "text": "Arbeitspreis", "type": "ENERGY", "price": { "object": 23510, "attribute": "Energy Price HT" }, "priceUnit": "ct/kWh" },
+    { "key": "GRID_DEMAND", "text": "Netzentgelt Leistungspreis", "type": "DEMAND", "price": { "object": 23515, "attribute": "Demand Charge" } },
+    { "key": "MSB", "text": "Messstellenbetrieb", "type": "YEARLY", "price": { "object": 23511, "attribute": "Net Cost" } } ],
+  "deviations": [ { "month": "2026-03", "type": "DUPLICATE_LINE", "line": "MSB", "note": "Messstellenbetrieb doppelt" } ] }
+```
+
+- `medium`: `ELECTRICITY`, `GAS` or `DISTRICT_HEATING` (medium of the import); `directory`: the case's Energy Invoices
+  Directory, best with this `Medium`, then the import keeps invoices and series in it.
+- `consumption`: `row` (summed per month), optional `completeRow` (whose latest sample must reach the next month,
+  default `row`), optional `heatingValue` and `stateNumber` (`{object, attribute}`, row in m³).
+- `lines[].type`: `ENERGY`, `INDEXED` (with `index: {constant, terms: [{weight, value: {object, attribute}, base}]}`),
+  `YEARLY`, `MONTHLY`, `DEMAND` (needs `peak`), `CAPACITY` (with `capacity: {object, attribute}`); `priceUnit` of
+  energy prices `ct/kWh` (default), `EUR/kWh` or `EUR/MWh`.
 
 ## Service user and API key
 

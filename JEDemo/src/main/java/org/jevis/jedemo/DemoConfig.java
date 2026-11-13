@@ -19,6 +19,8 @@
 package org.jevis.jedemo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,6 +57,7 @@ public final class DemoConfig {
     public static final String A_ELECTRICITY_FEE = "Electricity Base Price";
     public static final String A_GAS_FEE = "Gas Base Price";
     public static final String A_REPLAY_STATE = "Replay State";
+    public static final String A_INVOICE_CASES = "Invoice Cases";
 
     /**
      * Marker every configured organisation name must contain (case-insensitive).
@@ -68,6 +71,8 @@ public final class DemoConfig {
 
     private static final Logger logger = LogManager.getLogger(DemoConfig.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper CASE_MAPPER = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     List<Long> organisations = new ArrayList<>();
     List<Long> excluded = new ArrayList<>();
@@ -83,6 +88,10 @@ public final class DemoConfig {
      * stored offsets of rows with a short history, row id → "P13W" / "P5M"
      */
     Map<Long, String> replayState = new TreeMap<>();
+    /**
+     * the invoice cases of "Invoice Cases"; if empty, the old electricity/gas attributes are used
+     */
+    List<InvoiceCase> invoiceCases = new ArrayList<>();
 
     static DemoConfig read(JEVisObject service) throws JEVisException {
         DemoConfig config = new DemoConfig();
@@ -97,6 +106,7 @@ public final class DemoConfig {
         config.electricityFee = decimal(latest(service, A_ELECTRICITY_FEE), DEFAULT_ELECTRICITY_FEE);
         config.gasFee = decimal(latest(service, A_GAS_FEE), DEFAULT_GAS_FEE);
         config.replayState = parseState(latest(service, A_REPLAY_STATE));
+        config.invoiceCases = parseInvoiceCases(latest(service, A_INVOICE_CASES));
         return config;
     }
 
@@ -167,6 +177,34 @@ public final class DemoConfig {
         } catch (NumberFormatException e) {
             return fallback;
         }
+    }
+
+    /**
+     * "Invoice Cases": a JSON array of {@link InvoiceCase} (or an object with the array in "cases"). Unreadable entries
+     * are skipped with an error in the log.
+     */
+    static List<InvoiceCase> parseInvoiceCases(String json) {
+        List<InvoiceCase> cases = new ArrayList<>();
+        if (json == null || json.trim().isEmpty()) return cases;
+        try {
+            JsonNode node = CASE_MAPPER.readTree(json);
+            if (node != null && node.isObject() && node.has("cases")) node = node.get("cases");
+            if (node == null || !node.isArray()) {
+                logger.error("'{}' is no JSON array, no invoice cases", A_INVOICE_CASES);
+                return cases;
+            }
+            for (JsonNode entry : node) {
+                try {
+                    InvoiceCase invoiceCase = CASE_MAPPER.treeToValue(entry, InvoiceCase.class);
+                    if (invoiceCase != null) cases.add(invoiceCase);
+                } catch (Exception e) {
+                    logger.error("Invalid invoice case in '{}': {}", A_INVOICE_CASES, e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Could not read '{}': {}", A_INVOICE_CASES, e.getMessage());
+        }
+        return cases;
     }
 
     static Map<Long, String> parseState(String json) {

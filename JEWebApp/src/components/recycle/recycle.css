@@ -1,0 +1,110 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Recycle bin of dashboards and analyses: header link, kind switch, entry list */
+
+.rb-link {
+  text-decoration: none;
+  min-height: 2.4rem;
+}
+
+.rb-link:focus-visible,
+.rb-switch a:focus-visible,
+.rb-back:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.rb-intro {
+  margin: 0 0 1rem;
+  max-width: 48rem;
+}
+
+.rb-switch {
+  display: inline-flex;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.rb-switch a {
+  display: inline-block;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.rb-switch a[aria-current='page'] {
+  background: var(--blueberry);
+  color: var(--sun);
+}
+
+.rb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.rb-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.8rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blueberry);
+  border-radius: var(--radius);
+}
+
+.rb-text {
+  flex: 1 1 18rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rb-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rb-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.rb-meta.is-gone {
+  color: var(--error);
+}
+
+.rb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rb-done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 800px) {
+  .rb-actions {
+    width: 100%;
+  }
+}

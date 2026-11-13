@@ -148,6 +148,15 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "JEDemo"
+    },
+    {
+      "name": "Invoice Cases",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 15,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "JEDemo"
     }
   ]
 }
