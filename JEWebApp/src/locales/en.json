@@ -237,6 +237,7 @@
     "title": "Modules",
     "appointments": "Appointments",
     "maintenance": "Maintenance",
+    "readings": "Meter reading",
     "loadError": "The entries could not be loaded.",
     "retry": "Try again",
     "filters": "Filters",
@@ -1893,6 +1894,104 @@
     "error": {
       "parentGone": "The original location no longer exists. Please choose a target.",
       "notFound": "The entry is no longer in the recycle bin. The list was reloaded."
+    }
+  },
+  "readings": {
+    "intro": "Record meter readings: due meters first, with expected value, note and photo.",
+    "loading": "Loading meters …",
+    "empty": "There are no meters you may read.",
+    "emptyGroup": "There are no meters at this site.",
+    "noneDue": "No meters due – all readings are up to date.",
+    "noMatch": "No meters match the search.",
+    "notFound": "The meter of the link was not found or is not readable.",
+    "count": "{shown} of {total} meters",
+    "headCount": "none due | 1 due | {n} due",
+    "headCountOverdue": "{due} due, {overdue} of them overdue",
+    "searchPlaceholder": "Name, serial number, meter point, location …",
+    "read": "Read",
+    "show": "Show",
+    "readLabel": "Read “{name}”",
+    "showLabel": "Show “{name}”",
+    "reading": "Meter reading",
+    "date": "Date",
+    "dateTime": "Date and time",
+    "saveNext": "Save & next",
+    "nextTitle": "Save and open “{name}”",
+    "saved": "Reading “{name}” saved: {value} on {time}.",
+    "savedNoPhoto": "Reading “{name}” saved: {value} on {time} (without photo).",
+    "leave": "The reading has not been saved. Do you want to discard the input?",
+    "filter": {
+      "label": "Show",
+      "due": "Due",
+      "all": "All"
+    },
+    "col": {
+      "meter": "Meter",
+      "location": "Location",
+      "serial": "Serial number",
+      "meterPoint": "Meter point",
+      "last": "Last reading",
+      "date": "Date",
+      "due": "Status",
+      "action": "Action"
+    },
+    "due": {
+      "AUTOMATIC": "Automatic",
+      "NONE": "No interval",
+      "OK": "OK",
+      "DUE": "Due",
+      "OVERDUE": "Overdue"
+    },
+    "problem": {
+      "NO_TARGET": "No data row assigned – cannot be read.",
+      "NOT_READABLE": "Data row not readable – cannot be read.",
+      "NOT_MANUAL": "The data row is filled automatically – no manual reading.",
+      "AUTOMATIC": "Recorded automatically (data source, calculation or values below one day) – no reading needed.",
+      "NO_RIGHT": "You may not enter readings for this meter."
+    },
+    "expected": {
+      "label": "Expected:",
+      "range": "(range {range})",
+      "none": "No expected value for this time (too few readings or not after the last reading).",
+      "noPeriod": "No expected value – the data row has no interval.",
+      "outside": "The reading is outside the expected range – please check.",
+      "belowLast": "The reading is lower than the last reading – please check."
+    },
+    "note": {
+      "label": "Note",
+      "placeholder": "e.g. meter dirty",
+      "tooLong": "The note may have at most {max} characters.",
+      "invalid": "The note contains invalid characters."
+    },
+    "photo": {
+      "label": "Photo",
+      "take": "Take photo",
+      "retake": "Other photo",
+      "remove": "Remove photo",
+      "preview": "Preview of the photo",
+      "hint": "The photo is uploaded after the reading has been saved (at most 15 MB).",
+      "notImage": "Please choose an image (JPEG, PNG, WebP or HEIC).",
+      "tooLarge": "The photo is larger than 15 MB.",
+      "uploadError": "The photo could not be uploaded. {reason}",
+      "savedWithout": "The reading has been saved, but the photo has not.",
+      "retry": "Upload photo again",
+      "skip": "Continue without photo",
+      "show": "Show photo of the reading of {time}",
+      "alt": "Photo of the reading of {time}",
+      "loadError": "The photo could not be loaded."
+    },
+    "history": {
+      "title": "Last readings",
+      "none": "No reading yet",
+      "manual": "Entered manually",
+      "manualShort": "manual"
+    },
+    "print": {
+      "action": "Print reading list",
+      "title": "Reading list",
+      "printed": "Printed on {date}",
+      "expected": "Expected",
+      "initials": "Initials"
     }
   }
 }

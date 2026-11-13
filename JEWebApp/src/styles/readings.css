@@ -1,0 +1,489 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Meter reading (E8.1): list, filter chips, entry panel (side panel / phone sheet), print view. Builds on
+   modules.css, registers.css and edit.css. */
+
+.rd-head-count {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.rd-head-count.is-alert {
+  color: var(--error);
+}
+
+.rd-message {
+  margin: 0.5rem 0 0.75rem;
+}
+
+/* filter chips */
+.rd-filter-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.rd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  align-items: center;
+}
+
+.rd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  font-size: 0.85rem;
+}
+
+.rd-chip-count {
+  font-weight: 400;
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+/* due badge: OK neutral, "Kein Turnus" grey */
+.mod-badge.rd-due.is-none {
+  color: var(--muted);
+  border-style: dashed;
+  background: var(--surface);
+}
+
+/* table */
+.rd-icon-col {
+  width: 2rem;
+  color: var(--blueberry);
+}
+
+.mod-table td.rd-icon-col {
+  padding-right: 0;
+}
+
+.rd-name {
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--blueberry);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.rd-name:hover {
+  text-decoration: underline;
+}
+
+.rd-name:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.rd-problem-text {
+  display: block;
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.rd-action-col {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mod-table td.num,
+.mod-table th.num {
+  text-align: right;
+}
+
+/* cards (phones) */
+.rd-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.rd-card-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.rd-icon {
+  flex: none;
+  color: var(--blueberry);
+  line-height: 0;
+  padding-top: 0.1rem;
+}
+
+.rd-card .rd-open {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.4rem;
+  min-height: 2.6rem;
+}
+
+/* ---- entry panel: side panel on wide screens ---- */
+.rd-panel-backdrop {
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0;
+}
+
+.rd-panel-backdrop .edit-dialog {
+  width: min(32rem, 100%);
+  min-height: 100%;
+  border-radius: 0;
+  border-left: 3px solid var(--sun);
+  display: flex;
+  flex-direction: column;
+}
+
+.rd-panel-backdrop .edit-body {
+  flex: 1;
+}
+
+.rd-panel-backdrop .edit-foot {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 800px) {
+  .rd-panel-backdrop .edit-dialog {
+    width: 100%;
+    border-left: none;
+  }
+}
+
+.rd-panel-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  margin: 0 0 0.6rem;
+}
+
+.rd-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blueberry);
+}
+
+.rd-exchange {
+  margin-left: auto;
+}
+
+.rd-facts {
+  margin-bottom: 1rem;
+}
+
+.rd-problem {
+  margin: 0 0 1rem;
+}
+
+.rd-form {
+  padding: 0.85rem 0.85rem 0.1rem;
+  margin: 0 0 1rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.rd-form .rd-value {
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.rd-expected {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.5rem;
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.rd-expected.is-outside {
+  border-left-color: var(--sun);
+  background: #fffbe0;
+}
+
+.rd-expected-label {
+  color: var(--muted);
+}
+
+.rd-expected-range {
+  color: var(--muted);
+}
+
+.rd-expected-warn {
+  flex-basis: 100%;
+  font-weight: 600;
+  color: var(--blueberry);
+}
+
+/* photo */
+.rd-photo-take {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.rd-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.rd-photo-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 14rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  object-fit: contain;
+}
+
+.rd-photo-failed p {
+  margin: 0 0 0.35rem;
+}
+
+/* history */
+.rd-history h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+}
+
+.rd-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.rd-history-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0.3rem 0.4rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.rd-history-table td {
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.rd-history-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rd-history-table .nowrap {
+  white-space: nowrap;
+}
+
+.rd-note {
+  overflow-wrap: anywhere;
+}
+
+.rd-manual {
+  display: inline-block;
+  margin-right: 0.25rem;
+  padding: 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.rd-photo-col {
+  width: 2rem;
+  text-align: right;
+}
+
+.rd-photo-btn {
+  display: inline-flex;
+  padding: 0.2rem;
+  color: var(--blueberry);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.rd-photo-btn:hover,
+.rd-photo-btn[aria-expanded='true'] {
+  border-color: var(--line);
+}
+
+.rd-photo-btn:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.rd-photo-view {
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.rd-photo-img {
+  display: block;
+  max-width: min(16rem, 60vw);
+  max-height: 12rem;
+  margin-left: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+/* state in the footer */
+.rd-state {
+  font-size: 0.78rem;
+  color: var(--blueberry);
+  font-weight: 600;
+}
+
+/* ---- print view: hidden on screen ---- */
+.rd-print {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* the hidden page must not keep its height (else an empty second page): everything outside the path to the
+     sheet is left out of the layout, the path itself shrinks to its content */
+  body *:not(:has(.rd-print)):not(.rd-print):not(.rd-print *) {
+    display: none !important;
+  }
+
+  body *:has(.rd-print) {
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .rd-print,
+  .rd-print * {
+    visibility: visible;
+  }
+
+  .rd-print {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: #000;
+    background: #fff;
+    font-size: 9.5pt;
+  }
+
+  .rd-print-head h1 {
+    font-size: 14pt;
+    margin: 0 0 2pt;
+  }
+
+  .rd-print-head p {
+    margin: 0 0 2pt;
+  }
+
+  .rd-print-head {
+    margin-bottom: 6pt;
+  }
+
+  .rd-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .rd-print-table thead {
+    display: table-header-group;
+  }
+
+  .rd-print-table tr {
+    break-inside: avoid;
+  }
+
+  .rd-print-table th,
+  .rd-print-table td {
+    border: 0.6pt solid #000;
+    padding: 3pt 4pt;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .rd-print-table td {
+    height: 34pt;
+  }
+
+  .rd-p-meter {
+    width: 32%;
+  }
+
+  .rd-p-meter strong,
+  .rd-p-meter span,
+  .rd-p-last span {
+    display: block;
+  }
+
+  .rd-p-last {
+    width: 16%;
+  }
+
+  .rd-p-exp {
+    width: 15%;
+  }
+
+  .rd-p-reading {
+    width: 17%;
+  }
+
+  .rd-p-date {
+    width: 11%;
+  }
+
+  .rd-p-init {
+    width: 9%;
+  }
+}

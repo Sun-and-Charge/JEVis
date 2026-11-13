@@ -49,6 +49,8 @@ export interface ModuleCounts {
   invoices: number
   /** readable accounting configurations plus result calculation templates (W4.8) */
   costs: number
+  /** E8.1 meter reading: meters the user may read in; servers without the count use the readable meters */
+  readings: number
 }
 
 /** Module counts with missing values as 0 (the menu shows only modules with entries). */
@@ -71,6 +73,7 @@ export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCou
     contracts: n(m?.contracts),
     invoices: n(m?.invoices),
     costs: n(m?.costs),
+    readings: n(m?.readings) || n(m?.meters),
   }
 }
 
