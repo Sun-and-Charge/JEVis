@@ -123,7 +123,7 @@ public class CostSetupTest {
         t.add(23948, "Strom - Ladestrom", "Base Data", values).set("Value", T0, 99.0);
 
         Node invoices = ensure(t, organisation, CostCases.MW_CONTRACTS + " / Energierechnungen");
-        Node electricity = t.add("Strom", "Energy Invoices Directory", invoices);
+        Node electricity = t.add(24598, "Strom", "Energy Invoices Directory", invoices);
         Node gas = t.add(24593, "Gas", "Energy Invoices Directory", invoices);
         for (int month = 1; month <= 3; month++) {
             String m = String.format("2026%02d", month);
@@ -410,6 +410,8 @@ public class CostSetupTest {
                 .file("Data Model File", T0, "lade.json", "{\"widget\":[{\"uuid\":1,\"dataHandler\":{\"objectID\":23948}}]}");
         /* a manual invoice in the gas folder: only the old invoices go, the folder stays */
         invoice(tree, tree.node(24593), "RE-4711");
+        /* an old credit note of the fixed JEDemo invoices goes with them */
+        invoice(tree, tree.node(24593), "EN-202602-G-GS1");
         SetupReport report = run(true);
         assertFalse(problems(report), report.hasProblems());
         assertTrue(has(report, SetupReport.Kind.CHECK, "23948 (Base Data 'Strom - Ladestrom'): NOT_REFERENCED failed: named in [Dashboard Analysis 'Ladestrom'"));
@@ -423,7 +425,7 @@ public class CostSetupTest {
         List<String> left = new ArrayList<>();
         for (Node c : gas.children) if (!c.deleted) left.add(c.name);
         assertEquals("[Kosten netto laut Rechnung, RE-4711 Energieversorger Nord]", left.toString());
-        assertTrue(has(report, SetupReport.Kind.CHECK, "3 invoice(s) matching EN-[0-9]{6}-G are deleted; the folder and its 1 series are kept"));
+        assertTrue(has(report, SetupReport.Kind.CHECK, "4 invoice(s) matching EN-[0-9]{6}-G(-GS[0-9]+)? are deleted; the folder and its 1 series are kept"));
         assertNull("the electricity folder held only old invoices", tree.child(tree.path(org, CostCases.MW_CONTRACTS + " / Energierechnungen"), "Strom"));
 
         /* again: nothing to do, the kept objects are reported */

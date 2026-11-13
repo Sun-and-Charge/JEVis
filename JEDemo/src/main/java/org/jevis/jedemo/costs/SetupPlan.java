@@ -150,13 +150,8 @@ public final class SetupPlan {
          * objects stay */
         String oldInvoices = "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if "
                 + "nothing else is in it; the cases use their own folders";
-        ObjectNode electricity = delete.addObject();
-        electricity.put("path", CostCases.MW_CONTRACTS + " / Energierechnungen / Strom");
-        electricity.put("class", "Energy Invoices Directory");
-        electricity.put("name", "Strom");
-        electricity.put("reason", oldInvoices);
-        electricity.put("checkFirst", true);
-        electricity.putArray("checks").add(oldInvoicesCheck("S"));
+        /* both old folders by id (the path lookup did not find "Strom" on live, 2026-11-13) */
+        delete(delete, 24598, "Energy Invoices Directory", "Strom", oldInvoices, oldInvoicesCheck("S"));
         delete(delete, 24593, "Energy Invoices Directory", "Gas", oldInvoices, oldInvoicesCheck("G"));
 
         /* declarative fixes of existing objects, each skipped (with a report line) if the object no longer matches */
@@ -209,7 +204,8 @@ public final class SetupPlan {
 
     private static ObjectNode oldInvoicesCheck(String suffix) {
         ObjectNode check = check(CHECK_OLD_INVOICES);
-        check.put("numberPattern", "EN-[0-9]{6}-" + suffix);
+        /* the invoices and the credit notes of the old fixed JEDemo invoices (e.g. EN-202602-G-GS1) */
+        check.put("numberPattern", "EN-[0-9]{6}-" + suffix + "(-GS[0-9]+)?");
         return check;
     }
 
