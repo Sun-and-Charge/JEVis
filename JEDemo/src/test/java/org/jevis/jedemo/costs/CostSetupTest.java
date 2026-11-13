@@ -164,8 +164,11 @@ public class CostSetupTest {
             for (DateTime ts = new DateTime(2025, 11, 5, 0, 0, BERLIN); ts.isBefore(T0); ts = ts.plusHours(1)) {
                 raw.set("Value", ts, 0.0000955 * (i + 1));
             }
+            /* as on live: points 1 and 3 converted to differential since 2001 and 2000, point 2 not since 2023 */
+            DateTime differential = i == 0 ? new DateTime(2001, 9, 13, 17, 15, BERLIN) : i == 2 ? new DateTime(2001, 1, 1, 0, 0, BERLIN)
+                    : new DateTime(2023, 2, 16, 14, 42, BERLIN);
             Node clean = t.add(CHARGE[i][1], "Bereinigte Daten", "Clean Data", raw)
-                    .set("Enabled", config, "true").set("Conversion to Differential", config, i == 0 ? "true" : "false")
+                    .set("Enabled", config, "true").set("Conversion to Differential", differential, i == 1 ? "false" : "true")
                     .set("Value is a Quantity", config, "true").set("Period", config, "PT15M");
             for (DateTime ts = new DateTime(2025, 11, 5, 0, 0, BERLIN); ts.isBefore(T0); ts = ts.plusDays(1)) clean.set("Value", ts, 0.01);
         }
@@ -706,7 +709,14 @@ public class CostSetupTest {
             assertTrue(firstWrite("deleteSamples " + cp[1] + " Value") < firstWrite("deleteSamples " + cp[0] + " Value"));
         }
         long config = CostSetup.CONFIG_TIMESTAMP.getMillis();
-        assertEquals("false", tree.node(CostCases.CLEAN_CHARGE_POINT_1).att("Conversion to Differential").samples.get(config)[0]);
+        assertEquals("overwritten at its own time stamp", "false", tree.node(CostCases.CLEAN_CHARGE_POINT_1)
+                .att("Conversion to Differential").samples.get(new DateTime(2001, 9, 13, 17, 15, BERLIN).getMillis())[0]);
+        assertEquals("false", tree.node(CostCases.CLEAN_CHARGE_POINT_3)
+                .att("Conversion to Differential").samples.get(new DateTime(2001, 1, 1, 0, 0, BERLIN).getMillis())[0]);
+        for (long[] cp : CHARGE) {
+            assertTrue(cp[1] + " no value 'true' left", tree.node(cp[1]).att("Conversion to Differential").samples.values().stream()
+                    .noneMatch(v -> "true".equals(v[0])));
+        }
         assertEquals("PT15M", tree.node(CostCases.CHARGE_POINT_3).att("Period").samples.get(config)[0]);
         assertTrue(tree.node(CostCases.CHARGE_SUM).att("Value").samples.isEmpty());
         assertTrue(tree.node(CostCases.CHARGE_SUM_CLEAN).att("Value").samples.isEmpty());
@@ -731,6 +741,38 @@ public class CostSetupTest {
         assertTrue(again.getResult(), again.getResult().startsWith("nothing to do"));
         assertEquals(writes, tree.writeCount());
         assertTrue(has(again, SetupReport.Kind.SKIP, "REPLACE_HISTORY row 23922 'Strom - Ladestrom - Ladepunkt 1': history CHARGING_POINT in place (2688 values"));
+    }
+
+    /**
+     * Live after the first charging apply (2026-11-13): "false" written at the configuration time stamp and at the
+     * time of the run, the "true" of 2001 between them still in force; the clean values computed with it.
+     */
+    @Test
+    public void aLaterSettingBeforeTheStartIsOverwrittenAndTheCleanRowComputedAgain() throws Exception {
+        assertFalse(run(true).hasProblems());
+        long config = CostSetup.CONFIG_TIMESTAMP.getMillis();
+        DateTime old = new DateTime(2001, 9, 13, 17, 15, BERLIN);
+        Node clean1 = tree.node(CostCases.CLEAN_CHARGE_POINT_1);
+        FakeTree.Att conversion = clean1.att("Conversion to Differential");
+        conversion.samples.clear();
+        conversion.samples.put(config, new Object[]{"false", null});
+        conversion.samples.put(old.getMillis(), new Object[]{"true", null});
+        conversion.samples.put(NOW.toEpochMilli() - 60000, new Object[]{"false", null});
+        clean1.set("Value", new DateTime(2026, 10, 20, 0, 0, BERLIN), 0.0);
+        tree.node(CostCases.CHARGE_SUM_CLEAN).set("Value", new DateTime(2026, 10, 20, 0, 0, BERLIN), 0.0);
+
+        SetupReport dry = run(false, NOW.plusSeconds(600), temp.getRoot().toPath().resolve("dry"));
+        assertFalse(problems(dry), dry.hasProblems());
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.UPDATE, "Bereinigte Daten · Conversion to Differential: value at the start of the history true → false @ 2001-09-13T15:15:00.000Z (time stamp of that value)"));
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.UPDATE, "[" + CostCases.CLEAN_CHARGE_POINT_1 + "] · Value: delete all 1 samples"));
+        assertTrue(actions(dry), has(dry, SetupReport.Kind.UPDATE, "[" + CostCases.CHARGE_SUM_CLEAN + "] · Value: delete all"));
+
+        SetupReport apply = run(true, NOW.plusSeconds(1200), temp.getRoot().toPath().resolve("apply"));
+        assertFalse(problems(apply), apply.hasProblems());
+        assertEquals("false", conversion.samples.get(old.getMillis())[0]);
+        assertTrue(clean1.att("Value").samples.isEmpty());
+        SetupReport again = run(true, NOW.plusSeconds(1800), temp.getRoot().toPath().resolve("again"));
+        assertEquals(actions(again), 0, again.actions());
     }
 
     @Test
