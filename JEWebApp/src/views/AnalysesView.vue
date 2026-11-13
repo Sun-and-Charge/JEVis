@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import NewAnalysisButton from '../components/analysis/edit/NewAnalysisButton.vue'
 import ItemOverview from '../components/nav/ItemOverview.vue'
+import RecycleBinLink from '../components/recycle/RecycleBinLink.vue'
 
 /* Overview of all analyses with "Neue Analyse" (E3) in the header. */
 </script>
@@ -9,6 +10,7 @@ import ItemOverview from '../components/nav/ItemOverview.vue'
 <template>
   <ItemOverview kind="analysis">
     <template #actions>
+      <RecycleBinLink kind="analyses" />
       <NewAnalysisButton />
     </template>
   </ItemOverview>

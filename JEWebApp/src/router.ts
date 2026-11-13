@@ -18,6 +18,7 @@ export const router = createRouter({
         { path: 'analyses', name: 'analyses', component: () => import('./views/AnalysesView.vue') },
         { path: 'analyses/:id(\\d+)', name: 'analysis', component: () => import('./views/AnalysisView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
         { path: 'dashboards/:id(\\d+)', name: 'dashboard', component: () => import('./views/DashboardView.vue'), props: (r) => ({ id: Number(r.params.id) }) },
+        { path: 'recycle', name: 'recycle', component: () => import('./views/RecycleBinView.vue') },
         { path: 'appointments', name: 'appointments', component: () => import('./views/AppointmentsView.vue') },
         { path: 'maintenance', name: 'maintenance', component: () => import('./views/MaintenanceView.vue') },
         { path: 'actionplans', name: 'actionPlans', component: () => import('./views/ActionPlansView.vue') },

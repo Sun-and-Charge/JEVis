@@ -1728,5 +1728,58 @@
       "color": "Invalid colour.",
       "tooMany": "At most 1000 widgets."
     }
+  },
+  "recycle": {
+    "title": "Recycle bin",
+    "link": "Recycle bin",
+    "intro": "Deleted dashboards and analyses stay in the recycle bin until they are restored or deleted permanently.",
+    "kindsLabel": "Recycle bin: kind",
+    "kinds": {
+      "dashboards": "Dashboards",
+      "analyses": "Analyses"
+    },
+    "listLabel": "Deleted {kind}",
+    "back": {
+      "dashboards": "Back to dashboards",
+      "analyses": "Back to analyses"
+    },
+    "loading": "Loading the recycle bin …",
+    "loadError": "The recycle bin could not be loaded.",
+    "retry": "Try again",
+    "empty": {
+      "dashboards": "No deleted dashboards in the recycle bin.",
+      "analyses": "No deleted analyses in the recycle bin."
+    },
+    "origin": "Original location: {path}",
+    "originGone": "Original location no longer exists",
+    "originHidden": "Original location not visible",
+    "deleted": "Deleted on {date} by {user}",
+    "deletedNoUser": "Deleted on {date}",
+    "deletedByOnly": "Deleted by {user}",
+    "restore": "Restore",
+    "restoreTo": "Restore to …",
+    "restoreOf": "Restore “{name}”",
+    "deleteForever": "Delete permanently",
+    "deleteForeverOf": "Delete “{name}” permanently",
+    "noRights": "No permission to restore or delete",
+    "restored": "“{name}” was restored to {path}.",
+    "restoredNoPath": "“{name}” was restored.",
+    "deletedForever": "“{name}” was deleted permanently.",
+    "open": "Open",
+    "target": {
+      "title": "Choose a target for the restore",
+      "message": "The original location of “{name}” no longer exists. Please choose a directory.",
+      "directory": "Directory",
+      "loading": "Loading directories …",
+      "none": "There is no directory you may create in."
+    },
+    "confirm": {
+      "title": "Delete permanently",
+      "message": "“{name}” will be deleted permanently. This cannot be undone."
+    },
+    "error": {
+      "parentGone": "The original location no longer exists. Please choose a target.",
+      "notFound": "The entry is no longer in the recycle bin. The list was reloaded."
+    }
   }
 }
