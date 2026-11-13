@@ -2511,7 +2511,7 @@
       ]
     },
     {
-      "path" : "Sun and Charge Demo / Standorte / Musterwerk / Energieverträge / Energierechnungen / Strom",
+      "id" : 24598,
       "class" : "Energy Invoices Directory",
       "name" : "Strom",
       "reason" : "invoices EN-yyyyMM-S/-G of the old fixed JEDemo invoices; the folder with its series only if nothing else is in it; the cases use their own folders",
@@ -2519,7 +2519,7 @@
       "checks" : [
         {
           "type" : "OLD_INVOICES",
-          "numberPattern" : "EN-[0-9]{6}-S"
+          "numberPattern" : "EN-[0-9]{6}-S(-GS[0-9]+)?"
         }
       ]
     },
@@ -2532,7 +2532,7 @@
       "checks" : [
         {
           "type" : "OLD_INVOICES",
-          "numberPattern" : "EN-[0-9]{6}-G"
+          "numberPattern" : "EN-[0-9]{6}-G(-GS[0-9]+)?"
         }
       ]
     }
