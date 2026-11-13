@@ -1730,3 +1730,124 @@ Logged as `web:meter-exchange`.
   file fields with upload and image preview; read-only fields shown greyed. "Löschen" (with `canDelete`, confirm).
   Meters: "Zählerwechsel" (date/time, old and new reading, warnings with "Trotzdem speichern" as E1).
 - Unsaved-changes guard and `409` handling as E2–E4; phone width usable (form as a full-width sheet).
+
+## Editing, stage E8.1: meter reading
+
+Manual meter reading in the web app (tender requirements "Erfassung von Zählerständen" 14.9, 14.13–14.15), the
+counterpart of the Sun and Charge app (Android; its rules are the model: `ExpectedValues`, `Due`, `EntryValidator` in
+`SunandChargeApp/shared/.../domain`). Builds on E1 (manual values: `GET /web/rows/{id}/entry`, `POST
+/web/rows/{id}/values`) and E5 (meter exchange). The common rules of E1 apply (server-side rights, `logUserAction` with
+`web:<action>`, `409` with warnings unless `confirm`, `400` as JSON `{ "messages": [...] }`).
+
+### Class change: "Reading Photo"
+
+The class "Measurement Instrument" gets the file attribute **"Reading Photo"** (`primitiveType` 3 / FILE, GUI type as
+"Picture", after "Picture"; inherited by the medium classes; i18n de "Ablesefoto", en "Reading photo"). One file
+sample per reading, at the timestamp of the reading (the app writes it the same way:
+`POST /objects/{id}/attributes/Reading Photo/samples/files/{timestamp}`). In the registers (W4.3/E5) the column is not
+visible by default and not edited by the attribute form (photos belong to readings).
+
+### `GET /web/readings?lang=de`
+
+The meters the user may read, grouped by site, with what the reading page needs. Only meters ("Measurement
+Instrument" and subclasses) the user may read, grouped like the meter register (`GET /web/registers/meters`: one group
+per "Measurement Directory", `name` = its building).
+
+```json
+{
+  "today": "2026-11-13",
+  "groups": [
+    {
+      "key": "5001", "name": "Musterwerk", "site": { "id": 1001, "name": "Musterwerk" },
+      "meters": [
+        {
+          "id": 5101, "name": "Hauptzähler Strom", "className": "Electricity Measurement Instrument",
+          "classLabel": "Stromzähler", "medium": "ELECTRICITY", "path": "Musterwerk / Messstellen",
+          "serialNumber": "A-123", "meterPoint": "DE000…", "location": "Keller, Raum 0.12",
+          "canPhoto": true, "canExchange": true,
+          "row": {
+            "id": 2001, "name": "Strom - Hauptzähler", "unit": "kWh", "counter": true, "period": "P1M",
+            "mode": "DAY", "timeZone": "Europe/Berlin", "limits": { "min": 0, "max": 50000 } ,
+            "canEnter": true, "canDelete": true, "decimals": 1
+          },
+          "due": "OVERDUE",
+          "suggestedTimestamp": "2026-11-01T00:00:00.000+01:00",
+          "expected": { "value": 12345.6, "low": 12100.0, "high": 12600.0 },
+          "readings": [
+            { "timestamp": "2026-10-01T00:00:00.000+02:00", "value": 11800.0, "note": "Manuelle Dateneingabe … – Zähler verschmutzt",
+              "manual": true, "photo": true }
+          ],
+          "problem": null
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `row`: the data row of the meter's "Online ID" (attribute `Value`), as `GET /web/rows/{id}/entry` describes it
+  (`counter`, `period`, `mode`, `timeZone`, `limits`, `canEnter`, `canDelete`); `decimals` = "Decimal Places" of the
+  meter, else of the row, else `null`. `null` with `problem` when the meter has no Online ID (`"NO_TARGET"`), the target
+  is not readable (`"NOT_READABLE"`) or is no raw Data/Base Data row (`"NOT_MANUAL"`, e.g. a row filled by a data
+  source); such meters are listed but cannot be read in.
+- `problem: "AUTOMATIC"` (with `row`, `readings` and `due: "NONE"`): the row is filled automatically, so the meter is
+  listed but not read by hand and never due: the row is the target of a data source channel/data point ("Target",
+  "Target ID") or of a calculation output, or its period is shorter than a day and none of the last readings is manual
+  (e.g. 15-minute values). Not printed on the reading list.
+- `readings`: the last 11 samples of the row, newest first; `manual` as in the register history (note starts with the
+  manual-entry text in any language); `photo` = the meter has a "Reading Photo" sample at exactly that timestamp.
+- `due` (as `Due.state` of the app): `NONE` without period (`Period` missing or zero); `DUE` without any reading;
+  otherwise `next` = `suggestedTimestamp` (next period after the last reading, `PeriodHelper.getNextPeriod` as E1):
+  `OK` if `next` is after now, `DUE` if `next + period` is after now, else `OVERDUE`.
+- `suggestedTimestamp`: as `GET /web/rows/{id}/entry` (`null` without readings).
+- `expected` (as `ExpectedValues.estimate` of the app), at `suggestedTimestamp`, or now if that is `null` or in the
+  future: counters: last reading + average rate of the intervals of the last 11 readings × elapsed seconds; range from
+  the lowest to the highest rate, the spread at least 20 % of the average rate, low not below the last reading;
+  intervals with a decreasing value or no time are left out; `null` with fewer than 2 readings or no usable interval.
+  Other rows with a period: average of the last 10 values, range min − margin … max + margin with margin = max(20 % of
+  (max − min), 20 % of |average|); `null` with fewer than 2 values. Rows without period: `null`. The web app computes the
+  same for another timestamp (`readings/expected.ts`, unit-tested against the same cases as the server).
+- `canPhoto`: the meter's class has "Reading Photo" and the user may write the meter. `canExchange`: as the E5
+  exchange (write right on the row, counter).
+- Sorted by group name, then meter name. `?site=<building id>` limits to that site (optional).
+
+### `POST /web/readings/{meterId}?lang=de`
+
+Body `{ "timestamp": "…", "value": 12345.6, "note": "Zähler verschmutzt" | null, "confirm": false }`. Writes the
+reading to the meter's row exactly as `POST /web/rows/{rowId}/values` (alignment by `mode`, plausibility warnings,
+dependent rows reset, `web:value-enter` → logged here as `web:reading-enter`), with two additions:
+
+- `note` (optional, trimmed, max 500 characters, no control characters): appended to the manual-entry note as
+  `"<manual text> <now> – <note>"`, so `manual` detection and the E1 delete keep working.
+- One more warning when the value is outside `expected` (computed at the aligned timestamp, before the new value):
+  `"Abweichung vom Erwartungswert: 12345,6 (12.100 … 12.600)"` (de/en like the E1 texts). Not added when the counter
+  warning ("smaller than the last reading") is already there.
+
+`201` `{ "timestamp", "value", "warnings": [] }` (the warnings the user confirmed); `409` `{ "timestamp", "value",
+"warnings": [...] }` without `confirm`; `404` unknown/unreadable meter; `400` meter without usable row (`problem`).
+
+### Photos: `POST /web/readings/{meterId}/photo?timestamp=…` (multipart `file`)
+
+Writes a file sample of "Reading Photo" at the given timestamp (the `timestamp` of the `201` answer). Images only
+(JPEG, PNG, WebP, HEIC detected from the bytes, else `400`), max 15 MB; file name `Ablesung_<yyyyMMdd_HHmm>.<ext>`.
+Needs write right on the meter and the attribute (`403`/`400`). `201` `{ "timestamp", "file" }`. Logged as
+`web:reading-photo`. `GET /web/readings/{meterId}/photo?timestamp=…` → the image inline (same checks and headers as
+`GET /web/registers/objects/{id}/files/{attribute}?inline=true`), `404` if there is none at that time.
+
+### Web app
+
+- New page **Betrieb → Ablesung** (`/readings`, `ReadingsView`), also in the command palette:
+  - Site tabs (preselected by the site picker); filter chips "Fällig" (DUE + OVERDUE, default if any), "Alle";
+    search over name, serial number, meter point, location; count of due/overdue meters in the header.
+  - List (cards on phones, table on wide screens): medium icon, name, location, serial number, last reading with date,
+    due badge (Überfällig red, Fällig amber, OK neutral, "Kein Turnus" grey), problem text for meters without row.
+  - `?meter=<id>` opens that meter directly (for links and QR codes).
+- Entry panel (side panel, full-width sheet on phones) per meter: last readings (date, value, note, photo thumbnail
+  icon), expected value and range under the input (updated when the time changes), number input accepting "," and "."
+  (as `EntryValidator.parseNumber`), date/time (date only for DAY/MONTH/YEAR, prefilled with `suggestedTimestamp` if it
+  is not in the future, else now), note, photo ("Foto aufnehmen" with `accept="image/*" capture="environment"`, preview,
+  uploaded after the reading was saved), "Speichern" → `409` warnings dialog with "Trotzdem speichern" (as E1), then the
+  next due meter of the list opens ("Speichern & weiter"). "Zählerwechsel" opens the E5 exchange dialog.
+- "Ableseliste drucken": print view of the filtered list (name, location, serial number, last reading and date,
+  expected range, empty boxes for reading, date, initials); browser print, A4 portrait.
+- Offline is not part of the web page (the app has it).

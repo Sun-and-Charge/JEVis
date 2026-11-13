@@ -101,6 +101,19 @@
       }
     },
     {
+      "type": "Reading Photo",
+      "descriptions": {
+        "de": "Foto des Zählerstands, je Ablesung zum Zeitpunkt der Ablesung.",
+        "en": "Photo of the meter reading, one per reading at the time of the reading.",
+        "ar": ""
+      },
+      "names": {
+        "de": "Ablesefoto",
+        "en": "Reading photo",
+        "ar": ""
+      }
+    },
+    {
       "type": "Measuring Point ID",
       "descriptions": {
         "de": "Die Messpunkt ID gibt die interne Zuordnung an.",

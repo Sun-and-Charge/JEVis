@@ -187,10 +187,13 @@ public class ResourceWebEditRegisters {
 
     /**
      * @return whether the web edits attributes of the type: text, numbers, booleans, dates, data row targets and
-     * files (by upload); not passwords, GPS, selections, "Target Selector" (object ids) and unknown primitive types
+     * files (by upload); not passwords, GPS, selections, "Target Selector" (object ids), unknown primitive types and
+     * the "Reading Photo" of meters (stage E8.1)
      */
     static boolean editable(JsonType type) {
         if (type == null || ResourceWebRegisters.columnType(type) == null) return false;
+        /* stage E8.1: the photos of the readings are written with the readings (POST /readings/{id}/photo) */
+        if (ResourceWebReadings.ATTRIBUTE_READING_PHOTO.equals(type.getName())) return false;
         String gui = type.getGuiType() != null ? type.getGuiType() : "";
         if (gui.equals(GUIConstants.GPS.getId())) return false;
         switch (type.getPrimitiveType()) {

@@ -425,6 +425,13 @@ public class ResourceWebModules {
             return result;
         }
 
+        /**
+         * @return all objects, readable or not (server-internal use only; nothing of them may be returned to the user)
+         */
+        List<JsonObject> all() {
+            return new ArrayList<>(byId.values());
+        }
+
         List<JsonObject> readableOfClass(String className) {
             List<JsonObject> result = new ArrayList<>();
             for (JsonObject object : readable) {

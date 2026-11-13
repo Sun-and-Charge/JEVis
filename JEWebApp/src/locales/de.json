@@ -237,6 +237,7 @@
     "title": "Module",
     "appointments": "Termine",
     "maintenance": "Wartung",
+    "readings": "Ablesung",
     "loadError": "Die Einträge konnten nicht geladen werden.",
     "retry": "Erneut versuchen",
     "filters": "Filter",
@@ -1893,6 +1894,104 @@
     "error": {
       "parentGone": "Der ursprüngliche Ort existiert nicht mehr. Bitte wählen Sie ein Ziel.",
       "notFound": "Der Eintrag ist nicht mehr im Papierkorb. Die Liste wurde neu geladen."
+    }
+  },
+  "readings": {
+    "intro": "Zählerstände erfassen: fällige Zähler zuerst, mit Erwartungswert, Notiz und Foto.",
+    "loading": "Zähler werden geladen …",
+    "empty": "Es gibt keine Zähler, die Sie ablesen dürfen.",
+    "emptyGroup": "An diesem Standort gibt es keine Zähler.",
+    "noneDue": "Keine Zähler fällig – alle Ablesungen sind aktuell.",
+    "noMatch": "Keine Zähler passen zur Suche.",
+    "notFound": "Der Zähler aus dem Link wurde nicht gefunden oder ist nicht lesbar.",
+    "count": "{shown} von {total} Zählern",
+    "headCount": "keiner fällig | 1 fällig | {n} fällig",
+    "headCountOverdue": "{due} fällig, davon {overdue} überfällig",
+    "searchPlaceholder": "Name, Seriennummer, Zählpunkt, Ort …",
+    "read": "Ablesen",
+    "show": "Anzeigen",
+    "readLabel": "„{name}“ ablesen",
+    "showLabel": "„{name}“ anzeigen",
+    "reading": "Zählerstand",
+    "date": "Datum",
+    "dateTime": "Datum und Uhrzeit",
+    "saveNext": "Speichern & weiter",
+    "nextTitle": "Speichern und „{name}“ öffnen",
+    "saved": "Ablesung „{name}“ gespeichert: {value} am {time}.",
+    "savedNoPhoto": "Ablesung „{name}“ gespeichert: {value} am {time} (ohne Foto).",
+    "leave": "Die Ablesung wurde nicht gespeichert. Möchten Sie die Eingaben verwerfen?",
+    "filter": {
+      "label": "Anzeigen",
+      "due": "Fällig",
+      "all": "Alle"
+    },
+    "col": {
+      "meter": "Zähler",
+      "location": "Ort",
+      "serial": "Seriennummer",
+      "meterPoint": "Zählpunkt",
+      "last": "Letzter Stand",
+      "date": "Datum",
+      "due": "Status",
+      "action": "Aktion"
+    },
+    "due": {
+      "AUTOMATIC": "Automatisch",
+      "NONE": "Kein Turnus",
+      "OK": "OK",
+      "DUE": "Fällig",
+      "OVERDUE": "Überfällig"
+    },
+    "problem": {
+      "NO_TARGET": "Keine Datenreihe zugeordnet – Ablesung nicht möglich.",
+      "NOT_READABLE": "Datenreihe nicht lesbar – Ablesung nicht möglich.",
+      "NOT_MANUAL": "Die Datenreihe wird automatisch befüllt – keine manuelle Ablesung.",
+      "AUTOMATIC": "Automatisch erfasst (Datenquelle, Berechnung oder Messwerte unter einem Tag) – keine Ablesung nötig.",
+      "NO_RIGHT": "Sie dürfen für diesen Zähler keine Stände erfassen."
+    },
+    "expected": {
+      "label": "Erwartet:",
+      "range": "(Bereich {range})",
+      "none": "Kein Erwartungswert für diesen Zeitpunkt (zu wenige Ablesungen oder nicht nach der letzten Ablesung).",
+      "noPeriod": "Kein Erwartungswert – die Datenreihe hat keinen Turnus.",
+      "outside": "Der Stand liegt außerhalb des erwarteten Bereichs – bitte prüfen.",
+      "belowLast": "Der Stand ist kleiner als der letzte Stand – bitte prüfen."
+    },
+    "note": {
+      "label": "Notiz",
+      "placeholder": "z. B. Zähler verschmutzt",
+      "tooLong": "Die Notiz darf höchstens {max} Zeichen lang sein.",
+      "invalid": "Die Notiz enthält ungültige Zeichen."
+    },
+    "photo": {
+      "label": "Foto",
+      "take": "Foto aufnehmen",
+      "retake": "Anderes Foto",
+      "remove": "Foto entfernen",
+      "preview": "Vorschau des Fotos",
+      "hint": "Das Foto wird nach dem Speichern der Ablesung hochgeladen (höchstens 15 MB).",
+      "notImage": "Bitte ein Bild wählen (JPEG, PNG, WebP oder HEIC).",
+      "tooLarge": "Das Foto ist größer als 15 MB.",
+      "uploadError": "Das Foto konnte nicht hochgeladen werden. {reason}",
+      "savedWithout": "Die Ablesung wurde gespeichert, das Foto aber nicht.",
+      "retry": "Foto erneut hochladen",
+      "skip": "Ohne Foto fortfahren",
+      "show": "Foto der Ablesung vom {time} anzeigen",
+      "alt": "Foto der Ablesung vom {time}",
+      "loadError": "Das Foto konnte nicht geladen werden."
+    },
+    "history": {
+      "title": "Letzte Ablesungen",
+      "none": "Noch keine Ablesung",
+      "manual": "Manuell erfasst",
+      "manualShort": "manuell"
+    },
+    "print": {
+      "action": "Ableseliste drucken",
+      "title": "Ableseliste",
+      "printed": "Gedruckt am {date}",
+      "expected": "Erwartet",
+      "initials": "Kürzel"
     }
   }
 }

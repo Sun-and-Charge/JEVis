@@ -2449,6 +2449,7 @@ public interface JC {
         String a_CostCenter = "Cost Center";
         String a_MeterPoint = "Meter Point";
         String a_Picture = "Picture";
+        String a_ReadingPhoto = "Reading Photo";
         String a_MeasuringPointID = "Measuring Point ID";
         String a_MeasuringPointName = "Measuring Point Name";
         String a_SerialNumber = "Serial Number";
@@ -2473,6 +2474,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";
@@ -2501,6 +2503,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";
@@ -2527,6 +2530,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";
@@ -2553,6 +2557,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";
@@ -2580,6 +2585,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";
@@ -2606,6 +2612,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";
@@ -2632,6 +2639,7 @@ public interface JC {
             String a_CostCenter = "Cost Center";
             String a_MeterPoint = "Meter Point";
             String a_Picture = "Picture";
+            String a_ReadingPhoto = "Reading Photo";
             String a_MeasuringPointID = "Measuring Point ID";
             String a_MeasuringPointName = "Measuring Point Name";
             String a_SerialNumber = "Serial Number";

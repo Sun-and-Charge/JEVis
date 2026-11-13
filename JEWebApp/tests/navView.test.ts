@@ -32,7 +32,7 @@ const USER = 7
 const mounted: VueWrapper[] = []
 const sp = (s: string) => s.replace(/\s+/g, ' ').trim()
 
-const MODULE_ROUTES = ['appointments', 'maintenance', 'actionPlans', 'nonconformities', 'legal', 'meters', 'basedata', 'equipment', 'notes', 'alarms', 'reports', 'contracts', 'invoices', 'costs']
+const MODULE_ROUTES = ['appointments', 'maintenance', 'actionPlans', 'nonconformities', 'legal', 'readings', 'meters', 'basedata', 'equipment', 'notes', 'alarms', 'reports', 'contracts', 'invoices', 'costs']
 
 function makeRouter(): Router {
   return createRouter({
@@ -128,8 +128,8 @@ describe('sidebar', () => {
     expect(groupBtn(w, 'Betrieb').attributes('aria-expanded')).toBe('true')
     const list = side(w).get('#nav-group-operations')
     expect(list.isVisible()).toBe(true)
-    expect(list.findAll('a .label').map((a) => a.text())).toEqual(['Termine', 'Alarme'])
-    expect(list.findAll('a .module-count').map((c) => c.text())).toEqual(['3', '44 offene Alarme (7 Tage)'])
+    expect(list.findAll('a .label').map((a) => a.text())).toEqual(['Ablesung', 'Termine', 'Alarme'])
+    expect(list.findAll('a .module-count').map((c) => c.text())).toEqual(['5', '3', '44 offene Alarme (7 Tage)'])
     expect(list.get('a .module-count.is-alert').attributes('title')).toBe('4 offene Alarme (7 Tage)')
     // open: the badges are on the modules, not on the header
     expect(groupBtn(w, 'Betrieb').find('.module-count').exists()).toBe(false)

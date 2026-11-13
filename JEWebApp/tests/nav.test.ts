@@ -27,8 +27,8 @@ describe('sidebar groups', () => {
     const groups = menuGroups(moduleCounts(navigation()))
     expect(groups.map((g) => g.id)).toEqual(['iso', 'operations', 'assets'])
     expect(groups[0].modules.map((m) => m.key)).toEqual(['actionPlans', 'legal'])
-    expect(groups[1].modules.map((m) => m.key)).toEqual(['appointments', 'alarms'])
-    expect(groups[1].modules[0]).toEqual({ key: 'appointments', route: 'appointments', count: 3, open: 0 })
+    expect(groups[1].modules.map((m) => m.key)).toEqual(['readings', 'appointments', 'alarms'])
+    expect(groups[1].modules[1]).toEqual({ key: 'appointments', route: 'appointments', count: 3, open: 0 })
     expect(groups[2].modules.map((m) => m.key)).toEqual(['meters'])
   })
 
@@ -44,18 +44,18 @@ describe('sidebar groups', () => {
     const all = Object.fromEntries(Object.keys(noModules).map((k) => [k, 1])) as unknown as typeof noModules
     expect(menuGroups(all).map((g) => [g.id, g.modules.length])).toEqual([
       ['iso', 3],
-      ['operations', 4],
+      ['operations', 5],
       ['assets', 3],
       ['finance', 3],
     ])
-    expect(menuGroups(all)[1].modules.map((m) => m.key)).toEqual(['appointments', 'maintenance', 'alarms', 'notes'])
+    expect(menuGroups(all)[1].modules.map((m) => m.key)).toEqual(['readings', 'appointments', 'maintenance', 'alarms', 'notes'])
     expect(menuGroups(all)[3].modules.map((m) => m.key)).toEqual(['contracts', 'invoices', 'costs'])
   })
 
   it('Berichte stands alone; the search lists all visible modules', () => {
     expect(singleModules(moduleCounts(navigation())).map((m) => m.key)).toEqual(['reports'])
     expect(singleModules(noModules)).toEqual([])
-    expect(visibleModules(moduleCounts(navigation())).map((m) => m.key)).toEqual(['actionPlans', 'legal', 'appointments', 'alarms', 'meters', 'reports'])
+    expect(visibleModules(moduleCounts(navigation())).map((m) => m.key)).toEqual(['actionPlans', 'legal', 'readings', 'appointments', 'alarms', 'meters', 'reports'])
   })
 
   it('finds the group of a route and opens it', () => {

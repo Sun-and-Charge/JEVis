@@ -68,6 +68,11 @@ public class ResourceWebEditValues {
      * New key (not in the language files yet; German and English fallback below)
      */
     static final String KEY_EXISTS = "plugin.object.dialog.data.exists";
+    /**
+     * Stage E8.1, new key (not in the language files yet; German and English fallback below): value outside the
+     * expected range of a meter reading
+     */
+    static final String KEY_EXPECTED = "plugin.object.dialog.data.expected";
     static final String ACTION_ENTER = "manual-value";
     static final String ACTION_DELETE = "manual-value-delete";
     static final String ACTION_RESET = "manual-value-reset";
@@ -306,16 +311,7 @@ public class ResourceWebEditValues {
         JsonSample last = store.latest(id, ATTRIBUTE_VALUE);
         Long lastMillis = last != null ? ResourceWebNotes.millis(last.getTs()) : null;
 
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("id", row.getId());
-        json.put("name", row.getName());
-        json.put("unit", store.unit(id, ATTRIBUTE_VALUE));
-        json.put("canEnter", store.rights().canWrite(row));
-        json.put("canDelete", WebEdit.canDeleteSamples(store.rights(), row));
-        json.put("counter", info.counter);
-        json.put("period", info.periodText);
-        json.put("mode", info.mode.name());
-        json.put("timeZone", zone.getID());
+        Map<String, Object> json = rowJson(store, info);
         json.put("suggestedTimestamp", lastMillis != null
                 ? WebEdit.iso(suggested(new DateTime(lastMillis, zone), info.period, info.workDay).getMillis(), zone) : null);
         if (lastMillis != null) {
@@ -326,15 +322,38 @@ public class ResourceWebEditValues {
         } else {
             json.put("last", null);
         }
-        if (info.hasLimits) {
-            Map<String, Object> limits = new LinkedHashMap<>();
-            limits.put("min", info.min);
-            limits.put("max", info.max);
-            json.put("limits", limits);
-        } else {
-            json.put("limits", null);
-        }
+        json.put("limits", limitsJson(info));
         return WebEdit.Reply.ok(json);
+    }
+
+    /**
+     * The settings of a row as {@code GET /rows/{id}/entry} gives them: {@code id, name, unit, canEnter, canDelete,
+     * counter, period, mode, timeZone} (stage E8.1 also uses it for the row of a meter).
+     */
+    static Map<String, Object> rowJson(WebEdit.Store store, Info info) {
+        JsonObject row = info.row;
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("id", row.getId());
+        json.put("name", row.getName());
+        json.put("unit", store.unit(row.getId(), ATTRIBUTE_VALUE));
+        json.put("canEnter", store.rights().canWrite(row));
+        json.put("canDelete", WebEdit.canDeleteSamples(store.rights(), row));
+        json.put("counter", info.counter);
+        json.put("period", info.periodText);
+        json.put("mode", info.mode.name());
+        json.put("timeZone", info.workDay.zone.getID());
+        return json;
+    }
+
+    /**
+     * @return {@code {min, max}} of the limits of the clean data, null without limits
+     */
+    static Map<String, Object> limitsJson(Info info) {
+        if (!info.hasLimits) return null;
+        Map<String, Object> limits = new LinkedHashMap<>();
+        limits.put("min", info.min);
+        limits.put("max", info.max);
+        return limits;
     }
 
     // ---------------------------------------------------------------- POST value
@@ -356,11 +375,39 @@ public class ResourceWebEditValues {
         JsonObject row = manualRow(store, id);
         if (row == null) return WebEdit.Reply.notFound("Row not found");
         if (!store.rights().canWrite(row)) return WebEdit.Reply.forbidden("Not allowed to enter values for this row");
-        Info info = info(store, row);
+        return write(store, info(store, row), value, timestampText, confirm, language, now, null, ACTION_ENTER, null);
+    }
+
+    /**
+     * More plausibility warnings of a caller (stage E8.1: the expected value of a meter reading).
+     */
+    interface ExtraWarnings {
+        /**
+         * @param warnings the warnings of {@link #warnings} so far, to be added to
+         */
+        void add(Info info, DateTime timestamp, double value, List<String> warnings) throws Exception;
+    }
+
+    /**
+     * Writes a manual value as {@code POST /rows/{id}/values} does, after the rights were checked: aligns the time
+     * stamp, collects the warnings ({@code 409} unless confirmed), writes the value with the manual entry note and
+     * resets the dependent rows.
+     *
+     * @param noteSuffix appended to the note as {@code " – <suffix>"} (null: none)
+     * @param action     the web action of the user action log
+     * @param extra      more warnings (null: none)
+     * @return {@code 201 {timestamp, value, warnings}} or {@code 409} with the same keys
+     */
+    static WebEdit.Reply write(WebEdit.Store store, Info info, double value, String timestampText, boolean confirm,
+                               String language, DateTime now, String noteSuffix, String action, ExtraWarnings extra)
+            throws Exception {
+        JsonObject row = info.row;
+        long id = row.getId();
         DateTimeZone zone = info.workDay.zone;
         DateTime timestamp = align(WebEdit.timestamp(timestampText, zone, "timestamp"), info.mode, info.workDay);
 
         List<String> warnings = warnings(store, info, timestamp, value, language);
+        if (extra != null) extra.add(info, timestamp, value, warnings);
         if (!warnings.isEmpty() && !confirm) {
             Map<String, Object> conflict = new LinkedHashMap<>();
             conflict.put("timestamp", WebEdit.iso(timestamp.getMillis(), zone));
@@ -369,10 +416,10 @@ public class ResourceWebEditValues {
             return WebEdit.Reply.conflict(conflict);
         }
 
-        String note = manualText(language) + " " + now;
+        String note = manualText(language) + " " + now + (noteSuffix != null ? " – " + noteSuffix : "");
         WebEdit.writeSample(store, id, ATTRIBUTE_VALUE,
                 WebEdit.primitiveType(store, row, ATTRIBUTE_VALUE, JEVisConstants.PrimitiveType.DOUBLE),
-                WebEdit.sample(timestamp, BigDecimal.valueOf(value).stripTrailingZeros().toPlainString(), note), ACTION_ENTER);
+                WebEdit.sample(timestamp, BigDecimal.valueOf(value).stripTrailingZeros().toPlainString(), note), action);
         resetDependents(store, row, timestamp);
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -443,6 +490,9 @@ public class ResourceWebEditValues {
         if (KEY_EXISTS.equals(key)) {
             return "de".equals(language) ? "Zu diesem Zeitpunkt gibt es schon einen Wert, er wird überschrieben:"
                     : "There is already a value at this time, it will be overwritten:";
+        }
+        if (KEY_EXPECTED.equals(key)) {
+            return "de".equals(language) ? "Abweichung vom Erwartungswert:" : "Deviation from the expected value:";
         }
         if (KEY_MANUAL.equals(key)) return "de".equals(language) ? "Manuelle Dateneingabe" : "Entry of values";
         return key;
