@@ -1074,6 +1074,88 @@
       "openTab": "PDF in neuem Tab öffnen"
     }
   },
+  "invoiceEdit": {
+    "hint": "Rechnungen können hier importiert und gelöscht werden; Verträge werden im Control Center gepflegt.",
+    "importAction": "Rechnungen importieren",
+    "delete": "Löschen",
+    "deleteLabel": "Rechnung {number} löschen",
+    "deleteTitle": "Rechnung löschen",
+    "deleteQuestion": "Die Rechnung wird in den Papierkorb gelegt und aus den Rechnungsreihen herausgerechnet.",
+    "deleted": "Rechnung {number} wurde in den Papierkorb gelegt.",
+    "conflictDelete": "Rechnung {number} wurde inzwischen geändert und nicht gelöscht. Die Liste wurde neu geladen – bitte prüfen und erneut versuchen.",
+    "import": {
+      "title": "Rechnungen importieren",
+      "hint": "E-Rechnungen (ZUGFeRD, Factur-X, XRechnung) als PDF oder XML, höchstens 20 MB je Datei. Die Dateien werden zuerst nur gelesen; importiert wird erst mit „Importieren“.",
+      "folder": "Ordner",
+      "folderChoose": "Bitte Ordner wählen …",
+      "folderLocked": "Der Ordner lässt sich ändern, nachdem die Liste geleert wurde.",
+      "foldersLoading": "Ordner werden geladen …",
+      "foldersError": "Die Ordner konnten nicht geladen werden.",
+      "noFolders": "Es gibt keinen Rechnungsordner, in den Sie importieren dürfen.",
+      "choose": "Dateien auswählen",
+      "drop": "oder PDF- und XML-Dateien hierher ziehen",
+      "chooseFolderFirst": "Bitte zuerst einen Ordner wählen.",
+      "parsing": "Dateien werden gelesen … {done} von {total}",
+      "clear": "Liste leeren",
+      "files": "Gewählte Dateien",
+      "col": {
+        "import": "Importieren",
+        "file": "Datei",
+        "format": "Format",
+        "number": "Rechnungsnr.",
+        "date": "Rechnungsdatum",
+        "seller": "Lieferant",
+        "period": "Zeitraum",
+        "consumption": "Verbrauch",
+        "net": "Netto",
+        "gross": "Brutto",
+        "medium": "Medium",
+        "status": "Status"
+      },
+      "importRow": "„{name}“ importieren",
+      "mediumLabel": "Medium für „{name}“",
+      "mediumReasons": "Erkannt an: {reasons}",
+      "mediumUnknown": "Kein Hinweis auf das Medium gefunden.",
+      "status": {
+        "pending": "Wartet",
+        "parsing": "Wird gelesen …",
+        "new": "Neu",
+        "duplicate": "Duplikat",
+        "error": "Fehler",
+        "importing": "Wird importiert …",
+        "imported": "Importiert",
+        "skipped": "Übersprungen"
+      },
+      "duplicateLabel": "Vorhandene Rechnung zu „{name}“ anzeigen",
+      "duplicateHint": "Diese Rechnung ist bereits vorhanden.",
+      "skippedHint": "Die Rechnung war bereits vorhanden und wurde nicht noch einmal importiert.",
+      "warnings": "Hinweise",
+      "submit": "Importieren ({n})",
+      "importing": "Rechnungen werden importiert … {done} von {total}",
+      "summary": "{imported} importiert, {skipped} übersprungen, {failed} mit Fehler.",
+      "empty": "Noch keine Dateien gewählt.",
+      "existingTitle": "Vorhandene Rechnung",
+      "existingLoading": "Rechnung wird geladen …",
+      "existingError": "Die vorhandene Rechnung konnte nicht geladen werden.",
+      "problem": {
+        "type": "„{name}“ ist keine PDF- oder XML-Datei.",
+        "size": "„{name}“ ist größer als 20 MB."
+      },
+      "error": {
+        "NOT_AN_E_INVOICE": "Keine E-Rechnung (ZUGFeRD, Factur-X oder XRechnung).",
+        "UNREADABLE": "Die Datei konnte nicht gelesen werden.",
+        "NO_FILE": "Es wurde keine Datei übertragen.",
+        "TOO_LARGE": "Die Datei ist größer als 20 MB.",
+        "INVALID_MEDIUM": "Das Medium ist ungültig.",
+        "INVALID_DIRECTORY": "Der Ordner ist kein Rechnungsordner."
+      },
+      "leave": {
+        "title": "Import nicht abgeschlossen",
+        "message": "Gewählte Rechnungen wurden noch nicht importiert. Möchten Sie die Auswahl verwerfen?",
+        "confirm": "Verwerfen"
+      }
+    }
+  },
   "costs": {
     "title": "Kostenrechnung",
     "readOnly": "Nur Ansicht – Vorlagen und Abrechnungen werden im Control Center eingerichtet.",

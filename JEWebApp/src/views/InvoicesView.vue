@@ -26,8 +26,11 @@ import {
 import { echartsLocale } from '../analysis/echarts'
 import { formatNumber } from '../analysis/format'
 import { browserTimeZone } from '../analysis/settings'
-import { loadInvoices, type Invoice, type InvoiceMedium } from '../api/invoices'
+import { deleteInvoice, loadInvoices, type Invoice, type InvoiceMedium } from '../api/invoices'
 import InvoiceDetails from '../components/accounting/InvoiceDetails.vue'
+import InvoiceImportDialog from '../components/accounting/InvoiceImportDialog.vue'
+import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
+import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
 import { saveBlob } from '../iso/download'
 import { useLoader } from '../iso/useLoader'
 import type { SiteFilter } from '../modules/search'
@@ -38,12 +41,14 @@ import '../styles/modules.css'
 import '../styles/iso.css'
 import '../styles/notes.css'
 import '../styles/reports.css'
+import '../styles/edit.css'
 import '../styles/accounting.css'
 
 /*
- * Energy invoices (W4.7, view only): the imported invoices of a time frame (by period start), medium chips, search
+ * Energy invoices (W4.7): the imported invoices of a time frame (by period start), medium chips, search
  * and site filter, totals and a monthly column chart per medium, the table (cards on phone width) with a detail
  * panel (line items, original file) and CSV export.
+ * E6.1: "Rechnungen importieren" (with canImport) and "Löschen" in the details (with canDelete; version → 409).
  */
 
 const { t, locale } = useI18n()
@@ -157,6 +162,57 @@ function exportCsv() {
   saveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), notesCsvName(t('invoices.title'), requested.from, requested.to))
 }
 
+/* ---------- E6.1: import and delete ---------- */
+
+const canImport = computed(() => data.value?.canImport === true)
+const writable = computed(() => canImport.value || all.value.some((inv) => inv.canDelete === true))
+const importOpen = ref(false)
+const message = ref<{ ok: boolean; text: string } | null>(null)
+
+function openImport() {
+  message.value = null
+  importOpen.value = true
+}
+
+const deleting = ref<Invoice | null>(null)
+const deleteError = ref<string | null>(null)
+const { busy: deleteBusy, run } = useBusy()
+const invoiceName = (inv: Invoice) => inv.number || '#' + inv.id
+
+function askDelete(inv: Invoice) {
+  if (!inv.canDelete) return
+  message.value = null
+  deleteError.value = null
+  deleting.value = inv
+}
+
+async function confirmDelete() {
+  const inv = deleting.value
+  if (!inv) return
+  await run(async () => {
+    try {
+      await deleteInvoice(auth.http, inv.id, inv.version ?? '')
+      deleting.value = null
+      if (selected.value === inv.id) selected.value = null
+      message.value = { ok: true, text: t('invoiceEdit.deleted', { number: invoiceName(inv) }) }
+      await reload()
+    } catch (e) {
+      const kind = writeErrorKind(e)
+      if (kind === 'conflict' || kind === 'notFound') {
+        deleting.value = null
+        message.value = { ok: false, text: kind === 'conflict' ? t('invoiceEdit.conflictDelete', { number: invoiceName(inv) }) : writeErrorText(e, t) }
+        await reload()
+        return
+      }
+      deleteError.value = writeErrorText(e, t)
+    }
+  })
+}
+
+function cancelDelete() {
+  if (!deleteBusy.value) deleting.value = null
+}
+
 const tableColumns = ['period', 'number', 'date', 'seller', 'medium', 'meterPoint', 'consumption', 'net', 'tax', 'gross', 'currency'] as const
 const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
 </script>
@@ -165,8 +221,13 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
   <section class="iso notes invoices" aria-labelledby="invoices-title">
     <div class="mod-head">
       <h1 id="invoices-title">{{ t('invoices.title') }}</h1>
+      <button v-if="canImport" type="button" class="btn btn-primary inv-import" @click="openImport">{{ t('invoiceEdit.importAction') }}</button>
     </div>
-    <p class="muted read-only">{{ t('invoices.readOnly') }}</p>
+    <p v-if="writable" class="muted read-only">{{ t('invoiceEdit.hint') }}</p>
+    <p v-else class="muted read-only">{{ t('invoices.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result inv-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">
+      {{ message.text }}
+    </p>
 
     <fieldset class="mod-filters iso-filters notes-range">
       <legend class="visually-hidden">{{ t('invoices.range.label') }}</legend>
@@ -317,7 +378,7 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
             <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
           </button>
           <div v-if="selected === inv.id" :id="domId(inv, 'c')" class="mod-details">
-            <InvoiceDetails :invoice="inv" />
+            <InvoiceDetails :invoice="inv" removable @remove="askDelete(inv)" />
           </div>
         </li>
       </ul>
@@ -363,12 +424,25 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
                 <td class="nowrap">{{ inv.currency }}</td>
               </tr>
               <tr v-if="selected === inv.id" :id="domId(inv, 'd')" class="mod-detail">
-                <td :colspan="tableColumns.length + 1"><InvoiceDetails :invoice="inv" /></td>
+                <td :colspan="tableColumns.length + 1"><InvoiceDetails :invoice="inv" removable @remove="askDelete(inv)" /></td>
               </tr>
             </template>
           </tbody>
         </table>
       </div>
     </template>
+
+    <InvoiceImportDialog v-if="importOpen" @close="importOpen = false" @imported="reload" />
+    <ConfirmDialog
+      v-if="deleting"
+      :title="t('invoiceEdit.deleteTitle')"
+      :message="t('invoiceEdit.deleteQuestion')"
+      :confirm-label="t('invoiceEdit.delete')"
+      :busy="deleteBusy"
+      :error="deleteError"
+      danger
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </section>
 </template>

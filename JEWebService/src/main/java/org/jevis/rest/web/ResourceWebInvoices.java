@@ -102,7 +102,7 @@ public class ResourceWebInvoices {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
             return json(invoicesJson(lookup, ResourceWebRegisters.Classes.fromCache(),
-                    ResourceWebContracts.sqlStore(ds), range[0], range[1]));
+                    ResourceWebContracts.sqlStore(ds), range[0], range[1], WebEdit.sqlRights(ds.getUserManager())));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
@@ -122,7 +122,7 @@ public class ResourceWebInvoices {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
             Map<String, Object> result = invoiceDetailJson(lookup, ResourceWebRegisters.Classes.fromCache(),
-                    ResourceWebContracts.sqlStore(ds), id);
+                    ResourceWebContracts.sqlStore(ds), id, WebEdit.sqlRights(ds.getUserManager()));
             return result != null ? json(result) : notFound("Invoice not found");
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
@@ -202,11 +202,20 @@ public class ResourceWebInvoices {
     }
 
     /**
-     * {@code GET /invoices}: the readable invoices whose period start (else invoice date) lies within the days, newest
-     * first.
+     * {@code GET /invoices} without rights (nothing may be imported or deleted).
      */
     static Map<String, Object> invoicesJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
                                             ResourceWebContracts.Store store, LocalDate from, LocalDate to) {
+        return invoicesJson(lookup, classes, store, from, to, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * {@code GET /invoices}: the readable invoices whose period start (else invoice date) lies within the days, newest
+     * first; stage E6.1: {@code canImport} and per invoice {@code canDelete} and {@code version}.
+     */
+    static Map<String, Object> invoicesJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
+                                            ResourceWebContracts.Store store, LocalDate from, LocalDate to,
+                                            WebEdit.Rights rights) {
         Set<String> buildingClasses = classes.withHeirs(ResourceWebNavigation.CLASS_BUILDING);
         List<Object[]> found = new ArrayList<>();
         for (JsonObject object : ResourceWebRegisters.readableOfClasses(lookup, classes.withHeirs(CLASS_INVOICE))) {
@@ -219,15 +228,20 @@ public class ResourceWebInvoices {
                 .thenComparing(f -> ((JsonObject) f[0]).getId(), Comparator.reverseOrder()));
         boolean truncated = found.size() > MAX_INVOICES;
         if (truncated) found = found.subList(0, MAX_INVOICES);
+        Map<Long, List<JsonObject>> seriesByFolder = ResourceWebEditInvoices.seriesByFolder(lookup);
         List<Map<String, Object>> list = new ArrayList<>();
         for (Object[] f : found) {
             @SuppressWarnings("unchecked")
             Map<String, JsonAttribute> attributes = (Map<String, JsonAttribute>) f[1];
-            list.add(invoiceJson((JsonObject) f[0], attributes, lookup, buildingClasses));
+            Map<String, Object> json = invoiceJson((JsonObject) f[0], attributes, lookup, buildingClasses);
+            addEditInfo(json, (JsonObject) f[0], attributes, lookup, rights, seriesByFolder);
+            list.add(json);
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("invoices", list);
         result.put("truncated", truncated);
+        result.put("canImport", !ResourceWebEditInvoices.importDirectories(lookup, rights,
+                ResourceWebEditInvoices.texts(store)).isEmpty());
         return result;
     }
 
@@ -259,15 +273,36 @@ public class ResourceWebInvoices {
     }
 
     /**
-     * {@code GET /invoices/{id}}: one invoice plus seller VAT ID and line items; null if not readable.
+     * Stage E6.1: {@code canDelete} (delete right on the invoice, write right on the series of its folder) and
+     * {@code version} (latest sample of its attributes).
+     */
+    static void addEditInfo(Map<String, Object> json, JsonObject object, Map<String, JsonAttribute> attributes,
+                            ResourceWebModules.Lookup lookup, WebEdit.Rights rights,
+                            Map<Long, List<JsonObject>> seriesByFolder) {
+        json.put("canDelete", ResourceWebEditInvoices.canDelete(object, rights, lookup, seriesByFolder));
+        json.put("version", ResourceWebEditInvoices.version(attributes));
+    }
+
+    /**
+     * {@code GET /invoices/{id}} without rights.
      */
     static Map<String, Object> invoiceDetailJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
                                                  ResourceWebContracts.Store store, long id) {
+        return invoiceDetailJson(lookup, classes, store, id, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * {@code GET /invoices/{id}}: one invoice plus seller VAT ID and line items, {@code canDelete} and {@code version};
+     * null if not readable.
+     */
+    static Map<String, Object> invoiceDetailJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
+                                                 ResourceWebContracts.Store store, long id, WebEdit.Rights rights) {
         JsonObject object = invoiceObject(lookup, classes, id);
         if (object == null) return null;
         Map<String, JsonAttribute> attributes = ResourceWebContracts.attributes(id, store);
         Map<String, Object> json = invoiceJson(object, attributes, lookup,
                 classes.withHeirs(ResourceWebNavigation.CLASS_BUILDING));
+        addEditInfo(json, object, attributes, lookup, rights, ResourceWebEditInvoices.seriesByFolder(lookup));
         json.put("sellerVatId", text(attributes, ATTRIBUTE_SELLER_VAT_ID));
         json.put("items", items(text(attributes, ATTRIBUTE_LINE_ITEMS)));
         return json;

@@ -31,6 +31,10 @@ export interface Invoice {
   file: string | null
   path: string | null
   site: { id: number; name: string; names?: Record<string, string> } | null
+  /** E6.1: delete right on the invoice and write right on the series of its folder */
+  canDelete?: boolean
+  /** E6.1: latest change of the invoice's attributes, sent with DELETE (409 if outdated) */
+  version?: string | null
 }
 
 /** One line of the parsed "Line Items" JSON as stored (typical keys: description, quantity, unit, unitPrice, net, taxRate, periodStart, periodEnd). */
@@ -46,6 +50,8 @@ export interface InvoiceDetail extends Invoice {
 export interface InvoiceList {
   invoices: Invoice[]
   truncated: boolean
+  /** E6.1: the user may import into at least one Energy Invoices Directory */
+  canImport?: boolean
 }
 
 export interface InvoiceQuery {
@@ -82,4 +88,95 @@ export function loadInvoice(http: GetClient, id: number): Promise<InvoiceDetail>
 
 export function loadInvoiceFile(http: BlobClient, id: number, inline = false): Promise<Blob> {
   return http.getBlob(invoiceFilePath(id, inline))
+}
+
+/* ---------- E6.1: import and delete ---------- */
+
+/** An Energy Invoices Directory the user may import into (GET /web/invoices/directories). */
+export interface InvoiceDirectory {
+  id: number
+  name: string
+  path: string | null
+  site: { id: number; name: string } | null
+}
+
+/** Answer of POST /invoices/parse (docs/ENERGY-INVOICES.md); amounts as in the document. */
+export interface ParsedInvoice {
+  fileName?: string | null
+  format: string | null
+  number: string | null
+  date: string | null
+  seller: string | null
+  sellerVatId?: string | null
+  buyer?: string | null
+  periodStart: string | null
+  periodEnd: string | null
+  currency: string | null
+  net: number | null
+  tax?: number | null
+  gross: number | null
+  consumption: { value: number; unit: string | null } | null
+  meterPoint?: string | null
+  medium: string | null
+  mediumReasons?: string[] | null
+  items?: InvoiceItem[] | null
+  /** id of an existing invoice with the same seller and number below the directory, else null */
+  duplicate: number | null
+  warnings?: string[] | null
+}
+
+/** Answer of POST /invoices/import (201). */
+export interface ImportedInvoice {
+  invoiceId: number
+  folderId: number
+  series?: Record<string, number> | null
+  warnings?: string[] | null
+}
+
+/** Error body of the parse / import endpoints: `{ error, message }`; 409 DUPLICATE carries `existing`. */
+export interface InvoiceApiError {
+  error?: string
+  message?: string
+  existing?: number
+}
+
+export function directoriesPath(lang: string): string {
+  return `/web/invoices/directories?lang=${encodeURIComponent(lang)}`
+}
+
+export function parsePath(directory: number): string {
+  return `/invoices/parse?directory=${directory}`
+}
+
+export function importPath(directory: number, medium: InvoiceMedium): string {
+  return `/invoices/import?directory=${directory}&medium=${encodeURIComponent(medium)}`
+}
+
+export function deleteInvoicePath(id: number, version: string): string {
+  return `/web/invoices/${id}?version=${encodeURIComponent(version)}`
+}
+
+export function loadInvoiceDirectories(http: GetClient, lang: string): Promise<InvoiceDirectory[]> {
+  return http.get<InvoiceDirectory[]>(directoriesPath(lang))
+}
+
+function fileForm(file: File): FormData {
+  const form = new FormData()
+  form.append('file', file, file.name)
+  return form
+}
+
+/** POST /JEWebService/v1/invoices/parse?directory= (multipart `file`): parsed without storing. */
+export function parseInvoiceFile(http: Pick<HttpClient, 'postForm'>, directory: number, file: File): Promise<ParsedInvoice> {
+  return http.postForm<ParsedInvoice>(parsePath(directory), fileForm(file))
+}
+
+/** POST /JEWebService/v1/invoices/import?directory=&medium= (multipart `file`): 409 DUPLICATE if it exists. */
+export function importInvoiceFile(http: Pick<HttpClient, 'postForm'>, directory: number, medium: InvoiceMedium, file: File): Promise<ImportedInvoice> {
+  return http.postForm<ImportedInvoice>(importPath(directory, medium), fileForm(file))
+}
+
+/** DELETE /web/invoices/{id}?version=: recycle bin, amounts taken out of the series; 409 if changed meanwhile. */
+export function deleteInvoice(http: Pick<HttpClient, 'delete'>, id: number, version: string): Promise<void> {
+  return http.delete(deleteInvoicePath(id, version))
 }

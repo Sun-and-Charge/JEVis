@@ -1074,6 +1074,88 @@
       "openTab": "Open PDF in a new tab"
     }
   },
+  "invoiceEdit": {
+    "hint": "Invoices can be imported and deleted here; contracts are maintained in the Control Center.",
+    "importAction": "Import invoices",
+    "delete": "Delete",
+    "deleteLabel": "Delete invoice {number}",
+    "deleteTitle": "Delete invoice",
+    "deleteQuestion": "The invoice is moved to the recycle bin and its amounts are taken out of the invoice series.",
+    "deleted": "Invoice {number} was moved to the recycle bin.",
+    "conflictDelete": "Invoice {number} was changed in the meantime and not deleted. The list was reloaded – please check and try again.",
+    "import": {
+      "title": "Import invoices",
+      "hint": "E-invoices (ZUGFeRD, Factur-X, XRechnung) as PDF or XML, at most 20 MB per file. The files are only read first; they are imported with “Import”.",
+      "folder": "Folder",
+      "folderChoose": "Please choose a folder …",
+      "folderLocked": "The folder can be changed after the list was cleared.",
+      "foldersLoading": "Loading folders …",
+      "foldersError": "The folders could not be loaded.",
+      "noFolders": "There is no invoice folder you may import into.",
+      "choose": "Choose files",
+      "drop": "or drop PDF and XML files here",
+      "chooseFolderFirst": "Please choose a folder first.",
+      "parsing": "Reading files … {done} of {total}",
+      "clear": "Clear list",
+      "files": "Chosen files",
+      "col": {
+        "import": "Import",
+        "file": "File",
+        "format": "Format",
+        "number": "Invoice no.",
+        "date": "Invoice date",
+        "seller": "Supplier",
+        "period": "Period",
+        "consumption": "Consumption",
+        "net": "Net",
+        "gross": "Gross",
+        "medium": "Medium",
+        "status": "Status"
+      },
+      "importRow": "Import “{name}”",
+      "mediumLabel": "Medium of “{name}”",
+      "mediumReasons": "Detected by: {reasons}",
+      "mediumUnknown": "No hint at the medium found.",
+      "status": {
+        "pending": "Waiting",
+        "parsing": "Reading …",
+        "new": "New",
+        "duplicate": "Duplicate",
+        "error": "Error",
+        "importing": "Importing …",
+        "imported": "Imported",
+        "skipped": "Skipped"
+      },
+      "duplicateLabel": "Show the existing invoice of “{name}”",
+      "duplicateHint": "This invoice exists already.",
+      "skippedHint": "The invoice existed already and was not imported again.",
+      "warnings": "Notes",
+      "submit": "Import ({n})",
+      "importing": "Importing invoices … {done} of {total}",
+      "summary": "{imported} imported, {skipped} skipped, {failed} failed.",
+      "empty": "No files chosen yet.",
+      "existingTitle": "Existing invoice",
+      "existingLoading": "Loading invoice …",
+      "existingError": "The existing invoice could not be loaded.",
+      "problem": {
+        "type": "“{name}” is no PDF or XML file.",
+        "size": "“{name}” is larger than 20 MB."
+      },
+      "error": {
+        "NOT_AN_E_INVOICE": "No e-invoice (ZUGFeRD, Factur-X or XRechnung).",
+        "UNREADABLE": "The file could not be read.",
+        "NO_FILE": "No file was sent.",
+        "TOO_LARGE": "The file is larger than 20 MB.",
+        "INVALID_MEDIUM": "The medium is invalid.",
+        "INVALID_DIRECTORY": "The folder is no invoice folder."
+      },
+      "leave": {
+        "title": "Import not finished",
+        "message": "Chosen invoices were not imported yet. Do you want to discard the selection?",
+        "confirm": "Discard"
+      }
+    }
+  },
   "costs": {
     "title": "Cost calculation",
     "readOnly": "View only – templates and accounting configurations are set up in the Control Center.",
