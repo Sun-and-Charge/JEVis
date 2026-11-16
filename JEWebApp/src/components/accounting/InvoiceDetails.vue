@@ -22,9 +22,11 @@ import { useAuthStore } from '../../stores/auth'
 /*
  * Detail panel of an energy invoice: all fields, the line items (GET /web/invoices/{id}) and the original file
  * (PDF: inline preview through an object URL like the reports, revoked when closed; XML: download only).
+ * E6.1: with `removable` and the invoice's canDelete a "Löschen" button (the page asks and deletes).
  */
 
-const props = defineProps<{ invoice: Invoice }>()
+const props = defineProps<{ invoice: Invoice; removable?: boolean }>()
+const emit = defineEmits<{ remove: [] }>()
 const { t, te, locale } = useI18n()
 const auth = useAuthStore()
 
@@ -168,6 +170,16 @@ const id = (suffix: string) => `invoice-${props.invoice.id}-${suffix}`
           <dd>{{ where }}</dd>
         </template>
       </dl>
+      <div v-if="removable && invoice.canDelete" class="edit-actions">
+        <button
+          type="button"
+          class="edit-btn is-danger inv-delete"
+          :aria-label="t('invoiceEdit.deleteLabel', { number: invoice.number || '#' + invoice.id })"
+          @click="emit('remove')"
+        >
+          {{ t('invoiceEdit.delete') }}
+        </button>
+      </div>
     </section>
 
     <section class="iso-section inv-file" :aria-labelledby="id('file')">

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Sun and Charge Germany GmbH */
 import type { AccountingConfiguration, ContractAttribute, ContractList, ContractObject } from '../../src/api/contracts'
-import type { Invoice, InvoiceDetail } from '../../src/api/invoices'
+import type { Invoice, InvoiceDetail, ParsedInvoice } from '../../src/api/invoices'
 
 /** Mocked answers of /web/contracts and /web/invoices (neutral names, no real data). */
 
@@ -139,6 +139,29 @@ export function invoiceDetail(base: Invoice, overrides: Partial<InvoiceDetail> =
       { description: 'Arbeitspreis', quantity: 41250, unit: 'kWh', unitPrice: 0.25, net: 10312.5, taxRate: 19, periodStart: '2026-10-01', periodEnd: '2026-10-31' },
       { description: 'Grundpreis', quantity: 1, unit: 'Monat', unitPrice: 1237.5, net: 1237.5, taxRate: 19, periodStart: null, periodEnd: null },
     ],
+    ...overrides,
+  }
+}
+
+/** Answer of POST /invoices/parse (E6.1). */
+export function parsedInvoice(overrides: Partial<ParsedInvoice> = {}): ParsedInvoice {
+  return {
+    fileName: 'rechnung.pdf',
+    format: 'ZUGFeRD 2.3 EN16931',
+    number: 'R-1001',
+    date: '2026-10-05',
+    seller: 'Lieferant A',
+    periodStart: '2026-09-01',
+    periodEnd: '2026-09-30',
+    currency: 'EUR',
+    net: 1234.56,
+    tax: 234.57,
+    gross: 1469.13,
+    consumption: { value: 4321, unit: 'kWh' },
+    medium: 'ELECTRICITY',
+    mediumReasons: ['unit kWh'],
+    duplicate: null,
+    warnings: [],
     ...overrides,
   }
 }
