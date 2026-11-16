@@ -1,0 +1,163 @@
+{
+  "templateInputs" : [
+    {
+      "objectClass" : "Electricity Supply Contractor",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b01",
+      "quantity" : false,
+      "attributeName" : "name",
+      "variableName" : "Name_Lieferant",
+      "variableType" : "STRING",
+      "templateFormula" : null,
+      "dependency" : null,
+      "filter" : null,
+      "group" : true,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b02",
+      "quantity" : true,
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Zaehler",
+      "variableType" : "SUM",
+      "templateFormula" : null,
+      "dependency" : null,
+      "filter" : "Bezug",
+      "group" : false,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b03",
+      "quantity" : false,
+      "attributeName" : "Value",
+      "variableName" : "Spitze_Viertelstunde",
+      "variableType" : "MAX",
+      "templateFormula" : null,
+      "dependency" : null,
+      "filter" : "Bezug",
+      "group" : false,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    },
+    {
+      "objectClass" : "Electricity Supply Contractor",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b04",
+      "quantity" : false,
+      "attributeName" : "Energy Price HT",
+      "variableName" : "ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "templateFormula" : null,
+      "dependency" : null,
+      "filter" : null,
+      "group" : true,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    },
+    {
+      "objectClass" : "Electricity Grid Operator",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b05",
+      "quantity" : false,
+      "attributeName" : "Demand Charge",
+      "variableName" : "GRID_DEMAND_Preis",
+      "variableType" : "RANGING_VALUE",
+      "templateFormula" : null,
+      "dependency" : null,
+      "filter" : null,
+      "group" : true,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b06",
+      "quantity" : false,
+      "attributeName" : "VAT Electricity",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "templateFormula" : null,
+      "dependency" : null,
+      "filter" : null,
+      "group" : true,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    },
+    {
+      "objectClass" : null,
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b07",
+      "quantity" : false,
+      "attributeName" : null,
+      "variableName" : "Netto",
+      "variableType" : "FORMULA",
+      "templateFormula" : "6f3d2e10-8a7b-4c21-b5d4-3e2f1a0b9c01",
+      "dependency" : null,
+      "filter" : null,
+      "group" : false,
+      "timeRestrictionEnabled" : false,
+      "fixedTimeFrame" : null,
+      "reducingTimeFrame" : null
+    }
+  ],
+  "templateOutputs" : [
+    {
+      "id" : "7a1c0d2e-3f4b-4a5c-8d6e-9f0a1b2c3d01",
+      "name" : "Energiekosten",
+      "nameBold" : true,
+      "unit" : "€",
+      "showAnalysisLink" : false,
+      "tooltip" : null,
+      "showTooltip" : false,
+      "resultBold" : true,
+      "link" : false,
+      "target" : null,
+      "column" : 0,
+      "row" : 0,
+      "colSpan" : 2,
+      "rowSpan" : 1,
+      "separator" : false
+    },
+    {
+      "id" : "7a1c0d2e-3f4b-4a5c-8d6e-9f0a1b2c3d02",
+      "name" : "Netzkosten",
+      "nameBold" : false,
+      "unit" : "€",
+      "showAnalysisLink" : false,
+      "tooltip" : null,
+      "showTooltip" : false,
+      "resultBold" : false,
+      "link" : true,
+      "target" : null,
+      "column" : 0,
+      "row" : 1,
+      "colSpan" : 2,
+      "rowSpan" : 1,
+      "separator" : false
+    }
+  ],
+  "templateFormulas" : [
+    {
+      "id" : "6f3d2e10-8a7b-4c21-b5d4-3e2f1a0b9c01",
+      "name" : "Energiekosten",
+      "formula" : "Verbrauch_Zaehler * ENERGY_Preis",
+      "output" : "7a1c0d2e-3f4b-4a5c-8d6e-9f0a1b2c3d01",
+      "inputIds" : [
+        "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b02",
+        "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b04"
+      ]
+    }
+  ],
+  "intervalSelectorConfiguration" : {
+    "P1M" : true,
+    "P1Y" : true,
+    "CUSTOM" : true
+  },
+  "type" : "SimpleDataHandler"
+}

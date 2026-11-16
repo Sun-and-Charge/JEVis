@@ -1,0 +1,83 @@
+{
+  "selectedInputs" : [
+    {
+      "objectClass" : "Electricity Supply Contractor",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b01",
+      "attributeName" : "name",
+      "variableName" : "Name_Lieferant",
+      "variableType" : "STRING",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 10
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b02",
+      "attributeName" : "Value",
+      "variableName" : "Verbrauch_Zaehler",
+      "variableType" : "SUM",
+      "filter" : "Bezug",
+      "group" : false,
+      "objectID" : 41
+    },
+    {
+      "objectClass" : "Clean Data",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b03",
+      "attributeName" : "Value",
+      "variableName" : "Spitze_Viertelstunde",
+      "variableType" : "MAX",
+      "filter" : "Bezug",
+      "group" : false,
+      "objectID" : 45
+    },
+    {
+      "objectClass" : "Electricity Supply Contractor",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b04",
+      "attributeName" : "Energy Price HT",
+      "variableName" : "ENERGY_Preis",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 10
+    },
+    {
+      "objectClass" : "Electricity Grid Operator",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b05",
+      "attributeName" : "Demand Charge",
+      "variableName" : "GRID_DEMAND_Preis",
+      "variableType" : "RANGING_VALUE",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 20
+    },
+    {
+      "objectClass" : "Governmental Dues",
+      "id" : "5b0e7c1a-1d2f-4c3b-9a41-0d6e2f7a1b06",
+      "attributeName" : "VAT Electricity",
+      "variableName" : "USt_Satz",
+      "variableType" : "NON_PERIODIC",
+      "filter" : null,
+      "group" : true,
+      "objectID" : 30,
+      "objectKey" : "@W.dues"
+    }
+  ],
+  "linkedOutputs" : [
+    {
+      "id" : "7a1c0d2e-3f4b-4a5c-8d6e-9f0a1b2c3d02",
+      "link" : true,
+      "target" : "41:Value"
+    }
+  ],
+  "templateSelection" : 60,
+  "type" : "SimpleDataHandler",
+  "contractNumber" : "V-2026-0001",
+  "contractType" : "ELECTRICITY",
+  "marketLocationNumber" : "10000000001",
+  "contractDate" : "2025-10-15T00:00:00.000+02:00",
+  "firstRate" : "2026-02-01T00:00:00.000+01:00",
+  "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",
+  "contractStart" : "2026-01-01T00:00:00.000+01:00",
+  "contractEnd" : "2027-12-31T00:00:00.000+01:00",
+  "templateKey" : "@T.W"
+}
