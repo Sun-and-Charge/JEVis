@@ -102,24 +102,47 @@ public class ResourceWebEditNotes {
         WebEdit.Rights rights = store.rights();
         if (!ResourceWebNotes.canAddNote(target, rights)) return WebEdit.Reply.forbidden("Not allowed to add notes to this row");
 
-        JsonObject notesObject = target.notesObject;
-        if (notesObject != null) {
-            ResourceWebNotes.Note existing = noteAt(store, notesObject.getId(), timestamp.getMillis());
+        if (target.notesObject != null) {
+            ResourceWebNotes.Note existing = noteAt(store, target.notesObject.getId(), timestamp.getMillis());
             if (existing != null) return WebEdit.Reply.conflict(noteJson(store, existing, zone));
-        } else {
-            String name = target.row.getName() + NOTES_NAME_SUFFIX;
-            notesObject = store.createObject(name, ResourceWebNotes.CLASS_DATA_NOTES, target.row.getId());
-            store.log(SQLDataSource.LOG_EVENT.CREATE_OBJECT, WebEdit.objectLog(notesObject.getId(), notesObject.getName(), ACTION_CREATE));
-            lookup.addReadable(notesObject, target.row.getId());
         }
+        JsonObject notesObject = ensureNotesObject(store, target, ACTION_CREATE);
+        ResourceWebNotes.Note note = writeNote(store, notesObject, target.row, timestamp, text, tags, ACTION_CREATE);
+        return WebEdit.Reply.created(noteJson(store, note, zone));
+    }
 
+    /**
+     * The "Data Notes" object of the target; if there is none, one named {@code <row name> Notes} is created below the
+     * target row (the caller has checked {@link ResourceWebNotes#canAddNote}). Shared with stage E8.5.
+     */
+    static JsonObject ensureNotesObject(WebEdit.Store store, ResourceWebNotes.NotesTarget target, String action)
+            throws Exception {
+        if (target.notesObject != null) return target.notesObject;
+        String name = target.row.getName() + NOTES_NAME_SUFFIX;
+        JsonObject notesObject = store.createObject(name, ResourceWebNotes.CLASS_DATA_NOTES, target.row.getId());
+        store.log(SQLDataSource.LOG_EVENT.CREATE_OBJECT, WebEdit.objectLog(notesObject.getId(), notesObject.getName(), action));
+        store.lookup().addReadable(notesObject, target.row.getId());
+        return notesObject;
+    }
+
+    /**
+     * Writes a note: "Value" (text), "Tag" (ids joined with {@code ;}; not written if {@code tags} is null, so the
+     * tags of an existing note are kept) and "User" (the account) at the time stamp, and the marker {@code ,userNotes}
+     * on the sample of the row. Existing samples at the time stamp are overwritten. Shared with stage E8.5.
+     *
+     * @return the written note
+     */
+    static ResourceWebNotes.Note writeNote(WebEdit.Store store, JsonObject notesObject, JsonObject row, DateTime timestamp,
+                                           String text, List<String> tags, String action) throws Exception {
         String account = store.account();
-        long id = notesObject.getId();
-        write(store, notesObject, ResourceWebNotes.ATTRIBUTE_VALUE, WebEdit.sample(timestamp, text, null), ACTION_CREATE);
-        write(store, notesObject, ResourceWebNotes.ATTRIBUTE_TAG, WebEdit.sample(timestamp, String.join(";", tags), null), ACTION_CREATE);
-        write(store, notesObject, ResourceWebNotes.ATTRIBUTE_USER, WebEdit.sample(timestamp, account, null), ACTION_CREATE);
-        marker(store, target.row, timestamp, true, ACTION_CREATE);
-        return WebEdit.Reply.created(noteJson(store, new ResourceWebNotes.Note(id, timestamp.getMillis(), text, tags, account), zone));
+        write(store, notesObject, ResourceWebNotes.ATTRIBUTE_VALUE, WebEdit.sample(timestamp, text, null), action);
+        if (tags != null) {
+            write(store, notesObject, ResourceWebNotes.ATTRIBUTE_TAG, WebEdit.sample(timestamp, String.join(";", tags), null), action);
+        }
+        write(store, notesObject, ResourceWebNotes.ATTRIBUTE_USER, WebEdit.sample(timestamp, account, null), action);
+        marker(store, row, timestamp, true, action);
+        return new ResourceWebNotes.Note(notesObject.getId(), timestamp.getMillis(), text,
+                tags != null ? tags : new ArrayList<>(), account);
     }
 
     // ---------------------------------------------------------------- update and delete

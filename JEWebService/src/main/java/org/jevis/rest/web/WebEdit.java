@@ -358,8 +358,16 @@ final class WebEdit {
     }
 
     static Store sqlStore(SQLDataSource ds) {
+        return sqlStore(ds, null);
+    }
+
+    /**
+     * @param known the objects and rights already read in the request (e.g. by the navigation), null to read them
+     *               when needed
+     */
+    static Store sqlStore(SQLDataSource ds, ResourceWebModules.Lookup known) {
         return new Store() {
-            private ResourceWebModules.Lookup lookup;
+            private ResourceWebModules.Lookup lookup = known;
             private ResourceWebRegisters.Classes classes;
             private Rights rights;
 

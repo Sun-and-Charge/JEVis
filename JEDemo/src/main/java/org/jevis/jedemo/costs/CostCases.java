@@ -30,6 +30,7 @@ import org.jevis.jedemo.costs.PlanObject.Parent;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -112,6 +113,19 @@ public final class CostCases {
      * the current template "stromrechnung", its directory receives the new templates
      */
     static final long OLD_TEMPLATE = 23952;
+    /**
+     * group "Sun and Charge Demo - Lesen" (reads the whole demo), reader of both demo rounds
+     */
+    static final long READ_GROUP = 24497;
+    /**
+     * group "Sun and Charge Demo - App-Test (schreiben)" (writes the row of {@link #MANUAL_METER}), reader of the
+     * Musterwerk round
+     */
+    static final long APP_TEST_GROUP = 24499;
+    /**
+     * existing meter of Musterwerk read by hand (Online ID = row 23730 "Händische Monatsdaten")
+     */
+    static final String MANUAL_METER = "Manuelle Ablesung S1-3";
 
     static final ZonedDateTime Y2025 = year(2025);
     static final ZonedDateTime Y2026 = year(2026);
@@ -296,7 +310,49 @@ public final class CostCases {
             list.add(PlanObject.create(k + ".cost", "String Data", lp + " - Kostenstelle", Parent.key("M.base.cars")).sample("Value", Y2025, cars[i][1]));
             list.add(PlanObject.create(k + ".person", "String Data", lp + " - Personalnummer", Parent.key("M.base.cars")).sample("Value", Y2025, cars[i][2]));
         }
+
+        addReadingRounds(list);
         return list;
+    }
+
+    /**
+     * Meter register of Außenlager Süd (the raw rows of cases B, D, E as Online IDs) and two reading rounds (stage
+     * E8.2), one per site. Demo rounds send no mails: their "Mail State" marks the mails as sent ({@code noMails}).
+     */
+    private static void addReadingRounds(List<PlanObject> list) {
+        list.add(PlanObject.create("S.meters", "Measurement Directory", "Messstellen", Parent.key("S.site")));
+        list.add(PlanObject.create("S.meter.strom", "Electricity Measurement Instrument", "Stromzähler SLP", Parent.key("S.meters"))
+                .set("Online ID", "@B.row:Value").set("Serial Number", "1ESY1160-0001").set("Location", "Hausanschlussraum")
+                .set("Meter Point", "DE0000000000000000000000000000002").set("Decimal Places", 0)
+                .note("Monthly reading of case B (raw row B.row)"));
+        list.add(PlanObject.create("S.meter.gas", "Gas Measurement Instrument", "Gaszähler SLP", Parent.key("S.meters"))
+                .set("Online ID", "@D.row:Value").set("Serial Number", "7GMT0040-0002").set("Location", "Hausanschlussraum")
+                .set("Meter Point", "DE0000000000000000000000000000011").set("Decimal Places", 2)
+                .note("Monthly reading of case D (raw row D.row, m³)"));
+        list.add(PlanObject.create("S.meter.waerme", "Heat Measurement Instrument", "Wärmemengenzähler Fernwärme", Parent.key("S.meters"))
+                .set("Online ID", "@E.row:Value").set("Serial Number", "WMZ-0001-0003").set("Location", "Heizraum")
+                .set("Measuring Point ID", "WMZ-0001").set("Decimal Places", 0)
+                .note("Heat meter of case E (raw row E.row); hourly values, so the web lists it as AUTOMATIC"));
+
+        list.add(PlanObject.find("M.meter.manual", "Measurement Instrument", MANUAL_METER, Parent.path(MUSTERWERK)).subclasses()
+                .note("Existing meter of Musterwerk (Online ID = row 23730 \"Händische Monatsdaten\"), found by name"));
+
+        list.add(PlanObject.create("S.rounds", "Reading Round Directory", "Ableserunden", Parent.key("S.site")));
+        list.add(round("S.round", "Monatsablesung Außenlager Süd", Parent.key("S.rounds"),
+                Arrays.asList("@S.meter.strom", "@S.meter.gas", "@S.meter.waerme"), Collections.singletonList(READ_GROUP),
+                "Schlüssel beim Empfang abholen."));
+        list.add(PlanObject.create("M.rounds", "Reading Round Directory", "Ableserunden", Parent.path(MUSTERWERK)));
+        list.add(round("M.round", "Monatsablesung Musterwerk", Parent.key("M.rounds"),
+                Collections.singletonList("@M.meter.manual"), Arrays.asList(READ_GROUP, APP_TEST_GROUP),
+                "Ablesung auch per App möglich."));
+    }
+
+    private static PlanObject round(String key, String name, Parent parent, List<String> meters, List<Long> readers, String remarks) {
+        return PlanObject.create(key, "Reading Round", name, parent)
+                .set("Enabled", true).set("Meters", meters).set("Readers", readers).set("Supervisor", Collections.emptyList())
+                .set("Start Date", "2026-01-01").set("Period", "P1M").set("Lead Days", 3).set("Reminder Days", 3)
+                .set("Escalation Days", 7).set("Remarks", remarks).noMails()
+                .note("Monthly round from 2026-01-01; readers are the demo groups, no supervisor; no mails (Mail State)");
     }
 
     private static PlanObject cleanCounter(String key, String parent, String period, String unit) {

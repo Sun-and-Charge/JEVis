@@ -125,11 +125,37 @@ If the report finds no calculation for 23921 (not readable for the demo user), s
 service computes the sum again in its next cycle, the JEDataProcessor then 23924. The apply report lists the same
 commands under "Manual steps". Then open configuration F for a month of 2026: about 190–220 kWh per charge point.
 
+## Meters and reading rounds
+
+The setup also gives the demo a meter register for Außenlager Süd and two reading rounds (web app: Ablesung, stage
+E8.1/E8.2 of docs/WEB-API.md). All values are neutral demo data.
+
+| Key | Class | Name | Below | Content |
+|---|---|---|---|---|
+| `S.meters` | Measurement Directory | Messstellen | Außenlager Süd (`S.site`) | |
+| `S.meter.strom` | Electricity Measurement Instrument | Stromzähler SLP | Messstellen | Online ID `<B.row>:Value` (monthly counter of case B), Serial Number 1ESY1160-0001, Location Hausanschlussraum, Meter Point DE0…0002, Decimal Places 0 |
+| `S.meter.gas` | Gas Measurement Instrument | Gaszähler SLP | Messstellen | Online ID `<D.row>:Value` (m³ counter of case D), 7GMT0040-0002, Hausanschlussraum, DE0…0011, 2 decimals |
+| `S.meter.waerme` | Heat Measurement Instrument | Wärmemengenzähler Fernwärme | Messstellen | Online ID `<E.row>:Value` (heat meter of case E), WMZ-0001-0003, Heizraum, Measuring Point ID WMZ-0001; hourly values, so the web lists it as `AUTOMATIC` (never due, counts as done) |
+| `M.meter.manual` | an existing "… Measurement Instrument" | Manuelle Ablesung S1-3 | anywhere below Musterwerk | not created: found by name (`action: find`, its id is not in the repository; Online ID = row 23730 "Händische Monatsdaten") |
+| `S.rounds` | Reading Round Directory | Ableserunden | Außenlager Süd | |
+| `S.round` | Reading Round | Monatsablesung Außenlager Süd | `S.rounds` | Meters [Strom, Gas, Wärme], Readers [24497] (group "Sun and Charge Demo - Lesen"), Supervisor [], Remarks "Schlüssel beim Empfang abholen." |
+| `M.rounds` | Reading Round Directory | Ableserunden | Musterwerk | |
+| `M.round` | Reading Round | Monatsablesung Musterwerk | `M.rounds` | Meters [Manuelle Ablesung S1-3], Readers [24497, 24499] (with "Sun and Charge Demo - App-Test (schreiben)"), Supervisor [], Remarks "Ablesung auch per App möglich." |
+
+Both rounds: Enabled, Start Date 2026-01-01, Period P1M, Lead / Reminder / Escalation Days 3 / 3 / 7. In the plan an
+Online ID is written as `"@B.row:Value"` (resolved to `"<id>:Value"`), the meter and reader lists as JSON arrays
+(`["@S.meter.strom", …]` → `[<id>, …]`, written as JSON text). **No mails:** the rounds carry
+`"mailState": "DEMO_NO_MAILS"`; the setup writes their "Mail State" (before the other attributes, so the JENotifier
+never sees a new round without it) so that the mails of the current and the next due date count as sent, and the
+JEDemo job keeps it so every cycle (docs/DEMO.md, "Demo rounds send no mails"). `M.meter.manual` must exist exactly
+once below Musterwerk, otherwise the setup reports a problem and writes nothing.
+
 ## Code and generated files
 
 | Class | Purpose |
 |---|---|
-| `CostCases` | the cases, the objects they need (new site, contracts, rows, base data, invoice folders) and the invoice cases |
+| `CostCases` | the cases, the objects they need (new site, contracts, rows, base data, invoice folders, meters and reading rounds) and the invoice cases |
+| `RoundMailMarker` (package `org.jevis.jedemo`) | the "Mail State" of the demo reading rounds (no mails), used by the setup and the JEDemo job |
 | `TemplateFactory` | builds the Result Calculation Template of a case (inputs, formulas, output grid) and its Accounting Configuration |
 | `History` | deterministic synthetic histories of the new rows (SLP counters, heat meter, price indices) and the charge point profile of case F |
 | `SetupPlan` | the setup plan: objects, templates, configurations, invoice cases, backfill, deletions (with their checks), fixes, checks |
@@ -297,6 +323,44 @@ $JEDEMO -o invoicesFrom=2025-01 -o invoicesOnly=true -o dryrun=true
 $JEDEMO -o invoicesFrom=2025-01 -o invoicesOnly=true
 sudo systemctl start jedemo.service
 ```
+
+### Meters and reading rounds on live (2026-11-16)
+
+The same setup run with the jar that knows the new objects; everything else of the plan is already in place, so the
+dry run lists only the new objects ("nothing to do" for the rest):
+
+```bash
+cd /home/jevis/jevis
+git pull
+mvn -t <toolchains.xml> package -pl JEDemo -am           # never -P jevisserver
+sudo systemctl stop jedemo.service
+source /etc/jevis/jevis.env; export JEVIS_API_KEY="$JEDEMO_API_KEY"
+JEDEMO="java -Dlog4j.configurationFile=etc/log4j2_service.xml -DserviceLogFile=var/log/jedemo-single.log -jar JEDemo/target/JEDemo-1.0-jar-with-dependencies.jar -c etc/jevis.xml -sm single -jid 23048"
+
+$JEDEMO -o costSetup=dryrun
+less "$(ls -t var/log/costdemo-setup-dryrun-*.md | head -1)"
+```
+
+The dry run should show: no problems; REUSE `@M.meter.manual = … 'Sun and Charge Demo / Standorte / Musterwerk / … /
+Manuelle Ablesung S1-3' [<id>] found by name` (if it says "no …" or "2 objects …", stop: the meter was renamed or
+exists twice); CREATE `@S.meters`, `@S.meter.strom`, `@S.meter.gas`, `@S.meter.waerme`, `@S.rounds`, `@S.round`,
+`@M.rounds`, `@M.round` (8 creates with the parent paths); WRITE lines for their attributes (Online ID
+`@B.row:Value` etc. are shown with keys, resolved at apply time; Meters/Readers as JSON arrays) and for each round
+`· Mail State = {"reminderSentFor":"2026-12-01","dueMailSentFor":"2026-12-01","escalationSentFor":"2026-11-01"} (demo
+rounds send no mails)` (on 2026-11-16). The rest of the plan should be REUSE / SKIP (history lines may list a few
+samples the replay has not written yet; harmless). A "Reading Round Directory" is unique per parent: if Musterwerk
+already has one under another name, the create of `@M.rounds` fails at apply (rename it to "Ableserunden" first). Then:
+
+```bash
+$JEDEMO -o costSetup=apply
+less "$(ls -t var/log/costdemo-setup-apply-*.md | head -1)"
+$JEDEMO -o costSetup=dryrun                              # must say "nothing to do"
+sudo systemctl start jedemo.service                      # keeps the Mail State of the rounds
+grep "Reading round" var/log/jedemo.log | tail           # "Reading rounds: 2 checked, 0 marked" once nothing changes
+```
+
+Check in the web app (Ablesung → Runden) as the demo user: both rounds, the heat meter marked automatic, no "Letzte
+Mail"; the JENotifier log shows no mail for them.
 
 Then the checks of the plan (listed at the end of the report). Options: `-o costSetupReport=<directory>` (default
 `var/log`), `-o costSetupBackup=<directory>` (default `var/backup/costdemo-<time>`); `-o dryrun=true` turns an apply into

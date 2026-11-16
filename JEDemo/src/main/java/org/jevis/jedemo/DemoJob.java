@@ -58,7 +58,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * One cycle of the demo job against JEVis: replay raw data, roll module dates, create the monthly invoices. Only
+ * One cycle of the demo job against JEVis: replay raw data, roll module dates, mark the mails of the demo reading
+ * rounds as sent (no mails from the demo, {@link RoundMailMarker}), create the monthly invoices. Only
  * objects below the configured demo organisations are written (plus "Shifted Until" / "Replay State" on the service
  * object). With {@code dryRun} nothing is written, the job only logs what it would do.
  */
@@ -159,6 +160,7 @@ public class DemoJob {
         }
         if (objects.isEmpty()) return;
 
+        markRoundMails(objects, today);
         if (invoicesOnly) {
             logger.info("Invoices only: no replay, no date rolling");
         } else {
@@ -512,6 +514,41 @@ public class DemoJob {
         }
         if (any) logger.debug("{} notes of {} [{}]", dryRun ? "[dry run] would shift" : "Shifted", o.getName(), o.getID());
         return any;
+    }
+
+    // ------------------------------------------------------------------------------------------------ round mails
+
+    /**
+     * Demo reading rounds send no mails: the "Mail State" of every "Reading Round" below the demo organisations
+     * marks the mails of the current and the next due date as sent ({@link RoundMailMarker}); written only when it
+     * differs.
+     */
+    void markRoundMails(List<JEVisObject> objects, LocalDate today) {
+        org.joda.time.LocalDate day = new org.joda.time.LocalDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+        int rounds = 0, marked = 0, failed = 0;
+        for (JEVisObject o : objects) {
+            try {
+                if (!RoundMailMarker.CLASS_NAME.equals(o.getJEVisClassName())) continue;
+                rounds++;
+                String json = RoundMailMarker.update(latestString(o, RoundMailMarker.A_MAIL_STATE),
+                        latestString(o, RoundMailMarker.A_START_DATE), latestString(o, RoundMailMarker.A_PERIOD),
+                        latestString(o, RoundMailMarker.A_REMINDER_DAYS), latestString(o, RoundMailMarker.A_ESCALATION_DAYS), day);
+                if (json == null) continue;
+                marked++;
+                if (dryRun) {
+                    logger.info("[dry run] would mark the mails of reading round {} [{}] as sent: {}", o.getName(), o.getID(), json);
+                } else {
+                    write(o, RoundMailMarker.A_MAIL_STATE, json, clock.instant());
+                    logger.info("Reading round {} [{}]: mails marked as sent (demo rounds send no mails): {}", o.getName(), o.getID(), json);
+                }
+            } catch (Exception e) {
+                failed++;
+                logger.error("Could not mark the mails of reading round {} [{}]", o.getName(), o.getID(), e);
+            }
+        }
+        if (rounds > 0) {
+            logger.info("Reading rounds: {} checked, {} {}, {} failed", rounds, marked, dryRun ? "would be marked" : "marked", failed);
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ invoices

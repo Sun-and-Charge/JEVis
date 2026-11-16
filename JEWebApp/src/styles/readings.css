@@ -882,6 +882,126 @@ p.rd-round-mail-error {
   }
 }
 
+/* ---- E8.5: review of contradictory readings ---- */
+.rd-view-count {
+  display: inline-block;
+  min-width: 1.4rem;
+  margin-left: 0.35rem;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  line-height: 1.3rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--blueberry);
+  background: var(--sun);
+  border-radius: 999px;
+}
+
+.rd-review-intro {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.rd-review-truncated {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+}
+
+.rd-issues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.rd-review-card .rd-issues {
+  margin: 0 0 0.4rem;
+}
+
+.mod-badge.rd-issue {
+  white-space: nowrap;
+}
+
+/* in the table the issue badges may wrap, so the action column stays visible */
+.rd-review-table .mod-badge.rd-issue {
+  white-space: normal;
+  max-width: 10rem;
+}
+
+.rd-review-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rd-review-row .rd-note {
+  min-width: 6rem;
+  max-width: 16rem;
+  font-size: 0.85rem;
+  overflow-wrap: break-word;
+}
+
+/* the meter name and times must not be squeezed by the action buttons */
+.rd-review-table th:first-child,
+.rd-review-table td:first-child {
+  min-width: 10rem;
+}
+
+.rd-review-table td {
+  overflow-wrap: normal;
+}
+
+/* four actions as a 2 × 2 block, so the cell keeps its width and nothing is cut off */
+.rd-review-table .rd-round-btns {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  justify-content: end;
+}
+
+.rd-review-table .rd-review-range {
+  min-width: 9rem;
+}
+
+.rd-review-actions .rd-review-correct {
+  flex-basis: 100%;
+}
+
+.rd-review-comment textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+p.rd-review-ignore-note {
+  margin: 0 0 0.75rem;
+}
+
+/* correction mode of the reading panel */
+.rd-correction {
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  background: #fffbe0;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sun);
+  border-radius: var(--radius);
+}
+
+.rd-correction p {
+  margin: 0 0 0.35rem;
+}
+
+.rd-correction-facts {
+  margin: 0;
+}
+
+.rd-correction-old {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-decoration: line-through;
+}
+
+.rd-correction-time {
+  font-weight: 600;
+}
+
 /* ---- print view: hidden on screen ---- */
 .rd-print {
   display: none;

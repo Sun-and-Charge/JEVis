@@ -165,3 +165,71 @@ export function readingWarnings(e: unknown): string[] | null {
   const list = e.json<{ warnings?: unknown }>()?.warnings
   return Array.isArray(list) ? list.filter((w): w is string => typeof w === 'string' && !!w.trim()) : []
 }
+
+/* ------------------------------------------------------------------ E8.5: review of contradictory readings */
+
+/** Why a sample is listed for review (docs/WEB-API.md "Editing, stage E8.5"). */
+export type ReviewIssue = 'COUNTER_DECREASE' | 'FAR_FROM_EXPECTED' | 'LIMIT'
+
+/** Periods of the review list in days (default 365). */
+export const REVIEW_DAYS = [90, 365, 1095] as const
+export const REVIEW_DEFAULT_DAYS = 365
+
+/** Max. length of a review comment (server: ≤ 500 characters, no control characters except line breaks). */
+export const REVIEW_COMMENT_MAX = 500
+
+export interface ReviewRow {
+  id: number
+  name: string
+  unit: string | null
+  counter: boolean
+  canEnter: boolean
+  canDelete: boolean
+  /** may add a note to the row (E1 `canAddNote`) */
+  canNote: boolean
+}
+
+export interface ReviewItem {
+  meterId: number
+  meterName: string
+  site: { id: number; name: string } | null
+  row: ReviewRow
+  /** ISO with offset, the sample's timestamp */
+  timestamp: string
+  value: number | string | null
+  note: string | null
+  manual: boolean
+  previous: { timestamp: string; value: number | string | null } | null
+  expected: ExpectedRange | null
+  issues: (ReviewIssue | string)[]
+  /** meter exchange allowed (E5/E8.1) */
+  canExchange: boolean
+}
+
+export interface ReviewList {
+  items: ReviewItem[]
+  count: number
+  /** more than 500 items: only the newest are listed */
+  truncated: boolean
+}
+
+export type ReviewAction = 'CONFIRM' | 'IGNORE'
+
+/** Body of POST /web/readings/review/{meterId}. */
+export interface ReviewDecision {
+  timestamp: string
+  action: ReviewAction
+  comment: string | null
+  /** the listed value: the server answers 409 if the stored value differs */
+  value?: number
+}
+
+/** GET /web/readings/review?lang=…&days=…(&site=…). */
+export function loadReview(http: Pick<HttpClient, 'get'>, locale: string, days: number, site?: number | null): Promise<ReviewList> {
+  return http.get<ReviewList>(`/web/readings/review?${lang(locale)}&days=${days}` + (site != null ? `&site=${site}` : ''))
+}
+
+/** POST /web/readings/review/{meterId}: confirm (note) or ignore (sample removed, note kept) a listed sample. */
+export function reviewReading(http: Pick<HttpClient, 'post'>, meterId: number, body: ReviewDecision, locale: string): Promise<{ timestamp: string; action: ReviewAction }> {
+  return http.post<{ timestamp: string; action: ReviewAction }>(`/web/readings/review/${meterId}?${lang(locale)}`, body)
+}

@@ -70,6 +70,13 @@ function toggle(id: GroupId) {
 }
 
 const label = (m: MenuModule) => t('modules.' + m.key)
+/* open items: unconfirmed alarms, readings to review (E8.5) */
+const openText = (m: MenuModule) => t(m.key === 'readings' ? 'modules.readingsReview' : 'modules.alarmsOpen', m.open)
+const groupOpenText = (g: { modules: MenuModule[] }) =>
+  g.modules
+    .filter((m) => m.open > 0)
+    .map(openText)
+    .join(', ')
 const tip = (text: string) => (props.rail ? text : undefined)
 </script>
 
@@ -107,7 +114,7 @@ const tip = (text: string) => (props.rail ? text : undefined)
           <template v-if="!isOpen(g.id)">
             <span v-if="g.open > 0" class="module-count is-alert" :class="{ 'rail-badge': rail }">
               <span aria-hidden="true">{{ g.open }}</span>
-              <span class="visually-hidden">{{ t('modules.alarmsOpen', g.open) }}</span>
+              <span class="visually-hidden">{{ groupOpenText(g) }}</span>
             </span>
             <span v-else-if="!rail" class="group-count">
               <span aria-hidden="true">({{ g.modules.length }})</span>
@@ -120,9 +127,9 @@ const tip = (text: string) => (props.rail ? text : undefined)
           <li v-for="m in g.modules" :key="m.key">
             <RouterLink :to="{ name: m.route }" class="module-item" @click="emit('navigate')">
               <span class="label">{{ label(m) }}</span>
-              <span v-if="m.key === 'alarms'" class="module-count" :class="{ 'is-alert': m.open > 0 }" :title="t('modules.alarmsOpen', m.open)">
+              <span v-if="m.key === 'alarms' || m.open > 0" class="module-count" :class="{ 'is-alert': m.open > 0 }" :title="openText(m)">
                 <span aria-hidden="true">{{ m.open }}</span>
-                <span class="visually-hidden">{{ t('modules.alarmsOpen', m.open) }}</span>
+                <span class="visually-hidden">{{ openText(m) }}</span>
               </span>
               <span v-else class="module-count">{{ m.count }}</span>
             </RouterLink>

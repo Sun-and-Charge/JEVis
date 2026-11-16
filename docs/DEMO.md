@@ -43,7 +43,23 @@ writes **raw data**, clean data, calculations and alarms follow from the normal 
      ones written; this needs the **delete** (or execute) right on the notes. Without it the job logs an error per
      notes object and changes nothing there.
    - Then **Shifted Until** moves forward by the same number of weeks.
-3. **Monthly energy invoices.** In the first cycle of a month, one ZUGFeRD PDF (EN16931) per **invoice case** for the
+3. **Demo rounds send no mails.** The JENotifier mails the readers of a reading round (order, reminder, escalation,
+   docs/WEB-API.md stage E8.3), and the demo rounds name real groups as readers. So in every cycle (also with
+   `invoicesOnly`) the job writes the **"Mail State"** of every "Reading Round" below the accepted organisations
+   (`RoundMailMarker`) so that the JENotifier never finds a pending mail:
+   - `due` / `nextDue` as the web service computes them (start date + n × period, the latest not after today in
+     Europe/Berlin; `nextDue` = start date + (n + 1) × period; before the start date every mark is the start date).
+   - The JENotifier sends only the latest kind that applies for `due` and checks only that kind's field, each field
+     holds one date. So `dueMailSentFor` (order) = `due` until `due` + min(Reminder Days, Escalation Days), then
+     already `nextDue`; `reminderSentFor` = `due` until `due` + Escalation Days, then `nextDue`; `escalationSentFor` =
+     `due`. On the next due date the order is therefore marked before the job's next cycle; the reminder and the
+     escalation of the new period come days later. (Only a reminder or escalation after 0 days, or one that comes
+     later than a whole period, cannot be marked in advance; the demo rounds use 3 / 7 days and a month.)
+   - `lastMail` and `lastMailKind` are cleared, so the web shows no "Letzte Mail"; `lastError` and other fields stay.
+   - Written only when the state differs (no new sample every cycle); rounds without valid start date or period and
+     excluded objects are left alone. The cost demo setup writes the same state when it creates the demo rounds
+     (docs/DEMO-COSTS.md, "Meters and reading rounds").
+4. **Monthly energy invoices.** In the first cycle of a month, one ZUGFeRD PDF (EN16931) per **invoice case** for the
    previous month is created and imported into the case's **Energy Invoices Directory** (same import as in the Control
    Center), once the case's data reach the new month. Invoice number `EN-<yyyyMM>-<suffix>` (e.g. `EN-202610-SR`).
    An invoice that already exists (HTTP 409) is skipped, so restarts are harmless.
@@ -71,7 +87,8 @@ writes **raw data**, clean data, calculations and alarms follow from the normal 
   error in the log and nothing below it is touched.
 - Only objects below the accepted organisations are written; the invoice directory (of every invoice case) must be
   one of them. Prices and rows of the invoice cases are only read. On the
-  service object the job writes only `Status`, `Shifted Until` and `Replay State`.
+  service object the job writes only `Status`, `Shifted Until` and `Replay State`. Of a reading round it writes only
+  "Mail State".
 - The service user only has write rights on the demo (see below), so a misconfiguration cannot reach customer data.
 - Dry run: `-o dryrun=true` logs what would be written and writes nothing.
 

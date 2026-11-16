@@ -58,6 +58,10 @@ class FakeEditStore implements WebEdit.Store {
     final List<DateTime> waits = new ArrayList<>();
     String userName = "Demo User";
     boolean failFileWrites = false;
+    /**
+     * Stage E8.5: writes to these {@code <id>/<attribute>} fail
+     */
+    final Set<String> failWritesOf = new HashSet<>();
     WebEdit.WorkDay workDay = WebEdit.WorkDay.standard(ZONE);
     /**
      * Stage E8.2: the logged-in user and its groups
@@ -232,6 +236,7 @@ class FakeEditStore implements WebEdit.Store {
 
     @Override
     public int write(long id, String attribute, int primitiveType, List<JsonSample> written) {
+        if (failWritesOf.contains(id + "/" + attribute)) throw new IllegalStateException("write failed");
         for (JsonSample sample : written) {
             long millis = ResourceWebNotes.millis(sample.getTs());
             JsonSample copy = new JsonSample();

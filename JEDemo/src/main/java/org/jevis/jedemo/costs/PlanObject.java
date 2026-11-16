@@ -38,6 +38,19 @@ public final class PlanObject {
     final String jevisClass;
     final String name;
     final Parent parent;
+    /**
+     * an existing object found by name (and class) below its parent instead of created ({@link #find})
+     */
+    final boolean find;
+    /**
+     * {@link #find}: also a subclass matches, i.e. a class whose name ends with " " + the class (e.g. "Electricity
+     * Measurement Instrument" for "Measurement Instrument")
+     */
+    boolean subclasses;
+    /**
+     * a "Reading Round" whose "Mail State" marks the mails as sent (demo rounds send no mails)
+     */
+    boolean noMails;
     final Map<String, Attr> attributes = new LinkedHashMap<>();
     /**
      * history profile of {@link History} for the "Value" of a new data row
@@ -49,26 +62,49 @@ public final class PlanObject {
     Long copyAttributesFrom;
     String note;
 
-    private PlanObject(String key, Long id, String jevisClass, String name, Parent parent) {
+    private PlanObject(String key, Long id, String jevisClass, String name, Parent parent, boolean find) {
         this.key = key;
         this.id = id;
         this.jevisClass = jevisClass;
         this.name = name;
         this.parent = parent;
+        this.find = find;
     }
 
     /**
      * An object to create.
      */
     static PlanObject create(String key, String jevisClass, String name, Parent parent) {
-        return new PlanObject(key, null, jevisClass, name, parent);
+        return new PlanObject(key, null, jevisClass, name, parent, false);
     }
 
     /**
      * An existing object that gets new samples.
      */
     static PlanObject update(String key, long id, String jevisClass, String name) {
-        return new PlanObject(key, id, jevisClass, name, null);
+        return new PlanObject(key, id, jevisClass, name, null, false);
+    }
+
+    /**
+     * An existing object whose id is not known in advance: the only object with the name and class anywhere below the
+     * parent (the setup refuses if there is none or more than one).
+     */
+    static PlanObject find(String key, String jevisClass, String name, Parent below) {
+        return new PlanObject(key, null, jevisClass, name, below, true);
+    }
+
+    PlanObject subclasses() {
+        this.subclasses = true;
+        return this;
+    }
+
+    PlanObject noMails() {
+        this.noMails = true;
+        return this;
+    }
+
+    public boolean isFind() {
+        return find;
     }
 
     public String getKey() {

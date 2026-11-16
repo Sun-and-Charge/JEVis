@@ -139,6 +139,18 @@ describe('sidebar', () => {
     expect(storedPrefs().groups).toEqual({ operations: false })
   })
 
+  it('shows the readings to review as the open-item badge of "Ablesung" (E8.5)', async () => {
+    const base = navigation()
+    const { w } = await mountShell('/', { ...base, modules: { ...base.modules, readingsReview: 2 } })
+    const ops = groupBtn(w, 'Betrieb')
+    expect(ops.find('.module-count.is-alert').text()).toContain('6')
+    expect(ops.find('.visually-hidden').text()).toBe('2 Ablesungen zu prüfen, 4 offene Alarme (7 Tage)')
+    await ops.trigger('click')
+    const list = side(w).get('#nav-group-operations')
+    expect(list.findAll('a .module-count').map((c) => c.text())).toEqual(['22 Ablesungen zu prüfen', '3', '44 offene Alarme (7 Tage)'])
+    expect(list.findAll('a .module-count.is-alert').map((c) => c.attributes('title'))).toEqual(['2 Ablesungen zu prüfen', '4 offene Alarme (7 Tage)'])
+  })
+
   it('the group of the current route opens, the module is the current page', async () => {
     const { w, router } = await mountShell('/legal')
     expect(groupBtn(w, 'ISO 50001').attributes('aria-expanded')).toBe('true')

@@ -7,6 +7,9 @@
   "conventions" : {
     "keys" : "\"@key\" is an object of this plan that step 3 creates; replace it by the new id everywhere (attribute values, configurations' objectKey/templateKey, the invoice cases). Numbers are existing ids.",
     "parent" : "path = object names from the organisation separated by \" / \"; key = object of this plan; id = existing object; parentOf = the parent of that existing object",
+    "find" : "action find = an existing object whose id is not known: the only object with this name and class anywhere below the parent (subclasses: a class whose name ends with \" \" + class also matches); none or more than one is a problem",
+    "keyInText" : "\"@key:Attribute\" (e.g. an Online ID) becomes \"<id>:Attribute\"; JSON arrays of \"@key\" become arrays of ids (written as JSON text)",
+    "mailState" : "DEMO_NO_MAILS = the \"Mail State\" of the reading round marks the mails of the current and the next due date as sent (demo rounds send no mails); the JEDemo job keeps it so every cycle",
     "attributes" : "unit = input/display unit of the attribute; value = one sample written at setup time; samples = samples with these time stamps (Europe/Berlin)",
     "history" : "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to 'until' (\"setup\" = the time of step 3); afterwards the JEDemo job continues the rows",
     "delete" : "objects go to the recycle bin, in this order and only after everything above was written; with checkFirst every check must pass: AFTER_CREATED (the objects of the keys exist), NO_CHILDREN, NOT_REFERENCED (no template, configuration or dashboard file of the organisation names the id), OLD_INVOICES (only invoices whose number matches numberPattern; the folder only if nothing else is in it)",
@@ -1765,6 +1768,222 @@
           ]
         }
       }
+    },
+    {
+      "key" : "S.meters",
+      "action" : "create",
+      "class" : "Measurement Directory",
+      "name" : "Messstellen",
+      "parent" : {
+        "key" : "S.site"
+      }
+    },
+    {
+      "key" : "S.meter.strom",
+      "action" : "create",
+      "class" : "Electricity Measurement Instrument",
+      "name" : "Stromzähler SLP",
+      "parent" : {
+        "key" : "S.meters"
+      },
+      "attributes" : {
+        "Online ID" : {
+          "value" : "@B.row:Value"
+        },
+        "Serial Number" : {
+          "value" : "1ESY1160-0001"
+        },
+        "Location" : {
+          "value" : "Hausanschlussraum"
+        },
+        "Meter Point" : {
+          "value" : "DE0000000000000000000000000000002"
+        },
+        "Decimal Places" : {
+          "value" : 0
+        }
+      },
+      "note" : "Monthly reading of case B (raw row B.row)"
+    },
+    {
+      "key" : "S.meter.gas",
+      "action" : "create",
+      "class" : "Gas Measurement Instrument",
+      "name" : "Gaszähler SLP",
+      "parent" : {
+        "key" : "S.meters"
+      },
+      "attributes" : {
+        "Online ID" : {
+          "value" : "@D.row:Value"
+        },
+        "Serial Number" : {
+          "value" : "7GMT0040-0002"
+        },
+        "Location" : {
+          "value" : "Hausanschlussraum"
+        },
+        "Meter Point" : {
+          "value" : "DE0000000000000000000000000000011"
+        },
+        "Decimal Places" : {
+          "value" : 2
+        }
+      },
+      "note" : "Monthly reading of case D (raw row D.row, m³)"
+    },
+    {
+      "key" : "S.meter.waerme",
+      "action" : "create",
+      "class" : "Heat Measurement Instrument",
+      "name" : "Wärmemengenzähler Fernwärme",
+      "parent" : {
+        "key" : "S.meters"
+      },
+      "attributes" : {
+        "Online ID" : {
+          "value" : "@E.row:Value"
+        },
+        "Serial Number" : {
+          "value" : "WMZ-0001-0003"
+        },
+        "Location" : {
+          "value" : "Heizraum"
+        },
+        "Measuring Point ID" : {
+          "value" : "WMZ-0001"
+        },
+        "Decimal Places" : {
+          "value" : 0
+        }
+      },
+      "note" : "Heat meter of case E (raw row E.row); hourly values, so the web lists it as AUTOMATIC"
+    },
+    {
+      "key" : "M.meter.manual",
+      "action" : "find",
+      "class" : "Measurement Instrument",
+      "name" : "Manuelle Ablesung S1-3",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk"
+      },
+      "subclasses" : true,
+      "note" : "Existing meter of Musterwerk (Online ID = row 23730 \"Händische Monatsdaten\"), found by name"
+    },
+    {
+      "key" : "S.rounds",
+      "action" : "create",
+      "class" : "Reading Round Directory",
+      "name" : "Ableserunden",
+      "parent" : {
+        "key" : "S.site"
+      }
+    },
+    {
+      "key" : "S.round",
+      "action" : "create",
+      "class" : "Reading Round",
+      "name" : "Monatsablesung Außenlager Süd",
+      "parent" : {
+        "key" : "S.rounds"
+      },
+      "mailState" : "DEMO_NO_MAILS",
+      "attributes" : {
+        "Enabled" : {
+          "value" : true
+        },
+        "Meters" : {
+          "value" : [
+            "@S.meter.strom",
+            "@S.meter.gas",
+            "@S.meter.waerme"
+          ]
+        },
+        "Readers" : {
+          "value" : [
+            24497
+          ]
+        },
+        "Supervisor" : {
+          "value" : [ ]
+        },
+        "Start Date" : {
+          "value" : "2026-01-01"
+        },
+        "Period" : {
+          "value" : "P1M"
+        },
+        "Lead Days" : {
+          "value" : 3
+        },
+        "Reminder Days" : {
+          "value" : 3
+        },
+        "Escalation Days" : {
+          "value" : 7
+        },
+        "Remarks" : {
+          "value" : "Schlüssel beim Empfang abholen."
+        }
+      },
+      "note" : "Monthly round from 2026-01-01; readers are the demo groups, no supervisor; no mails (Mail State)"
+    },
+    {
+      "key" : "M.rounds",
+      "action" : "create",
+      "class" : "Reading Round Directory",
+      "name" : "Ableserunden",
+      "parent" : {
+        "path" : "Sun and Charge Demo / Standorte / Musterwerk"
+      }
+    },
+    {
+      "key" : "M.round",
+      "action" : "create",
+      "class" : "Reading Round",
+      "name" : "Monatsablesung Musterwerk",
+      "parent" : {
+        "key" : "M.rounds"
+      },
+      "mailState" : "DEMO_NO_MAILS",
+      "attributes" : {
+        "Enabled" : {
+          "value" : true
+        },
+        "Meters" : {
+          "value" : [
+            "@M.meter.manual"
+          ]
+        },
+        "Readers" : {
+          "value" : [
+            24497,
+            24499
+          ]
+        },
+        "Supervisor" : {
+          "value" : [ ]
+        },
+        "Start Date" : {
+          "value" : "2026-01-01"
+        },
+        "Period" : {
+          "value" : "P1M"
+        },
+        "Lead Days" : {
+          "value" : 3
+        },
+        "Reminder Days" : {
+          "value" : 3
+        },
+        "Escalation Days" : {
+          "value" : 7
+        },
+        "Remarks" : {
+          "value" : "Ablesung auch per App möglich."
+        }
+      },
+      "note" : "Monthly round from 2026-01-01; readers are the demo groups, no supervisor; no mails (Mail State)"
     }
   ],
   "templates" : [
@@ -2965,6 +3184,7 @@
     "C.hourly: after copying the settings of 23686 the period is PT1H and the JEDataProcessor fills hourly sums of 23572.",
     "Monthly counters B and D: the clean value of a month is stored at the 1st of the month or of the next month, depending on the processor; templates and invoices read the same row, so the costs agree either way. If invoices wait one month too long, set the invoice case's consumption.completeRow to the raw row (B.row / D.row).",
     "Action \"MW 018 - Neuer Fernwärmevertrag\" (story of case E): refer to the new contract E.supplier.",
+    "Reading rounds (web app Ablesung → Runden): \"Monatsablesung Außenlager Süd\" (3 meters, the heat meter marked automatic) and \"Monatsablesung Musterwerk\" (meter \"Manuelle Ablesung S1-3\"), readers the groups 24497 / 24499, no \"Letzte Mail\"; the JEDemo job keeps their Mail State (demo rounds send no mails, docs/DEMO.md).",
     "After the backfill: open each configuration for a month of 2026 and check Differenz Netto ≈ 0 (cents) except the deviation months listed in the invoice cases."
   ]
 }

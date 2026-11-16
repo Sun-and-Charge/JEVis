@@ -166,6 +166,23 @@ public class ResourceWebModules {
         return modules;
     }
 
+    /**
+     * Stage E8.5: {@link #moduleCounts(Lookup, ResourceWebAlarms.Store, DateTime)} plus {@code readingsReview}, the
+     * number of readings to review ({@link ResourceWebReadingsReview#navigationCount}; null for users with more than
+     * {@value ResourceWebReadingsReview#MAX_NAVIGATION_METERS} meters, {@code 0} if it cannot be computed)
+     */
+    static Map<String, Object> moduleCounts(Lookup lookup, ResourceWebAlarms.Store store, WebEdit.Store editStore,
+                                            DateTime now) {
+        Map<String, Object> modules = moduleCounts(lookup, store, now);
+        try {
+            modules.put("readingsReview", ResourceWebReadingsReview.navigationCount(editStore, now));
+        } catch (Exception e) {
+            logger.warn("Could not count the readings to review", e);
+            modules.put("readingsReview", 0);
+        }
+        return modules;
+    }
+
     static Lookup lookup(SQLDataSource ds) throws Exception {
         List<JsonObject> all = ds.getObjects();
         List<JsonObject> readable = ds.getUserManager().filterList(all);

@@ -16,10 +16,11 @@ import '../../styles/registersEdit.css'
  * "Zählerwechsel" (E5) as the Control Center's MeterFormReadingsTab: the time of the exchange (not in the future),
  * the old meter's final reading (written one second before) and the new meter's first reading, both into the
  * meter's data row with the note "Meter Tausch". Plausibility warnings of the server (409) can be overridden with
- * "Trotzdem speichern" as in the entry dialog (E1).
+ * "Trotzdem speichern" as in the entry dialog (E1). `initial` prefills the inputs (E8.5: the time and value of a reviewed
+ * reading as the new meter's first reading).
  */
 
-const props = defineProps<{ row: RegisterRow }>()
+const props = defineProps<{ row: RegisterRow; initial?: Partial<ExchangeInput> | null }>()
 const emit = defineEmits<{ close: []; saved: [time: string] }>()
 
 const { t, locale } = useI18n()
@@ -27,7 +28,7 @@ const auth = useAuthStore()
 const { busy, run } = useBusy()
 const uid = `reg-xchg-${Math.random().toString(36).slice(2, 9)}`
 
-const input = ref<ExchangeInput>({ when: toDateTimeInput(toMinute(Date.now())), oldReading: '', newReading: '' })
+const input = ref<ExchangeInput>({ when: toDateTimeInput(toMinute(Date.now())), oldReading: '', newReading: '', ...props.initial })
 const problems = ref<Partial<Record<keyof ExchangeInput, RegisterProblem>>>({})
 const warnings = ref<string[]>([])
 const error = ref<string | null>(null)

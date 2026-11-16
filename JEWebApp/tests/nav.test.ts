@@ -38,6 +38,11 @@ describe('sidebar groups', () => {
     expect(groups.find((g) => g.id === 'iso')!.open).toBe(0)
     /* open alarms without readable alarm configurations: no alarms entry (as before) */
     expect(menuGroups({ ...noModules, alarmsOpen: 3 })).toEqual([])
+    /* E8.5: readings to review are the open-item badge of "Ablesung" and count for the group */
+    const review = menuGroups({ ...noModules, readings: 5, readingsReview: 2, alarms: 1, alarmsOpen: 3 })
+    expect(review[0].modules.find((m) => m.key === 'readings')).toEqual({ key: 'readings', route: 'readings', count: 5, open: 2 })
+    expect(review[0].open).toBe(5)
+    expect(menuGroups({ ...noModules, readingsReview: 2 })).toEqual([])
   })
 
   it('all four groups in order when everything is readable', () => {

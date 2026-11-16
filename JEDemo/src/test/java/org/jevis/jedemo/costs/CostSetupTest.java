@@ -110,6 +110,10 @@ public class CostSetupTest {
                 .set("Value is a Quantity", T0, true).set("Value", T0, 12.5);
         t.add(23723, "Bereinigte Daten", "Clean Data", data);
         chargePoints(t, data, organisation);
+        /* the meter of the Musterwerk round, found by name (its id is not known in advance) */
+        Node meters = t.add("Messstellen", "Measurement Directory", musterwerk);
+        t.add(MANUAL_METER_ID, CostCases.MANUAL_METER, "Electricity Measurement Instrument", t.add("Strom", "Directory", meters))
+                .set("Online ID", T0, "23730:Value");
 
         Node templates = t.add("Vorlagen", "Result Calculation Template Directory", contracts);
         t.add(CostCases.OLD_TEMPLATE, "stromrechnung", "Result Calculation Template", templates)
@@ -147,6 +151,7 @@ public class CostSetupTest {
     }
 
     static final long CALCULATION = 24500;
+    static final long MANUAL_METER_ID = 23731;
     static final long[][] CHARGE = {{CostCases.CHARGE_POINT_1, CostCases.CLEAN_CHARGE_POINT_1},
             {CostCases.CHARGE_POINT_2, CostCases.CLEAN_CHARGE_POINT_2}, {CostCases.CHARGE_POINT_3, CostCases.CLEAN_CHARGE_POINT_3}};
 
@@ -240,7 +245,7 @@ public class CostSetupTest {
 
     private int creates() {
         int n = 0;
-        for (JsonNode o : plan.path("objects")) if (!"update".equals(o.path("action").asText())) n++;
+        for (JsonNode o : plan.path("objects")) if ("create".equals(o.path("action").asText())) n++;
         return n + plan.path("templates").size() + plan.path("configurations").size();
     }
 
@@ -918,6 +923,160 @@ public class CostSetupTest {
         assertTrue(has(report, SetupReport.Kind.SKIP, "row 23922 'Strom - Ladestrom - Ladepunkt 1': is not below the organisation"));
         assertTrue(has(report, SetupReport.Kind.SKIP, "derived row 23921 'Strom - Ladestrom Summe': is not below the organisation"));
         assertTrue(tree.writes.stream().noneMatch(w -> w.matches("(sample|deleteSamples|unit) 239(19|2[0-7]) .*")));
+    }
+
+    // ================================================================================================ reading rounds
+
+    static final String SITE_S = "Sun and Charge Demo / Standorte / Außenlager Süd";
+    static final String MAIL_STATE_2026_11_13 = "{\"dueMailSentFor\":\"2026-12-01\",\"reminderSentFor\":\"2026-12-01\","
+            + "\"escalationSentFor\":\"2026-11-01\"}";
+
+    private JsonNode planObject(String key) {
+        for (JsonNode o : plan.path("objects")) if (key.equals(o.path("key").asText())) return o;
+        throw new AssertionError("no plan object " + key);
+    }
+
+    @Test
+    public void planHasTheMetersAndRoundsWithKeysThatResolveToIds() {
+        JsonNode strom = planObject("S.meter.strom");
+        assertEquals("create", strom.path("action").asText());
+        assertEquals("Electricity Measurement Instrument", strom.path("class").asText());
+        assertEquals("S.meters", strom.at("/parent/key").asText());
+        assertEquals("@B.row:Value", strom.at("/attributes/Online ID/value").asText());
+        assertEquals("@D.row:Value", planObject("S.meter.gas").at("/attributes/Online ID/value").asText());
+        assertEquals("@E.row:Value", planObject("S.meter.waerme").at("/attributes/Online ID/value").asText());
+        assertEquals("Measurement Directory", planObject("S.meters").path("class").asText());
+
+        JsonNode manual = planObject("M.meter.manual");
+        assertEquals("find", manual.path("action").asText());
+        assertTrue(manual.path("subclasses").asBoolean());
+        assertEquals(CostCases.MUSTERWERK, manual.at("/parent/path").asText());
+
+        JsonNode round = planObject("S.round");
+        assertEquals("Reading Round", round.path("class").asText());
+        assertEquals(SetupPlan.MAIL_STATE_NO_MAILS, round.path("mailState").asText());
+        assertEquals("2026-01-01", round.at("/attributes/Start Date/value").asText());
+        assertEquals("P1M", round.at("/attributes/Period/value").asText());
+        assertEquals(7, round.at("/attributes/Escalation Days/value").asInt());
+        assertEquals("Schlüssel beim Empfang abholen.", round.at("/attributes/Remarks/value").asText());
+        assertEquals("Reading Round Directory", planObject("M.rounds").path("class").asText());
+        assertEquals(CostCases.MUSTERWERK, planObject("M.rounds").at("/parent/path").asText());
+
+        /* keys inside a text (target "@key:Value") and in JSON arrays resolve to ids */
+        java.util.function.Function<String, Long> ids = key -> key.equals("B.row") ? Long.valueOf(4711L) : key.startsWith("S.meter.") ? Long.valueOf(100L + key.length()) : null;
+        assertEquals("4711:Value", SetupPlan.resolveKeys(strom.at("/attributes/Online ID/value"), ids).asText());
+        assertEquals("[113,111,114]", SetupPlan.resolveKeys(round.at("/attributes/Meters/value"), ids).toString());
+        assertEquals("[24497]", SetupPlan.resolveKeys(round.at("/attributes/Readers/value"), ids).toString());
+        assertEquals("[]", round.at("/attributes/Supervisor/value").toString());
+        assertEquals("[24497,24499]", planObject("M.round").at("/attributes/Readers/value").toString());
+        assertEquals("[\"@M.meter.manual\"]", planObject("M.round").at("/attributes/Meters/value").toString());
+        assertEquals("unknown keys stay", "@X.y:Value", SetupPlan.resolveKeys(mapper.getNodeFactory().textNode("@X.y:Value"), ids).asText());
+        assertEquals("B.row", SetupPlan.planKey("@B.row:Value"));
+        assertEquals("B.row", SetupPlan.planKey("@B.row"));
+        assertNull(SetupPlan.planKey("@:Value"));
+        assertNull(SetupPlan.planKey("B.row"));
+    }
+
+    @Test
+    public void dryRunListsTheMetersAndRounds() throws Exception {
+        SetupReport report = run(false);
+        assertFalse(problems(report), report.hasProblems());
+        assertTrue(tree.writes.isEmpty());
+        assertTrue(has(report, SetupReport.Kind.CREATE, "@S.meters: Measurement Directory 'Messstellen' below '" + SITE_S + "'"));
+        assertTrue(has(report, SetupReport.Kind.CREATE, "@S.meter.strom: Electricity Measurement Instrument 'Stromzähler SLP' below '" + SITE_S + " / Messstellen'"));
+        assertTrue(has(report, SetupReport.Kind.CREATE, "@S.meter.waerme: Heat Measurement Instrument 'Wärmemengenzähler Fernwärme'"));
+        assertTrue(has(report, SetupReport.Kind.CREATE, "@S.round: Reading Round 'Monatsablesung Außenlager Süd' below '" + SITE_S + " / Ableserunden'"));
+        assertTrue(has(report, SetupReport.Kind.CREATE, "@M.rounds: Reading Round Directory 'Ableserunden' below '" + CostCases.MUSTERWERK + "'"));
+        assertTrue(has(report, SetupReport.Kind.CREATE, "@M.round: Reading Round 'Monatsablesung Musterwerk'"));
+        assertTrue(has(report, SetupReport.Kind.REUSE, "@M.meter.manual = Electricity Measurement Instrument '" + CostCases.MUSTERWERK
+                + " / Messstellen / Strom / " + CostCases.MANUAL_METER + "' [" + MANUAL_METER_ID + "] found by name"));
+        assertTrue(has(report, SetupReport.Kind.WRITE, "Stromzähler SLP · Online ID = @B.row:Value"));
+        assertTrue(has(report, SetupReport.Kind.WRITE, "Monatsablesung Außenlager Süd · Meters = [\"@S.meter.strom\",\"@S.meter.gas\",\"@S.meter.waerme\"]"));
+        assertTrue(has(report, SetupReport.Kind.WRITE, "Monatsablesung Musterwerk · Meters = [\"@M.meter.manual\"]"));
+        assertTrue(has(report, SetupReport.Kind.WRITE, "Monatsablesung Musterwerk · Mail State = "));
+        assertTrue(has(report, SetupReport.Kind.WRITE, "(demo rounds send no mails)"));
+    }
+
+    @Test
+    public void applyCreatesTheMetersAndRoundsWithIdsAndASecondRunIsANoOp() throws Exception {
+        SetupReport report = run(true);
+        assertFalse(problems(report), report.hasProblems());
+        Node rowB = tree.path(org, SITE_S + " / Daten / Strom / Strom - Außenlager Süd");
+        Node rowD = tree.path(org, SITE_S + " / Daten / Gas / Gas - Außenlager Süd (Volumen)");
+        Node rowE = tree.path(org, SITE_S + " / Daten / Wärme / Fernwärme - Außenlager Süd");
+        Node strom = tree.path(org, SITE_S + " / Messstellen / Stromzähler SLP");
+        Node gas = tree.path(org, SITE_S + " / Messstellen / Gaszähler SLP");
+        Node heat = tree.path(org, SITE_S + " / Messstellen / Wärmemengenzähler Fernwärme");
+        assertEquals("Measurement Directory", strom.parent.jevisClass);
+        assertEquals(rowB.id + ":Value", strom.latest("Online ID"));
+        assertEquals(rowD.id + ":Value", gas.latest("Online ID"));
+        assertEquals(rowE.id + ":Value", heat.latest("Online ID"));
+        assertEquals("1ESY1160-0001", strom.latest("Serial Number"));
+        assertEquals("Heizraum", heat.latest("Location"));
+        assertEquals("Gas Measurement Instrument", gas.jevisClass);
+
+        Node roundS = tree.path(org, SITE_S + " / Ableserunden / Monatsablesung Außenlager Süd");
+        assertEquals("Reading Round Directory", roundS.parent.jevisClass);
+        assertEquals("[" + strom.id + "," + gas.id + "," + heat.id + "]", roundS.latest("Meters"));
+        assertEquals("[24497]", roundS.latest("Readers"));
+        assertEquals("[]", roundS.latest("Supervisor"));
+        assertEquals("2026-01-01", roundS.latest("Start Date"));
+        assertEquals("P1M", roundS.latest("Period"));
+        assertEquals("3", String.valueOf(roundS.latest("Lead Days")));
+        assertEquals("true", String.valueOf(roundS.latest("Enabled")));
+        assertEquals("Schlüssel beim Empfang abholen.", roundS.latest("Remarks"));
+        assertEquals(mapper.readTree(MAIL_STATE_2026_11_13), mapper.readTree((String) roundS.latest("Mail State")));
+
+        Node roundM = tree.path(org, CostCases.MUSTERWERK + " / Ableserunden / Monatsablesung Musterwerk");
+        assertEquals("[" + MANUAL_METER_ID + "]", roundM.latest("Meters"));
+        assertEquals("[24497,24499]", roundM.latest("Readers"));
+        assertEquals("Ablesung auch per App möglich.", roundM.latest("Remarks"));
+        assertEquals(mapper.readTree(MAIL_STATE_2026_11_13), mapper.readTree((String) roundM.latest("Mail State")));
+        /* the Mail State is written before the round is enabled */
+        int mail = -1, enabled = -1;
+        for (int i = 0; i < tree.writes.size(); i++) {
+            if (tree.writes.get(i).startsWith("sample " + roundM.id + " Mail State")) mail = i;
+            if (tree.writes.get(i).startsWith("sample " + roundM.id + " Enabled")) enabled = i;
+        }
+        assertTrue(tree.writes.toString(), mail >= 0 && mail < enabled);
+        assertTrue("the found meter is only referenced", tree.writes.stream().noneMatch(w -> w.contains(" " + MANUAL_METER_ID + " ")));
+
+        int writes = tree.writeCount();
+        SetupReport again = run(true, NOW.plusSeconds(600), temp.getRoot().toPath().resolve("again"));
+        assertFalse(problems(again), again.hasProblems());
+        assertEquals(actions(again), 0, again.actions());
+        assertEquals(writes, tree.writeCount());
+        assertTrue(has(again, SetupReport.Kind.REUSE, "@S.round = Reading Round '" + SITE_S + " / Ableserunden / Monatsablesung Außenlager Süd'"));
+    }
+
+    @Test
+    public void aMissingOrAmbiguousMeterOfTheMusterwerkRoundIsAProblem() throws Exception {
+        Node meter = tree.node(MANUAL_METER_ID);
+        meter.deleted = true;
+        SetupReport report = run(true);
+        assertTrue(problems(report), has(report, SetupReport.Kind.PROBLEM, "@M.meter.manual: no Measurement Instrument (or subclass) '"
+                + CostCases.MANUAL_METER + "' below '" + CostCases.MUSTERWERK + "'"));
+        assertTrue(report.getResult().startsWith("refused"));
+        assertTrue(tree.writes.isEmpty());
+
+        meter.deleted = false;
+        tree.add(CostCases.MANUAL_METER, "Water Measurement Instrument", tree.path(org, CostCases.MUSTERWERK));
+        tree.add(CostCases.MANUAL_METER, "Data", tree.path(org, CostCases.MUSTERWERK));
+        report = run(false);
+        assertTrue(problems(report), has(report, SetupReport.Kind.PROBLEM, "@M.meter.manual: 2 objects Measurement Instrument"));
+    }
+
+    @Test
+    public void anExistingRoundGetsItsMailStateOnlyWhenItDiffers() throws Exception {
+        run(true);
+        Node round = tree.path(org, SITE_S + " / Ableserunden / Monatsablesung Außenlager Süd");
+        /* a mail of the JENotifier for the current due date: the setup marks the next one again and clears the last mail */
+        round.set("Mail State", new DateTime(2026, 11, 13, 12, 0, BERLIN),
+                "{\"dueMailSentFor\":\"2026-11-01\",\"reminderSentFor\":\"2026-11-01\",\"escalationSentFor\":\"2026-11-01\","
+                        + "\"lastMail\":\"2026-11-08T06:00:00\",\"lastMailKind\":\"REMINDER\"}");
+        SetupReport report = run(false, NOW.plusSeconds(600), temp.getRoot().toPath().resolve("x"));
+        assertEquals(actions(report), 1, report.actions());
+        assertTrue(has(report, SetupReport.Kind.UPDATE, "Monatsablesung Außenlager Süd · Mail State: {"));
     }
 
     private void rebuild(long id, String name, String jevisClass) {

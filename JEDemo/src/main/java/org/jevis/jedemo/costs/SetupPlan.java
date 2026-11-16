@@ -78,6 +78,11 @@ public final class SetupPlan {
      * holds the wrong id and the new target has the expected class and path below the site)
      */
     public static final String FIX_REMAP_DASHBOARD_ROWS = "REMAP_DASHBOARD_ROWS";
+    /**
+     * "mailState" of a "Reading Round": its "Mail State" marks the mails of the current and the next due date as sent
+     * ({@link org.jevis.jedemo.RoundMailMarker}), written at setup time; the JEDemo job keeps it so
+     */
+    public static final String MAIL_STATE_NO_MAILS = "DEMO_NO_MAILS";
 
     static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
@@ -99,6 +104,13 @@ public final class SetupPlan {
                 + "(attribute values, configurations' objectKey/templateKey, the invoice cases). Numbers are existing ids.");
         refs.put("parent", "path = object names from the organisation separated by \" / \"; key = object of this plan; "
                 + "id = existing object; parentOf = the parent of that existing object");
+        refs.put("find", "action find = an existing object whose id is not known: the only object with this name and class "
+                + "anywhere below the parent (subclasses: a class whose name ends with \" \" + class also matches); none or "
+                + "more than one is a problem");
+        refs.put("keyInText", "\"@key:Attribute\" (e.g. an Online ID) becomes \"<id>:Attribute\"; JSON arrays of \"@key\" "
+                + "become arrays of ids (written as JSON text)");
+        refs.put("mailState", MAIL_STATE_NO_MAILS + " = the \"Mail State\" of the reading round marks the mails of the current and "
+                + "the next due date as sent (demo rounds send no mails); the JEDemo job keeps it so every cycle");
         refs.put("attributes", "unit = input/display unit of the attribute; value = one sample written at setup time; "
                 + "samples = samples with these time stamps (Europe/Berlin)");
         refs.put("history", "profile of org.jevis.jedemo.costs.History, written as samples of \"Value\" from 'from' to "
@@ -227,6 +239,10 @@ public final class SetupPlan {
                 + "depending on the processor; templates and invoices read the same row, so the costs agree either way. If invoices "
                 + "wait one month too long, set the invoice case's consumption.completeRow to the raw row (B.row / D.row).");
         checks.add("Action \"MW 018 - Neuer Fernwärmevertrag\" (story of case E): refer to the new contract E.supplier.");
+        checks.add("Reading rounds (web app Ablesung → Runden): \"Monatsablesung Außenlager Süd\" (3 meters, the heat meter marked "
+                + "automatic) and \"Monatsablesung Musterwerk\" (meter \"" + CostCases.MANUAL_METER + "\"), readers the groups "
+                + CostCases.READ_GROUP + " / " + CostCases.APP_TEST_GROUP + ", no \"Letzte Mail\"; the JEDemo job keeps their Mail State "
+                + "(demo rounds send no mails, docs/DEMO.md).");
         checks.add("After the backfill: open each configuration for a month of 2026 and check Differenz Netto ≈ 0 (cents) except the "
                 + "deviation months listed in the invoice cases.");
         return plan;
@@ -383,7 +399,7 @@ public final class SetupPlan {
     static ObjectNode object(PlanObject o) {
         ObjectNode node = F.objectNode();
         node.put("key", o.key);
-        node.put("action", o.id != null ? "update" : "create");
+        node.put("action", o.id != null ? "update" : o.find ? "find" : "create");
         if (o.id != null) node.put("id", o.id);
         node.put("class", o.jevisClass);
         node.put("name", o.name);
@@ -392,6 +408,8 @@ public final class SetupPlan {
             if (o.parent.value instanceof Long) parent.put(o.parent.kind, (Long) o.parent.value);
             else parent.put(o.parent.kind, String.valueOf(o.parent.value));
         }
+        if (o.subclasses) node.put("subclasses", true);
+        if (o.noMails) node.put("mailState", MAIL_STATE_NO_MAILS);
         if (o.copyAttributesFrom != null) node.put("copyAttributesFrom", o.copyAttributesFrom);
         if (!o.attributes.isEmpty()) {
             ObjectNode attributes = node.putObject("attributes");
@@ -433,9 +451,13 @@ public final class SetupPlan {
         if (node == null) return null;
         if (node.isTextual()) {
             String text = node.asText();
-            if (text.startsWith("@") && text.length() > 1) {
-                Long id = ids.apply(text.substring(1));
-                if (id != null) return F.numberNode(id);
+            String key = planKey(text);
+            if (key != null) {
+                Long id = ids.apply(key);
+                if (id != null) {
+                    if (text.length() == key.length() + 1) return F.numberNode(id);
+                    return F.textNode(id + text.substring(key.length() + 1));
+                }
             }
             return node;
         }
@@ -462,11 +484,27 @@ public final class SetupPlan {
         return node;
     }
 
+    /**
+     * @return the plan key a text refers to: {@code "@key"} → key, {@code "@key:Attribute"} → key (a target such as an
+     * Online ID, resolved to {@code "<id>:Attribute"}); null if the text is no key reference
+     */
+    public static String planKey(String text) {
+        if (text == null || !text.startsWith("@") || text.length() < 2) return null;
+        int colon = text.indexOf(':');
+        if (colon < 0) return text.substring(1);
+        return colon > 1 ? text.substring(1, colon) : null;
+    }
+
     static String ts(ZonedDateTime ts) {
         return TS.format(ts);
     }
 
     private static JsonNode value(Object value) {
+        if (value instanceof java.util.List) {
+            ArrayNode array = F.arrayNode();
+            for (Object element : (java.util.List<?>) value) array.add(value(element));
+            return array;
+        }
         if (value instanceof Boolean) return F.booleanNode((Boolean) value);
         if (value instanceof Double) return F.numberNode((Double) value);
         if (value instanceof Integer) return F.numberNode((Integer) value);

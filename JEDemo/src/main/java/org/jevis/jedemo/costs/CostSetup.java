@@ -37,6 +37,7 @@ import org.jevis.commons.JEVisFileImp;
 import org.jevis.commons.unit.JEVisUnitImp;
 import org.jevis.commons.ws.json.JsonUnit;
 import org.jevis.jedemo.DemoConfig;
+import org.jevis.jedemo.RoundMailMarker;
 import org.joda.time.DateTime;
 
 import java.io.ByteArrayOutputStream;
@@ -320,6 +321,8 @@ public final class CostSetup {
             try {
                 if ("update".equals(o.path("action").asText())) {
                     planExisting(o, key);
+                } else if ("find".equals(o.path("action").asText())) {
+                    planFind(o, key);
                 } else {
                     planCreate(OBJECTS, o, key);
                 }
@@ -355,6 +358,49 @@ public final class CostSetup {
         ids.put(key, id);
         paths.put(key, path(obj));
         report.add(SetupReport.Kind.REUSE, OBJECTS, "@" + key + " = " + jevisClass + " '" + path(obj) + "' [" + id + "]");
+        planAttributes(o, key, obj);
+    }
+
+    /**
+     * An existing object found by name and class below its parent (its id is not known in advance).
+     */
+    private void planFind(JsonNode o, String key) throws JEVisException {
+        String jevisClass = o.path("class").asText();
+        String name = o.path("name").asText();
+        boolean subclasses = o.path("subclasses").asBoolean(false);
+        Parent parent = parent(OBJECTS, o.path("parent"), key);
+        if (parent == null) return;
+        if (parent.object == null) {
+            broken(OBJECTS, key, "the parent to search below does not exist yet");
+            return;
+        }
+        List<JEVisObject> found = new ArrayList<>();
+        for (JEVisObject x : tree(parent.object)) {
+            if (x == parent.object || isDeleted(x) || deleted.contains(x.getID())) continue;
+            String c = x.getJEVisClassName();
+            boolean classMatches = jevisClass.equals(c) || (subclasses && c != null && c.endsWith(" " + jevisClass));
+            if (classMatches && name.equals(x.getName())) found.add(x);
+        }
+        String what = jevisClass + (subclasses ? " (or subclass)" : "") + " '" + name + "' below '" + parent.path + "'";
+        if (found.isEmpty()) {
+            broken(OBJECTS, key, "no " + what);
+            return;
+        }
+        if (found.size() > 1) {
+            List<Long> ids = new ArrayList<>();
+            for (JEVisObject x : found) ids.add(x.getID());
+            broken(OBJECTS, key, found.size() + " objects " + what + ": " + ids);
+            return;
+        }
+        JEVisObject obj = found.get(0);
+        if (!inOrganisation(obj)) {
+            broken(OBJECTS, key, "object " + obj.getID() + " is not below the organisation");
+            return;
+        }
+        ids.put(key, obj.getID());
+        paths.put(key, path(obj));
+        report.add(SetupReport.Kind.REUSE, OBJECTS, "@" + key + " = " + obj.getJEVisClassName() + " '" + path(obj) + "' ["
+                + obj.getID() + "] found by name");
         planAttributes(o, key, obj);
     }
 
@@ -470,6 +516,7 @@ public final class CostSetup {
                 }
             }
         }
+        if (SetupPlan.MAIL_STATE_NO_MAILS.equals(o.path("mailState").asText(null))) planNoMails(o, key, obj);
         JsonNode attributes = o.path("attributes");
         for (String name : (Iterable<String>) attributes::fieldNames) {
             JsonNode spec = attributes.get(name);
@@ -478,6 +525,40 @@ public final class CostSetup {
             if (spec.has("samples")) planSamples(key, obj, name, spec.get("samples"));
         }
         if (o.has("history")) planHistory(key, obj, o.get("history"));
+    }
+
+    /**
+     * Demo reading rounds send no mails: "Mail State" marks the mails of the current and the next due date as sent
+     * (computed from the plan's schedule and the day of the run, {@link RoundMailMarker}); written before the other
+     * attributes, so the JENotifier never sees the new round without it. The JEDemo job keeps it up to date.
+     */
+    private void planNoMails(JsonNode o, String key, JEVisObject obj) throws JEVisException {
+        JsonNode attributes = o.path("attributes");
+        String current = null;
+        if (obj != null) {
+            JEVisAttribute att = existingAttribute(key, obj, RoundMailMarker.A_MAIL_STATE);
+            if (att == null) return;
+            current = latestString(obj, RoundMailMarker.A_MAIL_STATE);
+        }
+        java.time.LocalDate day = now.atZone(java.time.ZoneId.of(RoundMailMarker.ZONE.getID())).toLocalDate();
+        String json = RoundMailMarker.update(current, planValue(attributes, RoundMailMarker.A_START_DATE),
+                planValue(attributes, RoundMailMarker.A_PERIOD), planValue(attributes, RoundMailMarker.A_REMINDER_DAYS),
+                planValue(attributes, RoundMailMarker.A_ESCALATION_DAYS),
+                new org.joda.time.LocalDate(day.getYear(), day.getMonthValue(), day.getDayOfMonth()));
+        if (json == null) {
+            if (current == null) problem(OBJECTS, "@" + key + ": no start date or period for the Mail State");
+            return;
+        }
+        if (obj != null) backupObject(obj, "setting " + RoundMailMarker.A_MAIL_STATE);
+        String text = paths.get(key) + " · " + RoundMailMarker.A_MAIL_STATE + (current != null ? ": " + shorten(current) + " → " : " = ")
+                + json + " (demo rounds send no mails)";
+        addSettingStep(OBJECTS, key, RoundMailMarker.A_MAIL_STATE, F.textNode(json),
+                current != null ? SetupReport.Kind.UPDATE : SetupReport.Kind.WRITE, text, new DateTime(now.toEpochMilli()));
+    }
+
+    private static String planValue(JsonNode attributes, String name) {
+        JsonNode value = attributes.path(name).get("value");
+        return value != null && !value.isNull() ? value.asText() : null;
     }
 
     private JEVisAttribute existingAttribute(String key, JEVisObject obj, String name) throws JEVisException {
@@ -2068,8 +2149,8 @@ public final class CostSetup {
     private boolean hasPlanKeys(JsonNode node) {
         if (node == null) return false;
         if (node.isTextual()) {
-            String text = node.asText();
-            return text.startsWith("@") && (paths.containsKey(text.substring(1)) || brokenKeys.contains(text.substring(1)));
+            String key = SetupPlan.planKey(node.asText());
+            return key != null && (paths.containsKey(key) || brokenKeys.contains(key));
         }
         for (JsonNode child : node) if (hasPlanKeys(child)) return true;
         return false;
@@ -2139,7 +2220,8 @@ public final class CostSetup {
             case JEVisConstants.PrimitiveType.BOOLEAN:
                 return value.isBoolean() ? value.asBoolean() : Boolean.parseBoolean(text) || "1".equals(text);
             default:
-                return value.isTextual() ? value.asText() : value.asText();
+                /* a JSON array or object (e.g. the meter ids of a reading round) as its JSON text */
+                return value.isContainerNode() ? value.toString() : value.asText();
         }
     }
 

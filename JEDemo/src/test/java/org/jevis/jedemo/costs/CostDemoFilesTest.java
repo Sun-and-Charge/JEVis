@@ -107,7 +107,8 @@ public class CostDemoFilesTest {
     }
 
     private static void collect(JsonNode node, Set<String> keys) {
-        if (node.isTextual() && node.asText().startsWith("@")) keys.add(node.asText().substring(1));
+        String key = node.isTextual() ? SetupPlan.planKey(node.asText()) : null;
+        if (key != null) keys.add(key);
         node.forEach(child -> collect(child, keys));
     }
 
