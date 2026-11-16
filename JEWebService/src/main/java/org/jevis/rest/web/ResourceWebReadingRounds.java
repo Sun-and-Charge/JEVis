@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.jevis.api.JEVisConstants;
+import org.jevis.commons.appointment.EntryFormat;
+import org.jevis.commons.appointment.MailState;
 import org.jevis.commons.classes.JC;
 import org.jevis.commons.object.ValueFormat;
 import org.jevis.commons.ws.json.JsonAttribute;
@@ -141,9 +143,12 @@ public class ResourceWebReadingRounds {
     @GET
     @Path("reading-rounds/{id}/sheet.pdf")
     public Response sheet(@Context HttpHeaders httpHeaders, @Context UriInfo uriInfo, @PathParam("id") long id,
-                          @QueryParam("lang") String lang, @QueryParam("due") String due) {
+                          @QueryParam("lang") String lang, @QueryParam("due") String due,
+                          @QueryParam("appUrl") String appUrl) {
         String language = WebEdit.language(lang, httpHeaders);
-        String appBase = appBase(ResourceWebRegisters.serverAddress(name -> {
+        /* the JENotifier calls the service on an internal address: it passes the public web app address for the QR codes */
+        String given = appBaseFromUrl(appUrl);
+        String appBase = given != null ? given : appBase(ResourceWebRegisters.serverAddress(name -> {
             List<String> values = httpHeaders.getRequestHeader(name);
             return values != null && !values.isEmpty() ? ResourceWebRegisters.first(values.get(0)) : null;
         }, uriInfo.getRequestUri()));
@@ -173,6 +178,21 @@ public class ResourceWebReadingRounds {
         if (server.startsWith("https://") && server.endsWith(":443")) return server.substring(0, server.length() - 4);
         if (server.startsWith("http://") && server.endsWith(":80")) return server.substring(0, server.length() - 3);
         return server;
+    }
+
+    /**
+     * @param appUrl address of the web app as configured ("Web App URL" of the JENotifier, e.g.
+     *               {@code https://example.org/app}), may be null
+     * @return its base for {@link #meterLink} (without a trailing "/" and "/app"), null if missing or no plain http(s)
+     * address
+     */
+    static String appBaseFromUrl(String appUrl) {
+        if (appUrl == null) return null;
+        String url = appUrl.trim();
+        if (!url.matches("https?://[A-Za-z0-9.\\-]+(:\\d{1,5})?(/[A-Za-z0-9._~\\-/]*)?")) return null;
+        while (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        if (url.endsWith("/app")) url = url.substring(0, url.length() - 4);
+        return url.replaceFirst("^(https://[^/]+):443(?=/|$)", "$1").replaceFirst("^(http://[^/]+):80(?=/|$)", "$1");
     }
 
     /**
@@ -664,8 +684,25 @@ public class ResourceWebReadingRounds {
         json.put("mine", mine);
         json.put("canWrite", context.rights.canWrite(object));
         json.put("canDelete", context.rights.canDelete(object));
+        json.put("mail", mailJson(value(store.latest(object.getId(), ATTRIBUTE_MAIL_STATE))));
         json.put("version", version(store, object.getId()));
         return json;
+    }
+
+    /**
+     * @return {@code {lastMail, lastMailKind, lastError}} of the round's "Mail State" (E8.3), all null without state
+     */
+    static Map<String, Object> mailJson(String mailStateJson) {
+        MailState state = EntryFormat.fromJson(mailStateJson, MailState.class);
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("lastMail", state != null ? blankToNull(state.getLastMail()) : null);
+        json.put("lastMailKind", state != null ? blankToNull(state.getLastMailKind()) : null);
+        json.put("lastError", state != null ? blankToNull(state.getLastError()) : null);
+        return json;
+    }
+
+    private static String blankToNull(String text) {
+        return text != null && !text.trim().isEmpty() ? text : null;
     }
 
     /**

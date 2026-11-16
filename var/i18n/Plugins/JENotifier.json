@@ -1,0 +1,24 @@
+{
+  "jevisclass": "JENotifier",
+  "names": {
+    "de": "JENotifier",
+    "en": "JENotifier"
+  },
+  "descriptions": {
+    "de": "Dienst für Exporte, Benachrichtigungen und die E-Mails zu Terminen, Wartungsmeldungen und Ableserunden",
+    "en": "Service for exports, notifications and the mails of appointments, maintenance messages and reading rounds"
+  },
+  "types": [
+    {
+      "type": "Web App URL",
+      "descriptions": {
+        "de": "Adresse der Web-App für Links in E-Mails, z. B. https://example.org/app (optional, ohne Angabe kein Link)",
+        "en": "Address of the web app for links in mails, e.g. https://example.org/app (optional, no link if empty)"
+      },
+      "names": {
+        "de": "Web-App-URL",
+        "en": "Web App URL"
+      }
+    }
+  ]
+}

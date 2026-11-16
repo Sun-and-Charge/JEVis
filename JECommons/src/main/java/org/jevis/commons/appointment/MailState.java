@@ -22,8 +22,8 @@ package org.jevis.commons.appointment;
 import java.util.Objects;
 
 /**
- * Mail bookkeeping of an appointment or maintenance message, stored as JSON in the "Mail State" attribute. Only the
- * JENotifier service writes it.
+ * Mail bookkeeping of an appointment, maintenance message or reading round, stored as JSON in the "Mail State"
+ * attribute. Only the JENotifier service writes it.
  * <p>
  * The "...For" fields hold the key the mail was sent for (the due date of an appointment, the request/done timestamp of
  * a maintenance message), so each mail goes out once per key.
@@ -46,6 +46,11 @@ public class MailState {
      * Maintenance: done timestamp for which the "finished" mail was sent.
      */
     private String doneMailSentFor;
+    /**
+     * Reading round: due date for which the escalation mail was sent (the order uses {@link #dueMailSentFor}, the
+     * reminder {@link #reminderSentFor}).
+     */
+    private String escalationSentFor;
     /**
      * Timestamp and kind of the last mail sent, for display.
      */
@@ -88,6 +93,14 @@ public class MailState {
         this.doneMailSentFor = doneMailSentFor;
     }
 
+    public String getEscalationSentFor() {
+        return escalationSentFor;
+    }
+
+    public void setEscalationSentFor(String escalationSentFor) {
+        this.escalationSentFor = escalationSentFor;
+    }
+
     public String getLastMail() {
         return lastMail;
     }
@@ -121,6 +134,7 @@ public class MailState {
                 && Objects.equals(dueMailSentFor, that.dueMailSentFor)
                 && Objects.equals(informSentFor, that.informSentFor)
                 && Objects.equals(doneMailSentFor, that.doneMailSentFor)
+                && Objects.equals(escalationSentFor, that.escalationSentFor)
                 && Objects.equals(lastMail, that.lastMail)
                 && Objects.equals(lastMailKind, that.lastMailKind)
                 && Objects.equals(lastError, that.lastError);
@@ -128,6 +142,6 @@ public class MailState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(reminderSentFor, dueMailSentFor, informSentFor, doneMailSentFor, lastMail, lastMailKind, lastError);
+        return Objects.hash(reminderSentFor, dueMailSentFor, informSentFor, doneMailSentFor, escalationSentFor, lastMail, lastMailKind, lastError);
     }
 }

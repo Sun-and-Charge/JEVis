@@ -26,6 +26,7 @@ import org.jevis.api.JEVisAttribute;
 import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
+import org.jevis.api.JEVisSample;
 import org.jevis.commons.appointment.ScheduledMailProcessor;
 import org.jevis.commons.cli.AbstractCliApp;
 import org.jevis.commons.i18n.I18n;
@@ -33,6 +34,7 @@ import org.jevis.commons.mail.MailSender;
 import org.jevis.commons.mail.MailSettings;
 import org.jevis.commons.task.LogTaskManager;
 import org.jevis.commons.task.Task;
+import org.jevis.jeapi.ws.JEVisDataSourceWS;
 import org.jevis.jenotifier.config.JENotifierConfig;
 import org.jevis.jenotifier.exporter.CSVExport;
 import org.jevis.jenotifier.exporter.Export;
@@ -54,6 +56,11 @@ public class ExporterLauncher extends AbstractCliApp {
 
     private static final Logger logger = LogManager.getLogger(ExporterLauncher.class);
     private static final String APP_INFO = "JENotifier";
+    /**
+     * Optional attribute of the service: address of the web app (e.g. {@code https://example.org/app}) for links in
+     * the reading round mails.
+     */
+    static final String ATTRIBUTE_WEB_APP_URL = "Web App URL";
     private final Command commands = new Command();
     private final JENotifierConfig jeNotifierConfig = new JENotifierConfig();
 
@@ -251,8 +258,48 @@ public class ExporterLauncher extends AbstractCliApp {
             MailSender mailSender = new MailSender(mailSettings);
             ScheduledMailProcessor.Result result = new ScheduledMailProcessor(ds, mailSender::send).run(new LocalDateTime());
             logger.info("Appointment and maintenance mails: {}", result);
+            sendReadingRoundMails(mailSender);
         } catch (Throwable t) {
             logger.error("Appointment and maintenance mails failed", t);
+        }
+    }
+
+    /**
+     * Reading round mails (stage E8.3, docs/WEB-API.md): order, reminder and escalation, through the web service.
+     */
+    private void sendReadingRoundMails(MailSender mailSender) {
+        try {
+            if (!(ds instanceof JEVisDataSourceWS)) {
+                logger.info("Reading round mails need the web service data source, not sent");
+                return;
+            }
+            String url = webAppUrl();
+            ReadingRoundMailProcessor.Result result = new ReadingRoundMailProcessor(
+                    new ReadingRoundMailProcessor.WebRoundSource((JEVisDataSourceWS) ds, url), mailSender::send, url)
+                    .run(new LocalDateTime());
+            logger.info("Reading round mails: {}", result);
+        } catch (Throwable t) {
+            logger.error("Reading round mails failed", t);
+        }
+    }
+
+    /**
+     * @return the optional "Web App URL" of the JENotifier service object (links in mails), null if not set
+     */
+    private String webAppUrl() {
+        try {
+            JEVisClass serviceClass = ds.getJEVisClass(APP_SERVICE_CLASS_NAME);
+            List<JEVisObject> services = serviceClass != null ? ds.getObjects(serviceClass, false) : null;
+            if (services == null || services.isEmpty()) return null;
+            JEVisAttribute attribute = services.get(0).getAttribute(ATTRIBUTE_WEB_APP_URL);
+            if (attribute == null) return null;
+            ds.reloadAttribute(attribute);
+            JEVisSample sample = attribute.getLatestSample();
+            String value = sample != null ? sample.getValueAsString() : null;
+            return value != null && !value.trim().isEmpty() ? value.trim() : null;
+        } catch (Exception e) {
+            logger.warn("Could not read the attribute '{}' of the service", ATTRIBUTE_WEB_APP_URL, e);
+            return null;
         }
     }
 

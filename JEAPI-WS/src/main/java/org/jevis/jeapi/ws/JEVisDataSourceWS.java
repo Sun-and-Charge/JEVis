@@ -1059,6 +1059,54 @@ public class JEVisDataSourceWS implements JEVisDataSource {
     }
 
     /**
+     * Reads a resource of the web service as JSON with the connection and credentials of this data source, e.g.
+     * {@code getJson("web/reading-rounds?lang=de")}.
+     *
+     * @param resource the path below {@code JEWebService/v1/} including the query
+     * @return the answer
+     * @throws JEVisException with the HTTP status as code and the server's {@code message} (or body) if the answer
+     *                        is not {@code 200}, code 402 if the request failed
+     */
+    public com.fasterxml.jackson.databind.JsonNode getJson(String resource) throws JEVisException {
+        HTTPConnection.HttpBytes result = getResource(resource, "application/json");
+        try {
+            return this.objectMapper.readTree(result.getBody());
+        } catch (IOException ex) {
+            throw new JEVisException("Invalid answer of " + resource + ": " + ex.getMessage(), result.getCode(), ex);
+        }
+    }
+
+    /**
+     * Reads a resource of the web service as bytes (e.g. a PDF) with the connection and credentials of this data
+     * source.
+     *
+     * @param resource the path below {@code JEWebService/v1/} including the query
+     * @return the body of the answer
+     * @throws JEVisException with the HTTP status as code if the answer is not {@code 200}, code 402 if the request
+     *                        failed
+     */
+    public byte[] getBytes(String resource) throws JEVisException {
+        return getResource(resource, null).getBody();
+    }
+
+    private HTTPConnection.HttpBytes getResource(String resource, String accept) throws JEVisException {
+        HTTPConnection.HttpBytes result;
+        try {
+            result = this.con.getBytes(REQUEST.API_PATH_V1 + resource, accept);
+        } catch (IOException ex) {
+            logger.error("Request failed: {}", resource, ex);
+            throw new JEVisException(ex.getMessage() != null ? ex.getMessage() : ex.toString(), 402, ex);
+        }
+        if (result.getCode() != HttpURLConnection.HTTP_OK) {
+            String body = result.getBodyAsString().trim();
+            String message = body.isEmpty() ? "HTTP " + result.getCode() : messageOf(body);
+            logger.warn("Request {} answered HTTP {}: {}", resource, result.getCode(), message);
+            throw new JEVisException("[" + result.getCode() + "] " + message, result.getCode());
+        }
+        return result;
+    }
+
+    /**
      * Maximum size of an invoice file accepted by the web service.
      */
     public static final long MAX_INVOICE_FILE_BYTES = 20L * 1024 * 1024;

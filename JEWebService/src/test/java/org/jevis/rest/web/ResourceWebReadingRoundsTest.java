@@ -300,6 +300,30 @@ public class ResourceWebReadingRoundsTest {
     }
 
     @Test
+    public void listMailState() throws Exception {
+        FakeEditStore store = store();
+        JsonNode mail = round(list(store, null), 7001).get("mail");
+        assertTrue(mail.get("lastMail").isNull());
+        assertTrue(mail.get("lastMailKind").isNull());
+        assertTrue(mail.get("lastError").isNull());
+
+        String version = round(list(store, null), 7001).get("version").asText();
+        store.sample(7001, ResourceWebReadingRounds.ATTRIBUTE_MAIL_STATE, NOW,
+                "{\"dueMailSentFor\":\"2026-11-01\",\"reminderSentFor\":\"2026-11-01\",\"lastMail\":\"2026-11-05T06:00:00\","
+                        + "\"lastMailKind\":\"REMINDER\",\"lastError\":\"No recipients with an e-mail address\"}", null);
+        JsonNode round = round(list(store, null), 7001);
+        mail = round.get("mail");
+        assertEquals("2026-11-05T06:00:00", mail.get("lastMail").asText());
+        assertEquals("REMINDER", mail.get("lastMailKind").asText());
+        assertEquals("No recipients with an e-mail address", mail.get("lastError").asText());
+        assertEquals(3, mail.size());
+        assertEquals("a mail does not change the version", version, round.get("version").asText());
+
+        store.sample(7001, ResourceWebReadingRounds.ATTRIBUTE_MAIL_STATE, NOW.plusMinutes(1), "not json", null);
+        assertTrue(round(list(store, null), 7001).get("mail").get("lastMailKind").isNull());
+    }
+
+    @Test
     public void listStatesAndRights() throws Exception {
         FakeEditStore store = store();
         store.sample(7001, ResourceWebReadingRounds.ATTRIBUTE_ESCALATION_DAYS, T0, "14", null);
@@ -812,6 +836,13 @@ public class ResourceWebReadingRoundsTest {
         assertEquals("https://example.org:8443", ResourceWebReadingRounds.appBase("https://example.org:8443"));
         assertEquals("", ResourceWebReadingRounds.appBase(null));
         assertEquals("https://example.org/app/readings?meter=5101", ResourceWebReadingRounds.meterLink("https://example.org", 5101));
+        /* the configured web app address of the JENotifier (QR codes of the attached route sheet) */
+        assertEquals("https://example.org", ResourceWebReadingRounds.appBaseFromUrl("https://example.org/app/"));
+        assertEquals("https://example.org/jevis", ResourceWebReadingRounds.appBaseFromUrl(" https://example.org:443/jevis/app "));
+        assertEquals("http://localhost:8090", ResourceWebReadingRounds.appBaseFromUrl("http://localhost:8090/app"));
+        assertNull(ResourceWebReadingRounds.appBaseFromUrl("javascript:alert(1)"));
+        assertNull(ResourceWebReadingRounds.appBaseFromUrl("https://example.org/app?x=1"));
+        assertNull(ResourceWebReadingRounds.appBaseFromUrl(null));
         assertEquals(Arrays.asList(1L, 2L, 3L), ResourceWebReadingRounds.ids("[1, \"2\", 3, \"x\", 1.5]"));
         assertTrue(ResourceWebReadingRounds.ids("{}").isEmpty());
         assertTrue(ResourceWebReadingRounds.ids("nonsense").isEmpty());

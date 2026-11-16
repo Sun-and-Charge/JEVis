@@ -1982,3 +1982,64 @@ Only the round's meters, one group named after the round, meters in round order 
   escalation days, readers and supervisor (searchable multi-select of people, groups marked, warning for users
   without e-mail), meters (add from the site's meters, automatic ones marked, reorder by drag and by up/down buttons,
   remove), remarks; unsaved-changes guard, `409` handling as E2–E5.
+
+## Stage E8.3: reading round mails (order, reminder, escalation)
+
+Tender requirements 14.10 ("E-Mail an Ableser") and 14.16 ("Überwachung, Erinnerungs-E-Mail, Eskalation an
+Vorgesetzte"). Sent by the **JENotifier** service in the same cycle and with the same default "EMail Plugin" settings as
+the appointment and maintenance mails (`ExporterLauncher.sendScheduledMails` → `ScheduledMailProcessor`), recorded in
+the round's "Mail State" attribute so each mail goes out once per due date.
+
+### Which mail (pure logic in JECommons, `org.jevis.commons.reading.RoundMailLogic`)
+
+Input: the round as `GET /web/reading-rounds` lists it (`enabled`, `due`, `state`, `reminderDays`,
+`escalationDays`), its mail state and today (site time zone of the round as the web service computes `due`).
+No mail for `INACTIVE`, `NOT_STARTED`, `DONE` or `due` null. Otherwise, for the round's `due`:
+
+| Kind | When | To | Content |
+|---|---|---|---|
+| `ORDER` | today ≥ `due` | readers | order: due date, meters with location, link, route sheet PDF attached |
+| `REMINDER` | today ≥ `due` + `Reminder Days` | readers | open meters ("noch offen: 2 von 5"), link, route sheet attached |
+| `ESCALATION` | today ≥ `due` + `Escalation Days` | supervisor (to), readers (cc) | open meters, readers, since when; route sheet attached |
+
+At most one mail per round and cycle; when several kinds apply at once (e.g. a round created after its due date, or
+the service was stopped), only the latest kind is sent and the earlier ones are marked as sent for that `due`, so
+nobody gets three mails at once. Escalation without supervisor: not sent, marked as sent (log info). Recipients are
+resolved as for appointments (`MailRecipients.resolve`, users and groups); no address → error recorded in the mail
+state and tried again next cycle, as appointments do.
+
+`MailState` (JECommons, shared with appointments) gets the field `escalationSentFor`; rounds use `dueMailSentFor`
+(ORDER), `reminderSentFor` (REMINDER), `escalationSentFor` (ESCALATION), each holding the `due` date
+(`yyyy-MM-dd`), plus `lastMail`, `lastMailKind`, `lastError` as appointments.
+
+### Mail texts (`org.jevis.commons.reading.RoundMails`)
+
+Plain text, German first, then English, as `AppointmentMails`. Subjects:
+- ORDER: `Ableseauftrag / Reading order: <round> - fällig am / due on <dd.MM.yyyy>`
+- REMINDER: `Erinnerung / Reminder: <round> - <open> von / of <total> Zählern offen / meters open`
+- ESCALATION: `Eskalation / Escalation: <round> - seit <dd.MM.yyyy> nicht abgeschlossen / not completed`
+
+Body: round, site, due date, period, remarks; the meters (ORDER: all readable, not automatic meters in round order
+with location; REMINDER/ESCALATION: the open ones); readers (ESCALATION); link `<Web App URL>/readings?round=<id>`
+if the JENotifier service object has the new optional attribute **"Web App URL"** (String, e.g.
+`https://sunandcharge.app/app`; added to `var/classes/Plugins/JENotifier.json` with i18n), else no link; closing
+"Diese Nachricht wurde automatisch von JEVis versendet." Attachment `Laufzettel_<round>_<due>.pdf`
+(`application/pdf`) from `GET /web/reading-rounds/{id}/sheet.pdf?lang=de&due=<due>&appUrl=<Web App URL>` (`appUrl`:
+optional plain http(s) address of the web app for the QR codes, since the service may reach the web service on an
+internal address; without it the request address is used); if the PDF cannot be fetched the
+mail is sent without it and the log says so.
+
+### JENotifier
+
+`ReadingRoundMailProcessor` (in the JENotifier module): reads `GET /web/reading-rounds` through the service's
+`JEVisDataSourceWS` (new public methods there to GET a web resource as JSON / bytes with the existing connection and
+auth), applies `RoundMailLogic`, builds the mail, sends it with the same `Sender`, writes "Mail State" of the round
+object (as `ScheduledMailProcessor.writeState`). The service user needs read right on the rounds, their meters and the
+people, and write right on the rounds (as for appointments). Logged per mail; a failing round never stops the others.
+
+### Web service and web app (additive)
+
+- `GET /web/reading-rounds`: each round additionally `mail`: `{ "lastMail": "<ISO>" | null, "lastMailKind":
+  "ORDER"|"REMINDER"|"ESCALATION"|null, "lastError": "…" | null }` from "Mail State" (`version` still ignores it).
+- Rounds view and editor show "Letzte Mail: Erinnerung am 05.11.2026" and a warning with the error if `lastError` is set
+  (e.g. "Keine Empfänger mit E-Mail-Adresse").
