@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only · Copyright (C) 2026 Sun and Charge Germany GmbH -->
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   CONFIGURATION_FIELDS,
@@ -15,8 +15,11 @@ import {
   hasEntriesWithoutSite,
   type ContractFilter,
 } from '../accounting/contracts'
-import { loadContracts, type AccountingConfiguration } from '../api/contracts'
+import { anyContractWritable, canCreateIn, canEditObject } from '../accounting/contractEdit'
+import { loadContracts, type AccountingConfiguration, type ContractGroup, type ContractObject } from '../api/contracts'
 import ContractCard from '../components/accounting/ContractCard.vue'
+import ContractCreateDialog from '../components/accounting/ContractCreateDialog.vue'
+import ContractEditDialog from '../components/accounting/ContractEditDialog.vue'
 import { useLoader } from '../iso/useLoader'
 import type { SiteFilter } from '../modules/search'
 import { useNarrow } from '../modules/useNarrow'
@@ -30,6 +33,8 @@ import '../styles/accounting.css'
  * Contracts (W4.7, view only) like the Control Center's Accounting Plugin ("Enter data" / "Configuration"): one tab
  * per group (suppliers, metering point operators, grid operators, contractors, dues) and the accounting
  * configurations; search and site filter over all tabs. The cost calculation follows later.
+ * E6.2: "Neu" per group and "Bearbeiten" per object (side panel: name, contractor, texts, ranging tables, prices with
+ * validity date, delete); the list is reloaded after every write.
  */
 
 const { t, te, locale } = useI18n()
@@ -43,11 +48,11 @@ const filter = reactive<ContractFilter>(defaultContractFilter())
 const tabs = computed(() => contractTabs(data.value))
 const sites = computed(() => contractSites(data.value, locale.value))
 const withoutSite = computed(() => hasEntriesWithoutSite(data.value))
-const total = computed(() => tabs.value.reduce((n, tab) => n + tab.objects.length + tab.configurations.length, 0))
 
 const shownTabs = computed(() =>
   tabs.value.map((tab) => ({
     id: tab.id,
+    group: tab.group,
     total: tab.objects.length + tab.configurations.length,
     objects: filterContractObjects(tab.objects, filter, locale.value),
     configurations: filterConfigurations(tab.configurations, filter, locale.value),
@@ -113,6 +118,70 @@ async function openContractor(id: number) {
 const energyName = (code: string) => (te('contracts.energy.' + code) ? t('contracts.energy.' + code) : code)
 const configValue = (c: AccountingConfiguration, field: (typeof CONFIGURATION_FIELDS)[number]) => configurationValue(c, field, locale.value, energyName)
 const configWhere = (c: AccountingConfiguration) => contractWhere(c, locale.value)
+
+/* ---------- E6.2: editing ---------- */
+const writable = computed(() => anyContractWritable(data.value?.groups))
+const message = ref<{ ok: boolean; text: string } | null>(null)
+const creating = shallowRef<{ group: ContractGroup; kind: string } | null>(null)
+/** the edited object: id and group kind; the object itself is taken from the (reloaded) list */
+const editing = ref<{ id: number; kind: string } | null>(null)
+let lastEdited: ContractObject | null = null
+
+const editObject = computed<ContractObject | null>(() => {
+  const e = editing.value
+  if (!e) return null
+  const found = (data.value?.groups ?? []).flatMap((g) => g.objects ?? []).find((o) => o.id === e.id)
+  if (found) lastEdited = found
+  return found ?? (lastEdited?.id === e.id ? lastEdited : null)
+})
+
+function openCreate(group: ContractGroup | undefined, kind: string) {
+  if (!group || !canCreateIn(group)) return
+  message.value = null
+  creating.value = { group, kind }
+}
+
+function openEdit(o: ContractObject, kind: string) {
+  if (!canEditObject(o)) return
+  message.value = null
+  lastEdited = o
+  editing.value = { id: o.id, kind }
+}
+
+async function onCreated(o: ContractObject | null, name: string) {
+  const kind = creating.value?.kind ?? null
+  creating.value = null
+  const created = { ok: true, text: t('registerEdit.created', { name }) }
+  message.value = created
+  await reload()
+  if (!o || !kind) return
+  activeId.value = kind
+  highlighted.value = o.id
+  /* as the Control Center: the new object opens in the editor to enter its data */
+  const listed = (data.value?.groups ?? []).flatMap((g) => g.objects ?? []).find((x) => x.id === o.id)
+  openEdit(listed ?? o, kind)
+  message.value = created
+}
+
+async function onSaved(o: ContractObject | null, name: string) {
+  editing.value = null
+  message.value = { ok: true, text: t('registerEdit.saved', { name }) }
+  await reload()
+  if (o) highlighted.value = o.id
+}
+
+async function onDeleted(name: string) {
+  editing.value = null
+  message.value = { ok: true, text: t('registerEdit.deleted', { name }) }
+  await reload()
+}
+
+const showableContractor = (id: number) => contractorIds.value.has(id)
+
+async function onEditorContractor(id: number) {
+  editing.value = null
+  await openContractor(id)
+}
 </script>
 
 <template>
@@ -120,7 +189,11 @@ const configWhere = (c: AccountingConfiguration) => contractWhere(c, locale.valu
     <div class="mod-head">
       <h1 id="contracts-title">{{ t('contracts.title') }}</h1>
     </div>
-    <p class="muted read-only">{{ t('contracts.readOnly') }}</p>
+    <p v-if="writable" class="muted read-only">{{ t('contractEdit.hint') }}</p>
+    <p v-else class="muted read-only">{{ t('contracts.readOnly') }}</p>
+    <p v-if="message" class="alert edit-result ctr-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">
+      {{ message.text }}
+    </p>
 
     <p v-if="state === 'loading' && !data" class="muted" role="status">{{ t('contracts.loading') }}</p>
     <div v-else-if="state === 'error'" class="alert alert-error" role="alert">
@@ -128,7 +201,7 @@ const configWhere = (c: AccountingConfiguration) => contractWhere(c, locale.valu
       <button type="button" class="btn-link retry" @click="reload">{{ t('modules.retry') }}</button>
     </div>
 
-    <p v-if="data && !total" class="muted">{{ t('contracts.empty') }}</p>
+    <p v-if="data && !tabs.length" class="muted">{{ t('contracts.empty') }}</p>
 
     <template v-else-if="data && active">
       <fieldset class="mod-filters iso-filters">
@@ -170,8 +243,20 @@ const configWhere = (c: AccountingConfiguration) => contractWhere(c, locale.valu
       </div>
 
       <div :id="panelId" class="ctr-panel" role="tabpanel" :aria-labelledby="tabDomId(active.id)" tabindex="0">
-        <p class="mod-count muted" role="status">{{ t('modules.count', { shown: shownCount(active), total: active.total }) }}</p>
-        <p v-if="!shownCount(active)" class="muted">{{ t('contracts.noMatch') }}</p>
+        <div class="ctr-panel-head">
+          <p class="mod-count muted" role="status">{{ t('modules.count', { shown: shownCount(active), total: active.total }) }}</p>
+          <button
+            v-if="active.group && canCreateIn(active.group)"
+            type="button"
+            class="btn btn-primary ctr-new"
+            :aria-label="t('contractEdit.newLabel', { group: tabLabel(active.id) })"
+            @click="openCreate(active.group, active.id)"
+          >
+            {{ t('registerEdit.new') }}
+          </button>
+        </div>
+        <p v-if="!active.total && active.group" class="muted">{{ t('contractEdit.emptyGroup') }}</p>
+        <p v-else-if="!shownCount(active)" class="muted">{{ t('contracts.noMatch') }}</p>
 
         <template v-else-if="active.id === CONFIGURATIONS_TAB">
           <p class="alert ctr-hint" role="note">{{ t('contracts.config.hint') }}</p>
@@ -215,11 +300,34 @@ const configWhere = (c: AccountingConfiguration) => contractWhere(c, locale.valu
               :object="o"
               :contractor-link="!!o.contractor && contractorIds.has(o.contractor.id)"
               :highlighted="highlighted === o.id"
+              :editable="canEditObject(o)"
               @open-contractor="openContractor"
+              @edit="openEdit($event, active.id)"
             />
           </li>
         </ul>
       </div>
     </template>
+
+    <ContractCreateDialog
+      v-if="creating"
+      :key="'new-' + creating.kind"
+      :group="creating.group"
+      :group-label="tabLabel(creating.kind)"
+      @close="creating = null"
+      @created="onCreated"
+    />
+    <ContractEditDialog
+      v-if="editing && editObject"
+      :key="'edit-' + editing.id"
+      :object="editObject"
+      :group-label="tabLabel(editing.kind)"
+      :can-show-contractor="showableContractor"
+      @close="editing = null"
+      @saved="onSaved"
+      @changed="reload"
+      @deleted="onDeleted"
+      @open-contractor="onEditorContractor"
+    />
   </section>
 </template>

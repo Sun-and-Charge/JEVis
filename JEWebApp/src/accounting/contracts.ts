@@ -7,6 +7,7 @@ import {
   CONTRACT_KINDS,
   type AccountingConfiguration,
   type ContractAttribute,
+  type ContractGroup,
   type ContractHistory,
   type ContractList,
   type ContractObject,
@@ -30,11 +31,19 @@ export interface ContractTab {
   id: string
   objects: ContractObject[]
   configurations: AccountingConfiguration[]
+  /** E6.2: the group (create rights, classes, directories); none for the configurations */
+  group?: ContractGroup
 }
 
-/** Tabs: the groups in the fixed order (unknown kinds after them), then the configurations; empty ones left out. */
+/**
+ * Tabs: the groups in the fixed order (unknown kinds after them), then the configurations; empty ones left out
+ * (E6.2: an empty group stays when objects can be created in it).
+ */
 export function contractTabs(list: ContractList | null | undefined): ContractTab[] {
-  const groups = (list?.groups ?? []).filter((g) => g && Array.isArray(g.objects) && g.objects.length)
+  const groups = (list?.groups ?? [])
+    .filter((g) => g && (Array.isArray(g.objects) || g.canCreate))
+    .map((g) => (Array.isArray(g.objects) ? g : { ...g, objects: [] }))
+    .filter((g) => g.objects.length || g.canCreate === true)
   const rank = (kind: string) => {
     const i = (CONTRACT_KINDS as readonly string[]).indexOf(kind)
     return i < 0 ? CONTRACT_KINDS.length : i
@@ -42,7 +51,7 @@ export function contractTabs(list: ContractList | null | undefined): ContractTab
   const tabs: ContractTab[] = [...groups]
     .map((g, i) => ({ g, i }))
     .sort((a, b) => rank(a.g.kind) - rank(b.g.kind) || a.i - b.i)
-    .map(({ g }) => ({ id: g.kind, objects: g.objects, configurations: [] }))
+    .map(({ g }) => ({ id: g.kind, objects: g.objects, configurations: [], group: g }))
   const configurations = list?.configurations ?? []
   if (configurations.length) tabs.push({ id: CONFIGURATIONS_TAB, objects: [], configurations })
   return tabs

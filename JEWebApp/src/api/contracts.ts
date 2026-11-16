@@ -32,6 +32,13 @@ export interface ContractAttribute {
   timestamp: string | null
   /** more than one sample exists */
   history: boolean
+  /** E6.2: false for files / passwords (shown read-only) */
+  editable?: boolean
+  /** E6.2, numbers only: label of the input unit (values are entered and stored in it) */
+  inputUnit?: string | null
+  /** E6.2: DOUBLE, LONG, STRING */
+  primitive?: string | null
+  guiType?: string | null
 }
 
 /** The linked contractor ("Contractor" attribute). */
@@ -50,11 +57,36 @@ export interface ContractObject {
   site: ContractSite | null
   contractor: ContractorRef | null
   attributes: ContractAttribute[]
+  /** E6.2 rights */
+  canWrite?: boolean
+  canDelete?: boolean
+  /** E6.2: version sent with a change / delete (409 if outdated); null if the object has no sample */
+  version?: string | null
+  /** E6.2: class whose objects may be chosen as contractor; null for contractors and dues */
+  contractorClass?: string | null
+}
+
+/** E6.2: directory where objects of a group can be created. */
+export interface ContractCreateTarget {
+  id: number
+  name: string
+  path: string | null
+  site: ContractSite | null
+}
+
+/** E6.2: a creatable class of a group (as the Control Center's "New" dialog). */
+export interface ContractClassOption {
+  class: string
+  label: string
 }
 
 export interface ContractGroup {
   kind: ContractKind | string
   objects: ContractObject[]
+  /** E6.2: the user may create objects of the group (then listed even when empty) */
+  canCreate?: boolean
+  createTargets?: ContractCreateTarget[]
+  classes?: ContractClassOption[]
 }
 
 /** "Accounting Configuration": the contract fields of its template JSON (dates yyyy-MM-dd as stored). */
@@ -84,7 +116,51 @@ export interface ContractList {
 export interface ContractHistory {
   unit: string | null
   type: 'number' | 'ranging' | string
-  samples: { timestamp: string; value: number | RangingStep[] | null }[]
+  samples: ContractHistorySample[]
+}
+
+export interface ContractHistorySample {
+  timestamp: string
+  value: number | RangingStep[] | null
+  /** E6.2: the value may be deleted */
+  canDelete?: boolean
+}
+
+/** E6.2: an object of GET /web/contracts/contractors. */
+export interface ContractorOption {
+  id: number
+  name: string
+  path: string | null
+}
+
+/** E6.2: body of POST /web/contracts/objects. */
+export interface ContractCreate {
+  parentId: number
+  class: string
+  name: string
+}
+
+/** E6.2: body of PUT /web/contracts/objects/{id}: only the changed parts. */
+export interface ContractUpdate {
+  version: string
+  name?: string
+  contractor?: number | null
+  fields?: Record<string, string | { from: number; to: number; value: number }[]>
+}
+
+/** E6.2: body of POST /web/contracts/objects/{id}/values. */
+export interface ContractValue {
+  attribute: string
+  validFrom: string
+  value: number
+  confirm: boolean
+}
+
+/** E6.2: a contract or object that still uses an object (409 of a delete). */
+export interface ContractUsage {
+  id: number
+  name: string
+  kind: 'configuration' | 'object' | string
 }
 
 type GetClient = Pick<HttpClient, 'get'>
@@ -104,4 +180,45 @@ export function loadContracts(http: GetClient, lang: string): Promise<ContractLi
 
 export function loadContractHistory(http: GetClient, id: number, attribute: string, limit = 100): Promise<ContractHistory> {
   return http.get<ContractHistory>(contractHistoryPath(id, attribute, limit))
+}
+
+const langParam = (lang: string) => new URLSearchParams({ lang }).toString()
+
+/* ------------------------------------------------------------------ E6.2: editing */
+
+export function contractorsPath(contractorClass: string): string {
+  return `/web/contracts/contractors?${new URLSearchParams({ class: contractorClass }).toString()}`
+}
+
+export function loadContractors(http: GetClient, contractorClass: string): Promise<ContractorOption[]> {
+  return http.get<ContractorOption[]>(contractorsPath(contractorClass))
+}
+
+export function createContractObject(http: Pick<HttpClient, 'post'>, body: ContractCreate, lang: string): Promise<ContractObject> {
+  return http.post<ContractObject>(`/web/contracts/objects?${langParam(lang)}`, body)
+}
+
+export function updateContractObject(http: Pick<HttpClient, 'put'>, id: number, body: ContractUpdate, lang: string): Promise<ContractObject> {
+  return http.put<ContractObject>(`/web/contracts/objects/${id}?${langParam(lang)}`, body)
+}
+
+export function addContractValue(http: Pick<HttpClient, 'post'>, id: number, body: ContractValue, lang: string): Promise<{ timestamp: string; value: number }> {
+  return http.post<{ timestamp: string; value: number }>(`/web/contracts/objects/${id}/values?${langParam(lang)}`, body)
+}
+
+export function contractValuePath(id: number, attribute: string, timestamp: string): string {
+  return `/web/contracts/objects/${id}/values?${new URLSearchParams({ attribute, timestamp }).toString()}`
+}
+
+export function deleteContractValue(http: Pick<HttpClient, 'delete'>, id: number, attribute: string, timestamp: string): Promise<void> {
+  return http.delete(contractValuePath(id, attribute, timestamp))
+}
+
+export function deleteContractObjectPath(id: number, version: string, confirm: boolean): string {
+  return `/web/contracts/objects/${id}?${new URLSearchParams({ version, confirm: String(confirm) }).toString()}`
+}
+
+/** DELETE /web/contracts/objects/{id} (recycle bin); 409 with `usedBy` unless `confirm`. */
+export function deleteContractObject(http: Pick<HttpClient, 'delete'>, id: number, version: string, confirm = false): Promise<void> {
+  return http.delete(deleteContractObjectPath(id, version, confirm))
 }
