@@ -130,8 +130,19 @@ function rounds(): RoundList {
     rounds: [
       round(7004, 'Alte Runde', { state: 'INACTIVE', enabled: false, canWrite: false, canDelete: false }),
       round(7003, 'Lager Nord jährlich', { state: 'ESCALATED', site: { id: 1002, name: 'Lager Nord' }, readers: [{ id: 42, name: 'Energieteam', kind: 'GROUP' }], period: 'P1Y' }),
-      round(7002, 'Wasser Quartal', { state: 'DONE', mine: true, period: 'P3M', done: 2, total: 2 }),
-      round(7001, 'Monatsablesung Musterwerk', { state: 'LATE', mine: true }),
+      round(7002, 'Wasser Quartal', {
+        state: 'DONE',
+        mine: true,
+        period: 'P3M',
+        done: 2,
+        total: 2,
+        mail: { lastMail: null, lastMailKind: null, lastError: 'No recipients with an e-mail address' },
+      }),
+      round(7001, 'Monatsablesung Musterwerk', {
+        state: 'LATE',
+        mine: true,
+        mail: { lastMail: '2026-11-05T06:00:00', lastMailKind: 'REMINDER', lastError: null },
+      }),
     ],
   }
 }
@@ -476,6 +487,20 @@ describe('reading rounds view', () => {
     expect(w.find('.rd-message').text()).toBe('„Monatsablesung Musterwerk“ wurde in den Papierkorb verschoben.')
   })
 
+  it('shows the last mail and mail errors of the rounds (E8.3)', async () => {
+    const { wrapper: w } = await mountView('/readings?view=rounds')
+    const rows = w.findAll('.rd-round-row')
+    expect(sp(rows[0].find('.rd-round-mail').text())).toBe('Letzte Mail: Erinnerung am 05.11.2026')
+    expect(rows[0].find('.rd-round-mail-error').exists()).toBe(false)
+    expect(rows[1].find('.rd-round-mail').exists()).toBe(false)
+    expect(sp(rows[1].find('.rd-round-mail-error').text())).toBe('⚠ E-Mail-Versand fehlgeschlagen: Keine Empfänger mit E-Mail-Adresse')
+
+    await byLabel(w, '„Monatsablesung Musterwerk“ bearbeiten')!.trigger('click')
+    await flushPromises()
+    expect(sp(dialog(w).find('.rd-round-mail').text())).toBe('Letzte Mail: Erinnerung am 05.11.2026')
+    expect(dialog(w).find('.rd-round-mail-error').exists()).toBe(false)
+  })
+
   it('shows cards on phones', async () => {
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener: () => undefined, removeEventListener: () => undefined }))
     const { wrapper: w } = await mountView('/readings?view=rounds')
@@ -483,6 +508,8 @@ describe('reading rounds view', () => {
     expect(cards.map((c) => sp(c.find('h2').text()))).toEqual(['Monatsablesung Musterwerk', 'Wasser Quartal'])
     expect(cards[0].find('.rd-round-read').exists()).toBe(true)
     expect(cards[0].text()).toContain('1 von 3')
+    expect(sp(cards[0].find('.rd-round-mail').text())).toBe('Letzte Mail: Erinnerung am 05.11.2026')
+    expect(sp(cards[1].find('.rd-round-mail-error').text())).toBe('E-Mail-Versand fehlgeschlagen: Keine Empfänger mit E-Mail-Adresse')
     expect(w.find('.rd-round-table').exists()).toBe(false)
   })
 })

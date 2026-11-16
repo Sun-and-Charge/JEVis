@@ -8,7 +8,7 @@ import { useBusy, writeErrorKind, writeErrorText } from '../../edit/edit'
 import { useLoader } from '../../iso/useLoader'
 import { formatLocalDate } from '../../modules/dates'
 import { useNarrow } from '../../modules/useNarrow'
-import { defaultRoundFilter, filterRounds, peopleText, roundRowClass, sortRounds, type RoundFilter } from '../../readings/rounds'
+import { defaultRoundFilter, filterRounds, peopleText, roundMailTexts, roundRowClass, sortRounds, type RoundFilter } from '../../readings/rounds'
 import { openRoundSheet } from '../../readings/sheet'
 import { useAuthStore } from '../../stores/auth'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
@@ -20,7 +20,8 @@ import '../../styles/readings.css'
  * Reading rounds (E8.2), the second view of the reading page: the rounds the user may read with state, due date,
  * progress and readers; filter "Meine Runden" (default if the user reads any) / "Alle", site and search. Actions:
  * "Ablesen" (the meter list of the round, ?round=<id>), "Laufzettel" (PDF in a new tab), "Bearbeiten", "Löschen"
- * (recycle bin) and "Neue Runde" (create right at the site).
+ * (recycle bin) and "Neue Runde" (create right at the site). E8.3: the last mail of a round ("Letzte Mail: Erinnerung
+ * am 05.11.2026") and a warning if the mail service recorded an error.
  */
 
 const props = defineProps<{
@@ -176,6 +177,8 @@ const dueText = (r: ReadingRound) => (r.due ? formatLocalDate(r.due, locale.valu
 const periodText = (r: ReadingRound) => t('readings.rounds.period.' + r.period)
 const progressText = (r: ReadingRound) => t('readings.rounds.progress', { done: r.done, total: r.total })
 const progressPct = (r: ReadingRound) => (r.total > 0 ? Math.round((100 * r.done) / r.total) : 0)
+/* E8.3: last mail and mail error */
+const mailTexts = (r: ReadingRound) => roundMailTexts(r, t, (d) => formatLocalDate(d, locale.value))
 const readersText = (r: ReadingRound) => peopleText(r.readers, t('readings.rounds.unknownPerson')) || t('modules.none')
 const emptyText = computed(() =>
   !rounds.value.length ? t('readings.rounds.empty') : filter.value === 'mine' && !text.value.trim() ? t('readings.rounds.noneMine') : t('readings.rounds.noMatch'),
@@ -251,6 +254,8 @@ const id = (suffix: string) => `rd-rounds-${suffix}`
             <dt>{{ t('readings.rounds.col.readers') }}</dt>
             <dd>{{ readersText(r) }}<span v-if="r.mine" class="rd-mine"> · {{ t('readings.rounds.mine') }}</span></dd>
           </dl>
+          <p v-if="mailTexts(r).last" class="muted rd-round-mail">{{ mailTexts(r).last }}</p>
+          <p v-if="mailTexts(r).error" class="alert alert-error rd-round-mail-error" role="note">{{ mailTexts(r).error }}</p>
           <div class="rd-round-actions">
             <button type="button" class="btn btn-primary rd-round-read" :aria-label="t('readings.rounds.readLabel', { name: r.name })" @click="read(r)">
               {{ t('readings.read') }}
@@ -286,6 +291,8 @@ const id = (suffix: string) => `rd-rounds-${suffix}`
               <td class="iso-text">
                 <strong class="rd-round-name">{{ r.name }}</strong>
                 <span v-if="showSite && r.site" class="rd-round-sub">{{ r.site.name }}</span>
+                <span v-if="mailTexts(r).last" class="rd-round-sub rd-round-mail">{{ mailTexts(r).last }}</span>
+                <span v-if="mailTexts(r).error" class="rd-round-sub rd-round-mail-error" role="note">⚠ {{ mailTexts(r).error }}</span>
               </td>
               <td><RoundStateBadge :state="r.state" /></td>
               <td class="nowrap">

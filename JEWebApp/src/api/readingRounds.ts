@@ -63,8 +63,22 @@ export interface ReadingRound {
   mine: boolean
   canWrite: boolean
   canDelete: boolean
-  /** latest change of any attribute */
+  /** latest change of any attribute (not changed by mails) */
   version: string
+  /** E8.3: the last mail of the round (order, reminder, escalation) and the last error; missing on older servers */
+  mail?: RoundMail | null
+}
+
+/** Kinds of round mails (E8.3). */
+export type RoundMailKind = 'ORDER' | 'REMINDER' | 'ESCALATION'
+
+/** "Mail State" of a round as the list shows it (E8.3). */
+export interface RoundMail {
+  /** local time of the last mail, e.g. 2026-11-05T06:00:00 */
+  lastMail: string | null
+  lastMailKind: RoundMailKind | string | null
+  /** last error of the mail service (e.g. no recipients with an e-mail address), cleared by the next mail */
+  lastError: string | null
 }
 
 export interface RoundList {

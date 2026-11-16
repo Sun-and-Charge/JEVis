@@ -452,6 +452,21 @@
   color: var(--muted);
 }
 
+/* E8.3: error of the mail service for a round */
+.rd-round-sub.rd-round-mail-error {
+  color: var(--error);
+}
+
+p.rd-round-mail,
+p.rd-round-mail-error {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+
+p.rd-round-mail-error {
+  padding: 0.4rem 0.6rem;
+}
+
 .rd-mine {
   font-weight: 600;
   color: var(--blueberry);

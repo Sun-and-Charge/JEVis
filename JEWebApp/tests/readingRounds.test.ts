@@ -17,6 +17,7 @@ import {
   periodMinDays,
   roundBody,
   roundForm,
+  roundMailTexts,
   roundRowClass,
   roundStateClass,
   searchMeters,
@@ -140,6 +141,26 @@ describe('round list', () => {
     expect(conflictRound(httpError(409, { round: r }))?.id).toBe(1)
     expect(conflictRound(httpError(409, 'kaputt'))).toBeNull()
     expect(conflictRound(httpError(400, r))).toBeNull()
+  })
+})
+
+describe('round mails (E8.3)', () => {
+  const t = (key: string, values?: Record<string, unknown>) => key + (values ? JSON.stringify(values) : '')
+  const fmt = (d: string) => 'D(' + d + ')'
+
+  it('shows the last mail and translates the known error', () => {
+    expect(roundMailTexts(round(1, 'A'), t, fmt)).toEqual({ last: null, error: null })
+    expect(roundMailTexts(round(1, 'A', { mail: null }), t, fmt)).toEqual({ last: null, error: null })
+    const texts = roundMailTexts(round(1, 'A', { mail: { lastMail: '2026-11-05T06:00:00', lastMailKind: 'REMINDER', lastError: 'No recipients with an e-mail address' } }), t, fmt)
+    expect(texts.last).toBe('readings.rounds.mail.last{"kind":"readings.rounds.mail.kind.REMINDER","date":"D(2026-11-05T06:00:00)"}')
+    expect(texts.error).toBe('readings.rounds.mail.error{"error":"readings.rounds.mail.noRecipients"}')
+  })
+
+  it('shows unknown kinds and other errors as they are', () => {
+    const texts = roundMailTexts(round(1, 'A', { mail: { lastMail: '2026-11-05T06:00:00', lastMailKind: 'OTHER', lastError: ' SMTP down ' } }), t, fmt)
+    expect(texts.last).toContain('"kind":"OTHER"')
+    expect(texts.error).toBe('readings.rounds.mail.error{"error":"SMTP down"}')
+    expect(roundMailTexts(round(1, 'A', { mail: { lastMail: null, lastMailKind: 'ORDER', lastError: '  ' } }), t, fmt)).toEqual({ last: null, error: null })
   })
 })
 

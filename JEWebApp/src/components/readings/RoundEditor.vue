@@ -14,6 +14,7 @@ import {
 } from '../../api/readingRounds'
 import { useBusy, writeErrorKind, writeErrorText } from '../../edit/edit'
 import { serverMessages } from '../../iso/edit'
+import { formatLocalDate } from '../../modules/dates'
 import {
   changedRoundFields,
   cloneRoundForm,
@@ -21,6 +22,7 @@ import {
   newRoundForm,
   roundBody,
   roundForm,
+  roundMailTexts,
   validateRoundForm,
   type RoundField,
   type RoundForm,
@@ -285,12 +287,16 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
 const describedBy = (field: RoundField, hint?: string) => [problems.value[field] ? id(field) + '-err' : '', hint ? id(field) + '-hint' : ''].filter(Boolean).join(' ') || undefined
 const canSubmit = computed(() => !busy.value && !conflict.value && !noCreateRight.value && (optionsState.value === 'ready' || !creating.value))
 const submitLabel = computed(() => (busy.value ? t('edit.saving') : creating.value ? t('registerEdit.create') : t('edit.save')))
+/* E8.3: last mail and mail error of an existing round */
+const mail = computed(() => (current.value ? roundMailTexts(current.value, t, (d) => formatLocalDate(d, locale.value)) : { last: null, error: null }))
 const siteName = computed(() => current.value?.site?.name ?? props.sites.find((s) => s.id === form.value.site)?.name ?? '')
 </script>
 
 <template>
   <EditDialog :title="title" :busy="busy" wide class="rd-panel-backdrop rd-round-backdrop" @close="requestClose">
     <form :id="id('form')" class="rd-round-form" novalidate :aria-describedby="messages.length ? id('messages') : undefined" @submit.prevent="save">
+      <p v-if="mail.last" class="muted rd-round-mail">{{ mail.last }}</p>
+      <p v-if="mail.error" class="alert alert-error rd-round-mail-error" role="note">{{ mail.error }}</p>
       <section class="iso-edit-section">
         <h3>{{ t('readings.rounds.section.general') }}</h3>
         <div class="iso-edit-grid">
