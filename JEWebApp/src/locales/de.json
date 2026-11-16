@@ -269,6 +269,7 @@
     "notes": "Notizen",
     "alarms": "Alarme",
     "alarmsOpen": "{n} offene Alarme (7 Tage) | 1 offener Alarm (7 Tage) | {n} offene Alarme (7 Tage)",
+    "readingsReview": "{n} Ablesungen zu prüfen | 1 Ablesung zu prüfen | {n} Ablesungen zu prüfen",
     "reports": "Berichte",
     "contracts": "Verträge",
     "invoices": "Energierechnungen",
@@ -1996,7 +1997,66 @@
     "views": {
       "label": "Ansicht",
       "meters": "Zähler",
-      "rounds": "Runden"
+      "rounds": "Runden",
+      "review": "Prüfen"
+    },
+    "review": {
+      "intro": "Widersprüchliche Stände: Rücklauf eines Zählers, große Abweichung vom Erwartungswert oder Grenzwertverletzung. Nichts wird automatisch geändert – korrigieren, Zählerwechsel erfassen, bestätigen oder ignorieren.",
+      "loading": "Stände werden geprüft …",
+      "open": "keine Ablesung zu prüfen | 1 Ablesung zu prüfen | {n} Ablesungen zu prüfen",
+      "count": "keine Einträge | 1 Eintrag | {n} Einträge",
+      "empty": "Keine widersprüchlichen Stände in den letzten {days}.",
+      "emptySite": "An diesem Standort gibt es keine widersprüchlichen Stände.",
+      "truncated": "Es werden nur die neuesten {n} Einträge angezeigt.",
+      "allSites": "Alle",
+      "noSite": "Ohne Standort",
+      "period": "Zeitraum",
+      "days": {
+        "90": "90 Tagen",
+        "365": "365 Tagen",
+        "1095": "3 Jahren"
+      },
+      "col": {
+        "time": "Zeitpunkt",
+        "value": "Wert",
+        "previous": "Vorheriger Stand",
+        "expected": "Erwarteter Bereich",
+        "issues": "Auffälligkeit"
+      },
+      "issue": {
+        "COUNTER_DECREASE": "Rücklauf",
+        "FAR_FROM_EXPECTED": "Abweichung vom Erwartungswert",
+        "LIMIT": "Grenzwert"
+      },
+      "correct": "Korrigieren",
+      "confirm": "Bestätigen",
+      "ignore": "Ignorieren",
+      "correctLabel": "Wert von „{name}“ vom {time} korrigieren",
+      "exchangeLabel": "Zählerwechsel für „{name}“ am {time} erfassen",
+      "confirmLabel": "Wert von „{name}“ vom {time} bestätigen",
+      "ignoreLabel": "Wert von „{name}“ vom {time} ignorieren",
+      "correction": "Korrektur",
+      "correctIntro": "Korrektur des geprüften Werts vom {time}. Der neue Wert ersetzt den bisherigen und wird ohne weitere Plausibilitätsfrage gespeichert.",
+      "oldValue": "Bisheriger Wert",
+      "fixedTime": "Der Zeitpunkt des geprüften Werts bleibt unverändert.",
+      "saveCorrection": "Korrektur speichern",
+      "corrected": "Wert von „{name}“ korrigiert: {value} am {time}.",
+      "confirmTitle": "Wert bestätigen",
+      "confirmQuestion": "{value} von „{name}“ am {time} als plausibel bestätigen? Dazu wird eine Notiz geschrieben.",
+      "ignoreTitle": "Wert ignorieren",
+      "ignoreQuestion": "{value} von „{name}“ am {time} ignorieren?",
+      "ignoreNote": "Der Wert wird aus der Datenreihe entfernt und als Notiz festgehalten.",
+      "confirmed": "Wert von „{name}“ bestätigt: {value} am {time}.",
+      "ignored": "Wert von „{name}“ ignoriert: {value} am {time} wurde entfernt und als Notiz festgehalten.",
+      "conflict": "Der Wert von „{name}“ wurde inzwischen geändert – die Liste wurde neu geladen.",
+      "gone": "Der Wert von „{name}“ ist nicht mehr vorhanden – die Liste wurde neu geladen.",
+      "comment": {
+        "label": "Kommentar (optional)",
+        "placeholder": "z. B. Zähler vor Ort geprüft",
+        "ignorePlaceholder": "z. B. Ablesefehler, Wert doppelt erfasst",
+        "tooLong": "Der Kommentar darf höchstens {max} Zeichen lang sein.",
+        "invalid": "Der Kommentar enthält ungültige Zeichen."
+      }
     },
     "rounds": {
       "loading": "Ableserunden werden geladen …",

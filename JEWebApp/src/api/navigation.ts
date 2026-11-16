@@ -51,6 +51,8 @@ export interface ModuleCounts {
   costs: number
   /** E8.1 meter reading: meters the user may read in; servers without the count use the readable meters */
   readings: number
+  /** E8.5: contradictory readings to review (menu badge of "Ablesung", not a module of its own) */
+  readingsReview: number
 }
 
 /** Module counts with missing values as 0 (the menu shows only modules with entries). */
@@ -74,12 +76,16 @@ export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCou
     invoices: n(m?.invoices),
     costs: n(m?.costs),
     readings: n(m?.readings) || n(m?.meters),
+    readingsReview: n(m?.readingsReview),
   }
 }
 
+/** Counts that are badges of another module, not modules of their own. */
+export const BADGE_COUNTS = ['alarmsOpen', 'readingsReview'] as const
+
 /** True if the menu shows at least one module. */
 export function hasModules(counts: ModuleCounts): boolean {
-  return Object.entries(counts).some(([key, n]) => key !== 'alarmsOpen' && n > 0)
+  return Object.entries(counts).some(([key, n]) => !(BADGE_COUNTS as readonly string[]).includes(key) && n > 0)
 }
 
 export interface SiteNode {

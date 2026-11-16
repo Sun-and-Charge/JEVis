@@ -216,7 +216,7 @@ describe('reading rounds view', () => {
   it('switches between meters and rounds and shows the own rounds first', async () => {
     const { wrapper: w, router } = await mountView('/readings')
     const views = w.findAll('.rd-view')
-    expect(views.map((v) => sp(v.text()))).toEqual(['Zähler', 'Runden'])
+    expect(views.map((v) => sp(v.text()))).toEqual(['Zähler', 'Runden', 'Prüfen'])
     expect(views[0].attributes('aria-selected')).toBe('true')
     await views[1].trigger('click')
     await flushPromises()

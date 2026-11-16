@@ -8,7 +8,7 @@ import type { ModuleCounts } from '../api/navigation'
  * The route name of a module is its key.
  */
 
-export type ModuleKey = Exclude<keyof ModuleCounts, 'alarmsOpen'>
+export type ModuleKey = Exclude<keyof ModuleCounts, 'alarmsOpen' | 'readingsReview'>
 export type GroupId = 'iso' | 'operations' | 'assets' | 'finance'
 
 export type NavIconName = GroupId | 'home' | 'dashboard' | 'analysis' | 'reports' | 'collapse' | 'expand' | 'search' | 'star' | 'chevron' | 'site' | 'user'
@@ -34,7 +34,7 @@ export interface MenuModule {
   route: string
   /** readable entries (badge, as before) */
   count: number
-  /** open items (only alarms: unconfirmed alarms of the last 7 days); shown as a warning badge */
+  /** open items (alarms: unconfirmed alarms of the last 7 days; readings: readings to review, E8.5); shown as a warning badge */
   open: number
 }
 
@@ -47,7 +47,14 @@ export interface MenuGroup {
 
 function menuModule(key: ModuleKey, counts: ModuleCounts): MenuModule | null {
   if (!(counts[key] > 0)) return null
-  return { key, route: key, count: counts[key], open: key === 'alarms' ? counts.alarmsOpen : 0 }
+  return { key, route: key, count: counts[key], open: openItems(key, counts) }
+}
+
+/** Open items of a module (warning badge): unconfirmed alarms, readings to review. */
+function openItems(key: ModuleKey, counts: ModuleCounts): number {
+  if (key === 'alarms') return counts.alarmsOpen
+  if (key === 'readings') return counts.readingsReview
+  return 0
 }
 
 /** Visible groups with their visible modules (empty groups left out). */

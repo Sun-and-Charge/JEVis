@@ -233,7 +233,7 @@ describe('maintenance banner', () => {
 
 describe('navigation modules', () => {
   it('reads module counts, missing ones as 0', () => {
-    const none = { appointments: 0, maintenance: 0, actionPlans: 0, nonconformities: 0, legal: 0, meters: 0, basedata: 0, equipment: 0, notes: 0, alarms: 0, alarmsOpen: 0, reports: 0, contracts: 0, invoices: 0, costs: 0, readings: 0 }
+    const none = { appointments: 0, maintenance: 0, actionPlans: 0, nonconformities: 0, legal: 0, meters: 0, basedata: 0, equipment: 0, notes: 0, alarms: 0, alarmsOpen: 0, reports: 0, contracts: 0, invoices: 0, costs: 0, readings: 0, readingsReview: 0 }
     expect(moduleCounts(null)).toEqual(none)
     expect(moduleCounts({})).toEqual(none)
     expect(moduleCounts({ modules: { appointments: 3 } })).toEqual({ ...none, appointments: 3 })
@@ -249,6 +249,10 @@ describe('navigation modules', () => {
     expect(hasModules({ ...none, alarms: 1 })).toBe(true)
     // the badge count alone is no module
     expect(hasModules({ ...none, alarmsOpen: 3 })).toBe(false)
+    // E8.5: readings to review are a badge of "Ablesung"
+    expect(moduleCounts({ modules: { readings: 3, readingsReview: 2 } })).toEqual({ ...none, readings: 3, readingsReview: 2 })
+    expect(moduleCounts({ modules: { readings: 3 } }).readingsReview).toBe(0)
+    expect(hasModules({ ...none, readingsReview: 3 })).toBe(false)
     expect(moduleCounts({ modules: { reports: 4 } })).toEqual({ ...none, reports: 4 })
     expect(hasModules({ ...none, reports: 1 })).toBe(true)
     expect(moduleCounts({ modules: { contracts: 6, invoices: 12 } })).toEqual({ ...none, contracts: 6, invoices: 12 })

@@ -3,9 +3,10 @@
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { matchedRouteKey, onBeforeRouteLeave } from 'vue-router'
-import { MAX_PHOTO_BYTES, NOTE_MAX, readingWarnings, saveReading, uploadReadingPhoto, type ReadingMeter, type SavedReading } from '../../api/readings'
+import { MAX_PHOTO_BYTES, NOTE_MAX, readingWarnings, saveReading, uploadReadingPhoto, type ExpectedRange, type ReadingMeter, type SavedReading } from '../../api/readings'
 import { browserTimeZone } from '../../analysis/settings'
 import { useBusy, writeErrorText } from '../../edit/edit'
+import { toEntryInput } from '../../edit/entry'
 import { outsideExpected, parseNumber } from '../../readings/expected'
 import {
   canRead,
@@ -38,9 +39,19 @@ import '../../styles/readings.css'
  * photo (uploaded after the reading was saved). Plausibility warnings of the server (409) are confirmed with
  * "Trotzdem speichern" as in E1. "Speichern & weiter" asks the page to open the next due meter. Closing or leaving
  * the page with unsaved input asks first. Side panel on wide screens, full-width sheet on phones.
+ * E8.5 correction mode (`correction`): the time is fixed to the reviewed sample's timestamp (sent as listed), the old
+ * value, the previous value and the server's expected range are shown, and the reading is saved with `confirm`.
  */
 
-const props = defineProps<{ meter: ReadingMeter; nextName?: string | null }>()
+export interface ReadingCorrection {
+  /** ISO with offset, as listed by the review */
+  timestamp: string
+  value: number | string | null
+  previous: { timestamp: string; value: number | string | null } | null
+  expected: ExpectedRange | null
+}
+
+const props = defineProps<{ meter: ReadingMeter; nextName?: string | null; correction?: ReadingCorrection | null }>()
 const emit = defineEmits<{ close: []; saved: [event: ReadingSavedEvent]; exchange: []; changed: [] }>()
 
 const { t, te, locale } = useI18n()
@@ -56,7 +67,10 @@ const inputMode = computed(() => readingInputMode(row.value?.mode))
 const inputType = computed(() => (inputMode.value === 'DAY' ? 'date' : 'datetime-local'))
 
 /* ---- form ---- */
-const initialWhen = defaultReadingInput(props.meter, Date.now())
+const fixed = computed(() => props.correction ?? null)
+const initialWhen = props.correction
+  ? toEntryInput(props.correction.timestamp, inputMode.value, row.value?.timeZone)
+  : defaultReadingInput(props.meter, Date.now())
 const when = ref(initialWhen)
 const value = ref('')
 const note = ref('')
@@ -72,10 +86,11 @@ const photoFailed = ref<{ result: SavedReading; next: boolean } | null>(null)
 const dirty = computed(() => !photoFailed.value && (value.value.trim() !== '' || note.value.trim() !== '' || photo.value !== null || when.value !== initialWhen))
 
 /* ---- expected value at the chosen time ---- */
-const expected = computed(() => expectedAt(props.meter, when.value))
+/* a correction uses the server's expectation from the samples before the reviewed one (the list has the wrong value) */
+const expected = computed(() => (fixed.value ? fixed.value.expected : expectedAt(props.meter, when.value)))
 const parsed = computed(() => parseNumber(value.value))
 const outside = computed(() => parsed.value != null && outsideExpected(parsed.value, expected.value))
-const last = computed(() => props.meter.readings[0] ?? null)
+const last = computed(() => (fixed.value ? fixed.value.previous : (props.meter.readings[0] ?? null)))
 const belowLast = computed(() => !!row.value?.counter && parsed.value != null && typeof last.value?.value === 'number' && parsed.value < last.value.value)
 const expectedNone = computed(() => {
   if (!row.value) return ''
@@ -153,7 +168,12 @@ async function save(confirm: boolean, next: boolean) {
   const r = row.value
   if (!r || !readable.value) return
   const found: typeof problems.value = {}
-  const timestamp = readingTimestamp(when.value, r.mode)
+  /* a correction is written at exactly the listed timestamp and confirmed (the user reviewed the value) */
+  const timestamp = fixed.value ? fixed.value.timestamp : readingTimestamp(when.value, r.mode)
+  if (fixed.value) {
+    confirm = true
+    next = false
+  }
   if (!timestamp) found.when = t('entry.timeRequired')
   const number = parsed.value
   if (number == null) found.value = t('entry.valueRequired')
@@ -252,6 +272,8 @@ onBeforeUnmount(() => {
 })
 
 const timeOf = (timestamp: string) => formatReadingTime(timestamp, props.meter, locale.value)
+/* no "Speichern & weiter" when correcting */
+const next = computed(() => (fixed.value ? null : (props.nextName ?? null)))
 const describedBy = (field: keyof typeof problems.value, hint?: string) => [problems.value[field] ? id(field) + '-err' : '', hint ?? ''].filter(Boolean).join(' ') || undefined
 </script>
 
@@ -259,8 +281,9 @@ const describedBy = (field: keyof typeof problems.value, hint?: string) => [prob
   <EditDialog :title="meter.name" :busy="busy" class="rd-panel-backdrop" @close="requestClose">
     <div class="rd-panel-meta">
       <span class="rd-kind"><MediumIcon :medium="meter.medium" />{{ kind }}</span>
-      <DueBadge :due="meter.due" />
-      <button v-if="meter.canExchange" type="button" class="edit-btn is-small rd-exchange" :disabled="busy" @click="emit('exchange')">
+      <span v-if="fixed" class="mod-badge is-dueSoon rd-correction-badge">{{ t('readings.review.correction') }}</span>
+      <DueBadge v-else :due="meter.due" />
+      <button v-if="meter.canExchange && !fixed" type="button" class="edit-btn is-small rd-exchange" :disabled="busy" @click="emit('exchange')">
         {{ t('registerEdit.exchange.action') }}
       </button>
     </div>
@@ -271,9 +294,21 @@ const describedBy = (field: keyof typeof problems.value, hint?: string) => [prob
       </template>
     </dl>
 
+    <div v-if="fixed" class="rd-correction" role="note">
+      <p>{{ t('readings.review.correctIntro', { time: timeOf(fixed.timestamp) }) }}</p>
+      <dl class="edit-facts rd-correction-facts">
+        <dt>{{ t('readings.review.oldValue') }}</dt>
+        <dd class="rd-correction-old">{{ formatReading(fixed.value, meter, locale) }}</dd>
+        <template v-if="fixed.previous">
+          <dt>{{ t('readings.review.col.previous') }}</dt>
+          <dd>{{ formatReading(fixed.previous.value, meter, locale) }} <span class="muted">· {{ timeOf(fixed.previous.timestamp) }}</span></dd>
+        </template>
+      </dl>
+    </div>
+
     <p v-if="!readable" class="alert alert-error rd-problem" role="alert">{{ problemText }}</p>
 
-    <form v-else :id="id('form')" class="rd-form" novalidate @submit.prevent="save(false, !!nextName)">
+    <form v-else :id="id('form')" class="rd-form" novalidate @submit.prevent="save(false, !!next)">
       <div class="edit-field">
         <label :for="id('value')">{{ t('readings.reading') }}<template v-if="unit"> [{{ unit }}]</template></label>
         <input
@@ -303,7 +338,12 @@ const describedBy = (field: keyof typeof problems.value, hint?: string) => [prob
         </div>
       </div>
 
-      <div class="edit-field">
+      <div v-if="fixed" class="edit-field">
+        <span class="reg-edit-label">{{ inputType === 'date' ? t('readings.date') : t('readings.dateTime') }}</span>
+        <p class="rd-field-static rd-correction-time">{{ timeOf(fixed.timestamp) }}</p>
+        <p class="edit-hint">{{ t('readings.review.fixedTime') }}</p>
+      </div>
+      <div v-else class="edit-field">
         <label :for="id('when')">{{ inputType === 'date' ? t('readings.date') : t('readings.dateTime') }}</label>
         <input
           :id="id('when')"
@@ -420,9 +460,9 @@ const describedBy = (field: keyof typeof problems.value, hint?: string) => [prob
           {{ busy ? t('edit.saving') : t('entry.saveAnyway') }}
         </button>
         <template v-else>
-          <button v-if="nextName" type="button" class="edit-btn rd-save-only" :disabled="busy" @click="save(false, false)">{{ t('edit.save') }}</button>
-          <button type="submit" class="btn btn-primary edit-submit rd-save" :form="id('form')" :disabled="busy" :title="nextName ? t('readings.nextTitle', { name: nextName }) : undefined">
-            {{ busy ? t('edit.saving') : nextName ? t('readings.saveNext') : t('edit.save') }}
+          <button v-if="next" type="button" class="edit-btn rd-save-only" :disabled="busy" @click="save(false, false)">{{ t('edit.save') }}</button>
+          <button type="submit" class="btn btn-primary edit-submit rd-save" :form="id('form')" :disabled="busy" :title="next ? t('readings.nextTitle', { name: next }) : undefined">
+            {{ busy ? t('edit.saving') : next ? t('readings.saveNext') : fixed ? t('readings.review.saveCorrection') : t('edit.save') }}
           </button>
         </template>
       </template>

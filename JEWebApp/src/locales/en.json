@@ -269,6 +269,7 @@
     "notes": "Notes",
     "alarms": "Alarms",
     "alarmsOpen": "{n} open alarms (7 days) | 1 open alarm (7 days) | {n} open alarms (7 days)",
+    "readingsReview": "{n} readings to review | 1 reading to review | {n} readings to review",
     "reports": "Reports",
     "contracts": "Contracts",
     "invoices": "Energy invoices",
@@ -1996,7 +1997,66 @@
     "views": {
       "label": "View",
       "meters": "Meters",
-      "rounds": "Rounds"
+      "rounds": "Rounds",
+      "review": "Review"
+    },
+    "review": {
+      "intro": "Contradictory readings: a counter going backwards, a large deviation from the expected value or a limit violation. Nothing is changed automatically – correct, record a meter exchange, confirm or ignore.",
+      "loading": "Checking readings …",
+      "open": "no reading to review | 1 reading to review | {n} readings to review",
+      "count": "no entries | 1 entry | {n} entries",
+      "empty": "No contradictory readings in the last {days}.",
+      "emptySite": "There are no contradictory readings at this site.",
+      "truncated": "Only the newest {n} entries are shown.",
+      "allSites": "All",
+      "noSite": "Without site",
+      "period": "Period",
+      "days": {
+        "90": "90 days",
+        "365": "365 days",
+        "1095": "3 years"
+      },
+      "col": {
+        "time": "Time",
+        "value": "Value",
+        "previous": "Previous reading",
+        "expected": "Expected range",
+        "issues": "Issue"
+      },
+      "issue": {
+        "COUNTER_DECREASE": "Counter decrease",
+        "FAR_FROM_EXPECTED": "Deviation from expected value",
+        "LIMIT": "Limit"
+      },
+      "correct": "Correct",
+      "confirm": "Confirm",
+      "ignore": "Ignore",
+      "correctLabel": "Correct the value of “{name}” of {time}",
+      "exchangeLabel": "Record a meter exchange for “{name}” at {time}",
+      "confirmLabel": "Confirm the value of “{name}” of {time}",
+      "ignoreLabel": "Ignore the value of “{name}” of {time}",
+      "correction": "Correction",
+      "correctIntro": "Correction of the reviewed value of {time}. The new value replaces the old one and is saved without another plausibility question.",
+      "oldValue": "Previous value",
+      "fixedTime": "The time of the reviewed value stays unchanged.",
+      "saveCorrection": "Save correction",
+      "corrected": "Value of “{name}” corrected: {value} at {time}.",
+      "confirmTitle": "Confirm value",
+      "confirmQuestion": "Confirm {value} of “{name}” at {time} as plausible? A note is written for it.",
+      "ignoreTitle": "Ignore value",
+      "ignoreQuestion": "Ignore {value} of “{name}” at {time}?",
+      "ignoreNote": "The value is removed from the data row and kept as a note.",
+      "confirmed": "Value of “{name}” confirmed: {value} at {time}.",
+      "ignored": "Value of “{name}” ignored: {value} at {time} was removed and kept as a note.",
+      "conflict": "The value of “{name}” has changed in the meantime – the list was reloaded.",
+      "gone": "The value of “{name}” no longer exists – the list was reloaded.",
+      "comment": {
+        "label": "Comment (optional)",
+        "placeholder": "e.g. meter checked on site",
+        "ignorePlaceholder": "e.g. reading error, value entered twice",
+        "tooLong": "The comment must not be longer than {max} characters.",
+        "invalid": "The comment contains invalid characters."
+      }
     },
     "rounds": {
       "loading": "Loading reading rounds …",

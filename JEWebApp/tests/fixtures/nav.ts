@@ -27,6 +27,7 @@ export const noModules: ModuleCounts = {
   invoices: 0,
   costs: 0,
   readings: 0,
+  readingsReview: 0,
 }
 
 export function navigation(overrides: Partial<Navigation> = {}): Navigation {

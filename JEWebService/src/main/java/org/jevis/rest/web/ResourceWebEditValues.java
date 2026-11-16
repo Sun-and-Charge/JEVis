@@ -404,7 +404,11 @@ public class ResourceWebEditValues {
         JsonObject row = info.row;
         long id = row.getId();
         DateTimeZone zone = info.workDay.zone;
-        DateTime timestamp = align(WebEdit.timestamp(timestampText, zone, "timestamp"), info.mode, info.workDay);
+        DateTime given = WebEdit.timestamp(timestampText, zone, "timestamp");
+        /* a value that exists at exactly the given time is replaced at its own time (correction of a listed sample,
+           E8.5), even if that time is not on the boundary of the row's mode; else the time is aligned as before */
+        List<JsonSample> atGiven = store.samples(id, ATTRIBUTE_VALUE, given, given, 1);
+        DateTime timestamp = atGiven != null && !atGiven.isEmpty() ? given : align(given, info.mode, info.workDay);
 
         List<String> warnings = warnings(store, info, timestamp, value, language);
         if (extra != null) extra.add(info, timestamp, value, warnings);

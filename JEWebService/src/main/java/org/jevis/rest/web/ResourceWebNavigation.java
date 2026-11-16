@@ -86,8 +86,9 @@ public class ResourceWebNavigation {
             me.put("sysAdmin", user.isSysAdmin());
             result.put("user", me);
             result.put("startDashboard", startDashboard(ds, user.getUserID(), readable));
-            result.put("modules", ResourceWebModules.moduleCounts(new ResourceWebModules.Lookup(all, readable, parents),
-                    ResourceWebAlarms.sqlStore(ds), DateTime.now()));
+            ResourceWebModules.Lookup lookup = new ResourceWebModules.Lookup(all, readable, parents);
+            result.put("modules", ResourceWebModules.moduleCounts(lookup, ResourceWebAlarms.sqlStore(ds),
+                    WebEdit.sqlStore(ds, lookup), DateTime.now()));
             return Response.ok(MAPPER.writeValueAsString(result)).type(MediaType.APPLICATION_JSON)
                     .header("Cache-Control", "no-store").build();
         } catch (AuthenticationException ex) {

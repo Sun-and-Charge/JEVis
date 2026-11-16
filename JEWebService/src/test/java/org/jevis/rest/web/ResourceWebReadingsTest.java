@@ -321,6 +321,19 @@ public class ResourceWebReadingsTest {
     // ---------------------------------------------------------------- POST
 
     @Test
+    public void correctionReplacesASampleAtItsOwnTime() throws Exception {
+        FakeEditStore store = store();
+        /* an imported value at 06:00 on a daily row (E8.5 "Korrigieren" sends the listed time with offset) */
+        DateTime six = D9.plusHours(6);
+        store.sample(201, "Value", six, "105", "import");
+        WebEdit.Reply reply = enter(store, 101, body("2026-11-09T06:00:00.000+01:00", "106", "null", true));
+        assertEquals(201, reply.status);
+        assertEquals("2026-11-09T06:00:00.000+01:00", FakeEditStore.json(reply).get("timestamp").asText());
+        assertEquals("106", store.at(201, "Value", six).getValue());
+        assertEquals("the sample at midnight is untouched", "110", store.at(201, "Value", D9).getValue());
+    }
+
+    @Test
     public void enterWritesTheReadingWithTheNote() throws Exception {
         FakeEditStore store = store();
         WebEdit.Reply reply = enter(store, 101, body("2026-11-11T09:12:00", "130.5", "\"  Zähler verschmutzt \"", null));

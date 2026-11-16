@@ -7,6 +7,7 @@ import { loadReadings, type ReadingMeter } from '../api/readings'
 import DueBadge from '../components/readings/DueBadge.vue'
 import ReadingPanel from '../components/readings/ReadingPanel.vue'
 import ReadingPrintSheet from '../components/readings/ReadingPrintSheet.vue'
+import ReadingReview from '../components/readings/ReadingReview.vue'
 import ReadingRounds from '../components/readings/ReadingRounds.vue'
 import RoundStateBadge from '../components/readings/RoundStateBadge.vue'
 import MediumIcon from '../components/registers/MediumIcon.vue'
@@ -31,6 +32,7 @@ import { openRoundSheet } from '../readings/sheet'
 import { writeErrorText } from '../edit/edit'
 import { formatLocal, formatLocalDate } from '../modules/dates'
 import { useAuthStore } from '../stores/auth'
+import { useNavigationStore } from '../stores/navigation'
 import '../styles/modules.css'
 import '../styles/iso.css'
 import '../styles/registers.css'
@@ -43,6 +45,8 @@ import '../styles/readings.css'
  * panel (also via ?meter=<id> for links and QR codes). "Ableseliste drucken" prints the filtered list.
  * E8.2: second view "Runden" (?view=rounds) with the reading rounds; ?round=<id> shows the meters of a round in round
  * order with done marks, and "Speichern & weiter" follows the round order, skipping done meters.
+ * E8.5: third view "Prüfen" (?view=review) with the contradictory readings; the tab shows their number (from the
+ * navigation until the list is loaded).
  */
 
 const { t, te, locale } = useI18n()
@@ -51,14 +55,24 @@ const route = useRoute()
 const router = useRouter()
 const narrow = useNarrow()
 
-/* ---- view "Zähler" | "Runden", round of the meter list ---- */
+/* ---- view "Zähler" | "Runden" | "Prüfen", round of the meter list ---- */
+type View = 'meters' | 'rounds' | 'review'
+const VIEWS: readonly View[] = ['meters', 'rounds', 'review']
 function queryRound(): number | null {
   const v = route.query.round
   const n = Number(Array.isArray(v) ? v[0] : v)
   return Number.isInteger(n) && n > 0 ? n : null
 }
 const roundId = computed(() => queryRound())
-const view = computed<'meters' | 'rounds'>(() => (route.query.view === 'rounds' && roundId.value == null ? 'rounds' : 'meters'))
+const view = computed<View>(() => {
+  const v = route.query.view
+  return roundId.value == null && (v === 'rounds' || v === 'review') ? v : 'meters'
+})
+
+/* number of readings to review: the loaded list's count, else the navigation's */
+const nav = useNavigationStore()
+const reviewLoaded = ref<number | null>(null)
+const reviewCount = computed(() => reviewLoaded.value ?? nav.modules.readingsReview)
 
 const { data, state, reload } = useLoader(() => loadReadings(auth.http, locale.value, null, roundId.value))
 watch(locale, () => reload())
@@ -196,16 +210,19 @@ function onExchanged(time: string) {
 }
 
 /* ---- views ---- */
-function setView(v: 'meters' | 'rounds') {
+function setView(v: View) {
   message.value = null
   if (v === view.value && !roundMode.value) return
-  void router.push({ query: v === 'rounds' ? { view: 'rounds' } : {} })
+  void router.push({ query: v === 'meters' ? {} : { view: v } })
 }
 
 function onViewKey(event: KeyboardEvent) {
   if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return
   event.preventDefault()
-  const next = event.key === 'Home' ? 'meters' : event.key === 'End' ? 'rounds' : view.value === 'meters' ? 'rounds' : 'meters'
+  const i = VIEWS.indexOf(view.value)
+  const n = VIEWS.length
+  const next =
+    event.key === 'Home' ? VIEWS[0] : event.key === 'End' ? VIEWS[n - 1] : VIEWS[(i + (event.key === 'ArrowRight' ? 1 : n - 1)) % n]
   setView(next)
   void nextTick(() => document.getElementById(id('view-' + next))?.focus())
 }
@@ -294,7 +311,7 @@ function print() {
     <p class="muted read-only">{{ t('readings.intro') }}</p>
     <div class="rd-views" role="tablist" :aria-label="t('readings.views.label')">
       <button
-        v-for="v in (['meters', 'rounds'] as const)"
+        v-for="v in VIEWS"
         :id="id('view-' + v)"
         :key="v"
         type="button"
@@ -307,6 +324,10 @@ function print() {
         @keydown="onViewKey"
       >
         {{ t('readings.views.' + v) }}
+        <span v-if="v === 'review' && reviewCount > 0" class="rd-view-count" :title="t('readings.review.open', reviewCount)">
+          <span aria-hidden="true">{{ reviewCount }}</span>
+          <span class="visually-hidden">{{ t('readings.review.open', reviewCount) }}</span>
+        </span>
       </button>
     </div>
     <p v-if="message" class="alert edit-result rd-message" :class="message.ok ? 'alert-ok' : 'alert-error'" :role="message.ok ? 'status' : 'alert'">
@@ -315,6 +336,7 @@ function print() {
 
     <div :id="id('view')" role="tabpanel" :aria-labelledby="id('view-' + view)">
       <ReadingRounds v-if="view === 'rounds'" :sites="lastSites" :site="roundSite" />
+      <ReadingReview v-else-if="view === 'review'" :meters="allMeters" @count="reviewLoaded = $event" @changed="reload" />
       <template v-else>
         <div v-if="roundMode" class="rd-round-banner">
           <div class="rd-round-banner-text">

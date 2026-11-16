@@ -2043,3 +2043,101 @@ people, and write right on the rounds (as for appointments). Logged per mail; a 
   "ORDER"|"REMINDER"|"ESCALATION"|null, "lastError": "…" | null }` from "Mail State" (`version` still ignores it).
 - Rounds view and editor show "Letzte Mail: Erinnerung am 05.11.2026" and a warning with the error if `lastError` is set
   (e.g. "Keine Empfänger mit E-Mail-Adresse").
+
+## Editing, stage E8.5: review of contradictory readings
+
+Tender requirement 14.17 ("Widersprüchliche Stände ignorieren/korrigieren, mit Information"). User decision
+(2026-11-13): a review list in the web, nothing is changed automatically. Builds on E1 (manual values, notes), E5
+(meter exchange) and E8.1 (reading meters, expected values, AUTOMATIC rows).
+
+### What is listed
+
+For every meter of `GET /web/readings` the user may read that has a usable row and is **not** `AUTOMATIC`, the
+samples of the row in the last `days` days (default 365, max 1095), each checked against the samples before it
+(at most 11, as the E8.1 expectation):
+
+- `COUNTER_DECREASE`: counter row, value lower than the previous sample, and neither of the two samples has a note
+  containing "Meter Tausch" (case-insensitive; the E5/CC exchange writes it).
+- `FAR_FROM_EXPECTED`: the value is outside the E8.1 `expected` range computed from the samples before it at its
+  timestamp (only when an expectation exists; not added together with `COUNTER_DECREASE`).
+- `LIMIT`: as the E1 plausibility (counter: difference to the sample one period earlier outside the first limit step
+  of the Clean Data child; other rows: value outside it).
+
+A sample is **resolved** (not listed) when the row's "Data Notes" object has a note at exactly its timestamp whose text
+starts with `Ablesung geprüft` or `Reading checked` (confirmed) — ignored samples are gone from the row (see below)
+and keep their note. Only samples of the last `days` days; at most 500 items, newest first.
+
+### `GET /web/readings/review?lang=de&days=365` (`&site=<building id>` optional)
+
+```json
+{
+  "items": [
+    {
+      "meterId": 5101, "meterName": "Hauptzähler Strom", "site": { "id": 1001, "name": "Musterwerk" },
+      "row": { "id": 2001, "name": "Strom - Hauptzähler", "unit": "kWh", "counter": true, "canEnter": true,
+               "canDelete": true, "canNote": true },
+      "timestamp": "2026-10-01T00:00:00.000+02:00", "value": 11800.0, "note": "Manuelle Dateneingabe … – …",
+      "manual": true,
+      "previous": { "timestamp": "2026-09-01T00:00:00.000+02:00", "value": 12100.0 },
+      "expected": { "value": 12350.0, "low": 12200.0, "high": 12500.0 },
+      "issues": ["COUNTER_DECREASE"],
+      "canExchange": true
+    }
+  ],
+  "count": 1, "truncated": false
+}
+```
+
+`canNote`: the user may add a note to the row (E1 `canAddNote`). `canExchange` as E8.1. The navigation (`GET
+/web/navigation`) gets `modules.readingsReview` = the number of items (computed with the default `days`; the web
+app shows it as an open-items badge on "Ablesung", like unconfirmed alarms).
+
+### `POST /web/readings/review/{meterId}?lang=de`
+
+Body `{ "timestamp": "<ISO as listed>", "action": "CONFIRM" | "IGNORE", "comment": "…" | null }`
+(comment ≤ 500 characters, no control characters except line breaks).
+
+- `CONFIRM`: writes a note at the sample's timestamp on the row (as `POST` of E1 notes, creating the "Data Notes"
+  object if missing): `Ablesung geprüft: <value> <unit> ist plausibel.` + ` – <comment>` (en `Reading checked: …`
+  by `lang`). Needs `canNote`. `201` `{ "timestamp", "action" }`. Logged `web:reading-review`.
+- `IGNORE`: the value must not be used: deletes the sample of the row at exactly that timestamp (needs delete right
+  on the row — the generic sample delete rule — else `403`; manual and imported samples alike), resets the dependent
+  rows from that timestamp (as the E1 delete), and writes a note at that timestamp: `Ablesung ignoriert: <value>
+  <unit> (<issues in words>)` + ` – <comment>`; the note is kept as the information about the removed value. If
+  writing the note fails after the delete, the sample is written back (nothing half done). `201`.
+- `404` unknown meter/sample, `400` meter without usable row or `AUTOMATIC`, `409` if the sample's value changed since
+  it was listed (body `value` optional: when given and different from the stored value → `409` with the current
+  item).
+
+Correcting a value uses `POST /web/readings/{meterId}` (E8.1) with the listed timestamp and `confirm: true`; a meter
+exchange uses the E5 exchange. Both make the item disappear when the corrected value is plausible.
+
+### Implementation notes (server, `ResourceWebReadingsReview`)
+
+- `days` outside 1–1095 or not a number → `400`. Per row the latest 2000 samples are read (one query); older samples
+  of rows with more values in the window are not checked.
+- A counter decrease where the sample or the one before has the "Meter Tausch" note has no issue at all (also no
+  `FAR_FROM_EXPECTED`/`LIMIT`, the new meter starts low). `LIMIT` of counters needs a sample exactly one period
+  earlier (E1 compares with the value itself otherwise) and is not added together with `COUNTER_DECREASE` (as E1).
+- `modules.readingsReview` is `null` for users who may read more than 300 meters (too costly for the navigation; no
+  badge), `0` if it cannot be computed.
+- POST: order of checks `400` (body) → `404` meter → `400` row problem/`AUTOMATIC` (`{ "messages", "problem" }`) →
+  `404` no numeric sample at the timestamp → `403` (`canNote`; IGNORE also delete right) → `409`. Both actions need
+  `canNote`. An existing note at that timestamp is kept below the new text (`<review text>
+<old text>`, tags kept),
+  so the item is resolved and nothing is lost.
+- IGNORE order: delete the sample → write the note → reset the dependent rows. If the note fails, its partial samples
+  (or the newly created "Data Notes" object) are removed, the sample is written back with value, note and timestamp
+  (logged `web:reading-review-rollback`) and the request ends with `500`; dependents are not touched.
+
+### Web app
+
+- Ablesung page third view **"Prüfen"** (`?view=review`, tab with the count): list (cards on phones, table on wide
+  screens) of the items with meter, time, value, previous value, expected range, issues as badges ("Rücklauf",
+  "Abweichung vom Erwartungswert", "Grenzwert") and the note.
+- Actions per item: **Korrigieren** (opens the E8.1 reading panel for the meter with the timestamp fixed to the item's
+  time and the old value shown; saves with `confirm`), **Zählerwechsel** (E5 dialog prefilled with the item's time and
+  its value as the new meter's first reading; only counters with `canExchange`), **Bestätigen** (optional comment),
+  **Ignorieren** (comment, confirmation "Der Wert wird aus der Datenreihe entfernt und als Notiz festgehalten").
+  After an action the list reloads.
+- Filter by site (site tabs as the meter view) and period (90 / 365 / 1095 days).
