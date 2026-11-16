@@ -58,6 +58,7 @@ public class ResourceWebEditValues {
     static final String ATTRIBUTE_PERIOD = "Period";
     static final String ATTRIBUTE_DIFFERENTIAL = "Conversion to Differential";
     static final String ATTRIBUTE_LIMITS = "Limits Configuration";
+    static final String ATTRIBUTE_LIMITS_ENABLED = "Limits Enabled";
     static final String KEY_MANUAL = "menu.file.import.manual";
     static final String KEY_COUNTER_LOWER = "plugin.object.dialog.data.differror";
     static final String KEY_DIFF_SMALLER = "plugin.object.dialog.data.diff.smaller";
@@ -170,7 +171,11 @@ public class ResourceWebEditValues {
         Double min = null;
         Double max = null;
         boolean hasLimits = false;
-        if (clean != null) {
+        /* the limits only count when they are switched on ("Limits Enabled"; live demo 2026-11-16: switched-off old
+           limits flagged every monthly reading in the review list); an older row without the attribute counts as on */
+        JsonSample limitsEnabled = clean != null ? store.latest(clean.getId(), ATTRIBUTE_LIMITS_ENABLED) : null;
+        boolean limitsOn = limitsEnabled == null || ResourceWebAlarms.isTrue(limitsEnabled);
+        if (clean != null && limitsOn) {
             JsonLimitsConfig limits = firstLimits(store.latest(clean.getId(), ATTRIBUTE_LIMITS));
             if (limits != null) {
                 min = parseDouble(limits.getMin());

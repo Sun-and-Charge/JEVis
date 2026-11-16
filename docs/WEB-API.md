@@ -2060,7 +2060,8 @@ samples of the row in the last `days` days (default 365, max 1095), each checked
   containing "Meter Tausch" (case-insensitive; the E5/CC exchange writes it).
 - `FAR_FROM_EXPECTED`: the value is outside the E8.1 `expected` range computed from the samples before it at its
   timestamp (only when an expectation exists; not added together with `COUNTER_DECREASE`).
-- `LIMIT`: as the E1 plausibility (counter: difference to the sample one period earlier outside the first limit step
+- `LIMIT` (only when the Clean Data child has "Limits Enabled" on; a row without that attribute counts as on — the
+  same rule now applies to the E1/E8.1 entry warnings): as the E1 plausibility (counter: difference to the sample one period earlier outside the first limit step
   of the Clean Data child; other rows: value outside it).
 
 A sample is **resolved** (not listed) when the row's "Data Notes" object has a note at exactly its timestamp whose text

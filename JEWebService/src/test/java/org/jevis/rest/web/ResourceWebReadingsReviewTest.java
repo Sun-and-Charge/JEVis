@@ -232,6 +232,10 @@ public class ResourceWebReadingsReviewTest {
         assertEquals("2026-02-01T00:00:00.000+01:00", items.get(9).get("timestamp").asText());
         assertEquals(111, items.get(0).get("meterId").asLong());
         assertEquals(5, items.get(0).get("site").get("id").asLong());
+
+        /* limits switched off ("Limits Enabled" false, live demo 2026-11-16): nothing is listed */
+        store.sample(212, ResourceWebEditValues.ATTRIBUTE_LIMITS_ENABLED, new DateTime(2026, 1, 1, 0, 0, ZONE), "false", null);
+        assertEquals(0, items(store).size());
     }
 
     @Test
