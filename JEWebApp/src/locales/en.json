@@ -1074,8 +1074,70 @@
       "openTab": "Open PDF in a new tab"
     }
   },
+  "contractEdit": {
+    "hint": "Suppliers, grid and metering point operators, contractors and governmental dues can be created, changed and deleted here as far as your rights allow. The accounting configurations are maintained in the Control Center.",
+    "newLabel": "Create a new entry in “{group}”",
+    "newTitle": "New: {group}",
+    "newHint": "Prices, contractor and further data are entered after creating.",
+    "emptyGroup": "No entries yet – create one with “New”.",
+    "class": "Type",
+    "directory": "Folder",
+    "where": "Location",
+    "prices": "Prices and dues",
+    "pricesHint": "New values apply from the chosen day and are saved right away; the previous value stays in the history.",
+    "valuesSaved": "Values saved",
+    "delete": "Delete",
+    "deleteTitle": "Delete entry",
+    "usedBy": {
+      "message": "“{name}” is still used by:",
+      "confirm": "Delete anyway",
+      "configuration": "accounting configuration",
+      "object": "contract object"
+    },
+    "contractor": {
+      "search": "Search contractor …",
+      "none": "– no contractor –",
+      "loading": "Loading contractors …",
+      "error": "The contractors could not be loaded.",
+      "show": "Show contractor"
+    },
+    "price": {
+      "newValue": "New value",
+      "validFrom": "Valid from",
+      "save": "Save value",
+      "saved": "{value} from {date} saved.",
+      "overwriteTitle": "Overwrite value?",
+      "overwrite": "Save anyway",
+      "deleteTitle": "Delete value",
+      "deleteLabel": "Delete value from {date}",
+      "deleteQuestion": "Delete the value {value} of “{name}” from {date}?",
+      "deleted": "The value from {date} was deleted.",
+      "deleteGone": "The value no longer exists. The history was reloaded."
+    },
+    "ranging": {
+      "actions": "Actions",
+      "cell": "{field}, row {row}",
+      "unlimited": "unlimited",
+      "add": "Add row",
+      "removeLabel": "Remove row {row}",
+      "rowProblem": "Row {row}:",
+      "problem": {
+        "empty": "Please enter at least one row.",
+        "tooMany": "At most {max} rows.",
+        "required": "Please fill in all fields.",
+        "order": "“To” must be greater than “From”.",
+        "sorted": "The rows must be sorted ascending by “From”.",
+        "overlap": "The range overlaps the row before."
+      }
+    },
+    "problem": {
+      "valueRequired": "Please enter a value.",
+      "date": "Please choose a valid date.",
+      "directory": "Please choose a folder."
+    }
+  },
   "invoiceEdit": {
-    "hint": "Invoices can be imported and deleted here; contracts are maintained in the Control Center.",
+    "hint": "Invoices can be imported and deleted here; contractors, prices and dues under \"Contracts\".",
     "importAction": "Import invoices",
     "delete": "Delete",
     "deleteLabel": "Delete invoice {number}",

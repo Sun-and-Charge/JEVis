@@ -1074,8 +1074,70 @@
       "openTab": "PDF in neuem Tab öffnen"
     }
   },
+  "contractEdit": {
+    "hint": "Lieferanten, Netz- und Messstellenbetreiber, Vertragspartner und Abgaben können hier angelegt, geändert und gelöscht werden, soweit Ihre Rechte reichen. Die Abrechnungen werden im Control Center gepflegt.",
+    "newLabel": "Neuen Eintrag in „{group}“ anlegen",
+    "newTitle": "Neu: {group}",
+    "newHint": "Preise, Vertragspartner und weitere Angaben werden nach dem Anlegen eingetragen.",
+    "emptyGroup": "Noch keine Einträge – mit „Neu“ anlegen.",
+    "class": "Art",
+    "directory": "Ordner",
+    "where": "Ablage",
+    "prices": "Preise und Abgaben",
+    "pricesHint": "Neue Werte gelten ab dem gewählten Tag und werden sofort gespeichert; der bisherige Wert bleibt im Verlauf.",
+    "valuesSaved": "Werte gespeichert",
+    "delete": "Löschen",
+    "deleteTitle": "Eintrag löschen",
+    "usedBy": {
+      "message": "„{name}“ wird noch verwendet von:",
+      "confirm": "Trotzdem löschen",
+      "configuration": "Abrechnung",
+      "object": "Vertragsobjekt"
+    },
+    "contractor": {
+      "search": "Vertragspartner suchen …",
+      "none": "– kein Vertragspartner –",
+      "loading": "Vertragspartner werden geladen …",
+      "error": "Die Vertragspartner konnten nicht geladen werden.",
+      "show": "Vertragspartner anzeigen"
+    },
+    "price": {
+      "newValue": "Neuer Wert",
+      "validFrom": "Gültig ab",
+      "save": "Wert speichern",
+      "saved": "{value} ab {date} gespeichert.",
+      "overwriteTitle": "Wert überschreiben?",
+      "overwrite": "Trotzdem speichern",
+      "deleteTitle": "Wert löschen",
+      "deleteLabel": "Wert ab {date} löschen",
+      "deleteQuestion": "Den Wert {value} von „{name}“ ab {date} löschen?",
+      "deleted": "Der Wert ab {date} wurde gelöscht.",
+      "deleteGone": "Der Wert ist nicht mehr vorhanden. Der Verlauf wurde neu geladen."
+    },
+    "ranging": {
+      "actions": "Aktionen",
+      "cell": "{field}, Zeile {row}",
+      "unlimited": "unbegrenzt",
+      "add": "Zeile hinzufügen",
+      "removeLabel": "Zeile {row} entfernen",
+      "rowProblem": "Zeile {row}:",
+      "problem": {
+        "empty": "Bitte mindestens eine Zeile eintragen.",
+        "tooMany": "Höchstens {max} Zeilen.",
+        "required": "Bitte alle Felder ausfüllen.",
+        "order": "„Bis“ muss größer als „Von“ sein.",
+        "sorted": "Die Zeilen müssen nach „Von“ aufsteigend sortiert sein.",
+        "overlap": "Der Bereich überschneidet sich mit der Zeile davor."
+      }
+    },
+    "problem": {
+      "valueRequired": "Bitte einen Wert eingeben.",
+      "date": "Bitte ein gültiges Datum wählen.",
+      "directory": "Bitte einen Ordner wählen."
+    }
+  },
   "invoiceEdit": {
-    "hint": "Rechnungen können hier importiert und gelöscht werden; Verträge werden im Control Center gepflegt.",
+    "hint": "Rechnungen können hier importiert und gelöscht werden; Vertragspartner, Preise und Abgaben unter „Verträge“.",
     "importAction": "Rechnungen importieren",
     "delete": "Löschen",
     "deleteLabel": "Rechnung {number} löschen",

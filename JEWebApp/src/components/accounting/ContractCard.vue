@@ -9,11 +9,12 @@ import AttributeHistory from './AttributeHistory.vue'
 /*
  * One contract object: name, class, site / path, the linked contractor (a button that jumps to it when it is in the
  * contractor tab) and the attributes with their "valid from" date; ranging values as small table. Attributes with
- * more than one sample get a "Verlauf" toggle that loads the price history.
+ * more than one sample get a "Verlauf" toggle that loads the price history. E6.2: "Bearbeiten" (with a write or
+ * delete right) opens the editor of the page.
  */
 
-const props = defineProps<{ object: ContractObject; contractorLink: boolean; highlighted?: boolean }>()
-const emit = defineEmits<{ openContractor: [id: number] }>()
+const props = defineProps<{ object: ContractObject; contractorLink: boolean; highlighted?: boolean; editable?: boolean }>()
+const emit = defineEmits<{ openContractor: [id: number]; edit: [object: ContractObject] }>()
 const { t, locale } = useI18n()
 
 const where = computed(() => contractWhere(props.object, locale.value))
@@ -41,7 +42,18 @@ const attrId = (index: number) => domId('h' + index)
   <article :id="'contract-obj-' + object.id" class="mod-card ctr-card" :class="{ 'is-highlighted': highlighted }" tabindex="-1" :aria-labelledby="domId('title')">
     <p v-if="where" class="ctr-where muted">{{ where }}</p>
     <h2 :id="domId('title')" class="ctr-title">{{ object.name }}</h2>
-    <p class="ctr-class"><span class="mod-badge">{{ object.classLabel || object.className }}</span></p>
+    <p class="ctr-class">
+      <span class="mod-badge">{{ object.classLabel || object.className }}</span>
+      <button
+        v-if="editable"
+        type="button"
+        class="edit-btn is-small ctr-edit"
+        :aria-label="t('registerEdit.editLabel', { name: object.name })"
+        @click="emit('edit', object)"
+      >
+        {{ t('registerEdit.edit') }}
+      </button>
+    </p>
 
     <dl class="ctr-attrs">
       <template v-if="contractor">

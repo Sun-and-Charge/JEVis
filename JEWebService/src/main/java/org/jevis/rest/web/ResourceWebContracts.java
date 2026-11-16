@@ -115,7 +115,8 @@ public class ResourceWebContracts {
             ResourceWebRegisters.Classes classes = ResourceWebRegisters.Classes.fromCache();
             ResourceWebRegisters.Translations translations = new ResourceWebRegisters.Translations(ResourceI18n.cached(),
                     ResourceWebRegisters.language(lang), classes);
-            return json(contractsJson(lookup, classes, translations, sqlStore(ds)));
+            return json(contractsJson(lookup, classes, translations, sqlStore(ds),
+                    WebEdit.sqlRights(ds.getUserManager())));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (Exception ex) {
@@ -137,7 +138,7 @@ public class ResourceWebContracts {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             ResourceWebModules.Lookup lookup = ResourceWebModules.lookup(ds);
             Map<String, Object> result = historyJson(lookup, ResourceWebRegisters.Classes.fromCache(), sqlStore(ds), id,
-                    attribute, limit);
+                    attribute, limit, WebEdit.sqlRights(ds.getUserManager()));
             return result != null ? json(result) : notFound("Not found");
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
@@ -295,6 +296,18 @@ public class ResourceWebContracts {
      */
     static Map<String, Object> contractsJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
                                              ResourceWebRegisters.Translations translations, Store store) {
+        return contractsJson(lookup, classes, translations, store, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * {@code GET /contracts} with what the user may do (stage E6.2): per group {@code canCreate},
+     * {@code createTargets} and {@code classes} (groups the user may create objects in are also listed when empty),
+     * per object {@code contractorClass}, {@code canWrite}, {@code canDelete} and {@code version}, per attribute
+     * {@code editable}, {@code inputUnit}, {@code primitive} and {@code guiType}.
+     */
+    static Map<String, Object> contractsJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
+                                             ResourceWebRegisters.Translations translations, Store store,
+                                             WebEdit.Rights rights) {
         Set<String> buildingClasses = classes.withHeirs(ResourceWebNavigation.CLASS_BUILDING);
         List<Map<String, Object>> groups = new ArrayList<>();
         Set<Long> done = new HashSet<>();
@@ -302,13 +315,16 @@ public class ResourceWebContracts {
             List<Map<String, Object>> objects = new ArrayList<>();
             for (JsonObject object : ResourceWebRegisters.readableOfClasses(lookup, classes.withHeirs(group.getValue()))) {
                 if (!done.add(object.getId())) continue;
-                objects.add(objectJson(object, lookup, classes, translations, store, buildingClasses));
+                objects.add(objectJson(object, lookup, classes, translations, store, buildingClasses, group.getKey(),
+                        rights));
             }
-            if (objects.isEmpty()) continue;
             objects.sort(ResourceWebReports.order());
             Map<String, Object> json = new LinkedHashMap<>();
             json.put("kind", group.getKey());
             json.put("objects", objects);
+            boolean canCreate = ResourceWebEditContracts.addCreateInfo(json, group.getKey(), lookup, classes,
+                    translations, rights, buildingClasses);
+            if (objects.isEmpty() && !canCreate) continue;
             groups.add(json);
         }
         List<Map<String, Object>> configurations = new ArrayList<>();
@@ -325,7 +341,7 @@ public class ResourceWebContracts {
     static Map<String, Object> objectJson(JsonObject object, ResourceWebModules.Lookup lookup,
                                           ResourceWebRegisters.Classes classes,
                                           ResourceWebRegisters.Translations translations, Store store,
-                                          Set<String> buildingClasses) {
+                                          Set<String> buildingClasses, String groupKind, WebEdit.Rights rights) {
         Map<String, JsonAttribute> attributes = attributes(object.getId(), store);
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("id", object.getId());
@@ -348,9 +364,11 @@ public class ResourceWebContracts {
             entry.put("unit", TYPE_TEXT.equals(kind) ? null : ResourceWebRegisters.unitLabel(attribute));
             entry.put("timestamp", sample != null ? isoTimestamp(sample.getTs()) : null);
             entry.put("history", attribute != null && attribute.getSampleCount() > 1);
+            ResourceWebEditContracts.addAttributeInfo(entry, type, attribute);
             list.add(entry);
         }
         json.put("attributes", list);
+        ResourceWebEditContracts.addObjectInfo(json, object, groupKind, attributes, classes, rights);
         return json;
     }
 
@@ -448,6 +466,15 @@ public class ResourceWebContracts {
      */
     static Map<String, Object> historyJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
                                            Store store, long id, String attributeName, int limit) throws Exception {
+        return historyJson(lookup, classes, store, id, attributeName, limit, WebEdit.Rights.NONE);
+    }
+
+    /**
+     * Stage E6.2: per sample {@code canDelete} (the generic sample delete rule on the object).
+     */
+    static Map<String, Object> historyJson(ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes,
+                                           Store store, long id, String attributeName, int limit,
+                                           WebEdit.Rights rights) throws Exception {
         JsonObject object = contractObject(lookup, classes, id);
         if (object == null || attributeName == null) return null;
         JsonType type = null;
@@ -457,10 +484,12 @@ public class ResourceWebContracts {
         String kind = attributeType(type);
         if (!TYPE_NUMBER.equals(kind) && !TYPE_RANGING.equals(kind)) return null;
         List<Map<String, Object>> samples = new ArrayList<>();
+        boolean canDelete = WebEdit.canDeleteSamples(rights, object);
         for (JsonSample sample : store.latest(id, type.getName(), historyLimit(limit))) {
             Map<String, Object> json = new LinkedHashMap<>();
             json.put("timestamp", isoTimestamp(sample.getTs()));
             json.put("value", value(kind, sample));
+            json.put("canDelete", canDelete);
             samples.add(json);
         }
         Map<String, Object> result = new LinkedHashMap<>();

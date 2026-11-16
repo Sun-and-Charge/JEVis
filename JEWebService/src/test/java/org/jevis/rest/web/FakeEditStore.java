@@ -352,6 +352,7 @@ class FakeEditStore implements WebEdit.Store {
                     JsonAttribute attribute = new JsonAttribute();
                     attribute.setType(type.getName());
                     attribute.setLatestValue(latest(id, type.getName()));
+                    attribute.setSampleCount(count(id, type.getName()));
                     String label = inputUnits.get(id + "/" + type.getName());
                     if (label != null) {
                         JsonUnit unit = new JsonUnit();
