@@ -2142,3 +2142,56 @@ exchange uses the E5 exchange. Both make the item disappear when the corrected v
   **Ignorieren** (comment, confirmation "Der Wert wird aus der Datenreihe entfernt und als Notiz festgehalten").
   After an action the list reloads.
 - Filter by site (site tabs as the meter view) and period (90 / 365 / 1095 days).
+
+## Editing, stage E6.1: invoice import and delete in the web
+
+User decisions (2026-11-16): E6 in full like the Control Center, invoices can be deleted in the web with the series
+corrected, the import first. The import reuses the existing endpoints of docs/ENERGY-INVOICES.md
+(`POST /JEWebService/v1/invoices/parse` and `/import`) unchanged; the web app adds the review step of the Control
+Center's `InvoiceImportDialog`. Rules of E1–E8 (server-side rights, `logUserAction` `web:<action>`, `version` → `409`,
+`400` JSON `{ "messages": [...] }`, deletes to the recycle bin).
+
+### `GET /web/invoices/directories?lang=de`
+
+The Energy Invoices Directories the user may import into, as the CC's `InvoiceImportDialog.getImportDirectories`:
+readable "Energy Invoices Directory" objects without "Medium" (the top folders; medium folders are created below them
+by the import) and with create right for "Energy Invoice". `[{ "id", "name", "path", "site": {id, name} | null }]`,
+sorted by site, then path. The invoices list (`GET /web/invoices`) additionally answers `canImport` (the list is not
+empty) and per invoice `canDelete` and `version`.
+
+### `DELETE /web/invoices/{id}?version=…`
+
+Moves the invoice to the recycle bin and takes its amounts out of the series of its folder (the "Energy Invoice Data"
+objects `CONSUMPTION`, `NET`, `GROSS` next to it): the series sample whose note names the invoice number (notes are
+`<number>` or `<number>, <number>` as the import writes them, `InvoiceImport.addSample`) is deleted when it only holds
+this invoice, else reduced by the invoice's amount ("Consumption", "Net Amount", "Gross Amount"; credit notes are stored
+negative, so the subtraction is the same) and the number removed from its note. All in one step: if a series write
+fails, the changes already made are undone and the invoice stays; `500`. Needs delete right on the invoice and write
+right on the series (`403` otherwise). `version` = latest change of the invoice's attributes (`409` with the current
+invoice if different, `400` if missing). `204`. Logged `web:invoice-delete`. Afterwards the same file can be imported
+again (the duplicate check ignores objects in the recycle bin).
+
+Details as built (`ResourceWebEditInvoices`): the series sample is the one at the import timestamp (oldest "Invoice
+Number" sample) whose note names the number; another sample only if it is the only one naming it (else the series is
+left alone, logged); the consumption series is skipped when its unit differs from the invoice (the import did not add
+it then); an invoice without number changes no series; a shared sample that cannot be reduced answers `500` with
+nothing written. Removing a series sample needs write right on the series, as the import that wrote it. `400`/`403`
+bodies are plain text as the other E-stage deletes. `version` is `"none"` for an invoice without samples.
+
+### Web app
+
+- Energy invoices page (`InvoicesView`): with `canImport` a button **"Rechnungen importieren"** opening an import
+  dialog (side panel / full-width sheet on phones):
+  1. folder select (preselected: the folder of the site chosen in the site picker, else the only one);
+  2. drop zone + file chooser (several `*.pdf`, `*.xml`, max 20 MB each) → each file is parsed
+     (`POST /JEWebService/v1/invoices/parse?directory=<id>`, one at a time, progress shown);
+  3. review table (cards on phones): import checkbox, file, format, number, date, seller, period, consumption + unit,
+     net, gross, medium select (Strom, Gas, Fernwärme, Sonstiges; preselected from `medium`, reasons as tooltip),
+     status badge (Neu, Duplikat → link to the existing invoice, Fehler with the message), warnings. New rows are
+     checked, duplicates unchecked (may be checked: the import answers `409` and the row shows "übersprungen"),
+     errors disabled;
+  4. "Importieren (n)" → `POST …/invoices/import?directory=<id>&medium=<code>` per checked row, one at a time,
+     status per row (importiert, übersprungen, Fehler); summary; the list reloads.
+- Invoice details: **"Löschen"** (with `canDelete`; confirmation "Die Rechnung wird in den Papierkorb gelegt und aus
+  den Rechnungsreihen herausgerechnet."), `409` handling as E2–E5.
+- Unsaved-changes guard while files are parsed or rows are chosen but not imported.
