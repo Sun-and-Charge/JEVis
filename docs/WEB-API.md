@@ -2195,3 +2195,88 @@ bodies are plain text as the other E-stage deletes. `version` is `"none"` for an
 - Invoice details: **"Löschen"** (with `canDelete`; confirmation "Die Rechnung wird in den Papierkorb gelegt und aus
   den Rechnungsreihen herausgerechnet."), `409` handling as E2–E5.
 - Unsaved-changes guard while files are parsed or rows are chosen but not imported.
+
+## Editing, stage E6.2: contract partners, prices and governmental dues
+
+The Control Center's tab "Enter data" of the "Accounting Plugin" in the web (user decision 2026-11-16: E6 in full like
+the CC). Objects of the five groups of `GET /web/contracts` (W4.7) are created, renamed, edited and deleted; number
+attributes (prices, dues) get values with a validity date like the CC's `EnterDataDialog`; the grid operator's
+"Demand Charge" ranging table and the other attributes are written at now like the CC. Rules of E1–E8 (server-side
+rights, `logUserAction` `web:<action>`, `version` → `409` with the current object, `400` JSON `{ "messages": [...] }`,
+deletes to the recycle bin).
+
+### Reading (`GET /web/contracts`, additive)
+
+- per group: `canCreate` and `createTargets`: `[{ "id", "name", "path", "site" }]`, the readable directories of the
+  group's directory class ("Energy Supply Directory", "Energy Metering Point Operation Directory", "Energy Grid
+  Operation Directory", "Energy Contractor Directory", "Energy Governmental Dues Directory") where the user may create
+  at least one of the group's classes; `classes`: `[{ "class", "label" }]` the creatable classes of the group (as the
+  CC's "New" dialog: e.g. suppliers → Electricity / Gas / Community Heating Supply Contractor). Groups are also listed
+  when empty if `canCreate`.
+- per object: `canWrite`, `canDelete`, `version` (latest sample timestamp of all attributes and the name change is not
+  tracked — rename uses the version too), `contractorClass` (the class whose objects may be chosen as `contractor`:
+  supplier → "Energy Supply Contractor", metering operator → "Energy Metering Point Operation Contractor", grid
+  operator → "Energy Grid Operation Contractor"; `null` for contractors and dues).
+- per attribute: `editable` (false for files/passwords), `inputUnit` (label of the input unit, numbers only; values
+  are entered and stored in it, as in the CC), `primitive` (`DOUBLE`, `LONG`, `STRING`), `guiType`.
+- `GET /web/contracts/contractors?class=<contractor class>` → `[{ "id", "name", "path" }]` readable objects of that
+  class and subclasses for the contractor select.
+
+### Creating: `POST /web/contracts/objects?lang=de`
+
+`{ "parentId": <one of createTargets>, "class": "<one of classes>", "name": "…" }` → as the CC "New" dialog
+(`dir.buildObject(name, class)`): create right for the class in the directory; name 1–100 characters, trimmed, no
+control characters, unique among the siblings (`400`). `201` with the object (read format). Logged
+`web:contract-object-create`.
+
+### Changing: `PUT /web/contracts/objects/{id}?lang=de`
+
+`{ "version": "…", "name": "…"?, "contractor": <id> | null?, "fields": { "<attribute>": <value> } }` — only the
+changed parts. Text attributes: string (empty clears). Ranging attributes: `[{ "from", "to", "value" }]` (numbers,
+`from < to`, ranges sorted and not overlapping, at least one, at most 50) stored as the CC's `RangingValueEditor`:
+`{"type":"RangingValuesHandler","rangingValues":[…]}`. `contractor`: a readable object of `contractorClass` (or a
+subclass), stored as `"<id>"` like the CC (`buildSample(now, id)`). All written at now. Number attributes are not
+changed here (prices below). Write right; `version` → `409` with the current object. `200` with the object. Logged
+`web:contract-object-save`.
+
+### Prices with validity date: `POST /web/contracts/objects/{id}/values?lang=de`
+
+`{ "attribute": "Energy Price HT", "validFrom": "yyyy-MM-dd", "value": 0.28, "confirm": false }` → a sample of the
+number attribute at `validFrom` 00:00 in the site's time zone (as the CC's `EnterDataDialog` writes the chosen time;
+the cost calculation and JEDemo read prices "valid from" that time). `LONG` attributes need an integer. An existing
+sample at that time → `409` `{ "warnings": ["Für 01.01.2027 gibt es schon einen Wert: 0,26 – überschreiben?"] }`
+unless `confirm`. Write right. `201` `{ "timestamp", "value" }`. Logged `web:contract-value`.
+
+`DELETE /web/contracts/objects/{id}/values?attribute=…&timestamp=<ISO as listed in the history>` removes one value of
+a number or ranging attribute (delete right on the object, the generic sample delete rule); `204`, `404` if there is
+none. Logged `web:contract-value-delete`.
+
+The history endpoint (W4.7) additionally gives per sample `canDelete`.
+
+### Deleting an object: `DELETE /web/contracts/objects/{id}?version=…&confirm=false`
+
+Recycle bin as the CC (`deleteObject(id, false)`); delete right; `version` → `409`. Objects that contracts still use
+(their id appears in the "Template File" JSON of a readable "Accounting Configuration" as a template input object, or
+as `contractor` of another object): `409` `{ "usedBy": [{ "id", "name", "kind": "configuration"|"object" }] }` unless
+`confirm=true`. `204`. Logged `web:contract-object-delete`.
+
+Details as built (`ResourceWebEditContracts`): `classes` lists only classes that exist and the user may create in at
+least one target; the parent must be of the group's directory class; names are unique among siblings (case-insensitive,
+also on rename, objects in the recycle bin ignored); `version` is `"none"` for an object without samples and always
+required for PUT/DELETE; a PUT without changes or with number attributes in `fields` answers `400`; ranging rows must
+be sent sorted (a range may start where the previous ends); the value `409` also carries `timestamp` and `value`;
+"used by" only counts readable objects outside the recycle bin (configurations by `selectedInputs[].objectID`).
+
+### Web app (contracts page, `ContractsView`)
+
+- Per group "Neu" (with `canCreate`): class (with label), directory (if several), name.
+- Per object "Bearbeiten" opens a side panel (full-width sheet on phones):
+  - name; contractor select (search over `GET /web/contracts/contractors`, link to the chosen contractor's details);
+  - text attributes (contact data of contractors, code numbers) as text fields;
+  - **prices/dues**: per number attribute the current value with unit and "gültig ab", the history (newest first,
+    delete per entry with confirmation) and "Neuer Wert" (value in the input unit, valid-from date, default the
+    1st of next month; overwrite warning with "Trotzdem speichern");
+  - **ranging table** (grid operator "Demand Charge"): rows von / bis / Wert with add/remove, checks as the server,
+    "unbegrenzt" shortcut for the last `to` (1e9 as the demo data);
+  - "Löschen" with confirmation; when still used, the list of contracts using it and "Trotzdem löschen".
+- Unsaved-changes guard and `409` handling as E2–E5; phone width usable.
