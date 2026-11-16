@@ -67,28 +67,27 @@ public class DeltaStep implements ProcessStep {
         }
         List<CleanInterval> intervals = resourceManager.getIntervals();
         JEVisAttribute cleanAttribute = cleanDataObject.getValueAttribute();
-        Double firstValue = 0.0;
-        if (cleanAttribute != null) {
-            if (cleanAttribute.hasSample()) {
-                JEVisSample firstSample = cleanAttribute.getLatestSample();
-                if (firstSample != null) {
-                    firstValue = firstSample.getValueAsDouble();
-                }
-            }
-        }
-
         JsonDeltaConfig deltaConfig = cleanDataObject.getDeltaConfig();
+        JsonGapFillingConfig maxConfig = deltaConfig.getMaxConfig();
+        long maxSpikeMillis = maxConfig != null ? defaultValue(maxConfig.getBoundary()) : 0L;
 
-        //identify limit breaking intervals
-        List<LimitBreak> deltaBreaksStep1 = identifyLimitBreaks(resourceManager, intervals, Double.parseDouble(deltaConfig.getMin()), firstValue, MinOrMax.MIN);
-        List<LimitBreak> deltaBreaksStep2 = identifyLimitBreaks(resourceManager, intervals, Double.parseDouble(deltaConfig.getMax()), firstValue, MinOrMax.MAX);
+        /* where the previous run stopped: the last clean value that is no delta break is the reference level; clean
+           values with a delta note after it are a break that is still going on */
+        History history = history(cleanAttribute);
+
+        Detection step1 = detect(intervals, Double.parseDouble(deltaConfig.getMin()), history, maxSpikeMillis);
+        Detection step2 = detect(intervals, Double.parseDouble(deltaConfig.getMax()), history, maxSpikeMillis);
+        List<LimitBreak> deltaBreaksStep1 = new ArrayList<>(step1.spikes);
+        deltaBreaksStep1.addAll(step1.levelChanges);
+        /* only spikes are substituted: a new level that lasts longer than the boundary is real */
+        List<LimitBreak> deltaBreaksStep2 = step2.spikes;
 
         if (deltaBreaksStep1.isEmpty() && deltaBreaksStep2.isEmpty()) { //no limit checks when there is no alignment
             logger.info("No delta breaks identified.");
             return;
         }
-        logger.info("{} delta breaks for step 1 identified", deltaBreaksStep1.size());
-        logger.info("{} delta breaks for step 2 identified", deltaBreaksStep2.size());
+        logger.info("{} delta breaks for step 1 identified ({} level changes)", deltaBreaksStep1.size(), step1.levelChanges.size());
+        logger.info("{} delta breaks for step 2 identified ({} level changes not substituted)", deltaBreaksStep2.size(), step2.levelChanges.size());
 
         NumberFormat nf = resourceManager.getNumberFormat();
 
@@ -98,7 +97,10 @@ public class DeltaStep implements ProcessStep {
                 String note = "";
                 note += smp.getNote();
                 note += "," + NoteConstants.Deltas.DELTA_STEP1;
-                note += ",(" + nf.format(limitBreak.getMin()) + "," + nf.format(limitBreak.getMax()) + ")";
+                if (limitBreak instanceof DeltaBreak) {
+                    DeltaBreak deltaBreak = (DeltaBreak) limitBreak;
+                    note += ",(" + nf.format(deltaBreak.getChange()) + "," + nf.format(deltaBreak.getThreshold()) + ")";
+                }
                 smp.setNote(note);
             }
         }
@@ -121,7 +123,7 @@ public class DeltaStep implements ProcessStep {
 
             List<LimitBreak> filledLimitBreaks = new ArrayList<>();
             List<LimitBreak> newLimitBreaks = new ArrayList<>();
-            JsonGapFillingConfig c = deltaConfig.getMaxConfig();
+            JsonGapFillingConfig c = maxConfig;
 
             for (LimitBreak lb : deltaBreaksStep2) {
                 if (!filledLimitBreaks.contains(lb)) {
@@ -186,103 +188,208 @@ public class DeltaStep implements ProcessStep {
         return l;
     }
 
-    private List<LimitBreak> identifyLimitBreaks(ResourceManager resourceManager, List<CleanInterval> intervals, double deltaPercent, Double firstValue, MinOrMax minOrMax) {
+    /**
+     * Reference level and an ongoing break at the end of the previous run, from the stored clean values.
+     */
+    static final class History {
+        /** last stored clean value without a delta note, null if none */
+        final Double reference;
+        /** time of the first stored clean value of a break that was still going on at the end, null if none */
+        final DateTime openBreakStart;
 
+        History(Double reference, DateTime openBreakStart) {
+            this.reference = reference;
+            this.openBreakStart = openBreakStart;
+        }
+    }
+
+    /** how far back the stored clean values are read for the history */
+    static final int HISTORY_DAYS = 31;
+
+    private static History history(JEVisAttribute cleanAttribute) {
+        try {
+            if (cleanAttribute == null || !cleanAttribute.hasSample()) return new History(null, null);
+            JEVisSample latest = cleanAttribute.getLatestSample();
+            if (latest == null) return new History(null, null);
+            List<JEVisSample> samples = cleanAttribute.getSamples(latest.getTimestamp().minusDays(HISTORY_DAYS), latest.getTimestamp());
+            return history(samples);
+        } catch (Exception e) {
+            logger.warn("Could not read the stored clean values for the delta check", e);
+            return new History(null, null);
+        }
+    }
+
+    /**
+     * @param samples stored clean values, oldest first
+     */
+    static History history(List<JEVisSample> samples) throws JEVisException {
+        DateTime openBreakStart = null;
+        for (int i = samples.size() - 1; i >= 0; i--) {
+            JEVisSample sample = samples.get(i);
+            String note = sample.getNote();
+            if (note != null && note.contains("delta(")) {
+                openBreakStart = sample.getTimestamp();
+                continue;
+            }
+            Double value = sample.getValueAsDouble();
+            if (value != null) return new History(value, openBreakStart);
+        }
+        return new History(null, openBreakStart);
+    }
+
+    /** a break of the delta check with its relative change and threshold (for the note) */
+    static final class DeltaBreak extends LimitBreak {
+        private final double change;
+        private final double threshold;
+
+        DeltaBreak(double change, double threshold) {
+            /* no min/max: the substituted values must not be clamped to the relative change (they were before) */
+            super(null, null);
+            this.change = change;
+            this.threshold = threshold;
+        }
+
+        double getChange() {
+            return change;
+        }
+
+        double getThreshold() {
+            return threshold;
+        }
+    }
+
+    /** spikes (to be substituted) and level changes (only marked) */
+    static final class Detection {
+        final List<LimitBreak> spikes = new ArrayList<>();
+        final List<LimitBreak> levelChanges = new ArrayList<>();
+    }
+
+    /**
+     * Relative change of a value against the reference level, as before: the difference divided by the new value
+     * (or by the reference when the new value is 0).
+     */
+    static double change(double value, double reference) {
+        double diff = Math.abs(value - reference);
+        if (diff > 0d && value != 0d) return diff / Math.abs(value);
+        if (diff > 0d && reference != 0d) return diff / Math.abs(reference);
+        return 0d;
+    }
+
+    /**
+     * Finds sudden jumps. Each value is compared with the last value taken as normal (the reference level), not with
+     * the value before it: a break starts when a value differs from the reference by at least the threshold and ends
+     * when a value is back near the reference, so the values in between are the spike and the first normal value after
+     * it is not part of it. A deviation that lasts longer than {@code maxSpikeMillis} is a new level: it is only
+     * marked (level change), and the reference follows it.
+     * <p>
+     * Threshold 0 keeps the old meaning: values that do not change at all (frozen values).
+     *
+     * @param deltaPercent   threshold in percent
+     * @param history        reference level and an ongoing break from the previous run
+     * @param maxSpikeMillis longest spike (the boundary of the substitution); longer deviations are level changes
+     */
+    static Detection detect(List<CleanInterval> intervals, double deltaPercent, History history, long maxSpikeMillis) {
+        Detection detection = new Detection();
+        double delta = deltaPercent / 100;
+        if (delta == 0d) {
+            detection.spikes.addAll(frozenValues(intervals, history.reference != null ? history.reference : 0d));
+            return detection;
+        }
+        Double reference = history.reference;
+        DeltaBreak current = null;
+        DateTime breakStart = null;
+        CleanInterval lastNormal = null;
+        for (CleanInterval interval : intervals) {
+            VirtualSample sample = interval.getResult();
+            Double value = sample != null ? sample.getValueAsDouble() : null;
+            if (value == null) {
+                logger.warn("Delta Error. No value for Delta Sample {}", sample);
+                continue;
+            }
+            if (reference == null) {
+                reference = value;
+                lastNormal = interval;
+                continue;
+            }
+            double d = change(value, reference);
+            if (current == null) {
+                if (d >= delta) {
+                    current = new DeltaBreak(d, delta);
+                    current.setFirstValue(lastNormal != null ? lastNormal.getResult().getValueAsDouble() : reference);
+                    current.setMinOrMax(MinOrMax.MAX);
+                    current.addInterval(interval);
+                    /* a break that was still going on at the end of the previous run started then */
+                    breakStart = lastNormal == null && history.openBreakStart != null ? history.openBreakStart : interval.getDate();
+                } else {
+                    reference = value;
+                    lastNormal = interval;
+                }
+                continue;
+            }
+            if (d < delta) {
+                /* back to the reference level: the break was a spike */
+                current.setLastValue(value);
+                detection.spikes.add(current);
+                current = null;
+                reference = value;
+                lastNormal = interval;
+            } else if (interval.getDate().getMillis() - breakStart.getMillis() > maxSpikeMillis) {
+                /* the deviation lasts: a new level, only marked; the reference follows it */
+                current.addInterval(interval);
+                current.setLastValue(value);
+                detection.levelChanges.add(current);
+                current = null;
+                reference = value;
+                lastNormal = interval;
+            } else {
+                current.addInterval(interval);
+            }
+        }
+        if (current != null) {
+            /* still going on at the end: substituted if short enough (as before); the next run continues it */
+            List<CleanInterval> list = current.getIntervals();
+            current.setLastValue(list.get(list.size() - 1).getResult().getValueAsDouble());
+            detection.spikes.add(current);
+        }
+        return detection;
+    }
+
+    /**
+     * Threshold 0: runs of values that do not change (unchanged behaviour).
+     */
+    private static List<LimitBreak> frozenValues(List<CleanInterval> intervals, double firstValue) {
         List<LimitBreak> limitBreaks = new ArrayList<>();
         LimitBreak currentLimitBreak = null;
         CleanInterval lastInterval = null;
         double lastValue = Math.abs(firstValue);
-        double delta = deltaPercent / 100;
-
-        if (delta != 0d) {
-            for (CleanInterval currentInterval : intervals) {
-                VirtualSample sample = currentInterval.getResult();
-
-                if (sample != null && sample.getValueAsDouble() != null) {
-                    double sampleValue = Math.abs(sample.getValueAsDouble());
-                    double diff = Math.abs(sampleValue - lastValue);
-                    double d = 0d;
-                    if (diff > 0d && sampleValue != 0d) {
-                        d = diff / sampleValue;
-                    } else if (diff > 0d && lastValue != 0d) {
-                        d = diff / lastValue;
-                    }
-
-                    lastValue = sampleValue;
-                    if (d >= delta) {
-                        if (currentLimitBreak == null) {
-                            currentLimitBreak = new LimitBreak(d, delta);
-                            if (lastInterval != null)
-                                currentLimitBreak.setFirstValue(lastInterval.getResult().getValueAsDouble());
-                            else currentLimitBreak.setFirstValue(firstValue);
-                            currentLimitBreak.addInterval(currentInterval);
-                            currentLimitBreak.setMinOrMax(minOrMax);
-                        } else {
-                            currentLimitBreak.addInterval(currentInterval);
-                        }
+        for (CleanInterval currentInterval : intervals) {
+            VirtualSample sample = currentInterval.getResult();
+            if (sample != null && sample.getValueAsDouble() != null) {
+                double sampleValue = Math.abs(sample.getValueAsDouble());
+                double diff = Math.abs(sampleValue - lastValue);
+                lastValue = sampleValue;
+                if (diff == 0d) {
+                    if (currentLimitBreak == null) {
+                        currentLimitBreak = new DeltaBreak(0d, 0d);
+                        currentLimitBreak.setFirstValue(lastInterval != null ? lastInterval.getResult().getValueAsDouble() : firstValue);
+                        currentLimitBreak.addInterval(currentInterval);
+                        currentLimitBreak.setMinOrMax(MinOrMax.MAX);
                     } else {
-                        if (currentLimitBreak != null) {
-                            logger.info("Delta Break on: {} to: {}", currentLimitBreak.getIntervals().get(0).getDate(),
-                                    currentLimitBreak.getIntervals().get(currentLimitBreak.getIntervals().size() - 1).getDate());
-                            currentLimitBreak.setLastValue(sampleValue);
-                            limitBreaks.add(currentLimitBreak);
-                            currentLimitBreak = null;
-                        }
+                        currentLimitBreak.addInterval(currentInterval);
                     }
-                } else {
-                    logger.warn("Delta Error. No value for Delta Sample {} of object {}:{}", sample, resourceManager.getCleanDataObject().getCleanObject().getName(), resourceManager.getCleanDataObject().getCleanObject().getID());
-                }
-                lastInterval = currentInterval;
-            }
-        } else {
-            for (CleanInterval currentInterval : intervals) {
-                VirtualSample sample = currentInterval.getResult();
-
-                if (sample != null && sample.getValueAsDouble() != null) {
-                    double sampleValue = Math.abs(sample.getValueAsDouble());
-                    double diff = Math.abs(sampleValue - lastValue);
-
-                    lastValue = sampleValue;
-                    if (diff == 0d) {
-                        if (currentLimitBreak == null) {
-                            currentLimitBreak = new LimitBreak(0d, delta);
-                            if (lastInterval != null)
-                                currentLimitBreak.setFirstValue(lastInterval.getResult().getValueAsDouble());
-                            else currentLimitBreak.setFirstValue(firstValue);
-                            currentLimitBreak.addInterval(currentInterval);
-                            currentLimitBreak.setMinOrMax(minOrMax);
-                        } else {
-                            currentLimitBreak.addInterval(currentInterval);
-                        }
-                    } else {
-                        if (currentLimitBreak != null) {
-                            logger.info("Delta Break on: {} to: {}", currentLimitBreak.getIntervals().get(0).getDate(),
-                                    currentLimitBreak.getIntervals().get(currentLimitBreak.getIntervals().size() - 1).getDate());
-                            currentLimitBreak.setLastValue(sampleValue);
-                            limitBreaks.add(currentLimitBreak);
-                            currentLimitBreak = null;
-                        }
-                    }
-                } else {
-                    logger.warn("Delta Error. No value for Delta Sample {} of object {}:{}", sample, resourceManager.getCleanDataObject().getCleanObject().getName(), resourceManager.getCleanDataObject().getCleanObject().getID());
-                }
-                lastInterval = currentInterval;
-            }
-        }
-
-        if (!limitBreaks.contains(currentLimitBreak)) {
-            if (currentLimitBreak != null) {
-                if (currentLimitBreak.getIntervals().size() > 0) {
-                    CleanInterval last = currentLimitBreak.getIntervals().get(currentLimitBreak.getIntervals().size() - 1);
-
-                    VirtualSample lastSample = last.getResult();
-
-                    currentLimitBreak.setLastValue(lastSample.getValueAsDouble());
+                } else if (currentLimitBreak != null) {
+                    currentLimitBreak.setLastValue(sampleValue);
                     limitBreaks.add(currentLimitBreak);
+                    currentLimitBreak = null;
                 }
             }
+            lastInterval = currentInterval;
         }
-
+        if (currentLimitBreak != null && !currentLimitBreak.getIntervals().isEmpty()) {
+            List<CleanInterval> list = currentLimitBreak.getIntervals();
+            currentLimitBreak.setLastValue(list.get(list.size() - 1).getResult().getValueAsDouble());
+            limitBreaks.add(currentLimitBreak);
+        }
         return limitBreaks;
     }
 }
