@@ -329,12 +329,16 @@ public class ResourceWebContracts {
         }
         List<Map<String, Object>> configurations = new ArrayList<>();
         for (JsonObject object : ResourceWebRegisters.readableOfClasses(lookup, classes.withHeirs(CLASS_CONFIGURATION))) {
-            configurations.add(configurationJson(object, lookup, store, buildingClasses));
+            JsonNode tree = template(object.getId(), store);
+            Map<String, Object> json = configurationJson(object, lookup, tree, buildingClasses);
+            ResourceWebEditConfigurations.addConfigurationInfo(json, object, tree, lookup, classes, store, rights);
+            configurations.add(json);
         }
         configurations.sort(ResourceWebReports.order());
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("groups", groups);
         result.put("configurations", configurations);
+        ResourceWebEditConfigurations.addCreateInfo(result, lookup, classes, rights, buildingClasses);
         return result;
     }
 
@@ -397,7 +401,14 @@ public class ResourceWebContracts {
      */
     static Map<String, Object> configurationJson(JsonObject object, ResourceWebModules.Lookup lookup, Store store,
                                                  Set<String> buildingClasses) {
-        JsonNode template = template(object.getId(), store);
+        return configurationJson(object, lookup, template(object.getId(), store), buildingClasses);
+    }
+
+    /**
+     * @param template the parsed "Template File" ({@link #template(long, Store)}), null if none
+     */
+    static Map<String, Object> configurationJson(JsonObject object, ResourceWebModules.Lookup lookup, JsonNode template,
+                                                 Set<String> buildingClasses) {
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("id", object.getId());
         json.put("name", object.getName());

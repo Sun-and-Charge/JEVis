@@ -2280,3 +2280,78 @@ be sent sorted (a range may start where the previous ends); the value `409` also
     "unbegrenzt" shortcut for the last `to` (1e9 as the demo data);
   - "Löschen" with confirmation; when still used, the list of contracts using it and "Trotzdem löschen".
 - Unsaved-changes guard and `409` handling as E2–E5; phone width usable.
+
+## Editing, stage E6.3: contracts (accounting configurations)
+
+The Control Center's tab "Configuration" of the "Accounting Plugin" (`createContractsTab`, `OutputView` input
+selectors, `SaveUnderDialog`) in the web: an "Accounting Configuration" holds the contract fields, the chosen
+"Result Calculation Template" and the objects bound to the template's inputs, as JSON (`SelectionTemplate`, see W4.8)
+in its file attribute "Template File". The web writes the same JSON as the Control Center, so both can edit the same
+contracts. Rules of E1–E8 (rights on the server, `version` → `409`, `400` `{ "messages": [...] }`, `logUserAction`
+`web:<action>`, deletes to the recycle bin).
+
+### Reading (additive)
+
+- `GET /web/contracts`: per configuration `canWrite`, `canDelete`, `version` (timestamp of the latest "Template File"
+  sample, `"none"` without), `template` `{ id, name, readable }`; top level `configurationTargets`: readable
+  "Accounting Configuration Directory" objects where the user may create an "Accounting Configuration"
+  (`[{ id, name, path, site }]`), `canCreateConfiguration` (not empty).
+- `GET /web/contracts/configurations/{id}/edit?lang=de` → the editor model:
+  `{ "id", "name", "version", "parentId", "contract": { "contractNumber", "contractType", "marketLocation",
+  "contractDate", "firstRate", "periodOfNotice", "start", "end" }, "template": { id, name, readable } | null,
+  "inputs": [ … as below ], "unknownKeys": ["…"] }`. Dates as `yyyy-MM-dd` (W4.7 rule), `contractType` one of
+  `ELECTRICITY`, `GAS`, `COMMUNITY_HEATING` or `null`.
+- `GET /web/contracts/templates?lang=de` → readable "Result Calculation Template" objects `[{ id, name, path, site }]`.
+- `GET /web/contracts/templates/{templateId}/inputs?lang=de&configuration=<id>` → `inputs` for that template:
+  the selectors exactly as the Control Center's input pane groups them (W4.8 `GET /web/costs/{id}`: one per input with
+  `group: false`, one per `objectClass` for the grouped inputs; `key` = the input id resp. `class:<objectClass>`),
+  each `{ "key", "label", "variableNames": [...], "objectClass", "filter", "options": [{ id, name, path }],
+  "selected": <object id> | null }` with `options` = readable objects of exactly `objectClass` filtered like the CC
+  (max 500, sorted by path and name) and `selected` taken from the given configuration's `selectedInputs` when it uses
+  the same template (an object the user cannot read: `{ id, name: null }` kept in `options` with `readable: false`).
+
+### Writing
+
+`POST /web/contracts/configurations?lang=de` (create, body also `parentId` = one of `configurationTargets`, `name`) and
+`PUT /web/contracts/configurations/{id}?lang=de` (body also `version`; optional `name` renames):
+`{ "contract": { …fields… }, "templateId": <id>, "selections": { "<key>": <object id> | null } }`.
+
+- Validation (all problems in one `400`): name as E6.2 (unique among siblings); `contractType` one of the three or
+  `null`; dates `yyyy-MM-dd` or `null` (`end` not before `start`); texts ≤ 200 characters; `templateId` a readable
+  template; each selection an object of the selector's `objectClass` that the user may read (an unchanged unreadable
+  object may stay); every selector without a selection → warning only (the CC allows empty inputs), returned in the
+  answer as `warnings`.
+- The JSON is written like `AccountingPlugin`/`OutputView`: `templateSelection` = template id; `selectedInputs` = a
+  copy of **every** template input (all fields of `TemplateInput` as in the template) with `objectID` set from its
+  selector (`group: false` → its own key, grouped → `class:<objectClass>`); contract fields with the dates stored as
+  ISO date-times at 00:00 in the site's time zone (as the CC's date pickers); `linkedOutputs` and every key the web
+  does not know are kept from the current file (patch the JSON tree, as E3's `AnalysisWriter`; on create `[]`).
+  A new file sample at now, file name `<name without non-alphanumerics>_<yyyyMMddHHmm>.json` (CC format).
+- Create right on the directory (POST) resp. write right on the configuration (PUT); `version` → `409` with the
+  current editor model. `201`/`200` with the editor model. Logged `web:contract-create` / `web:contract-save`.
+- `DELETE /web/contracts/configurations/{id}?version=…` → recycle bin (the CC has no delete; delete right); `204`.
+  Logged `web:contract-delete`. Templates are not deleted or edited here (TRC editing is gap 5, after J25).
+
+Details as built (`ResourceWebEditConfigurations`, `AccountingConfigurationWriter` in JECommons): `selectedInputs` entries
+are written like the CC's `AccountingTemplateHandler.toJsonNode` (8 fields: objectClass, id, attributeName,
+variableName, variableType, filter, group, objectID; no FORMULA inputs); entries already in the file keep all keys and
+only `objectID` changes; template inputs missing in the file are added with `objectID: -1` (as a CC save does); on a
+template switch the old entries are replaced. Contract fields and selections equal to the editor model keep their
+stored text/entries (an unchanged save of a complete file is the same JSON tree). `templateId` is required on POST
+and PUT. File names keep Unicode letters (`<letters and digits>_<yyyyMMddHHmm>.json`, fallback
+`AccountingConfiguration_…`). The inputs endpoint answers `{ templateId, inputs }`; options always contain the chosen
+object (unreadable: first, `readable: false`). Checked on the local demo: an unchanged web save of "Strom - Gesamt" gives
+the same cost results.
+
+### Web app (contracts page)
+
+- Tab **"Abrechnungen"** (configurations, already listed read-only in W4.7) gets "Neu" (with `canCreateConfiguration`:
+  directory if several, name) and "Bearbeiten" (side panel / full-width sheet on phones):
+  - contract fields: Vertragsnummer, Marktlokation, Energieart (Strom/Gas/Fernwärme), Vertragsdatum, erste Rate,
+    Kündigungsfrist, Beginn, Ende;
+  - Rechenvorlage (select of templates; changing it reloads the input selectors, keeping selections whose key
+    exists in the new template, with a confirmation);
+  - Eingänge: one searchable select per selector (label = variable names, class shown), "nicht zugeordnet" allowed
+    with a warning badge;
+  - "Kostenrechnung öffnen" (link to the cost page of the configuration, after saving);
+  - "Löschen" with confirmation; unsaved-changes guard and `409` handling as E2–E6.2.

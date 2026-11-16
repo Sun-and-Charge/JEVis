@@ -239,7 +239,16 @@ public class ResourceWebCosts {
      * One object selector of the Control Center's input pane: a single input or the grouped inputs of one class.
      */
     static final class Selector {
+        /**
+         * prefix of the key of a selector of grouped inputs (stage E6.3)
+         */
+        static final String CLASS_KEY = "class:";
+
         final List<TemplateInput> inputs = new ArrayList<>();
+        /**
+         * one selector for the inputs of one class ({@code group} is not {@code false})
+         */
+        boolean grouped;
         String label;
         List<JsonObject> options;
         /**
@@ -249,6 +258,13 @@ public class ResourceWebCosts {
 
         TemplateInput first() {
             return inputs.get(0);
+        }
+
+        /**
+         * @return the key of the selector (stage E6.3): the input id, for grouped inputs {@code class:<objectClass>}
+         */
+        String key() {
+            return grouped ? CLASS_KEY + first().getObjectClass() : first().getId();
         }
     }
 
@@ -288,13 +304,29 @@ public class ResourceWebCosts {
      * (sorted by variable name), then one selector per class for the other inputs (sorted by class name).
      */
     static List<Selector> selectors(Subject subject, ResourceWebModules.Lookup lookup, ResourceWebRegisters.Classes classes) {
+        List<Selector> result = selectors(subject.template, KIND_CONFIGURATION.equals(subject.kind));
+        for (Selector selector : result) {
+            selector.options = options(lookup, selector.first().getObjectClass(), selector.first().getFilter());
+        }
+        return result;
+    }
+
+    /**
+     * The selectors of the template without options (shared with the contract editor, stage E6.3).
+     *
+     * @param bind whether {@link Selector#bound} is set from the objects of the inputs (configurations: the template
+     *             linked with {@link ResultCalculator#link})
+     */
+    static List<Selector> selectors(RCTemplate template, boolean bind) {
         AlphanumComparator alphanum = new AlphanumComparator();
         List<Selector> ungrouped = new ArrayList<>();
         Map<String, Selector> grouped = new TreeMap<>(Comparator.nullsFirst(alphanum::compare));
-        for (TemplateInput input : subject.template.getTemplateInputs()) {
+        for (TemplateInput input : template.getTemplateInputs()) {
             if (input.getVariableType() == null) continue;
             if (input.getGroup() == null || input.getGroup()) {
-                grouped.computeIfAbsent(input.getObjectClass(), k -> new Selector()).inputs.add(input);
+                Selector selector = grouped.computeIfAbsent(input.getObjectClass(), k -> new Selector());
+                selector.grouped = true;
+                selector.inputs.add(input);
             } else if (!InputVariableType.FORMULA.toString().equals(input.getVariableType())) {
                 Selector selector = new Selector();
                 selector.inputs.add(input);
@@ -308,8 +340,7 @@ public class ResourceWebCosts {
             List<String> names = new ArrayList<>();
             for (TemplateInput input : selector.inputs) names.add(input.getVariableName());
             selector.label = String.join(", ", names);
-            selector.options = options(lookup, selector.first().getObjectClass(), selector.first().getFilter());
-            if (KIND_CONFIGURATION.equals(subject.kind)) {
+            if (bind) {
                 for (TemplateInput input : selector.inputs) {
                     Long id = input.getObjectID();
                     if (id != null && id > 0) {
@@ -328,6 +359,17 @@ public class ResourceWebCosts {
      * at most {@link #MAX_OPTIONS}.
      */
     static List<JsonObject> options(ResourceWebModules.Lookup lookup, String className, String filter) {
+        List<JsonObject> result = matching(lookup, className, filter);
+        AlphanumComparator alphanum = new AlphanumComparator();
+        result.sort((a, b) -> alphanum.compare(realName(a, lookup), realName(b, lookup)));
+        return result.size() > MAX_OPTIONS ? new ArrayList<>(result.subList(0, MAX_OPTIONS)) : result;
+    }
+
+    /**
+     * @return all readable objects of the class (not its subclasses, not in the recycle bin) whose name (for clean
+     * data "data row \ clean data") contains all words of the filter (ignoring case), unsorted
+     */
+    static List<JsonObject> matching(ResourceWebModules.Lookup lookup, String className, String filter) {
         List<JsonObject> result = new ArrayList<>();
         if (className == null) return result;
         List<String> words = new ArrayList<>();
@@ -350,9 +392,7 @@ public class ResourceWebCosts {
             }
             if (all) result.add(object);
         }
-        AlphanumComparator alphanum = new AlphanumComparator();
-        result.sort((a, b) -> alphanum.compare(realName(a, lookup), realName(b, lookup)));
-        return result.size() > MAX_OPTIONS ? new ArrayList<>(result.subList(0, MAX_OPTIONS)) : result;
+        return result;
     }
 
     /**
