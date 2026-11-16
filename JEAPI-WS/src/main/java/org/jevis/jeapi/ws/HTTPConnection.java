@@ -468,6 +468,72 @@ public class HTTPConnection {
     }
 
     /**
+     * Sends an authenticated GET and returns status, content type and body, also for error responses (a gzip body is
+     * decoded). Repeats the request once with a new access token after a 401.
+     *
+     * @param resource the relative resource path including the query
+     * @param accept   the {@code Accept} header, or {@code null}
+     */
+    public HttpBytes getBytes(String resource, String accept) throws IOException {
+        for (int attempt = 0; attempt < 2; attempt++) {
+            HttpURLConnection con = getHTTPConnection(resource);
+            con.setRequestMethod("GET");
+            if (accept != null) con.setRequestProperty("Accept", accept);
+            con.setRequestProperty("Accept-Encoding", "gzip");
+            con.setRequestProperty("User-Agent", "JEAPI-WS");
+            String usedToken = addAuth(con);
+            logger.debug("HTTP GET request {}", con.getURL());
+            int code = con.getResponseCode();
+            if (code == HttpURLConnection.HTTP_UNAUTHORIZED && attempt == 0 && refreshAfterUnauthorized(usedToken)) {
+                con.disconnect();
+                continue;
+            }
+            InputStream stream = code < 400 ? con.getInputStream() : con.getErrorStream();
+            byte[] body = new byte[0];
+            if (stream != null) {
+                try (InputStream in = "gzip".equalsIgnoreCase(con.getContentEncoding()) ? new GZIPInputStream(stream) : stream) {
+                    body = IOUtils.toByteArray(in);
+                }
+            }
+            String contentType = con.getContentType();
+            con.disconnect();
+            return new HttpBytes(code, contentType, body);
+        }
+        throw new IOException("Unreachable");
+    }
+
+    /**
+     * Status code, content type and body of a GET request ({@link #getBytes}).
+     */
+    public static class HttpBytes {
+        private final int code;
+        private final String contentType;
+        private final byte[] body;
+
+        public HttpBytes(int code, String contentType, byte[] body) {
+            this.code = code;
+            this.contentType = contentType;
+            this.body = body != null ? body : new byte[0];
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public byte[] getBody() {
+            return body;
+        }
+
+        public String getBodyAsString() {
+            return new String(body, StandardCharsets.UTF_8);
+        }
+    }
+
+    /**
      * Builds the body of a {@code multipart/form-data} request with one file part.
      */
     static byte[] multipartBody(String boundary, String fieldName, String fileName, String contentType, byte[] content) throws IOException {

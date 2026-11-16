@@ -2019,6 +2019,17 @@
       "dueOn": "Stichtag {date}",
       "startsOn": "ab {date}",
       "unknownPerson": "(nicht sichtbar)",
+      "mail": {
+        "label": "Letzte Mail",
+        "last": "Letzte Mail: {kind} am {date}",
+        "error": "E-Mail-Versand fehlgeschlagen: {error}",
+        "noRecipients": "Keine Empfänger mit E-Mail-Adresse",
+        "kind": {
+          "ORDER": "Ableseauftrag",
+          "REMINDER": "Erinnerung",
+          "ESCALATION": "Eskalation"
+        }
+      },
       "readLabel": "Runde „{name}“ ablesen",
       "sheet": "Laufzettel",
       "sheetLabel": "Laufzettel der Runde „{name}“ öffnen",

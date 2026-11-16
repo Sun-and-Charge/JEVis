@@ -2019,6 +2019,17 @@
       "dueOn": "Due {date}",
       "startsOn": "from {date}",
       "unknownPerson": "(not visible)",
+      "mail": {
+        "label": "Last mail",
+        "last": "Last mail: {kind} on {date}",
+        "error": "Sending the mail failed: {error}",
+        "noRecipients": "No recipients with an e-mail address",
+        "kind": {
+          "ORDER": "Reading order",
+          "REMINDER": "Reminder",
+          "ESCALATION": "Escalation"
+        }
+      },
       "readLabel": "Read round “{name}”",
       "sheet": "Route sheet",
       "sheetLabel": "Open the route sheet of round “{name}”",

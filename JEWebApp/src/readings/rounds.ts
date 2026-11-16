@@ -91,6 +91,46 @@ export function peopleText(people: readonly { name: string | null }[], unknown: 
   return people.map((p) => p.name || unknown).join(', ')
 }
 
+/** E8.3: the last mail of a round as kind and date ({ kind: 'REMINDER', date: '2026-11-05T06:00:00' }), null if none. */
+export function lastRoundMail(round: Pick<ReadingRound, 'mail'>): { kind: string; date: string } | null {
+  const mail = round.mail
+  if (!mail || !mail.lastMail || !mail.lastMailKind) return null
+  return { kind: mail.lastMailKind, date: mail.lastMail }
+}
+
+/** Error text of the mail service (JENotifier) when no recipient has an e-mail address; shown translated. */
+export const MAIL_ERROR_NO_RECIPIENTS = 'No recipients with an e-mail address'
+
+/** E8.3: the error of the mail service for a round (e.g. no recipients), null if none. */
+export function roundMailError(round: Pick<ReadingRound, 'mail'>): string | null {
+  const error = round.mail?.lastError
+  return error && error.trim() ? error.trim() : null
+}
+
+const MAIL_KINDS = ['ORDER', 'REMINDER', 'ESCALATION']
+
+/**
+ * E8.3: texts of the round's mail state: "Letzte Mail: Erinnerung am 05.11.2026" and the warning with the error
+ * (the known "no recipients" error translated), each null if there is nothing to show.
+ */
+export function roundMailTexts(
+  round: Pick<ReadingRound, 'mail'>,
+  t: (key: string, values?: Record<string, unknown>) => string,
+  formatDate: (date: string) => string,
+): { last: string | null; error: string | null } {
+  const mail = lastRoundMail(round)
+  const error = roundMailError(round)
+  return {
+    last: mail
+      ? t('readings.rounds.mail.last', {
+          kind: MAIL_KINDS.includes(mail.kind) ? t('readings.rounds.mail.kind.' + mail.kind) : mail.kind,
+          date: formatDate(mail.date),
+        })
+      : null,
+    error: error ? t('readings.rounds.mail.error', { error: error === MAIL_ERROR_NO_RECIPIENTS ? t('readings.rounds.mail.noRecipients') : error }) : null,
+  }
+}
+
 /** The next meter of a round after `currentId` in round order (wrapping around) that is not done and can be read. */
 export function nextRoundMeter<M extends Pick<ReadingMeter, 'id' | 'row' | 'problem' | 'doneInRound'>>(list: readonly M[], currentId: number): M | null {
   const start = list.findIndex((m) => m.id === currentId)
