@@ -16,7 +16,9 @@ import {
   type ContractFilter,
 } from '../accounting/contracts'
 import { anyContractWritable, canCreateIn, canEditObject } from '../accounting/contractEdit'
-import { loadContracts, type AccountingConfiguration, type ContractGroup, type ContractObject } from '../api/contracts'
+import { canCreateConfiguration, canEditConfiguration } from '../accounting/configurationEdit'
+import { loadContracts, type AccountingConfiguration, type ConfigurationEdit, type ContractGroup, type ContractObject } from '../api/contracts'
+import ConfigurationEditDialog from '../components/accounting/ConfigurationEditDialog.vue'
 import ContractCard from '../components/accounting/ContractCard.vue'
 import ContractCreateDialog from '../components/accounting/ContractCreateDialog.vue'
 import ContractEditDialog from '../components/accounting/ContractEditDialog.vue'
@@ -35,6 +37,7 @@ import '../styles/accounting.css'
  * configurations; search and site filter over all tabs. The cost calculation follows later.
  * E6.2: "Neu" per group and "Bearbeiten" per object (side panel: name, contractor, texts, ranging tables, prices with
  * validity date, delete); the list is reloaded after every write.
+ * E6.3: "Neu" and "Bearbeiten" of the accounting configurations (contract fields, template, inputs, delete).
  */
 
 const { t, te, locale } = useI18n()
@@ -120,7 +123,10 @@ const configValue = (c: AccountingConfiguration, field: (typeof CONFIGURATION_FI
 const configWhere = (c: AccountingConfiguration) => contractWhere(c, locale.value)
 
 /* ---------- E6.2: editing ---------- */
-const writable = computed(() => anyContractWritable(data.value?.groups))
+const configurationCreatable = computed(() => canCreateConfiguration(data.value))
+const writable = computed(
+  () => anyContractWritable(data.value?.groups) || configurationCreatable.value || (data.value?.configurations ?? []).some(canEditConfiguration),
+)
 const message = ref<{ ok: boolean; text: string } | null>(null)
 const creating = shallowRef<{ group: ContractGroup; kind: string } | null>(null)
 /** the edited object: id and group kind; the object itself is taken from the (reloaded) list */
@@ -177,10 +183,45 @@ async function onDeleted(name: string) {
 }
 
 const showableContractor = (id: number) => contractorIds.value.has(id)
+const configEditable = computed(() => (data.value?.configurations ?? []).some(canEditConfiguration))
 
 async function onEditorContractor(id: number) {
   editing.value = null
   await openContractor(id)
+}
+
+/* ---------- E6.3: accounting configurations ---------- */
+/** the edited configuration: its id (null while a new one is not yet created) and a stable key of the panel */
+const configEditing = ref<{ id: number | null; key: string } | null>(null)
+const configTargets = computed(() => data.value?.configurationTargets ?? [])
+const listedConfiguration = computed(() => {
+  const id = configEditing.value?.id
+  return id == null ? null : ((data.value?.configurations ?? []).find((c) => c.id === id) ?? null)
+})
+
+function openConfigCreate() {
+  if (!configurationCreatable.value) return
+  message.value = null
+  configEditing.value = { id: null, key: 'cfg-new' }
+}
+
+function openConfigEdit(c: AccountingConfiguration) {
+  if (!canEditConfiguration(c)) return
+  message.value = null
+  configEditing.value = { id: c.id, key: 'cfg-' + c.id }
+}
+
+async function onConfigSaved(m: ConfigurationEdit, name: string, created: boolean) {
+  if (configEditing.value) configEditing.value = { ...configEditing.value, id: m.id }
+  message.value = { ok: true, text: t(created ? 'registerEdit.created' : 'registerEdit.saved', { name }) }
+  await reload()
+  highlighted.value = m.id
+}
+
+async function onConfigDeleted(name: string) {
+  configEditing.value = null
+  message.value = { ok: true, text: t('registerEdit.deleted', { name }) }
+  await reload()
 }
 </script>
 
@@ -254,16 +295,30 @@ async function onEditorContractor(id: number) {
           >
             {{ t('registerEdit.new') }}
           </button>
+          <button
+            v-else-if="active.id === CONFIGURATIONS_TAB && configurationCreatable"
+            type="button"
+            class="btn btn-primary ctr-new cfg-new"
+            :aria-label="t('configEdit.newLabel')"
+            @click="openConfigCreate"
+          >
+            {{ t('registerEdit.new') }}
+          </button>
         </div>
-        <p v-if="!active.total && active.group" class="muted">{{ t('contractEdit.emptyGroup') }}</p>
+        <p v-if="!active.total && (active.group || active.id === CONFIGURATIONS_TAB)" class="muted">{{ t('contractEdit.emptyGroup') }}</p>
         <p v-else-if="!shownCount(active)" class="muted">{{ t('contracts.noMatch') }}</p>
 
         <template v-else-if="active.id === CONFIGURATIONS_TAB">
           <p class="alert ctr-hint" role="note">{{ t('contracts.config.hint') }}</p>
           <ul v-if="narrow" class="mod-cards">
-            <li v-for="c in active.configurations" :key="c.id" class="mod-card ctr-config-card">
+            <li v-for="c in active.configurations" :key="c.id" class="mod-card ctr-config-card" :class="{ 'is-highlighted': highlighted === c.id }">
               <p v-if="configWhere(c)" class="ctr-where muted">{{ configWhere(c) }}</p>
               <h2>{{ c.name }}</h2>
+              <p v-if="canEditConfiguration(c)" class="ctr-class">
+                <button type="button" class="edit-btn is-small cfg-edit" :aria-label="t('registerEdit.editLabel', { name: c.name })" @click="openConfigEdit(c)">
+                  {{ t('registerEdit.edit') }}
+                </button>
+              </p>
               <dl class="mod-dl">
                 <template v-for="f in CONFIGURATION_FIELDS" :key="f">
                   <dt>{{ t('contracts.config.' + f) }}</dt>
@@ -279,15 +334,27 @@ async function onEditorContractor(id: number) {
                 <tr>
                   <th scope="col">{{ t('contracts.config.name') }}</th>
                   <th v-for="f in CONFIGURATION_FIELDS" :key="f" scope="col">{{ t('contracts.config.' + f) }}</th>
+                  <th v-if="configEditable" scope="col"><span class="visually-hidden">{{ t('configEdit.actions') }}</span></th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="c in active.configurations" :key="c.id" class="mod-row">
+                <tr v-for="c in active.configurations" :key="c.id" class="mod-row" :class="{ 'is-highlighted': highlighted === c.id }">
                   <th scope="row" class="iso-text ctr-config-name">
                     <span v-if="configWhere(c)" class="notes-path">{{ configWhere(c) }}</span>
                     <span>{{ c.name }}</span>
                   </th>
                   <td v-for="f in CONFIGURATION_FIELDS" :key="f" :class="{ nowrap: f !== 'marketLocation' }">{{ configValue(c, f) || t('modules.none') }}</td>
+                  <td v-if="configEditable" class="nowrap">
+                    <button
+                      v-if="canEditConfiguration(c)"
+                      type="button"
+                      class="edit-btn is-small cfg-edit"
+                      :aria-label="t('registerEdit.editLabel', { name: c.name })"
+                      @click="openConfigEdit(c)"
+                    >
+                      {{ t('registerEdit.edit') }}
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -328,6 +395,19 @@ async function onEditorContractor(id: number) {
       @changed="reload"
       @deleted="onDeleted"
       @open-contractor="onEditorContractor"
+    />
+    <ConfigurationEditDialog
+      v-if="configEditing"
+      :key="configEditing.key"
+      :configuration-id="configEditing.id"
+      :targets="configTargets"
+      :listed-name="listedConfiguration?.name"
+      :can-write="listedConfiguration ? listedConfiguration.canWrite === true : undefined"
+      :can-delete="listedConfiguration?.canDelete === true"
+      @close="configEditing = null"
+      @saved="onConfigSaved"
+      @changed="reload"
+      @deleted="onConfigDeleted"
     />
   </section>
 </template>

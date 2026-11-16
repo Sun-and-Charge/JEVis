@@ -37,7 +37,7 @@ export interface ContractTab {
 
 /**
  * Tabs: the groups in the fixed order (unknown kinds after them), then the configurations; empty ones left out
- * (E6.2: an empty group stays when objects can be created in it).
+ * (E6.2: an empty group stays when objects can be created in it; E6.3: the same for the configurations).
  */
 export function contractTabs(list: ContractList | null | undefined): ContractTab[] {
   const groups = (list?.groups ?? [])
@@ -53,7 +53,9 @@ export function contractTabs(list: ContractList | null | undefined): ContractTab
     .sort((a, b) => rank(a.g.kind) - rank(b.g.kind) || a.i - b.i)
     .map(({ g }) => ({ id: g.kind, objects: g.objects, configurations: [], group: g }))
   const configurations = list?.configurations ?? []
-  if (configurations.length) tabs.push({ id: CONFIGURATIONS_TAB, objects: [], configurations })
+  /* E6.3: also empty when configurations can be created */
+  const creatable = list?.canCreateConfiguration !== false && !!list?.configurationTargets?.length
+  if (configurations.length || creatable) tabs.push({ id: CONFIGURATIONS_TAB, objects: [], configurations })
   return tabs
 }
 

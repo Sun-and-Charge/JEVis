@@ -772,3 +772,42 @@ button.inv-status:focus-visible {
 .ctr-used-by {
   margin: 0 0 0.5rem;
 }
+
+/* E6.3: accounting configuration editor */
+.cfg-costs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 0.75rem;
+}
+
+.cfg-costs .edit-hint {
+  margin: 0;
+}
+
+.ctr-input-field {
+  padding: 0.5rem 0 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.ctr-input-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+}
+
+.ctr-input-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ctr-input-class {
+  margin: 0.1rem 0 0.35rem;
+  overflow-wrap: anywhere;
+}
+
+.cfg-warnings ul {
+  margin: 0.35rem 0 0;
+}
