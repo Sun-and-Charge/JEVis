@@ -2355,3 +2355,122 @@ the same cost results.
     with a warning badge;
   - "Kostenrechnung öffnen" (link to the cost page of the configuration, after saving);
   - "Löschen" with confirmation; unsaved-changes guard and `409` handling as E2–E6.2.
+
+## Editing, stage E7: alarm settings
+
+User decisions (2026-11-16): alarm configurations with their e-mail notification, and per clean data row the limit
+steps and the alarm rules (static/dynamic) incl. silent/standby times as a simple schedule; delta check and gap filling
+stay in the Control Center. JEAlarm (`JEAlarm/.../AlarmProcess`) and the JEDataProcessor read the same attributes as
+today; the web writes them in the Control Center's formats. Rules of E1–E8 (server-side rights, `version` → `409`,
+`400` `{ "messages": [...] }`, `logUserAction` `web:<action>`, deletes to the recycle bin).
+
+### E7.1 Alarm configurations (`Alarm Configuration`, `var/classes/AlarmPlugin`)
+
+- `GET /web/alarms/settings?lang=de` → `{ "configurations": [ … ], "targets": [ … ] }`:
+  - configuration: `{ id, name, path, site, enabled, scope: "COMPLETE"|"SELECTED"|"WITHOUT_SELECTED"|"NONE",
+    objects: [{ id, attribute, name, path, readable }], period: "QUARTER_HOURLY"|…|"CUSTOM"|"NONE", bindToData,
+    includeLimits, disableLink, timeStamp (ISO, read-only), notification: { id, enabled, recipientUsers: [{id,name,kind}],
+    recipientGroups: [...], recipients: ["a@b.de"], cc: [...], bcc: [...], subject, message, html } | null,
+    canWrite, canDelete, version }` (`objects` from "Alarm Objects" `id:Attribute;…` via `TargetHelper`; notification =
+    the single child of class "E-Mail Notification", `null` if none, `multipleNotifications: true` if more than one —
+    JEAlarm then sends nothing, the web shows a warning and edits none);
+  - `targets`: readable "Alarm Directory" objects below a building or organisation where the user may create an
+    "Alarm Configuration" (`[{ id, name, path, site }]`).
+- `POST /web/alarms/settings?lang=de` `{ parentId, name, … }` and `PUT /web/alarms/settings/{id}?lang=de`
+  `{ version, name?, enabled?, scope?, objects?: [{ id, attribute }], period?, bindToData?, includeLimits?,
+  disableLink?, notification?: { enabled, recipientUsers: [ids], recipientGroups: [ids], recipients: [mails], cc, bcc,
+  subject, message, html } }`:
+  - objects: readable Clean Data (or Data) rows, attribute `Value` by default, stored as `id:Value;…` like the CC
+    `TargetEditor` (MULTIPLE); scope `SELECTED`/`WITHOUT_SELECTED` need at least one object (`400`);
+  - period: one of the `Period` values JEAlarm accepts (`CUSTOM` only when the configuration already has a "Custom
+    Schedule Object"; the web does not edit that target);
+  - notification: created as child "E-Mail Notification" (name "<configuration> Benachrichtigung") when given and
+    missing; recipients as the CC writes them (check `var/classes/Notifier/E-Mail Notification.json` and the CC
+    `TargetEditor`/JENotifier reader for the stored format of "Recipient Users"/"Recipient Groups" and of the address
+    lists); mail addresses validated; subject ≤ 200, message ≤ 5000 characters;
+  - POST additionally sets "Time Stamp" to now rounded down to the period (the CC tool `CreateAlarms` uses the first
+    data; the web uses now so old data is not reported at once); the parent must be one of `targets` (no directory
+    creation).
+  - Writes at now; rights: create right in the directory (POST), write right (PUT; the notification child needs write
+    resp. create right too). `version` = latest sample over the configuration's and its notification's attributes,
+    ignoring the JEAlarm outputs "Time Stamp", "Log", "Log File", "Alarm Checked".
+- `DELETE /web/alarms/settings/{id}?version=…` → configuration (with its notification) to the recycle bin; `204`.
+- Logged `web:alarm-config-create|save|delete`.
+
+### E7.2 Alarm settings of a data row
+
+`{rowId}`: a readable Clean Data row (a raw Data row is answered for its first Clean Data child, as E1).
+
+- `GET /web/rows/{rowId}/alarm-settings?lang=de` →
+  `{ row: { id, name, unit, rawId, rawName }, canWrite, version,
+     limits: { enabled, steps: [ { name, min, max, substitute: "NONE"|"STATIC"|"INTERPOLATION"|"DEFAULT_VALUE"|
+       "MINIMUM"|"MAXIMUM"|"MEDIAN"|"AVERAGE"|"DELETE"|"REGRESSION", defaultMin, defaultMax, … unknown keys kept } ] },
+     alarms: { enabled, rules: [ { id, name, kind: "STATIC"|"DYNAMIC", limit, limitData: { id, attribute, name,
+       readable } | null, operator, tolerance, silent: Schedule | null, standby: Schedule | null } ] },
+     configurations: [ { id, name } ] }` — `configurations`: the alarm configurations whose scope includes the row (so
+  the user sees whether alarms of this row are reported at all).
+  - `Schedule` (simple form of `JsonScheduler`): `{ "simple": true, "days": ["MON",…], "from": "22:00", "to": "06:00" }`
+    when the stored cron can be expressed so (weekday set + one time range, also across midnight), else
+    `{ "simple": false, "text": "<stored value>" }` (read-only in the web, kept unchanged when not sent).
+  - Limit steps: index 0 = step 1, index 1 = step 2 (as JEAlarm/JEDataProcessor read them); numbers as numbers or
+    `null`; every other key of `JsonLimitsConfig` is passed through.
+- `PUT /web/rows/{rowId}/alarm-settings?lang=de` `{ version, limits?: { enabled, steps }, alarms?: { enabled,
+  rules } }`:
+  - limits: 1–2 steps (`400` otherwise), `min < max` when both set, defaults required for `DEFAULT_VALUE`;
+    switching on without steps writes the CC default (`LimitEditor.createDefaultConfig`); written as the CC
+    `LimitEditor`/`JsonLimitsConfig.toString()` (pretty JSON array, all values as strings);
+  - alarm rules: 0–10, each valid as `CleanDataAlarm` requires (STATIC: `limit` number; DYNAMIC: `limitData` readable
+    row; `operator` one of `AlarmConstants.Operator`; `tolerance` number ≥ 0); ids kept, new ones numbered; schedules
+    converted to the `JsonScheduler` format the CC `AlarmEditor` writes (check its cron/JSON format) — a non-simple
+    stored schedule sent back unchanged stays as it was;
+  - "Limits Enabled", "Limits Configuration", "Alarm Enabled", "Alarm Config" written at now (only the changed ones),
+    write right on the clean data row; `version` = latest sample of these four; `409` with the current settings.
+  - Logged `web:alarm-row-save`. Hint in the answer: limit changes only affect data the JEDataProcessor processes from
+    now on (`reprocessHint: true`).
+
+### Web app
+
+- Alarms page: tab **"Einstellungen"** (besides the alarm list) with the configurations (cards/table: name, site,
+  active, scope with object count, period, mail recipients count, warnings for multiple notifications); "Neu"
+  (directory if several), "Bearbeiten" side panel: name, active, scope (radio with explanation), objects (E3 row
+  picker, multi-select; shown for SELECTED/WITHOUT_SELECTED), period select, "auch vor Ablauf der Periode prüfen"
+  (bindToData), "Grenzwerte in der Mail", "Link ausblenden", notification block (active, recipients: people
+  multi-select as E8.2 + free mail addresses, cc/bcc collapsed, subject, message), "Löschen".
+- Row alarm settings panel (component reused from: an alarm in the list → "Einstellungen der Datenreihe", the
+  configuration editor's object list, the meter register row details and the Ablesung meter panel): limits (on/off,
+  step 1 and 2 with min/max, substitute select, defaults when needed), alarm rules (add/remove; kind fester Wert /
+  Vergleichsreihe with row picker; operator select with symbols; tolerance; Ruhezeit/Bereitschaft: weekdays chips +
+  von/bis time, "nicht im Web bearbeitbar" for non-simple ones), list of configurations reporting this row, the
+  reprocess hint after saving limits.
+- Unsaved-changes guard and `409` handling as before; phone width usable.
+
+### As built (additions and details beyond the contract above)
+
+- **Additive fields:**
+  - `GET /web/alarms/settings` also returns `people` (users and groups for the recipient picker, as E8.2);
+  - configuration: `customSchedule` (the "Custom Schedule Object" target, read-only), `notification.canWrite`;
+  - row settings: `configurations[].enabled`, `limits.readable` / `alarms.readable` (`false` when the stored JSON
+    cannot be parsed; the web then shows the block read-only and the PUT must not send it), `rule.complete` (`false`
+    for stored rules JEAlarm cannot evaluate, e.g. no operator), `schedule.timeZone`.
+- **Configurations:**
+  - POST defaults: enabled, scope `COMPLETE`, period `DAILY`, bindToData/includeLimits/disableLink off, no
+    notification unless sent;
+  - name required, ≤ 200 characters (`400`);
+  - `period: "CUSTOM"` only kept, never newly chosen (the web does not edit the schedule target);
+  - only a single "E-Mail Notification" child is editable (`multipleNotifications` → notification read-only);
+  - mail addresses are validated only for entries that are new compared to the stored lists, so stored legacy
+    entries do not block saving;
+  - `version` covers the configuration and its notification, without the JEAlarm outputs.
+- **Row settings:**
+  - a silent/standby time across midnight (`from` > `to`) is stored as two `JsonScheduler` rules (from–23:59
+    on the chosen weekdays, 00:00–to on the following days), as a `JsonScheduler` rule does not cross midnight;
+    reading joins them again;
+  - unchanged incomplete rules (`complete: false`) are kept as stored; new or changed rules must be complete (`400`);
+  - new rule ids: `STATIC` rules "0", `DYNAMIC` rules "1" (the ids JEAlarm uses to pick the rule type), existing ids
+    kept;
+  - `limits.steps` empty = the limits block is not sent (the stored configuration stays);
+  - a missing "Limits Enabled" / "Alarm Enabled" sample counts as off (as JEDataProcessor and JEAlarm read it); only
+    a real change is written, so an unchanged PUT writes nothing and `reprocessHint` stays `false`;
+  - substitution: the JEDataProcessor's `LimitsStep` fills step-2 violations with the row's gap-filling
+    configuration, not with the step's `typeOfSubstituteValue`; the web reads and writes that key like the CC
+    `LimitEditor` (no effect on processing today).

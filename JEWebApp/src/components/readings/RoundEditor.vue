@@ -32,7 +32,7 @@ import { useAuthStore } from '../../stores/auth'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EditDialog from '../edit/EditDialog.vue'
 import RoundMeterPicker from './RoundMeterPicker.vue'
-import RoundPeoplePicker from './RoundPeoplePicker.vue'
+import PeoplePicker from '../edit/PeoplePicker.vue'
 import '../../styles/edit.css'
 import '../../styles/isoEdit.css'
 import '../../styles/readings.css'
@@ -399,7 +399,7 @@ const siteName = computed(() => current.value?.site?.name ?? props.sites.find((s
       <section class="iso-edit-section">
         <h3>{{ t('readings.rounds.section.people') }}</h3>
         <p v-if="optionsState === 'error'" class="alert alert-error" role="alert">{{ t('readings.rounds.optionsError') }}</p>
-        <RoundPeoplePicker
+        <PeoplePicker
           v-model="form.readers"
           :people="options?.people ?? []"
           :known="current?.readers"
@@ -409,7 +409,7 @@ const siteName = computed(() => current.value?.site?.name ?? props.sites.find((s
           :error="problemText('readers')"
           :disabled="busy || optionsState !== 'ready'"
         />
-        <RoundPeoplePicker
+        <PeoplePicker
           v-model="form.supervisor"
           :people="options?.people ?? []"
           :known="current?.supervisor"

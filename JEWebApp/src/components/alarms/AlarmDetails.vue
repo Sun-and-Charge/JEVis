@@ -19,8 +19,8 @@ import '../../styles/edit.css'
  */
 
 const props = defineProps<{ alarm: Alarm; busy?: boolean }>()
-/* E1: confirm / withdraw the confirmation of the alarm's configuration (the view sends it) */
-const emit = defineEmits<{ confirm: [checked: boolean] }>()
+/* E1: confirm / withdraw the confirmation of the alarm's configuration (the view sends it); E7: open the row's alarm settings */
+const emit = defineEmits<{ confirm: [checked: boolean]; settings: [] }>()
 const canConfirm = computed(() => !!props.alarm.configuration?.canConfirm)
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -130,8 +130,9 @@ const id = (suffix: string) => `alarm-${props.alarm.id}-${suffix}`
           <dd>{{ checkedInfo }}</dd>
         </template>
       </dl>
-      <div v-if="canConfirm" class="edit-actions">
+      <div v-if="canConfirm || alarm.row?.readable" class="edit-actions">
         <button
+          v-if="canConfirm"
           type="button"
           class="edit-btn alarm-confirm-detail"
           :disabled="busy"
@@ -139,6 +140,15 @@ const id = (suffix: string) => `alarm-${props.alarm.id}-${suffix}`
           @click="emit('confirm', !checked)"
         >
           {{ t(checked ? 'alarmEdit.unconfirm' : 'alarmEdit.confirm') }}
+        </button>
+        <button
+          v-if="alarm.row?.readable"
+          type="button"
+          class="edit-btn alarm-row-settings"
+          :aria-label="t('alarmSettings.rowSettingsLabel', { name: alarm.row.name || '#' + alarm.row.id })"
+          @click="emit('settings')"
+        >
+          {{ t('alarmSettings.rowSettingsAlarm') }}
         </button>
       </div>
     </section>

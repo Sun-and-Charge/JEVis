@@ -1,0 +1,336 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Alarm settings (E7): tabs of the alarms page, configuration list, side panels of the configuration and row editors. */
+
+.alm-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.alm-tab {
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 0.45rem 0.85rem;
+  margin-bottom: -2px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.alm-tab:hover {
+  color: var(--blueberry);
+}
+
+.alm-tab[aria-selected='true'] {
+  border-bottom-color: var(--sun);
+  color: var(--blueberry);
+}
+
+.alm-tab:focus-visible,
+.alm-panel:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: -3px;
+}
+
+/* ---------- configuration list ---------- */
+.alm-cfg-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.alm-cfg-head .mod-count {
+  margin: 0 auto 0 0;
+}
+
+.alm-cfg-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alm-cfg-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.alm-cfg-card.is-inactive {
+  border-style: dashed;
+}
+
+.alm-cfg-card h2 {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.alm-cfg-path {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.alm-cfg-card .mod-dl {
+  margin: 0.2rem 0;
+}
+
+.alm-cfg-card .edit-actions {
+  margin: auto 0 0;
+}
+
+.alm-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.alm-warning {
+  margin: 0.35rem 0 0;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+  background: #fffbe0;
+  border-left: 3px solid var(--sun);
+  border-radius: var(--radius);
+}
+
+/* ---------- side panels ---------- */
+.alm-edit-backdrop {
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0;
+}
+
+.alm-edit-backdrop .edit-dialog,
+.alm-edit-backdrop .edit-dialog.is-wide {
+  width: min(46rem, 100%);
+  min-height: 100%;
+  border-radius: 0;
+  border-left: 3px solid var(--sun);
+  display: flex;
+  flex-direction: column;
+}
+
+.alm-edit-backdrop .edit-body {
+  flex: 1;
+}
+
+.alm-edit-backdrop .edit-foot {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 800px) {
+  .alm-edit-backdrop .edit-dialog,
+  .alm-edit-backdrop .edit-dialog.is-wide {
+    width: 100%;
+    border-left: none;
+  }
+}
+
+.alm-scope {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  border: none;
+}
+
+.alm-scope legend {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  padding: 0;
+}
+
+.alm-scope-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.alm-scope-option:has(input:checked) {
+  border-color: var(--blueberry);
+  background: var(--bg);
+}
+
+.alm-scope-option input {
+  margin-top: 0.2rem;
+}
+
+.alm-scope-option strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.alm-scope-option span span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.alm-objects {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.alm-objects li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.alm-objects li:last-child {
+  border-bottom: none;
+}
+
+.alm-object-name {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.alm-object-name small {
+  display: block;
+  color: var(--muted);
+}
+
+.alm-more {
+  margin: 0 0 0.85rem;
+}
+
+.alm-more summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- row alarm settings ---------- */
+.alm-step,
+.alm-rule {
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.75rem 0.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.alm-step legend,
+.alm-rule legend {
+  font-weight: 600;
+  padding: 0 0.3rem;
+}
+
+.alm-rule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.alm-rule-head .edit-btn {
+  margin-left: auto;
+}
+
+.alm-kind {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  border: none;
+}
+
+.alm-kind label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.alm-picked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.alm-picked span {
+  flex: 1 1 10rem;
+  overflow-wrap: anywhere;
+}
+
+.alm-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0.4rem;
+}
+
+.alm-times {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 9rem));
+  gap: 0.5rem;
+}
+
+.alm-times label {
+  font-size: 0.85rem;
+}
+
+.alm-schedule {
+  margin: 0 0 0.6rem;
+}
+
+.alm-fixed {
+  margin: 0.25rem 0 0;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+.alm-configs {
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.alm-row-actions {
+  margin: 0.25rem 0 0;
+}
+
+@media (max-width: 600px) {
+  .alm-times {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
