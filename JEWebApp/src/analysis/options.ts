@@ -6,6 +6,7 @@ import { buildHeatMap, colorScale } from './heatmap'
 import type { LimitLine } from '../api/analysis'
 import { lastValue, numericSamples, rowTotal, type ChartView, type RowView, type XyType } from './model'
 import { noteMarkers, noteMarkPoint } from './notes'
+import { regression } from './regression'
 
 /** Texts and locale for the chart options. */
 export interface OptionContext {
@@ -18,6 +19,8 @@ export interface OptionContext {
     count: string
     /** "Notiz" (tooltip of the note markers) */
     note?: string
+    /** "Modell" (modelled values of a regression chart) */
+    model?: string
   }
   /** name of a note tag id (default: the id) */
   tagName?: (id: string) => string
@@ -554,6 +557,34 @@ export function bubbleOption(chart: ChartView, ctx: OptionContext): EChartsOptio
   } as EChartsOption
 }
 
+/**
+ * REGRESSION: the measured values of the target row and the values of the model over time (the drivers have other
+ * units and are listed in the regression summary below the chart). Without a valid model only the target is drawn.
+ */
+export function regressionOption(chart: ChartView, ctx: OptionContext): EChartsOption {
+  const result = regression(chart.rows)
+  const target = result.ok ? result.fit.target : (result.target ?? chart.rows[0])
+  if (!target) return { series: [] }
+  const rows: RowView[] = [{ ...target, axis: 0, type: 'LINE' }]
+  if (result.ok) {
+    rows.push({
+      ...target,
+      key: target.key + '#model',
+      name: `${ctx.labels.model ?? 'Model'}: ${target.name}`,
+      color: INK,
+      axis: 0,
+      type: 'LINE',
+      notes: [],
+      canAddNote: false,
+      samples: result.fit.points.map(([t, , modelled]) => [t, modelled, null]),
+    })
+  }
+  const option = xyOption({ ...chart, rows, limitLines: [] }, { ...ctx, noteClicks: false })
+  const series = option.series as Record<string, unknown>[]
+  if (series[1]) series[1].lineStyle = { width: 2, type: 'dashed' }
+  return option
+}
+
 /** ECharts option for a chart (not for table charts). `from`/`to`: resolved time frame (heat map lines). */
 export function chartOption(chart: ChartView, ctx: OptionContext, from?: number | null, to?: number | null): EChartsOption | null {
   switch (chart.kind) {
@@ -567,6 +598,8 @@ export function chartOption(chart: ChartView, ctx: OptionContext, from?: number 
       return heatMapOption(chart, ctx, from, to)
     case 'bubble':
       return bubbleOption(chart, ctx)
+    case 'regression':
+      return regressionOption(chart, ctx)
     default:
       return null
   }

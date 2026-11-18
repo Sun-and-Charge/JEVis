@@ -189,7 +189,26 @@
       "pngLabel": "{name} als Bild (PNG) speichern",
       "csvLabel": "Werte von {name} als CSV speichern"
     },
-    "count": "Anzahl"
+    "count": "Anzahl",
+    "regression": {
+      "model": "Modell",
+      "formula": "Modellgleichung",
+      "n": "Datenpunkte",
+      "adjustedR2": "R² (bereinigt)",
+      "rmse": "Standardfehler (RMSE)",
+      "caption": "Koeffizienten der Regression in {name}",
+      "term": "Größe",
+      "coefficient": "Koeffizient",
+      "standardError": "Standardfehler",
+      "intercept": "Konstante (Grundlast)",
+      "hint": "Kleinste-Quadrate-Regression über die Zeitpunkte, an denen alle Reihen Werte haben. Die Reihen sollten gleich aggregiert sein (z. B. Tag oder Monat). Grau: p ≥ 0,1, der Einfluss ist statistisch nicht gesichert.",
+      "problem": {
+        "NO_TARGET": "Keine Zielgröße: Markieren Sie eine Datenreihe mit Werten als Zielgröße.",
+        "NO_DRIVERS": "Keine Einflussgröße: Die Regression braucht mindestens eine weitere Datenreihe mit Werten.",
+        "TOO_FEW_POINTS": "Zu wenige gemeinsame Zeitpunkte: Die Regression braucht mindestens {needed} Zeitpunkte, an denen alle Reihen Werte haben. Wählen Sie einen längeren Zeitraum oder die gleiche Aggregation für alle Reihen.",
+        "COLLINEAR": "Die Einflussgrößen hängen linear voneinander ab (oder sind konstant). Entfernen Sie eine davon."
+      }
+    }
   },
   "dashboard": {
     "loading": "Dashboard wird geladen …",
@@ -1889,7 +1908,8 @@
       "TABLE_V": "Mehrspaltige Tabelle",
       "STACKED_AREA": "Fläche (Gestapelt)",
       "STACKED_COLUMN": "Säule (Gestapelt)",
-      "TABLE_H": "Aggregierte Tabelle"
+      "TABLE_H": "Aggregierte Tabelle",
+      "REGRESSION": "Multivariate Regression"
     },
     "orientations": {
       "HORIZONTAL": "Horizontal",
@@ -1918,6 +1938,11 @@
       "Y": "Y",
       "SIZE": "Größe"
     },
+    "regressionRoles": {
+      "NONE": "Automatisch",
+      "Y": "Zielgröße",
+      "X": "Einflussgröße"
+    },
     "rows": {
       "chart": "Diagramm",
       "add": "Datenreihen hinzufügen",
@@ -1933,6 +1958,7 @@
       "axis": "y-Achse",
       "chartType": "Abweichender Diagrammtyp",
       "bubbleType": "Rolle im Blasendiagramm",
+      "regressionRole": "Rolle in der Regression",
       "decimalDigits": "Dezimalstellen",
       "decimalAuto": "wie Diagramm",
       "interval": "Eigener Zeitraum",

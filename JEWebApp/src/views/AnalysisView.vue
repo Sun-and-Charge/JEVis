@@ -178,6 +178,7 @@ const ctx = computed<OptionContext>(() => ({
     error: t('analysis.state.error'),
     count: t('analysis.count'),
     note: t('notes.note'),
+    model: t('analysis.regression.model'),
   },
   tagName: i18nTagName(t, te),
 }))
