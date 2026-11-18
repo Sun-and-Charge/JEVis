@@ -23,6 +23,7 @@ import {
 } from '../../readings/readings'
 import { mediumLabel } from '../../registers/format'
 import { useAuthStore } from '../../stores/auth'
+import RowAlarmSettingsDialog from '../alarms/RowAlarmSettingsDialog.vue'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EditDialog from '../edit/EditDialog.vue'
 import MediumIcon from '../registers/MediumIcon.vue'
@@ -41,6 +42,7 @@ import '../../styles/readings.css'
  * the page with unsaved input asks first. Side panel on wide screens, full-width sheet on phones.
  * E8.5 correction mode (`correction`): the time is fixed to the reviewed sample's timestamp (sent as listed), the old
  * value, the previous value and the server's expected range are shown, and the reading is saved with `confirm`.
+ * E7: "Alarmeinstellungen" opens the limits and alarm rules of the meter's data row.
  */
 
 export interface ReadingCorrection {
@@ -61,6 +63,8 @@ const uid = `rd-panel-${Math.random().toString(36).slice(2, 9)}`
 const id = (suffix: string) => `${uid}-${suffix}`
 
 const row = computed(() => props.meter.row)
+/** E7: the alarm settings of the meter's data row are open */
+const alarmOpen = ref(false)
 const readable = computed(() => canRead(props.meter))
 const unit = computed(() => row.value?.unit || '')
 const inputMode = computed(() => readingInputMode(row.value?.mode))
@@ -283,6 +287,9 @@ const describedBy = (field: keyof typeof problems.value, hint?: string) => [prob
       <span class="rd-kind"><MediumIcon :medium="meter.medium" />{{ kind }}</span>
       <span v-if="fixed" class="mod-badge is-dueSoon rd-correction-badge">{{ t('readings.review.correction') }}</span>
       <DueBadge v-else :due="meter.due" />
+      <button v-if="row && !fixed" type="button" class="edit-btn is-small rd-alarm-settings" :disabled="busy" @click="alarmOpen = true">
+        {{ t('alarmSettings.rowSettings') }}
+      </button>
       <button v-if="meter.canExchange && !fixed" type="button" class="edit-btn is-small rd-exchange" :disabled="busy" @click="emit('exchange')">
         {{ t('registerEdit.exchange.action') }}
       </button>
@@ -469,6 +476,7 @@ const describedBy = (field: keyof typeof problems.value, hint?: string) => [prob
     </template>
   </EditDialog>
 
+  <RowAlarmSettingsDialog v-if="alarmOpen && row" :row-id="row.id" :row-name="row.name" @close="alarmOpen = false" />
   <ConfirmDialog
     v-if="leaveAsk"
     :title="t('registerEdit.leave.title')"

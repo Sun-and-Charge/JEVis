@@ -4,9 +4,11 @@ import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RoundOptionPerson, RoundPerson } from '../../api/readingRounds'
 import { searchPeople, usersWithoutEmail } from '../../readings/rounds'
+import '../../styles/people.css'
 
 /*
- * Searchable multi-select of users and groups (readers, supervisor of a reading round, E8.2): the chosen people as
+ * Searchable multi-select of users and groups (readers, supervisor of a reading round, E8.2; alarm mail recipients,
+ * E7): the chosen people as
  * chips (groups marked, users without e-mail address marked and listed in a warning), a search field and the matching
  * people as buttons below it (shown while the picker has the focus or a search text). People the user may not read
  * keep their id ("#41").
@@ -22,6 +24,8 @@ const props = defineProps<{
   hint?: string
   error?: string | null
   disabled?: boolean
+  /** i18n key of the warning about users without e-mail address ('{names}') */
+  noEmailKey?: string
 }>()
 const emit = defineEmits<{ 'update:modelValue': [ids: number[]] }>()
 const { t, locale } = useI18n()
@@ -56,7 +60,7 @@ const describedBy = computed(() => [props.hint ? hintId.value : '', props.error 
 
 function add(p: RoundOptionPerson) {
   emit('update:modelValue', [...props.modelValue, p.id])
-  status.value = t('readings.rounds.people.added', { name: p.name })
+  status.value = t('people.added', { name: p.name })
   text.value = ''
   void nextTick(() => document.getElementById(props.inputId)?.focus())
 }
@@ -66,7 +70,7 @@ function remove(id: number, name: string) {
     'update:modelValue',
     props.modelValue.filter((x) => x !== id),
   )
-  status.value = t('readings.rounds.people.removed', { name })
+  status.value = t('people.removed', { name })
   void nextTick(() => document.getElementById(props.inputId)?.focus())
 }
 
@@ -94,17 +98,17 @@ function onKey(e: KeyboardEvent) {
 <template>
   <div ref="root" class="edit-field rd-people" @focusin="open = true" @focusout="onFocusOut">
     <label :for="inputId">{{ label }}</label>
-    <ul v-if="chosen.length" class="rd-people-chosen" :aria-label="t('readings.rounds.people.chosen', { label })">
+    <ul v-if="chosen.length" class="rd-people-chosen" :aria-label="t('people.chosen', { label })">
       <li v-for="p in chosen" :key="p.id" class="rd-person" :class="{ 'is-group': p.group, 'is-noEmail': p.noEmail }">
-        <span v-if="p.group" class="rd-person-kind">{{ t('readings.rounds.people.group') }}</span>
+        <span v-if="p.group" class="rd-person-kind">{{ t('people.group') }}</span>
         <span class="rd-person-name">{{ p.name }}</span>
-        <span v-if="p.noEmail" class="rd-person-warn" :title="t('readings.rounds.people.noEmailOne')" aria-hidden="true">!</span>
+        <span v-if="p.noEmail" class="rd-person-warn" :title="t('people.noEmailOne')" aria-hidden="true">!</span>
         <button
           type="button"
           class="rd-person-remove"
           :disabled="disabled"
-          :aria-label="t('readings.rounds.people.remove', { name: p.name })"
-          :title="t('readings.rounds.people.remove', { name: p.name })"
+          :aria-label="t('people.remove', { name: p.name })"
+          :title="t('people.remove', { name: p.name })"
           @click="remove(p.id, p.name)"
         >
           ×
@@ -116,7 +120,7 @@ function onKey(e: KeyboardEvent) {
       v-model="text"
       type="search"
       autocomplete="off"
-      :placeholder="t('readings.rounds.people.search')"
+      :placeholder="t('people.search')"
       :disabled="disabled"
       :aria-controls="listShown ? listId : undefined"
       :aria-expanded="listShown ? 'true' : 'false'"
@@ -124,20 +128,20 @@ function onKey(e: KeyboardEvent) {
       :aria-describedby="describedBy"
       @keydown="onKey"
     />
-    <ul v-if="listShown" :id="listId" class="rd-people-matches" :aria-label="t('readings.rounds.people.matches')">
+    <ul v-if="listShown" :id="listId" class="rd-people-matches" :aria-label="t('people.matches')">
       <li v-for="p in matches" :key="p.id">
         <button type="button" class="rd-people-match" @click="add(p)">
           <span aria-hidden="true">+</span>
           <span class="rd-person-name">{{ p.name }}</span>
-          <span v-if="p.kind === 'GROUP'" class="rd-person-kind">{{ t('readings.rounds.people.group') }}</span>
-          <span v-else-if="!p.email" class="rd-person-mail">{{ t('readings.rounds.people.noEmailShort') }}</span>
+          <span v-if="p.kind === 'GROUP'" class="rd-person-kind">{{ t('people.group') }}</span>
+          <span v-else-if="!p.email" class="rd-person-mail">{{ t('people.noEmailShort') }}</span>
         </button>
       </li>
-      <li v-if="!matches.length" class="muted rd-people-none">{{ t('readings.rounds.people.none') }}</li>
+      <li v-if="!matches.length" class="muted rd-people-none">{{ t('people.none') }}</li>
     </ul>
     <p v-if="hint" :id="hintId" class="edit-hint">{{ hint }}</p>
     <p v-if="noEmail.length" :id="warnId" class="rd-people-warning">
-      {{ t('readings.rounds.people.noEmail', { names: noEmail.map((p) => p.name).join(', ') }) }}
+      {{ t(noEmailKey ?? 'people.noEmail', { names: noEmail.map((p) => p.name).join(', ') }) }}
     </p>
     <p v-if="error" :id="errId" class="iso-field-error">{{ error }}</p>
     <p class="visually-hidden" role="status">{{ status }}</p>

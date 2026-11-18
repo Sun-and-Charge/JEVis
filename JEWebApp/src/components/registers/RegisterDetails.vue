@@ -10,6 +10,7 @@ import { formatNumber } from '../../analysis/format'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EntryDialog from '../edit/EntryDialog.vue'
 import MeterExchangeDialog from './MeterExchangeDialog.vue'
+import RowAlarmSettingsDialog from '../alarms/RowAlarmSettingsDialog.vue'
 import '../../styles/edit.css'
 import { formatAttribute, formatByPeriod, formatLast, historyLines, isFileValue, isTargetValue, mediumLabel, rowPeriod, targetText, verificationState, verificationText } from '../../registers/format'
 import { useAuthStore } from '../../stores/auth'
@@ -19,7 +20,7 @@ import RegisterFile from './RegisterFile.vue'
 /*
  * Detail panel of a register row: all attribute values (files as thumbnail / download, multi-line texts kept), the
  * target and last value, a short history (base data: last values; meters: last readings, meter exchanges marked)
- * and the meter's QR code.
+ * and the meter's QR code. E7: the alarm settings (limits, alarm rules) of a meter's target data row.
  */
 
 const props = defineProps<{ kind: RegisterKind; row: RegisterRow; columns: readonly RegisterColumn[]; today: string }>()
@@ -116,6 +117,11 @@ function exchangeSaved(timestamp: string) {
   emit('changed')
 }
 
+/* ---- E7: alarm settings of the meter's data row (the server answers a raw row for its clean data row) ---- */
+
+const alarmRowId = computed<number | null>(() => (meter.value && props.row.target?.readable && typeof props.row.target.id === 'number' ? props.row.target.id : null))
+const alarmOpen = ref(false)
+
 const lines = computed(() =>
   historyLines(history.value, { meter: meter.value, period: rowPeriod(props.row), decimals: props.row.last?.decimals, unit: props.row.last?.unit }, locale.value),
 )
@@ -173,13 +179,22 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
           </dd>
         </template>
       </dl>
-      <div v-if="canEnter || canWrite || canRemove" class="edit-actions">
+      <div v-if="canEnter || canWrite || canRemove || alarmRowId != null" class="edit-actions">
         <button v-if="canWrite" type="button" class="edit-btn reg-edit" :aria-label="t('registerEdit.editLabel', { name: row.name })" @click="emit('edit')">
           {{ t('registerEdit.edit') }}
         </button>
         <button v-if="canEnter" type="button" class="edit-btn reg-entry" :aria-label="t('entry.actionLabel', { name: row.name })" @click="entryOpen = true">{{ t('entry.action') }}</button>
         <button v-if="canExchange" type="button" class="edit-btn reg-exchange-btn" :aria-label="t('registerEdit.exchange.actionLabel', { name: row.name })" @click="exchangeOpen = true">
           {{ t('registerEdit.exchange.action') }}
+        </button>
+        <button
+          v-if="alarmRowId != null"
+          type="button"
+          class="edit-btn reg-alarm-settings"
+          :aria-label="t('alarmSettings.rowSettingsLabel', { name: row.name })"
+          @click="alarmOpen = true"
+        >
+          {{ t('alarmSettings.rowSettings') }}
         </button>
         <button v-if="canRemove" type="button" class="edit-btn is-danger reg-delete" :aria-label="t('registerEdit.deleteLabel', { name: row.name })" @click="emit('remove')">
           {{ t('registerEdit.delete') }}
@@ -251,6 +266,7 @@ const id = (suffix: string) => `reg-${props.row.id}-${suffix}`
       <MeterQr :meter-id="row.id" :name="row.name" />
     </section>
 
+    <RowAlarmSettingsDialog v-if="alarmOpen && alarmRowId != null" :row-id="alarmRowId" :row-name="row.target?.name ?? row.name" @close="alarmOpen = false" />
     <MeterExchangeDialog v-if="exchangeOpen" :row="row" @close="exchangeOpen = false" @saved="exchangeSaved" />
     <EntryDialog v-if="entryOpen && entryRowId != null" :row-id="entryRowId" :row-name="row.name" @close="entryOpen = false" @saved="entrySaved" />
     <ConfirmDialog
