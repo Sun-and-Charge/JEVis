@@ -60,18 +60,12 @@ public class FilterableTreeItem extends TreeItem<JEVisTreeViewItem> {
         setHiddenFieldChildren(this.filteredList);
     }
 
+    /**
+     * The visible children follow the filtered list (J25: before, the private children field of TreeItem was replaced
+     * by reflection, which Java 9+ refuses without --add-opens).
+     */
     protected void setHiddenFieldChildren(ObservableList<TreeItem<JEVisTreeViewItem>> list) {
-        try {
-            Field childrenField = TreeItem.class.getDeclaredField("children"); //$NON-NLS-1$
-            childrenField.setAccessible(true);
-            childrenField.set(this, list);
-
-            Field declaredField = TreeItem.class.getDeclaredField("childrenListener"); //$NON-NLS-1$
-            declaredField.setAccessible(true);
-            list.addListener((ListChangeListener<? super TreeItem<JEVisTreeViewItem>>) declaredField.get(this));
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            throw new RuntimeException("Could not set TreeItem.children", e); //$NON-NLS-1$
-        }
+        javafx.beans.binding.Bindings.bindContent(getChildren(), list);
     }
 
     public ObservableList<TreeItem<JEVisTreeViewItem>> getInternalChildren() {

@@ -21,7 +21,7 @@
 package org.jevis.jeconfig.application.Chart.Charts;
 
 import com.ibm.icu.text.NumberFormat;
-import com.sun.javafx.charts.Legend;
+import org.jevis.jeconfig.application.Chart.ChartElements.ChartLegend;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -422,18 +422,14 @@ public class PieChart implements Chart {
     }
 
     public void makeCustomLegend() {
-        ObservableList<Legend.LegendItem> items = pieChart.getPieLegend().getItems();
-        for (int j = 0; j < items.size(); j++) {
-            Legend.LegendItem legendItem = items.get(j);
-            int finalI = j;
-            Platform.runLater(() -> {
-                legendItem.setSymbol(new Rectangle(8, 8, hexColors.get(finalI)));
-                legendItem.setText(seriesNames.get(finalI));
-            });
+        ObservableList<ChartLegend.LegendItem> items = pieChart.getPieLegend().getItems();
+        List<ChartLegend.LegendItem> newItems = new ArrayList<>();
+        for (int j = 0; j < Math.min(seriesNames.size(), hexColors.size()); j++) {
+            newItems.add(new ChartLegend.LegendItem(seriesNames.get(j), new Rectangle(8, 8, hexColors.get(j))));
         }
-
         AlphanumComparator ac = new AlphanumComparator();
-        Platform.runLater(() -> items.sort((o1, o2) -> ac.compare(o1.getText(), o2.getText())));
+        newItems.sort((o1, o2) -> ac.compare(o1.getText(), o2.getText()));
+        Platform.runLater(() -> items.setAll(newItems));
     }
 
     @Override

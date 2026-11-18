@@ -19,7 +19,6 @@
  */
 package org.jevis.jeconfig;
 
-import com.sun.javafx.css.StyleManager;
 import de.jollyday.HolidayManager;
 import de.jollyday.ManagerParameters;
 import javafx.application.Application;
@@ -214,6 +213,26 @@ public class JEConfig extends Application {
      *
      * @param args the command line arguments
      */
+    /**
+     * Adds the stylesheet to the scene of every window that is open now or opened later.
+     */
+    private static void installWindowStylesheet(String stylesheet) {
+        String url = JEConfig.class.getResource(stylesheet).toExternalForm();
+        java.util.function.Consumer<javafx.scene.Scene> add = scene -> {
+            if (scene != null && !scene.getStylesheets().contains(url)) scene.getStylesheets().add(0, url);
+        };
+        java.util.function.Consumer<javafx.stage.Window> watch = window -> {
+            add.accept(window.getScene());
+            window.sceneProperty().addListener((observable, oldScene, newScene) -> add.accept(newScene));
+        };
+        javafx.stage.Window.getWindows().forEach(watch);
+        javafx.stage.Window.getWindows().addListener((javafx.collections.ListChangeListener<javafx.stage.Window>) change -> {
+            while (change.next()) {
+                change.getAddedSubList().forEach(watch);
+            }
+        });
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -458,8 +477,9 @@ public class JEConfig extends Application {
             }
         }
 
-        /* register before the first scene is styled; adding it later restyles every node and logs lookup warnings */
-        StyleManager.getInstance().addUserAgentStylesheet("/styles/ToolTip.css");
+        /* default tooltip style for every window, also the tooltip popups themselves (J25: before, an additional user
+           agent stylesheet via the internal StyleManager) */
+        installWindowStylesheet("/styles/ToolTip.css");
 
         final AnchorPane jeconfigRoot = new AnchorPane();
 

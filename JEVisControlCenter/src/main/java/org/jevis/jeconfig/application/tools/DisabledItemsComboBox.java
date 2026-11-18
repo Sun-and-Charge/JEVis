@@ -59,9 +59,8 @@ public class DisabledItemsComboBox<T> extends ComboBox<T> {
 
             @Override
             public void select(int index) {
-                /* JavaFX 9+ also selects -1 to clear the selection */
+                /* JavaFX 9+ also selects -1; JavaFX 8 failed there with an exception, so the selection stayed as it was */
                 if (index < 0 || index >= getItems().size()) {
-                    super.select(index);
                     return;
                 }
                 T item = getItems().get(index);
@@ -80,7 +79,7 @@ public class DisabledItemsComboBox<T> extends ComboBox<T> {
 
             @Override
             protected T getModelItem(int index) {
-                return getItems().get(index);
+                return index >= 0 && index < getItems().size() ? getItems().get(index) : null;
             }
 
         };

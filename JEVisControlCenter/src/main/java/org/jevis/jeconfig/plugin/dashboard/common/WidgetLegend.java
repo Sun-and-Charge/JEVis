@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.common;
 
-import com.sun.javafx.charts.Legend;
+import org.jevis.jeconfig.application.Chart.ChartElements.ChartLegend;
 import javafx.geometry.Pos;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
@@ -52,7 +52,7 @@ import org.joda.time.Interval;
 
 import java.lang.reflect.Field;
 
-public class WidgetLegend extends Legend {
+public class WidgetLegend extends ChartLegend {
     private static final Logger logger = LogManager.getLogger(WidgetLegend.class);
 
 
@@ -65,14 +65,14 @@ public class WidgetLegend extends Legend {
         this.interval = interval;
     }
 
-    public Legend.LegendItem buildHorizontalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText) {
+    public ChartLegend.LegendItem buildHorizontalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText) {
         return buildHorizontalLegendItem(name, color, fontcolor, fontSize, obj, isAlert, alertText, wrapText, null);
     }
 
     /**
      * @param row optional data row of this entry; if set, the entry gets a context menu to open the row in the analysis
      */
-    public Legend.LegendItem buildHorizontalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText, ChartDataRow row) {
+    public ChartLegend.LegendItem buildHorizontalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText, ChartDataRow row) {
         Rectangle r = new Rectangle();
         r.setX(0);
         r.setY(0);
@@ -98,15 +98,9 @@ public class WidgetLegend extends Legend {
         }
 
 
-        /**
-         * TODO: replace this hack with an own implementation of an legend
-         */
-        Legend.LegendItem item = new Legend.LegendItem(name, gridPane);
+        ChartLegend.LegendItem item = new ChartLegend.LegendItem(name, gridPane);
         try {
-            Field privateStringField = Legend.LegendItem.class.
-                    getDeclaredField("label");
-            privateStringField.setAccessible(true);
-            Label label = (Label) privateStringField.get(item);
+            Label label = item.getLabel();
             label.setWrapText(wrapText);
 //            label.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
             label.setTextFill(fontcolor);
@@ -125,14 +119,14 @@ public class WidgetLegend extends Legend {
     }
 
 
-    public Legend.LegendItem buildVerticalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText) {
+    public ChartLegend.LegendItem buildVerticalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText) {
         return buildVerticalLegendItem(name, color, fontcolor, fontSize, obj, isAlert, alertText, wrapText, null);
     }
 
     /**
      * @param row optional data row of this entry; if set, the entry gets a context menu to open the row in the analysis
      */
-    public Legend.LegendItem buildVerticalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText, ChartDataRow row) {
+    public ChartLegend.LegendItem buildVerticalLegendItem(String name, Color color, Color fontcolor, double fontSize, JEVisObject obj, boolean isAlert, String alertText, boolean wrapText, ChartDataRow row) {
 
         Rectangle r = new Rectangle();
         r.setX(0);
@@ -159,15 +153,9 @@ public class WidgetLegend extends Legend {
         }
 
 
-        /**
-         * TODO: replace this hack with an own implementation of an legend
-         */
-        Legend.LegendItem item = new Legend.LegendItem(name, gridPane);
+        ChartLegend.LegendItem item = new ChartLegend.LegendItem(name, gridPane);
         try {
-            Field privateStringField = Legend.LegendItem.class.
-                    getDeclaredField("label");
-            privateStringField.setAccessible(true);
-            Label label = (Label) privateStringField.get(item);
+            Label label = item.getLabel();
             label.setWrapText(wrapText);
 //            label.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
             label.setTextFill(fontcolor);

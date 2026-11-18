@@ -19,7 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import javafx.scene.paint.Color;
+import org.jevis.jeconfig.application.tools.FxColorJson;
 import org.jevis.commons.chart.BubbleType;
 import org.jevis.commons.dataprocessing.AggregationPeriod;
 import org.jevis.commons.dataprocessing.ManipulationMode;
@@ -133,10 +136,12 @@ public class DataPointNode {
         this.cleanObjectID = cleanObjectID;
     }
 
+    @JsonSerialize(using = FxColorJson.Serializer.class)
     public Color getColor() {
         return this.color;
     }
 
+    @JsonDeserialize(using = FxColorJson.Deserializer.class)
     public void setColor(Color color) {
         this.color = color;
     }

@@ -19,25 +19,26 @@
  */
 package org.jevis.jeconfig.application.Chart.Charts;
 
-import com.sun.javafx.charts.Legend;
+import org.jevis.jeconfig.application.Chart.ChartElements.ChartLegend;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.PieChart;
 
 public class PieChartExtended extends PieChart {
 
-    private Legend legend;
+    /* own legend instead of the internal JavaFX one (J25); filled by the chart with names and colours */
+    private final ChartLegend legend = new ChartLegend();
 
     public PieChartExtended() {
         super();
-        this.legend = (Legend) getLegend();
+        setLegend(this.legend);
     }
 
     public PieChartExtended(ObservableList<Data> data) {
         super(data);
-        this.legend = (Legend) getLegend();
+        setLegend(this.legend);
     }
 
-    public Legend getPieLegend() {
+    public ChartLegend getPieLegend() {
         return this.legend;
     }
 }

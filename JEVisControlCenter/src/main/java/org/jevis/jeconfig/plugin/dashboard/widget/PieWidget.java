@@ -23,7 +23,7 @@ package org.jevis.jeconfig.plugin.dashboard.widget;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.AtomicDouble;
-import com.sun.javafx.charts.Legend;
+import org.jevis.jeconfig.application.Chart.ChartElements.ChartLegend;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -107,7 +107,7 @@ public class PieWidget extends Widget implements DataModelWidget {
         showAlertOverview(false, "");
 
         List<PieChart.Data> series = new ArrayList<>();
-        List<Legend.LegendItem> legendItemList = new ArrayList<>();
+        List<ChartLegend.LegendItem> legendItemList = new ArrayList<>();
         List<Color> colors = new ArrayList<>();
 
         /** data Update **/

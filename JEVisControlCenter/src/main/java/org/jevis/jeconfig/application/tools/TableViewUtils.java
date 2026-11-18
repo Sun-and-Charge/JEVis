@@ -72,6 +72,10 @@ public class TableViewUtils {
 
         // get context menu via reflection
         ContextMenu contextMenu = getContextMenu(tableHeaderRow);
+        if (contextMenu == null) {
+            /* the private menu of the header is not accessible (Java 9+ without --add-opens): keep the default menu */
+            return;
+        }
 
         // setting the preferred height for the table header row
         // if the preferred height isn't set, then the table header would disappear if there are no visible columns
@@ -150,6 +154,10 @@ public class TableViewUtils {
 
         // get context menu via reflection
         ContextMenu contextMenu = getContextMenu(tableHeaderRow);
+        if (contextMenu == null) {
+            /* the private menu of the header is not accessible (Java 9+ without --add-opens): keep the default menu */
+            return;
+        }
 
         // setting the preferred height for the table header row
         // if the preferred height isn't set, then the table header would disappear if there are no visible columns
@@ -273,7 +281,7 @@ public class TableViewUtils {
             return (ContextMenu) privateContextMenuField.get(headerRow);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            org.apache.logging.log4j.LogManager.getLogger(TableViewUtils.class).debug("Column menu of the table header not accessible: {}", ex.toString());
         }
 
         return null;
