@@ -257,7 +257,6 @@ public class ChartPlugin implements Plugin {
                     "    -fx-background-insets: 0,1,4,5;\n" +
                             "    -fx-background-radius: 9,8,5,4;\n" +
                             "    -fx-padding: 15 30 15 30;\n" +
-                            "    -fx-font-family: \"Cambria\";\n" +
                             "    -fx-font-size: 32px;\n" +
                             "    -fx-text-alignment: left;\n";
 //                    "    -fx-text-fill: #0076a3;\n";
@@ -325,6 +324,8 @@ public class ChartPlugin implements Plugin {
                 return new AreaChart(ds, chartModel);
             case STACKED_AREA:
                 return new StackedAreaChart(ds, chartModel);
+            case REGRESSION:
+                return new RegressionChart(ds, chartModel);
         }
     }
 

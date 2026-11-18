@@ -65,8 +65,7 @@
 .toggle-button,
 .menu-button,
 .split-menu-button,
-.combo-box-base,
-.jfx-button {
+.combo-box-base {
     -fx-background-color: #ffcc99;
     -fx-text-fill: #000000;
     -fx-background-radius: 20;

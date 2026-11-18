@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ChartType {
-    AREA, LOGICAL, LINE, BAR, COLUMN, BUBBLE, SCATTER, PIE, TABLE, HEAT_MAP, DEFAULT, TABLE_V, STACKED_AREA, STACKED_COLUMN, TABLE_H;
+    AREA, LOGICAL, LINE, BAR, COLUMN, BUBBLE, SCATTER, PIE, TABLE, HEAT_MAP, DEFAULT, TABLE_V, STACKED_AREA, STACKED_COLUMN, TABLE_H, REGRESSION;
 
     public static ChartType parseChartType(Integer chartTypeIndex) {
         switch (chartTypeIndex) {
@@ -59,6 +59,8 @@ public enum ChartType {
                 return STACKED_COLUMN;
             case (14):
                 return TABLE_H;
+            case (15):
+                return REGRESSION;
             case (2):
             default:
                 return LINE;
@@ -96,6 +98,8 @@ public enum ChartType {
                     return STACKED_AREA;
                 case ("STACKED_COLUMN"):
                     return STACKED_COLUMN;
+                case ("REGRESSION"):
+                    return REGRESSION;
                 case ("LINE"):
                 default:
                     return LINE;
@@ -136,6 +140,8 @@ public enum ChartType {
                     return 13;
                 case ("TABLE_H"):
                     return 14;
+                case ("REGRESSION"):
+                    return 15;
                 default:
                     return 2;
             }
@@ -190,6 +196,9 @@ public enum ChartType {
                     break;
                 case ("STACKED_COLUMN"):
                     tempList.add(I18n.getInstance().getString("plugin.graph.charttype.stackedcolumn.name"));
+                    break;
+                case ("REGRESSION"):
+                    tempList.add(org.jevis.jeconfig.application.Chart.Charts.RegressionChart.text("plugin.graph.charttype.regression.name", "Multivariate Regression", "Multivariate regression"));
                     break;
 
             }

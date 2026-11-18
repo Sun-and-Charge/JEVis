@@ -31,7 +31,6 @@
     -toolbarSVG-background-color: -suc-icon;
     -pluginSVG-background-color: -suc-on-primary;
     -ToolBarDatePicker-default-color: -suc-date-accent;
-    -jfx-default-color: -suc-date-accent;
 }
 
 /*---------------------------------------------------------------------------------------------------------------
@@ -104,10 +103,6 @@
     -fx-background-color: #d32f2f;
 }
 
-.ToolBarDatePicker.jfx-date-picker {
-    -jfx-default-color: -ToolBarDatePicker-default-color;
-}
-
 /* plugin tabs on the left side of the main window */
 .tab-pane.plugin-tab-pane > .tab-header-area > .tab-header-background {
     -fx-background-color: -suc-primary;
@@ -174,8 +169,7 @@
     -fx-text-fill: -tab-text-color;
 }
 
-.tab-pane > .tab-header-area > .tab-header-background,
-.jfx-tab-pane .tab-header-background {
+.tab-pane > .tab-header-area > .tab-header-background {
     -fx-background-color: -suc-surface-alt;
 }
 
@@ -221,14 +215,6 @@
     -fx-text-fill: -suc-on-primary;
 }
 
-.jfx-dialog {
-    -fx-text-color: -fx-text-color;
-}
-
-.jfx-dialog-overlay-pane > StackPane {
-    -fx-effect: null;
-}
-
 /*---------------------------------------------------------------------------------------------------------------
                                          Buttons and inputs
 ---------------------------------------------------------------------------------------------------------------*/
@@ -241,29 +227,29 @@
     -fx-background-color: derive(-fx-default-button-background, -8%);
 }
 
-/* JFoenix buttons are flat by default; the removed themes gave every button a background (Standard.css), so
-   without this rule calculator keys, icon buttons etc. had no frame. No text colour here: it would override colours
-   set in code (e.g. the green "check" button of the formula editor). Buttons in tool bars stay flat. */
-.jfx-button {
+/* Buttons in the corporate look (until J25 the JFoenix buttons, class jfx-button; since J25 every button). No text
+   colour here: it would override colours set in code (e.g. the green "check" button of the formula editor). Buttons
+   in tool bars stay flat. */
+.button {
     -fx-background-color: -suc-surface-alt;
     -fx-background-radius: 3;
     -fx-border-color: -suc-border;
     -fx-border-radius: 3;
 }
 
-.jfx-button:hover {
+.button:hover {
     -fx-background-color: -suc-hover;
 }
 
-.jfx-button:pressed {
+.button:pressed {
     -fx-background-color: derive(-suc-surface-alt, -10%);
 }
 
-.jfx-button:disabled {
+.button:disabled {
     -fx-opacity: 0.5;
 }
 
-.tool-bar .jfx-button {
+.tool-bar .button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
@@ -272,10 +258,6 @@
     -fx-border-color: -suc-accent;
     -fx-border-width: 2;
     -fx-border-radius: 3;
-}
-
-.jfx-check-box {
-    -fx-effect: null;
 }
 
 .hyperlink {
@@ -600,14 +582,9 @@
 }
 
 /*---------------------------------------------------------------------------------------------------------------
-                                         Calendar (JFoenix date picker)
-   JFoenix draws the day numbers in a fixed dark grey, so the calendar popup stays light in every theme.
-   Header, selected day and picker icon use -suc-date-accent instead of JFoenix's default teal.
+                                         Calendar (date picker)
+   The calendar popup stays light in every theme.
 ---------------------------------------------------------------------------------------------------------------*/
-.jfx-date-picker {
-    -jfx-default-color: -suc-date-accent;
-}
-
 .date-picker-popup {
     -fx-background-color: #ffffff;
 }
@@ -622,7 +599,6 @@
 }
 
 .date-picker-popup > * > .spinner > .button > .left-arrow,
-.date-picker-popup > * > .spinner > .button > .right-arrow,
-.date-picker-popup .jfx-svg-glyph {
+.date-picker-popup > * > .spinner > .button > .right-arrow {
     -fx-background-color: #313131;
 }
