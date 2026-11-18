@@ -33,6 +33,7 @@ import java.io.File;
  * @author broder
  */
 public class TemplateTransformator {
+    private static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(TemplateTransformator.class);
 
     private byte[] outputBytes;
 
@@ -53,7 +54,7 @@ public class TemplateTransformator {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(output.toByteArray());
         XSSFWorkbook workbook = new XSSFWorkbook(byteArrayInputStream);
         workbook.setForceFormulaRecalculation(true);
-        XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
+        evaluateFormulas(workbook);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
@@ -66,6 +67,28 @@ public class TemplateTransformator {
             output.close();
         }
         outputBytes = bos.toByteArray();
+    }
+
+    /**
+     * Stores the results of all formulas, so that the PDF (LibreOffice) and viewers without recalculation show the
+     * values. A formula POI cannot evaluate (e.g. an unsupported function) is left to Excel/LibreOffice instead of
+     * failing the whole report.
+     */
+    static void evaluateFormulas(XSSFWorkbook workbook) {
+        XSSFFormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        for (org.apache.poi.ss.usermodel.Sheet sheet : workbook) {
+            for (org.apache.poi.ss.usermodel.Row row : sheet) {
+                for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                    if (cell.getCellType() != org.apache.poi.ss.usermodel.CellType.FORMULA) continue;
+                    try {
+                        evaluator.evaluateFormulaCell(cell);
+                    } catch (Exception e) {
+                        logger.warn("Formula {}!{} ({}) not evaluated: {}", sheet.getSheetName(), cell.getAddress(),
+                                cell.getCellFormula(), e.getMessage());
+                    }
+                }
+            }
+        }
     }
 
     public byte[] getOutputBytes() {
