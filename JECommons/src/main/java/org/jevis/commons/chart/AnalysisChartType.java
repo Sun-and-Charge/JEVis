@@ -22,9 +22,13 @@ package org.jevis.commons.chart;
 /**
  * Chart types of an analysis, same names and parsing as the Control Center's {@code ChartType}
  * (org.jevis.jeconfig.application.Chart.ChartType) so the values can be passed through as strings.
+ * <p>
+ * {@link #REGRESSION} (multivariate linear regression of one row on the other rows of the chart, computed by the web
+ * app) is not known to the Control Center yet; it reads it as {@code LINE}.
  */
 public enum AnalysisChartType {
-    AREA, LOGICAL, LINE, BAR, COLUMN, BUBBLE, SCATTER, PIE, TABLE, HEAT_MAP, DEFAULT, TABLE_V, STACKED_AREA, STACKED_COLUMN, TABLE_H;
+    AREA, LOGICAL, LINE, BAR, COLUMN, BUBBLE, SCATTER, PIE, TABLE, HEAT_MAP, DEFAULT, TABLE_V, STACKED_AREA, STACKED_COLUMN, TABLE_H,
+    REGRESSION;
 
     /**
      * Same as {@code ChartType.parseChartType(String)}: unknown or {@code null} values become {@link #LINE}.

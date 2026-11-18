@@ -151,6 +151,15 @@ public class AnalysisReaderTest {
     }
 
     @Test
+    public void regressionChartTypeIsKeptAndNoTypeOfTheControlCenterChanged() {
+        assertEquals(AnalysisChartType.REGRESSION, AnalysisChartType.parse("REGRESSION"));
+        assertTrue(AnalysisChartType.REGRESSION.isXYChart());
+        /* the Control Center's types keep their names (its ChartType reads REGRESSION as LINE) */
+        assertEquals(AnalysisChartType.TABLE_H, AnalysisChartType.parse("TABLE_H"));
+        assertEquals(AnalysisChartType.LINE, AnalysisChartType.parse("MULTI_REGRESSION"));
+    }
+
+    @Test
     public void readsLegacyFormat() {
         AnalysisDefinition definition = new AnalysisReader().readLegacy(LEGACY_DATA_MODEL, LEGACY_CHARTS);
 

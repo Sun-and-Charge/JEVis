@@ -60,6 +60,11 @@ See `ResourceWebNavigation`.
 - `type` of a chart and `chartType` of a row: `AREA, LOGICAL, LINE, BAR, COLUMN, BUBBLE, SCATTER, PIE, TABLE,
   HEAT_MAP, DEFAULT, TABLE_V, STACKED_AREA, STACKED_COLUMN, TABLE_H` (as `ChartType` of the Control Center). A row
   with `DEFAULT` uses the type of its chart.
+- Chart type `REGRESSION` (web app only, 2026-11): multivariate linear regression (least squares with intercept) of
+  one row on the others, computed in the browser from the row data of the answer. `bubbleType` gives the roles: `Y` =
+  target (else the first row), `X` = drivers (else all other rows). Only timestamps at which every row has a value are
+  used. The web shows the target and the model over time plus equation, R², adjusted R², RMSE, CV(RMSE) and per term
+  coefficient, standard error, t and p. The Control Center reads the type as `LINE` until J25.
 - `key` identifies a row within the analysis (used in the data answer).
 - `bubbleType`: role of the row in a bubble chart, `X`, `Y`, `SIZE` or `NONE`. Without a row marked `X` the first
   row is the x row.
