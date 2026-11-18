@@ -78,7 +78,9 @@ public class DataSourceHelperFtpTest {
 
         @Override
         public String getModificationTime(String pathname) {
-            return "20261117000000";
+            /* the logger writes a file when its name says so */
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("([0-9]{14})").matcher(pathname);
+            return m.find() ? m.group(1) : "20261117000000";
         }
 
         @Override
@@ -131,5 +133,23 @@ public class DataSourceHelperFtpTest {
                 "/ext/Log/(.*)/(.*)/Meter(.*)csv", false);
         assertTrue(ftp.listed.toString(), ftp.listed.contains("/ext/Log/2025/"));
         assertTrue(ftp.listed.toString(), ftp.listed.contains("/ext/Log/2026/10/"));
+    }
+
+    @Test
+    public void maxReadoutWindowStartsAtTheFirstNewFile() {
+        /* the logger stopped from 08:31 to 14:45; the last readout lies in that gap */
+        FakeFtp ftp = new FakeFtp();
+        ftp.add("/ext/Log/", "2026", true);
+        ftp.add("/ext/Log/2026/", "11", true);
+        for (String time : new String[]{"20261117083148", "20261117144530", "20261117150141", "20261117161530"}) {
+            ftp.add("/ext/Log/2026/11/", "Meter_" + time + ".csv", false);
+        }
+        DateTime lastReadout = new DateTime(2026, 11, 17, 9, 44, DateTimeZone.UTC);
+        String path = "/ext/Log/${D:yyyy}/${D:MM}/Meter_${D:yyyyMMddHHmmss}.csv";
+
+        /* one hour from the first new file (before, the window ended at 10:44 and nothing was ever read again) */
+        assertEquals(java.util.Arrays.asList("/ext/Log/2026/11/Meter_20261117144530.csv", "/ext/Log/2026/11/Meter_20261117150141.csv"),
+                DataSourceHelper.getFTPMatchedFileNames(ftp, lastReadout, 3600L, DateTimeZone.UTC, path, false));
+        assertEquals(3, DataSourceHelper.getFTPMatchedFileNames(ftp, lastReadout, null, DateTimeZone.UTC, path, false).size());
     }
 }

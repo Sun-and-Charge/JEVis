@@ -100,36 +100,39 @@ public class DataSourceHelper {
 
 //        String fileName = null;
         String fileNameScheme = pathStream[pathStream.length - 1];
+        logger.info("Files of {} after the last readout {} (max readout: {}, overwrite: {}) in {} folder(s)", fileNameScheme, lastReadout,
+                maxReadout == null ? "none" : maxReadout + " s", overwrite, matchingPaths.size());
         String currentfolder = null;
         Map<String, Long> modificationTimes = new HashMap<String, Long>();
+        boolean dateTokens = DataSourceHelper.containsTokens(fileNameScheme);
+        /* files with a date in the name after the last readout; the max readout window starts at the first of them
+           (starting it at the last readout stalled the readout for good when no file fell into that window, e.g. after
+           an interruption of the logger) */
+        List<Object[]> datedFiles = new ArrayList<>();
         try {
             for (String folder : matchingPaths) {
                 currentfolder = folder;
                 fc.changeWorkingDirectory(folder);
 
                 for (FTPFile file : fc.listFiles()) {
-                    boolean match = false;
                     logger.debug(file.getName());
 
-                    if (DataSourceHelper.containsTokens(fileNameScheme)) {
+                    if (dateTokens) {
                         boolean matchDate = !file.isDirectory() && matchDateString(file.getName(), fileNameScheme);
                         if (!matchDate) {
                             continue;
                         }
-                        DateTime folderTime;
+                        DateTime fileTime;
                         try {
-                            folderTime = getFileTime(folder + file.getName(), pathStream);
+                            fileTime = getFileTime(folder + file.getName(), pathStream);
                         } catch (RuntimeException ex) {
                             logger.debug("File {} has no date of {}, skipped", file.getName(), fileNameScheme);
                             continue;
                         }
-                        boolean isLater = folderTime.isAfter(lastReadout);
-                        boolean isBefore = true;
-                        if (maxReadout != null) {
-                            isBefore = folderTime.isBefore(lastReadout.plusSeconds(maxReadout.intValue()));
-                        }
-                        if (matchDate && isLater && isBefore) {
-                            match = true;
+                        if (fileTime.isAfter(lastReadout)) {
+                            datedFiles.add(new Object[]{folder, file, fileTime});
+                        } else {
+                            logger.debug("File {}: time {} not after the last readout", file.getName(), fileTime);
                         }
                     } else {
                         Pattern p = Pattern.compile(fileNameScheme);
@@ -139,37 +142,31 @@ public class DataSourceHelper {
                         if (maxReadout != null) {
                             isBefore = fileTime.isBefore(lastReadout.plusSeconds(maxReadout.intValue()));
                         }
-                        match = m.matches() && isBefore;
-                    }
-
-                    if (!match) {
-                        continue;
-                    }
-
-                    DateTimeFormatter dateFormat = DateTimeFormat.forPattern("yyyyMMddHHmmss").withZone(timeZone);
-                    String fileName = file.getName();
-                    logger.debug("Filename: {} , getModificationTime: {}", fileName, fc.getModificationTime(folder + fileName));
-                    String timePart = fc.getModificationTime(folder + fileName);
-                    if (timePart == null || timePart.isEmpty()) {
-                        logger.warn("no date in file: {}", fileName);
-                    } else {
-                        try {
-                            logger.debug("parsing date: {}", timePart);
-                            DateTime modificationTime = dateFormat.parseDateTime(timePart);
-                            if (modificationTime.isBefore(lastReadout) && !overwrite) {
-                                continue;
-                            }
-                        } catch (Exception ex) {
-                            logger.error("cannot parse date in file: {}", ex, ex);
+                        if (m.matches() && isBefore) {
+                            addIfModifiedAfter(fc, folder, file, lastReadout, timeZone, overwrite, fileNames, modificationTimes);
                         }
                     }
+                }
+            }
 
-                    String matchedFileName = folder + file.getName();
-                    fileNames.add(matchedFileName);
-                    long modificationTime = file.getTimestamp() == null
-                            ? Long.MIN_VALUE
-                            : file.getTimestamp().getTimeInMillis();
-                    modificationTimes.put(matchedFileName, modificationTime);
+            if (!datedFiles.isEmpty()) {
+                DateTime first = null;
+                for (Object[] dated : datedFiles) {
+                    DateTime time = (DateTime) dated[2];
+                    if (first == null || time.isBefore(first)) first = time;
+                }
+                DateTime windowEnd = maxReadout != null ? first.plusSeconds(maxReadout.intValue()) : null;
+                if (windowEnd != null) {
+                    logger.info("Max readout: files from {} to {}", first, windowEnd);
+                }
+                for (Object[] dated : datedFiles) {
+                    DateTime time = (DateTime) dated[2];
+                    FTPFile file = (FTPFile) dated[1];
+                    if (windowEnd != null && !time.isBefore(windowEnd)) {
+                        logger.debug("File {}: time {} after the max readout window, read in a later run", file.getName(), time);
+                        continue;
+                    }
+                    addIfModifiedAfter(fc, (String) dated[0], file, lastReadout, timeZone, overwrite, fileNames, modificationTimes);
                 }
             }
         } catch (IOException ex) {
@@ -187,6 +184,33 @@ public class DataSourceHelper {
                 .thenComparing(Comparator.naturalOrder()));
 //        logger.info("filenamesize"+fileNames.size());
         return fileNames;
+    }
+
+    /**
+     * Adds the file unless the server reports a modification before the last readout (and overwrite is off).
+     */
+    private static void addIfModifiedAfter(FTPClient fc, String folder, FTPFile file, DateTime lastReadout, DateTimeZone timeZone,
+                                           boolean overwrite, List<String> fileNames, Map<String, Long> modificationTimes) throws IOException {
+        DateTimeFormatter dateFormat = DateTimeFormat.forPattern("yyyyMMddHHmmss").withZone(timeZone);
+        String fileName = file.getName();
+        String timePart = fc.getModificationTime(folder + fileName);
+        logger.debug("Filename: {} , getModificationTime: {}", fileName, timePart);
+        if (timePart == null || timePart.isEmpty()) {
+            logger.warn("no date in file: {}", fileName);
+        } else {
+            try {
+                DateTime modificationTime = dateFormat.parseDateTime(timePart);
+                if (modificationTime.isBefore(lastReadout) && !overwrite) {
+                    logger.debug("File {}: modified {} before the last readout, skipped", fileName, modificationTime);
+                    return;
+                }
+            } catch (Exception ex) {
+                logger.error("cannot parse date in file: {}", ex, ex);
+            }
+        }
+        String matchedFileName = folder + fileName;
+        fileNames.add(matchedFileName);
+        modificationTimes.put(matchedFileName, file.getTimestamp() == null ? Long.MIN_VALUE : file.getTimestamp().getTimeInMillis());
     }
 
     private static DateTime getFileTime(String name, String[] pathStream) {
