@@ -642,7 +642,11 @@ public class ToolBarView {
 
         save.setOnAction(action -> chartPlugin.handleRequest(Constants.Plugin.Command.SAVE));
 
-        loadNew.setOnAction(event -> loadNewDialog());
+        /* J25.5: the overview page replaces the load dialog (which stays reachable from the overview) */
+        loadNew.setOnAction(event -> {
+            loadNew.setSelected(false);
+            chartPlugin.showOverview();
+        });
 
         zoomOut.setOnAction(event -> resetZoom());
 

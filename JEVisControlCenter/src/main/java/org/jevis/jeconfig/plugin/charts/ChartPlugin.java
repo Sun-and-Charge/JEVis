@@ -19,6 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
+import org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.AnalysesComboBox;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
@@ -135,6 +137,7 @@ public class ChartPlugin implements Plugin {
     private final String tooltip = I18n.getInstance().getString("pluginmanager.graph.tooltip");
     private final ScrollPane sp = new ScrollPane();
     private final VBox vBox = new VBox();
+    private org.jevis.jeconfig.application.navigation.OverviewPane overview;
     private final BorderPane border = new BorderPane(sp);
 
     private final HashMap<Integer, Chart> allCharts = new HashMap<>();
@@ -248,41 +251,52 @@ public class ChartPlugin implements Plugin {
         if (firstStart) {
             firstStart = false;
 
-            VBox vBox = new VBox();
-            vBox.setAlignment(Pos.CENTER);
-            vBox.setSpacing(10);
-
-            String style =
-//                    "-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);" +
-                    "    -fx-background-insets: 0,1,4,5;\n" +
-                            "    -fx-background-radius: 9,8,5,4;\n" +
-                            "    -fx-padding: 15 30 15 30;\n" +
-                            "    -fx-font-size: 32px;\n" +
-                            "    -fx-text-alignment: left;\n";
-//                    "    -fx-text-fill: #0076a3;\n";
-
-            Button newAnalysis = new Button(I18n.getInstance().getString("plugin.graph.analysis.new"), JEConfig.getSVGImage(Icon.ADD_CHART, 32, 32));
-            newAnalysis.setStyle(style);
-            newAnalysis.setAlignment(Pos.CENTER);
-
-            Button loadAnalysis = new Button(I18n.getInstance().getString("plugin.graph.analysis.load"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 32, 32));
-            loadAnalysis.setStyle(style);
-            loadAnalysis.setAlignment(Pos.CENTER);
-
             Platform.runLater(() -> toolBarView.getAnalysesComboBox().updateListAnalyses());
-
-            newAnalysis.setOnAction(event -> handleRequest(Constants.Plugin.Command.NEW));
-
-            loadAnalysis.setOnAction(event -> openDialog());
-
-            Region top = new Region();
-
-            vBox.getChildren().setAll(top, loadAnalysis, newAnalysis);
-
-            this.sp.setContent(vBox);
-
-            Platform.runLater(() -> top.setPrefHeight(border.getHeight() / 3));
+            showOverview();
         }
+    }
+
+    /**
+     * Shows the overview page of the analyses (J25.5 stage 4): search, site, favourites, recently opened, all
+     * analyses by site; "Neue Analyse" and the load dialog with time frame as actions.
+     */
+    public void showOverview() {
+        if (overview == null) {
+            Button newAnalysis = new Button(I18n.getInstance().getString("plugin.graph.analysis.new"));
+            newAnalysis.setOnAction(event -> handleRequest(Constants.Plugin.Command.NEW));
+            Button loadDialog = new Button(org.jevis.jeconfig.application.navigation.PluginSidebar.text(
+                    "plugin.graph.analysis.loadwithperiod", "Mit Zeitraum laden …", "Load with period …"));
+            loadDialog.setOnAction(event -> openDialog());
+            overview = new org.jevis.jeconfig.application.navigation.OverviewPane(ds, ANALYSIS_CLASS,
+                    I18n.getInstance().getString("plugin.graph.title"), this::selectAnalysis, newAnalysis, loadDialog);
+        }
+        this.sp.setContent(overview);
+        overview.refresh();
+        overview.focusSearch();
+    }
+
+    /** opens the analysis with the current time frame and aggregation, as a selection in the analysis list */
+    private void selectAnalysis(JEVisObject analysis) {
+        AnalysesComboBox box = toolBarView.getAnalysesComboBox();
+        Thread waiter = new Thread(() -> {
+            for (int i = 0; i < 50 && !box.getItems().contains(analysis); i++) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            Platform.runLater(() -> {
+                if (analysis.equals(box.getSelectionModel().getSelectedItem())) {
+                    /* the same analysis again: show it again instead of the overview */
+                    handleRequest(Constants.Plugin.Command.RELOAD);
+                } else {
+                    box.getSelectionModel().select(analysis);
+                }
+            });
+        }, "open-analysis");
+        waiter.setDaemon(true);
+        waiter.start();
     }
 
     /**

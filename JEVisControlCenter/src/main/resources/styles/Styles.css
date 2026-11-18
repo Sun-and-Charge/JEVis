@@ -767,3 +767,49 @@
     -fx-text-fill: #d4a800;
     -fx-font-size: 15px;
 }
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Overview pages (J25.5 stage 4)
+---------------------------------------------------------------------------------------------------------------*/
+.overview-pane,
+.overview-scroll,
+.overview-scroll > .viewport {
+    -fx-background-color: -suc-background;
+}
+
+.overview-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -suc-text;
+}
+
+.overview-section {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -suc-text-muted;
+}
+
+.overview-card {
+    -fx-background-color: -suc-surface;
+    -fx-background-radius: 6;
+    -fx-border-color: -suc-border;
+    -fx-border-radius: 6;
+    -fx-padding: 10 12 10 12;
+    -fx-cursor: hand;
+}
+
+.overview-card:hover {
+    -fx-border-color: -suc-accent;
+    -fx-background-color: -suc-hover;
+}
+
+.overview-card-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: -suc-text;
+}
+
+.overview-card-site,
+.overview-empty {
+    -fx-text-fill: -suc-text-muted;
+    -fx-font-size: 11px;
+}

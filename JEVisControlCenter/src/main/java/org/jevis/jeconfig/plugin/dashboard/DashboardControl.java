@@ -312,6 +312,11 @@ public class DashboardControl {
         return configManager.createWidget(this, widgetPojo);
     }
 
+    /** shows the overview page of the dashboards */
+    public void showOverview() {
+        Platform.runLater(dashBordPlugIn::showOverview);
+    }
+
     public void loadFirstDashboard() {
         try {
             loadDashboardObjects();
@@ -334,8 +339,11 @@ public class DashboardControl {
                 selectDashboard(null);
             } else if (userDashboard != null) {
                 selectDashboard(userDashboard);
-            } else if (!this.dashboardObjects.isEmpty()) {
+            } else if (this.dashboardObjects.size() == 1) {
                 selectDashboard(this.dashboardObjects.get(0));
+            } else {
+                /* no start dashboard and several dashboards: the overview page (J25.5) */
+                Platform.runLater(dashBordPlugIn::showOverview);
             }
 
             firstDashboard = false;
@@ -532,6 +540,7 @@ public class DashboardControl {
      */
     public void selectDashboard(JEVisObject object) {
         logger.debug("selectDashboard: {}", object);
+        Platform.runLater(dashBordPlugIn::hideOverview);
         /* recently opened dashboards for the search (J25.5) */
         org.jevis.jeconfig.application.navigation.NavigationStore.recordOpened(object);
         stopAllUpdates();

@@ -19,7 +19,9 @@ Grafana's design recommendations (Saga design system and Grafana's UX writing gu
 
 Status 2026-11-18: stage 1 (AtlantaFX Primer light/dark under the brand tokens, Modena fallbacks for ControlsFX) and
 stage 2 (`application/navigation/PluginSidebar`, groups and icon-only mode as user preferences; the plugin tab pane
-only switches the content) are built; stages 3–5 open.
+only switches the content), stage 3 (`NavigationBar`, `QuickSearch`, `NavigationStore`: site picker, Strg+K search,
+favourites and recently opened per user and server) and stage 4 (`OverviewPane` for analyses and dashboards; dashboards
+without a start dashboard open on it, toolbar button "Übersicht") are built; stage 5 (dialogs) open.
 
 ## Dialog rules (Grafana Saga / UX writing, adapted to a desktop app)
 

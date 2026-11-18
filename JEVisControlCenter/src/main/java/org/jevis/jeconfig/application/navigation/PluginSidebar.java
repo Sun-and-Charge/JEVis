@@ -154,7 +154,7 @@ public class PluginSidebar extends VBox {
     }
 
     /** text from the language files, with a built-in German/English fallback while the key is missing there */
-    static String text(String key, String german, String english) {
+    public static String text(String key, String german, String english) {
         String value = I18n.getInstance().getString(key);
         if (value != null && !value.startsWith("*") && !value.equals(key)) return value;
         return "de".equals(I18n.getInstance().getLocale().getLanguage()) ? german : english;

@@ -67,6 +67,9 @@ public class DashBordPlugIn implements Plugin {
     private final DashBoardToolbar toolBar;
     private final BorderPane rootPane = new BorderPane();
     private final HiddenSidesPane hiddenSidesPane = new HiddenSidesPane(rootPane, new Region(), new Region(), new Region(), new Region());
+    /* J25.5 stage 4: overview page of the dashboards above the dashboard view */
+    private final javafx.scene.layout.StackPane contentStack = new javafx.scene.layout.StackPane(hiddenSidesPane);
+    private org.jevis.jeconfig.application.navigation.OverviewPane overview;
     private final ScrollPane scrollPane = new ScrollPane();
     /**
      * pane which gets the zoomed size of the dashboard so the layout of the ScrollPane is ok
@@ -316,7 +319,7 @@ public class DashBordPlugIn implements Plugin {
 
     @Override
     public Node getContentNode() {
-        return hiddenSidesPane;
+        return contentStack;
         //return notificationPane;
 //        return this.rootPane;
     }
@@ -356,9 +359,26 @@ public class DashBordPlugIn implements Plugin {
     public void openObject(Object object) {
         if (object instanceof JEVisObject) {
             JEVisObject dashboardObject = (JEVisObject) object;
+            hideOverview();
             dashboardControl.selectDashboard(dashboardObject);
         }
 
+    }
+
+    /** shows the overview page of the dashboards (search, site, favourites, recently opened, all by site) */
+    public void showOverview() {
+        if (overview == null) {
+            overview = new org.jevis.jeconfig.application.navigation.OverviewPane(jeVisDataSource, CLASS_ANALYSIS,
+                    org.jevis.commons.i18n.I18n.getInstance().getString("plugin.dashboard.title"), this::openObject);
+            overview.getStyleClass().add("overview-layer");
+        }
+        if (!contentStack.getChildren().contains(overview)) contentStack.getChildren().add(overview);
+        overview.refresh();
+        overview.focusSearch();
+    }
+
+    public void hideOverview() {
+        if (overview != null) contentStack.getChildren().remove(overview);
     }
 
     @Override

@@ -94,6 +94,7 @@ public class DashBoardToolbar extends ToolBar {
     private final ToggleButton navigator = new ToggleButton("", JEConfig.getSVGImage(Icon.SETTINGS, this.iconSize, this.iconSize));
     private final ToggleButton customWorkDay = new ToggleButton("", JEConfig.getSVGImage(Icon.CALENDAR, iconSize, iconSize));
     private final ToggleButton homeButton = new ToggleButton("", JEConfig.getSVGImage(Icon.HOME, iconSize, iconSize));
+    private final ToggleButton overviewButton = new ToggleButton("", JEConfig.getSVGImage(Icon.GRID, iconSize, iconSize));
     //private final ToggleButton moveButton = new ToggleButton("", JEConfig.getImage("move.png", this.iconSize, this.iconSize));
     private final Menu newWidgetMenuItem = new Menu("New");
     private final Button copyButton = new Button("", JEConfig.getSVGImage(Icon.COPY, this.iconSize, this.iconSize));
@@ -396,6 +397,13 @@ public class DashBoardToolbar extends ToolBar {
             this.dashboardControl.showSideEditorProperty.setValue(sidebarEditor.isSelected());
         });
 
+        overviewButton.setTooltip(new Tooltip(org.jevis.jeconfig.application.navigation.PluginSidebar.text(
+                "plugin.dashboard.toolbar.tip.overview", "Übersicht der Dashboards", "Overview of the dashboards")));
+        overviewButton.setOnAction(event -> {
+            overviewButton.setSelected(false);
+            this.dashboardControl.showOverview();
+        });
+        GlobalToolBar.changeBackgroundOnHoverUsingBinding(overviewButton);
         homeButton.setTooltip(new Tooltip(I18n.getInstance().getString("dashboard.navigator.home")));
         homeButton.setOnAction(event -> {
             this.dashboardControl.loadFirstDashboard();
@@ -444,7 +452,7 @@ public class DashBoardToolbar extends ToolBar {
         Platform.runLater(() -> {
             getItems().clear();
             getItems().setAll(
-                    listAnalysesComboBox, homeButton
+                    listAnalysesComboBox, overviewButton, homeButton
                     , sep3, toolBarIntervalSelector, customWorkDay
                     , sep1, zoomOut, zoomIn, listZoomLevel, reloadButton
                     , sep4, loadDialogButton, save, deleteDashboard
