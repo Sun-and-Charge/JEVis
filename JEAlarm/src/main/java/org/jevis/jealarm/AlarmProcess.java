@@ -122,21 +122,13 @@ public class AlarmProcess {
             for (JEVisObject obj : allCleanDataObjects) {
                 try {
                     CleanDataObject cleanDataObject = new CleanDataObject(obj);
-                    boolean alarmEnabled = false;
                     JEVisAttribute alarmEnabledAttribute = cleanDataObject.getAlarmEnabledAttribute();
-                    if (alarmEnabledAttribute != null && alarmEnabledAttribute.hasSample()) {
-                        JEVisSample latestSample = alarmEnabledAttribute.getLatestSample();
-                        if (latestSample != null) {
-                            try {
-                                alarmEnabled = latestSample.getValueAsBoolean();
-                                enabledAlarms.add(obj);
-
-                                if (!alarmEnabled) continue;
-                            } catch (JEVisException e) {
-                                logger.error("Error while getting alarm enabled attribute sample", e);
-                            }
-                        }
-                    } else continue;
+                    JEVisSample latestSample = alarmEnabledAttribute != null && alarmEnabledAttribute.hasSample()
+                            ? alarmEnabledAttribute.getLatestSample() : null;
+                    /* only rows with "Alarm Enabled" switched on are checked (before, a row switched off was checked too) */
+                    boolean alarmEnabled = isAlarmEnabled(latestSample);
+                    if (!alarmEnabled) continue;
+                    enabledAlarms.add(obj);
 
                     DateTime lastTS = cleanDataObject.getFirstDate();
                     if (alarmPeriod != Period.NONE && alarmEnabled && !lastTS.isAfter(end)) {
@@ -206,6 +198,20 @@ public class AlarmProcess {
             } else {
                 logger.warn("No new Data.");
             }
+        }
+    }
+
+    /**
+     * @param latestSample the latest sample of "Alarm Enabled", null if there is none
+     * @return whether the alarms of the row are switched on (a missing or unreadable value counts as off)
+     */
+    static boolean isAlarmEnabled(JEVisSample latestSample) {
+        if (latestSample == null) return false;
+        try {
+            return Boolean.TRUE.equals(latestSample.getValueAsBoolean());
+        } catch (Exception e) {
+            logger.error("Error while getting alarm enabled attribute sample", e);
+            return false;
         }
     }
 
