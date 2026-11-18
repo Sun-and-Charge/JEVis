@@ -161,6 +161,9 @@ class ReportTemplatesTest {
         /* expected 1000 + 2 · 500 = 2000, measured 2100 */
         assertEquals(100, number(rightOf(baseline, "Abweichung vom Modell", 1)), 1e-6);
         assertEquals(0.05, number(rightOf(baseline, "Abweichung vom Modell", 2)), 1e-9);
+        /* the charts of the overview survive the JXLS transformation */
+        assertEquals(2, ((org.apache.poi.xssf.usermodel.XSSFSheet) overview).getDrawingPatriarch().getCharts().size());
+        assertEquals("06.26", wb.getSheet("Verlauf").getRow(11).getCell(3).getStringCellValue());
     }
 
     @Test
@@ -203,6 +206,8 @@ class ReportTemplatesTest {
         assertEquals(3000, number(rightOf(overview, "Einsparung umgesetzter Maßnahmen (€/a)", 2)), 1e-9);
         assertEquals("01.01.2026 – 31.12.2026", rightOf(overview, "Berichtszeitraum", 1).getStringCellValue());
 
+        assertEquals(3, ((org.apache.poi.xssf.usermodel.XSSFSheet) overview).getDrawingPatriarch().getCharts().size());
+        assertEquals("01.26", wb.getSheet("Verbrauch").getRow(4).getCell(9).getStringCellValue());
         Sheet actions = wb.getSheet("Maßnahmen");
         assertEquals("LED-Umrüstung Halle 2", rightOf(actions, "MW 007", 1).getStringCellValue());
         assertEquals("01.06.2026", rightOf(actions, "MW 007", 5).getStringCellValue());
