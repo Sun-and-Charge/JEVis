@@ -176,88 +176,76 @@ public class sFTPDataSource implements DataSource {
                     logger.debug("{}: connect successful", logDataSourceID);
 
                     for (JEVisObject channel : channels) {
+                        /* the files are found and downloaded once per channel and parsed by every parser; they are
+                           deleted only when all parsers parsed them without errors (before, each parser downloaded
+                           them again and the first successful parser deleted them, so the next parser got nothing) */
+                        List<Path> downloadedFiles = new ArrayList<>();
+                        List<String> downloadedPaths = new ArrayList<>();
+                        List<Path> completeFiles = new ArrayList<>();
                         try {
                             JEVisClass parserJevisClass = channel.getDataSource().getJEVisClass(DataCollectorTypes.Parser.NAME);
-                            for (JEVisObject parserObject : channel.getChildren(parserJevisClass, true)) {
-                                logger.debug("{}: found parser {}", logDataSourceID, parserObject);
+                            List<JEVisObject> parserObjects = channel.getChildren(parserJevisClass, true);
+                            if (parserObjects.isEmpty()) {
+                                logger.warn("{}: channel {}:{} has no parser", logDataSourceID, channel.getID(), channel.getName());
+                                continue;
+                            }
 
-                                Parser parser = ParserFactory.getParser(parserObject);
-                                parser.initialize(parserObject);
-                                logger.debug("{}: initialized parser {}", logDataSourceID, parser);
-                                List<InputStream> input = new ArrayList<>();
-                                List<Path> downloadedFiles = new ArrayList<>();
+                            JEVisClass channelClass = channel.getJEVisClass();
+                            JEVisType pathType = channelClass.getType(DataCollectorTypes.Channel.sFTPChannel.PATH);
+                            String regexPattern = DatabaseHelper.getObjectAsString(channel, pathType);
+                            JEVisType readoutType = channelClass.getType(DataCollectorTypes.Channel.sFTPChannel.LAST_READOUT);
+                            DateTime lastReadout = DatabaseHelper.getObjectAsDate(channel, readoutType);
+
+                            JEVisType readoutOffsetType = channelClass.getType(DataCollectorTypes.Channel.sFTPChannel.READOUT_OFFSET);
+                            Long readoutOffset = DatabaseHelper.getObjectAsLong(channel, readoutOffsetType);
+
+                            if (readoutOffset != null && lastReadout != null) {
+                                lastReadout = lastReadout.minus(readoutOffset);
+                            }
+
+                            List<String> matches = findMatchingFiles(sftp, regexPattern, lastReadout);
+                            logger.info("{}: {} files matches Pattern, starting download", logDataSourceID, matches.size());
+
+                            /* Fetch Files: sftp.read() occupies a transfer handle until its stream is closed, so one
+                               file at a time is spooled to a local temporary file */
+                            for (String path : matches) {
                                 try {
-
-                                    JEVisClass channelClass = channel.getJEVisClass();
-                                    JEVisType pathType = channelClass.getType(DataCollectorTypes.Channel.sFTPChannel.PATH);
-                                    String regexPattern = DatabaseHelper.getObjectAsString(channel, pathType);
-                                    JEVisType readoutType = channelClass.getType(DataCollectorTypes.Channel.sFTPChannel.LAST_READOUT);
-                                    DateTime lastReadout = DatabaseHelper.getObjectAsDate(channel, readoutType);
-
-                                    JEVisType readoutOffsetType = channelClass.getType(DataCollectorTypes.Channel.sFTPChannel.READOUT_OFFSET);
-                                    Long readoutOffset = DatabaseHelper.getObjectAsLong(channel, readoutOffsetType);
-
-                                    if (readoutOffset != null && lastReadout != null) {
-                                        lastReadout = lastReadout.minus(readoutOffset);
+                                    logger.debug("{}: Start Download: {}", logDataSourceID, path);
+                                    Path downloadedFile = Files.createTempFile("jevis-sftp-", ".download");
+                                    downloadedFiles.add(downloadedFile);
+                                    try (InputStream remoteInput = sftp.read(path)) {
+                                        Files.copy(remoteInput, downloadedFile, StandardCopyOption.REPLACE_EXISTING);
                                     }
+                                    downloadedPaths.add(path);
+                                    completeFiles.add(downloadedFile);
+                                    logger.debug("{}: Finished Download: {}", logDataSourceID, path);
+                                } catch (IOException e) {
+                                    logger.error("{}: Error while reading path: {}: {}", logDataSourceID, path, e);
+                                }
+                            }
+                            if (downloadedPaths.isEmpty()) {
+                                logger.warn("{}: Cant get any data from the device", logDataSourceID);
+                            }
 
-                                    List<String> matches = findMatchingFiles(sftp, regexPattern, lastReadout);
-                                    logger.info("{}: {} files matches Pattern, starting download", logDataSourceID, matches.size());
-
-                                    /* Fetch Files */
-                                    List<String> failedPaths = new ArrayList<>();
-                                    for (String path : matches) {
-                                        try {
-                                            logger.debug("{}: Start Download: {}", logDataSourceID, path);
-                                            Path downloadedFile = Files.createTempFile("jevis-sftp-", ".download");
-                                            downloadedFiles.add(downloadedFile);
-
-                                            // sftp.read() occupies a transfer handle until its stream is closed.
-                                            // Spool one file at a time so the server never sees all selected
-                                            // files as concurrent transfers. Parsing then uses local streams.
-                                            try (InputStream remoteInput = sftp.read(path)) {
-                                                Files.copy(remoteInput, downloadedFile, StandardCopyOption.REPLACE_EXISTING);
-                                            }
-
-                                            input.add(new BufferedInputStream(Files.newInputStream(downloadedFile)));
-                                            logger.debug("{}: Finished Download: {}", logDataSourceID, path);
-                                        } catch (IOException e) {
-                                            logger.error("{}: Error while reading path: {}: {}", logDataSourceID, path, e);
-                                            failedPaths.add(path);
-                                        }
+                            boolean successful = true;
+                            for (JEVisObject parserObject : parserObjects) {
+                                List<InputStream> input = new ArrayList<>();
+                                try {
+                                    Parser parser = ParserFactory.getParser(parserObject);
+                                    parser.initialize(parserObject);
+                                    logger.debug("{}: initialized parser {}", logDataSourceID, parser);
+                                    for (Path completeFile : completeFiles) {
+                                        input.add(new BufferedInputStream(Files.newInputStream(completeFile)));
                                     }
-
-                                    /* Import Files */
-                                    logger.debug("{}: Start parsing files: {}", logDataSourceID, input.size());
-
-                                    if (input.isEmpty()) {
-                                        logger.warn("{}: Cant get any data from the device", logDataSourceID);
-                                    }
-
                                     parser.parse(input, timezone);
-
                                     JEVisImporterAdapter.importResults(parser.getResult(), importer, channel);
-
-                                    /* Delete File */
-                                    matches.removeAll(failedPaths);
-                                    if (deleteOnSuccess && parser.getReport().errors().isEmpty()) {
-                                        for (String file : matches) {
-                                            try {
-                                                logger.debug("{}: Delete File: {}", logDataSourceID, file);
-                                                sftp.remove(file);
-                                            } catch (Exception ex) {
-                                                logger.error("{}: Error while deleting file: {}:{}", logDataSourceID, file, ex);
-                                            }
-                                        }
+                                    if (!parser.getReport().errors().isEmpty()) {
+                                        successful = false;
                                     }
-                                } catch (JEVisException ex) {
-                                    logger.error("{}: JEVisException. For channel {}:{}. {}", logDataSourceID, channel.getID(), channel.getName(), ex.getMessage());
-                                    logger.debug("{}: JEVisException. For channel {}:{}", logDataSourceID, channel.getID(), channel.getName(), ex);
-                                } catch (ParseException ex) {
-                                    logger.error("{}: Parse Exception. For channel {}:{}. {}", logDataSourceID, channel.getID(), channel.getName(), ex.getMessage());
-                                    logger.debug("{}: Parse Exception. For channel {}:{}", logDataSourceID, channel.getID(), channel.getName(), ex);
                                 } catch (Exception ex) {
-                                    logger.error("{}: Exception. For channel {}:{}", logDataSourceID, channel.getID(), channel.getName(), ex);
+                                    successful = false;
+                                    logger.error("{}: Exception. For channel {}:{}, parser {}", logDataSourceID, channel.getID(),
+                                            channel.getName(), parserObject.getID(), ex);
                                 } finally {
                                     for (InputStream inputStream : input) {
                                         try {
@@ -266,18 +254,31 @@ public class sFTPDataSource implements DataSource {
                                             logger.warn("{}: Error while closing local download: {}", logDataSourceID, e.getMessage());
                                         }
                                     }
-                                    for (Path downloadedFile : downloadedFiles) {
-                                        try {
-                                            Files.deleteIfExists(downloadedFile);
-                                        } catch (IOException e) {
-                                            logger.warn("{}: Error while deleting temporary download {}: {}",
-                                                    logDataSourceID, downloadedFile, e.getMessage());
-                                        }
+                                }
+                            }
+
+                            /* Delete Files: only those downloaded completely, only when every parser succeeded */
+                            if (deleteOnSuccess && successful) {
+                                for (String file : downloadedPaths) {
+                                    try {
+                                        logger.debug("{}: Delete File: {}", logDataSourceID, file);
+                                        sftp.remove(file);
+                                    } catch (Exception ex) {
+                                        logger.error("{}: Error while deleting file: {}:{}", logDataSourceID, file, ex);
                                     }
                                 }
                             }
                         } catch (Exception ex) {
-                            logger.error(ex);
+                            logger.error("{}: Exception. For channel {}:{}", logDataSourceID, channel.getID(), channel.getName(), ex);
+                        } finally {
+                            for (Path downloadedFile : downloadedFiles) {
+                                try {
+                                    Files.deleteIfExists(downloadedFile);
+                                } catch (IOException e) {
+                                    logger.warn("{}: Error while deleting temporary download {}: {}",
+                                            logDataSourceID, downloadedFile, e.getMessage());
+                                }
+                            }
                         }
                     }
 

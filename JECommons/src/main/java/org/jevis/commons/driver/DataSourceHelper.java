@@ -112,8 +112,17 @@ public class DataSourceHelper {
                     logger.debug(file.getName());
 
                     if (DataSourceHelper.containsTokens(fileNameScheme)) {
-                        boolean matchDate = matchDateString(file.getName(), fileNameScheme);
-                        DateTime folderTime = getFileTime(folder + file.getName(), pathStream);
+                        boolean matchDate = !file.isDirectory() && matchDateString(file.getName(), fileNameScheme);
+                        if (!matchDate) {
+                            continue;
+                        }
+                        DateTime folderTime;
+                        try {
+                            folderTime = getFileTime(folder + file.getName(), pathStream);
+                        } catch (RuntimeException ex) {
+                            logger.debug("File {} has no date of {}, skipped", file.getName(), fileNameScheme);
+                            continue;
+                        }
                         boolean isLater = folderTime.isAfter(lastReadout);
                         boolean isBefore = true;
                         if (maxReadout != null) {
@@ -262,12 +271,18 @@ public class DataSourceHelper {
                 }
 //                DateTimeFormatter ftmTemp = getDateFormatter(nextToken);
                 for (FTPFile folder : listDirectories) {
-                    if (!matchDateString(folder.getName(), nextToken)) {
+                    /* only folders whose name is a date of the token (a file or a folder like "temp" that has the
+                       right length used to abort the whole search with a parse error) */
+                    if (folder == null || folder.isFile() || !matchDateString(folder.getName(), nextToken)) {
                         continue;
                     }
-//                    logger.info("listdir," + folder.getName());
-//                    if (containsDate(folder.getName(), ftmTemp)) {
-                    DateTime folderTime = getFolderTime(path + folder.getName() + "/", pathStream);
+                    DateTime folderTime;
+                    try {
+                        folderTime = getFolderTime(path + folder.getName() + "/", pathStream);
+                    } catch (RuntimeException ex) {
+                        logger.debug("Folder {} is no date of {}, skipped", folder.getName(), nextToken);
+                        continue;
+                    }
 
                     if (folderTime.isAfter(lastReadout)) {
                         nextFolder = folder.getName();
