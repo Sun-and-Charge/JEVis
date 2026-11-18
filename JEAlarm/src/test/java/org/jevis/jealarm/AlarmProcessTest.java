@@ -19,12 +19,15 @@
  */
 package org.jevis.jealarm;
 
+import org.jevis.commons.dataprocessing.VirtualSample;
 import org.jevis.commons.datetime.Period;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlarmProcessTest {
 
@@ -45,5 +48,13 @@ public class AlarmProcessTest {
     @Test
     public void withoutPeriodTheLastDayIsChecked() {
         assertEquals(NOW.minusDays(1), AlarmProcess.firstStart(Period.NONE, ZONE, NOW, null));
+    }
+
+    @Test
+    public void onlyRowsSwitchedOnAreChecked() {
+        assertTrue(AlarmProcess.isAlarmEnabled(new VirtualSample(NOW, "1")));
+        assertFalse(AlarmProcess.isAlarmEnabled(new VirtualSample(NOW, "0")));
+        assertTrue(AlarmProcess.isAlarmEnabled(new VirtualSample(NOW, "true")));
+        assertFalse(AlarmProcess.isAlarmEnabled(null));
     }
 }
