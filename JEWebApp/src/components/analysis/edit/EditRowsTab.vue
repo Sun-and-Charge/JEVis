@@ -117,6 +117,9 @@ function remove(index: number) {
 }
 
 const showBubble = computed(() => chart.value?.type === 'BUBBLE')
+/* REGRESSION: the same row setting marks the target (Y) and the drivers (X) */
+const showRegression = computed(() => chart.value?.type === 'REGRESSION')
+const REGRESSION_ROLES = ['NONE', 'Y', 'X'] as const
 const showRowType = computed(() => !!chart.value && isXyType(chart.value.type))
 </script>
 
@@ -268,7 +271,14 @@ const showRowType = computed(() => !!chart.value && isXyType(chart.value.type))
                     <option v-if="!(ROW_TYPES as readonly string[]).includes(row.chartType)" :value="row.chartType">{{ row.chartType }}</option>
                   </select>
                 </div>
-                <div v-if="showBubble || row.bubbleType !== 'NONE'" class="edit-field">
+                <div v-if="showRegression" class="edit-field">
+                  <label :for="f.fid(path(ri, 'bubbleType'))">{{ t('analysisEdit.rows.regressionRole') }}</label>
+                  <select :id="f.fid(path(ri, 'bubbleType'))" v-model="row.bubbleType" class="ae-regression-role">
+                    <option v-for="b in REGRESSION_ROLES" :key="b" :value="b">{{ label('regressionRoles', b) }}</option>
+                    <option v-if="!(REGRESSION_ROLES as readonly string[]).includes(row.bubbleType)" :value="row.bubbleType">{{ label('bubbleTypes', row.bubbleType) }}</option>
+                  </select>
+                </div>
+                <div v-else-if="showBubble || row.bubbleType !== 'NONE'" class="edit-field">
                   <label :for="f.fid(path(ri, 'bubbleType'))">{{ t('analysisEdit.rows.bubbleType') }}</label>
                   <select :id="f.fid(path(ri, 'bubbleType'))" v-model="row.bubbleType">
                     <option v-for="b in BUBBLE_TYPES" :key="b" :value="b">{{ label('bubbleTypes', b) }}</option>

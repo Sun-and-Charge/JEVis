@@ -8,7 +8,7 @@ import { rowNotes } from './notes'
 export type XyType = 'LINE' | 'AREA' | 'STACKED_AREA' | 'COLUMN' | 'STACKED_COLUMN' | 'SCATTER' | 'LOGICAL' | 'BUBBLE'
 
 /** How a whole chart is drawn. */
-export type ChartKind = 'xy' | 'bar' | 'pie' | 'heatmap' | 'bubble' | 'table'
+export type ChartKind = 'xy' | 'bar' | 'pie' | 'heatmap' | 'bubble' | 'table' | 'regression'
 
 export type TableOrientation = 'vertical' | 'horizontal'
 
@@ -82,6 +82,8 @@ export function chartKind(type: string): ChartKind {
       return 'heatmap'
     case 'BUBBLE':
       return 'bubble'
+    case 'REGRESSION':
+      return 'regression'
     case 'TABLE':
     case 'TABLE_V':
     case 'TABLE_H':

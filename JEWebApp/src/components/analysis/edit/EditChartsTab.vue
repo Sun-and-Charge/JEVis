@@ -45,7 +45,7 @@ function setHeight(chart: DraftChart, value: string) {
   const v = value.trim()
   chart.height = v === '' ? -1 : Number.isFinite(Number(v)) ? Number(v) : ''
 }
-const showAxes = (chart: DraftChart) => isXyType(chart.type) || chart.type === 'BAR' || chart.type === 'BUBBLE'
+const showAxes = (chart: DraftChart) => isXyType(chart.type) || chart.type === 'BAR' || chart.type === 'BUBBLE' || chart.type === 'REGRESSION'
 const showColorMapping = (chart: DraftChart) => chart.type === 'HEAT_MAP' || isTableType(chart.type)
 </script>
 

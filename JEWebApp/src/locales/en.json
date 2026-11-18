@@ -189,7 +189,26 @@
       "pngLabel": "Save {name} as image (PNG)",
       "csvLabel": "Save the values of {name} as CSV"
     },
-    "count": "Count"
+    "count": "Count",
+    "regression": {
+      "model": "Model",
+      "formula": "Model equation",
+      "n": "Data points",
+      "adjustedR2": "R² (adjusted)",
+      "rmse": "Standard error (RMSE)",
+      "caption": "Regression coefficients in {name}",
+      "term": "Variable",
+      "coefficient": "Coefficient",
+      "standardError": "Standard error",
+      "intercept": "Intercept (base load)",
+      "hint": "Least squares regression over the timestamps at which all rows have values. The rows should share one aggregation (e.g. day or month). Grey: p ≥ 0.1, the influence is not statistically significant.",
+      "problem": {
+        "NO_TARGET": "No target: mark a data row with values as the target.",
+        "NO_DRIVERS": "No driver: the regression needs at least one more data row with values.",
+        "TOO_FEW_POINTS": "Too few common timestamps: the regression needs at least {needed} timestamps at which all rows have values. Choose a longer period or the same aggregation for all rows.",
+        "COLLINEAR": "The drivers depend linearly on each other (or are constant). Remove one of them."
+      }
+    }
   },
   "dashboard": {
     "loading": "Loading dashboard …",
@@ -1889,7 +1908,8 @@
       "TABLE_V": "Multi-Column Table",
       "STACKED_AREA": "Area (Stacked)",
       "STACKED_COLUMN": "Column (Stacked)",
-      "TABLE_H": "Aggregated Table"
+      "TABLE_H": "Aggregated Table",
+      "REGRESSION": "Multivariate regression"
     },
     "orientations": {
       "HORIZONTAL": "Horizontal",
@@ -1918,6 +1938,11 @@
       "Y": "Y",
       "SIZE": "Size"
     },
+    "regressionRoles": {
+      "NONE": "Automatic",
+      "Y": "Target",
+      "X": "Driver"
+    },
     "rows": {
       "chart": "Chart",
       "add": "Add data rows",
@@ -1933,6 +1958,7 @@
       "axis": "y-Axis",
       "chartType": "Different chart type",
       "bubbleType": "Role in the bubble chart",
+      "regressionRole": "Role in the regression",
       "decimalDigits": "Decimal Digits",
       "decimalAuto": "as chart",
       "interval": "Own time frame",

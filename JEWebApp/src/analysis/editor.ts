@@ -21,7 +21,7 @@ import { FALLBACK_COLORS } from './model'
  */
 
 /** Chart types offered for a chart (as `ChartType` of the Control Center, without DEFAULT). */
-export const CHART_TYPES = ['LINE', 'AREA', 'STACKED_AREA', 'COLUMN', 'STACKED_COLUMN', 'BAR', 'SCATTER', 'BUBBLE', 'LOGICAL', 'PIE', 'HEAT_MAP', 'TABLE', 'TABLE_V', 'TABLE_H'] as const
+export const CHART_TYPES = ['LINE', 'AREA', 'STACKED_AREA', 'COLUMN', 'STACKED_COLUMN', 'BAR', 'SCATTER', 'BUBBLE', 'LOGICAL', 'PIE', 'HEAT_MAP', 'TABLE', 'TABLE_V', 'TABLE_H', 'REGRESSION'] as const
 /** Types of a row: DEFAULT = the type of its chart. */
 export const ROW_TYPES = ['DEFAULT', ...CHART_TYPES] as const
 export const ORIENTATIONS = ['HORIZONTAL', 'VERTICAL'] as const

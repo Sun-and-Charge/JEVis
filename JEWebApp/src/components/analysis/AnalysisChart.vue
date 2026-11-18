@@ -9,6 +9,7 @@ import { editableRowNote, notePointFromClick, type ChartClick, type NotePoint } 
 import { chartOption, type OptionContext } from '../../analysis/options'
 import { buildCsv, fileName } from '../../analysis/table'
 import DataTable from './DataTable.vue'
+import RegressionSummary from './RegressionSummary.vue'
 import SummaryTable from './SummaryTable.vue'
 
 const props = defineProps<{
@@ -121,6 +122,7 @@ function exportCsv() {
         />
       </div>
       <p v-if="noteClicks" class="note-hint">{{ t('noteEdit.chartHint') }}</p>
+      <RegressionSummary v-if="chart.kind === 'regression'" :chart="chart" />
       <SummaryTable :chart="chart" :ctx="ctx" @add-note="(r: RowView) => emit('addNote', r)" @entry="(r: RowView) => emit('entry', r)" />
     </template>
   </section>

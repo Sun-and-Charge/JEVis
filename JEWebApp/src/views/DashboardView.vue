@@ -272,7 +272,7 @@ const canvasStyle = computed(() => ({
 
 const chartCtx = computed<OptionContext>(() => ({
   locale: locale.value,
-  labels: { noData: t('analysis.state.noData'), noPermission: t('analysis.state.noPermission'), error: t('analysis.state.error'), count: t('analysis.count') },
+  labels: { noData: t('analysis.state.noData'), noPermission: t('analysis.state.noPermission'), error: t('analysis.state.error'), count: t('analysis.count'), model: t('analysis.regression.model') },
 }))
 const values = computed(() => widgetValues(shown.value?.widgets ?? [], shownData.value))
 const ctx = computed<WidgetContext>(() => ({
