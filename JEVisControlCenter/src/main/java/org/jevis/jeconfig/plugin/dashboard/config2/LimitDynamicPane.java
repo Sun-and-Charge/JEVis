@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -46,8 +46,8 @@ public class LimitDynamicPane extends GridPane {
     private static final Logger logger = LogManager.getLogger(LimitDynamicPane.class);
     private final Label upperColorlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.color.upper"));
     private final Label lowerColorlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.color.lower"));
-    private final JFXCheckBox enableUpperBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.upper"));
-    private final JFXCheckBox enableLowerBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.lower"));
+    private final CheckBox enableUpperBox = new CheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.upper"));
+    private final CheckBox enableLowerBox = new CheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.lower"));
     //    private ColorPicker upperColorPicker = new ColorPicker();
 //    private ColorPicker lowerColorPicker = new ColorPicker();
     private final ColorPickerAdv upperColorPicker = new ColorPickerAdv();
@@ -56,13 +56,13 @@ public class LimitDynamicPane extends GridPane {
 
     private final Label upperVOffsetlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.valuelabel.upper"));
     private final Label lowerVOffsetlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.valuelabel.lower"));
-    private final JFXTextField upperValueField = new JFXTextField();
-    private final JFXTextField lowerValueField = new JFXTextField();
+    private final TextField upperValueField = new TextField();
+    private final TextField lowerValueField = new TextField();
 
     private final Label sourceLable = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.source"));
     private final ObservableList<Widget> widgetList;
     private final Limit limit;
-    private JFXComboBox<Widget> widgetBox;
+    private ComboBox<Widget> widgetBox;
 
 
     public LimitDynamicPane(Limit limit, ObservableList<Widget> widgetList) {
@@ -109,7 +109,7 @@ public class LimitDynamicPane extends GridPane {
         upperValueField.setText(limit.upperLimitOffset.toString());
         lowerValueField.setText(limit.lowerLimitOffset.toString());
 
-        widgetBox = new JFXComboBox<>(
+        widgetBox = new ComboBox<>(
                 widgetList.filtered(widget -> widget.typeID().equals(ValueWidget.WIDGET_ID)));
         Callback<ListView<Widget>, ListCell<Widget>> cellFactory = new Callback<javafx.scene.control.ListView<Widget>, ListCell<Widget>>() {
             @Override

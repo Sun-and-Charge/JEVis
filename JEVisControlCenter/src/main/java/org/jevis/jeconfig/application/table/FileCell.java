@@ -20,7 +20,7 @@
 package org.jevis.jeconfig.application.table;
 
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import io.jenetics.jpx.GPX;
 import javafx.application.Platform;
 import javafx.scene.control.TableCell;
@@ -52,8 +52,8 @@ public class FileCell<T> implements Callback<TableColumn<T, Optional<JEVisSample
     @Override
     public TableCell<T, Optional<JEVisSample>> call(TableColumn<T, Optional<JEVisSample>> param) {
         return new TableCell<T, Optional<JEVisSample>>() {
-            final JFXButton previewButton = new JFXButton("", JEConfig.getSVGImage(Icon.PREVIEW, 20, 20));
-            final JFXButton mapButton = new JFXButton("", JEConfig.getSVGImage(Icon.MAP, 20, 20));
+            final Button previewButton = new Button("", JEConfig.getSVGImage(Icon.PREVIEW, 20, 20));
+            final Button mapButton = new Button("", JEConfig.getSVGImage(Icon.MAP, 20, 20));
 
             @Override
             protected void updateItem(Optional<JEVisSample> item, boolean empty) {

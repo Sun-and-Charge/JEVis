@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.jevistree;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -47,7 +47,7 @@ public class SearchFilterBar extends GridPane {
     private final Label labelFilter = new Label(I18n.getInstance().getString("searchbar.filter"));
     private final Label labelSearch = new Label(I18n.getInstance().getString("searchbar.search"));
     private final Spinner<String> searchField = new Spinner<>();
-    private final JFXComboBox<JEVisTreeFilter> filterBox;
+    private final ComboBox<JEVisTreeFilter> filterBox;
     public final BooleanProperty showReplace = new SimpleBooleanProperty(false);
     boolean replaceMode = true;
 
@@ -84,7 +84,7 @@ public class SearchFilterBar extends GridPane {
         this.finder = finder;
 
         ObservableList<JEVisTreeFilter> filterList = FXCollections.observableArrayList(filter);
-        filterBox = new JFXComboBox<>(filterList);
+        filterBox = new ComboBox<>(filterList);
         filterBox.setMaxWidth(Double.MAX_VALUE);
         filterBox.setButtonCell(new ListCell<JEVisTreeFilter>() {
             @Override
@@ -146,8 +146,8 @@ public class SearchFilterBar extends GridPane {
 
         Label replaceLabel = new Label(I18n.getInstance().getString("searchbar.label.replacewith"));
         TextField replaceField = new TextField();
-        JFXButton replace = new JFXButton(I18n.getInstance().getString("searchbar.button.replace"));
-        JFXButton replaceAll = new JFXButton(I18n.getInstance().getString("searchbar.button.alltreedown"));
+        Button replace = new Button(I18n.getInstance().getString("searchbar.button.replace"));
+        Button replaceAll = new Button(I18n.getInstance().getString("searchbar.button.alltreedown"));
 
         this.setHgap(5);
         this.setVgap(12);

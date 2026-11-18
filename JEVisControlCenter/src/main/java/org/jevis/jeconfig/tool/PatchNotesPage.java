@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.tool;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextArea;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextArea;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -55,7 +55,7 @@ public class PatchNotesPage {
                     "\n\n";
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.patchNotes");
     private final boolean isLoading = true;
-    JFXCheckBox remember = new JFXCheckBox(I18n.getInstance().getString("welcome.dontshow"));
+    CheckBox remember = new CheckBox(I18n.getInstance().getString("welcome.dontshow"));
 
     public PatchNotesPage() {
 
@@ -88,7 +88,7 @@ public class PatchNotesPage {
         TopMenu.applyActiveTheme(scene);
         stage.setScene(scene);
 
-        JFXTextArea page = new JFXTextArea(versionHistory);
+        TextArea page = new TextArea(versionHistory);
 
         root.getChildren().add(new Separator(Orientation.HORIZONTAL));
         root.getChildren().add(page);
@@ -100,7 +100,7 @@ public class PatchNotesPage {
         bot.setAlignment(Pos.BOTTOM_RIGHT);
         bot.setSpacing(5);
         bot.setPadding(new Insets(10));
-        JFXButton close = new JFXButton(I18n.getInstance().getString("welcome.close"));
+        Button close = new Button(I18n.getInstance().getString("welcome.close"));
         close.setCancelButton(true);
         close.setDefaultButton(true);
 

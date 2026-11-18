@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXListView;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
@@ -66,15 +66,15 @@ import org.joda.time.Interval;
 public class LoadDashboardDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(LoadDashboardDialog.class);
     private final ObjectRelations objectRelations;
-    private final JFXTextField filterInput = new JFXTextField();
-    private final JFXDatePicker pickerDateEnd = new JFXDatePicker();
+    private final TextField filterInput = new TextField();
+    private final DatePicker pickerDateEnd = new DatePicker();
     private final FilteredList<JEVisObject> filteredData;
-    private final JFXListView<JEVisObject> analysisListView;
+    private final ListView<JEVisObject> analysisListView;
     private final JEVisDataSource ds;
     private final ToolBarIntervalSelector toolBarIntervalSelector;
     private final DateTime selectedDateTime = null;
     private final DashboardControl control;
-    JFXButton dateButton = new JFXButton("");
+    Button dateButton = new Button("");
     private Response response = Response.CANCEL;
     private JEVisObject selectedDashboard = null;
     private Interval selectedInterval = null;
@@ -129,7 +129,7 @@ public class LoadDashboardDialog extends Dialog {
             }
         });
 
-        analysisListView = new JFXListView<>();
+        analysisListView = new ListView<>();
         analysisListView.setMinWidth(400);
         analysisListView.setItems(filteredData);
         analysisListView.getSelectionModel().selectedIndexProperty().addListener(
@@ -182,7 +182,7 @@ public class LoadDashboardDialog extends Dialog {
 
         Button cancelButton = (Button) this.getDialogPane().lookupButton(cancelType);
         cancelButton.setCancelButton(true);
-        cancelButton = new JFXButton(I18n.getInstance().getString(""));
+        cancelButton = new Button(I18n.getInstance().getString(""));
         cancelButton.setId("cancel-button");
 
         Button newButton = (Button) this.getDialogPane().lookupButton(newType);

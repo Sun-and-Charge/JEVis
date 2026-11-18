@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.scada;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -53,8 +53,8 @@ import java.util.List;
 public class SCADASelectionDialog extends Dialog {
 
     //    private VBox root = new VBox();
-    private final JFXButton ok = new JFXButton("OK");
-    private final JFXButton clear = new JFXButton("Clear");
+    private final Button ok = new Button("OK");
+    private final Button clear = new Button("Clear");
     private final String ICON = Icon.SELECTION;
     private final JEVisDataSource _ds;
     private Response response = Response.CANCEL;
@@ -97,7 +97,7 @@ public class SCADASelectionDialog extends Dialog {
         content.getChildren().setAll(tree);
 
 
-        JFXCheckBox advanced = new JFXCheckBox("Advanced");
+        CheckBox advanced = new CheckBox("Advanced");
 
 
         tree.openUserSelection(uselection);
@@ -161,7 +161,7 @@ public class SCADASelectionDialog extends Dialog {
         ok.setDefaultButton(true);
 //        ok.setDisable(true);
 
-        JFXButton cancel = new JFXButton("Cancel");
+        Button cancel = new Button("Cancel");
         cancel.setCancelButton(true);
         cancel.setOnAction(event -> close());
 

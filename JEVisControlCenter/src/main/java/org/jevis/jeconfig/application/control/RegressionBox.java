@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
@@ -29,7 +29,7 @@ import javafx.util.Callback;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.regression.RegressionType;
 
-public class RegressionBox extends JFXComboBox<RegressionType> {
+public class RegressionBox extends ComboBox<RegressionType> {
 
     public RegressionBox() {
         super();

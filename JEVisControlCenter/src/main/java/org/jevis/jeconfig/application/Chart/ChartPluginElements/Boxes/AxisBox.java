@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AxisBox extends JFXComboBox<Integer> {
+public class AxisBox extends ComboBox<Integer> {
 
     private static final String y1 = I18n.getInstance().getString("plugin.graph.chartplugin.axisbox.y1");
     private static final String y2 = I18n.getInstance().getString("plugin.graph.chartplugin.axisbox.y2");

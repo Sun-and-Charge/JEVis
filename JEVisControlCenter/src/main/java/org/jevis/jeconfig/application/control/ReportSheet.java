@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -158,7 +158,7 @@ public class ReportSheet extends Tab {
         }
         excelCellLabel.setText(stringBuilder.toString());
         int currentRow = row;
-        JFXButton targetsButton = new JFXButton("Select Target");
+        Button targetsButton = new Button("Select Target");
         ReportAggregationBox aggregationPeriodComboBox = new ReportAggregationBox();
         aggregationPeriodComboBox.setDisable(disable);
         if (reportLink.getReportAttribute() != null
@@ -175,7 +175,7 @@ public class ReportSheet extends Tab {
             manipulationComboBox.getSelectionModel().select(reportLink.getReportAttribute().getReportPeriodConfiguration().getReportManipulation());
         }
 
-        JFXButton tbManipulation = new JFXButton("", JEConfig.getSVGImage(Icon.SELECT_CHECK_BOX, 13, 13));
+        Button tbManipulation = new Button("", JEConfig.getSVGImage(Icon.SELECT_CHECK_BOX, 13, 13));
         tbManipulation.setTooltip(tooltipMarkAll);
         tbManipulation.setOnAction(event -> {
             gridPane.getChildren().forEach(node -> {
@@ -212,7 +212,7 @@ public class ReportSheet extends Tab {
         imageMarkAllPeriod.fitHeightProperty().set(13);
         imageMarkAllPeriod.fitWidthProperty().set(13);
 
-        JFXButton tbPeriod = new JFXButton("", JEConfig.getSVGImage(Icon.SELECT_CHECK_BOX, 13, 13));
+        Button tbPeriod = new Button("", JEConfig.getSVGImage(Icon.SELECT_CHECK_BOX, 13, 13));
         tbPeriod.setTooltip(tooltipMarkAll);
         tbPeriod.setOnAction(event -> {
             gridPane.getChildren().forEach(node -> {
@@ -225,7 +225,7 @@ public class ReportSheet extends Tab {
             });
         });
 
-        JFXButton tbAggregation = new JFXButton("", JEConfig.getSVGImage(Icon.SELECT_CHECK_BOX, 13, 13));
+        Button tbAggregation = new Button("", JEConfig.getSVGImage(Icon.SELECT_CHECK_BOX, 13, 13));
         tbAggregation.setTooltip(tooltipMarkAll);
         tbAggregation.setOnAction(event -> {
             gridPane.getChildren().forEach(node -> {
@@ -249,9 +249,9 @@ public class ReportSheet extends Tab {
             }
         });
 
-        JFXButton copyButton = new JFXButton("", JEConfig.getSVGImage(Icon.COPY, 16, 16));
+        Button copyButton = new Button("", JEConfig.getSVGImage(Icon.COPY, 16, 16));
 
-        JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.MINUS_CIRCLE, 16, 16));
+        Button removeButton = new Button("", JEConfig.getSVGImage(Icon.MINUS_CIRCLE, 16, 16));
         removeButton.setOnAction(event -> {
             if (row > 1) {
                 if (reportWizardDialog.getWizardType().equals(ReportWizardDialog.UPDATE)) {
@@ -449,7 +449,7 @@ public class ReportSheet extends Tab {
         Platform.runLater(() -> gridPane.add(fixedPeriodComboBox, 11, currentRow));
     }
 
-    private void setButtonText(String targetString, JFXButton targetsButton) {
+    private void setButtonText(String targetString, Button targetsButton) {
         try {
             TargetHelper th = new TargetHelper(ds, targetString);
 

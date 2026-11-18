@@ -24,9 +24,9 @@ package org.jevis.jeconfig.dialog;
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import com.google.common.collect.Lists;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -466,9 +466,9 @@ public class ReportWizardDialog {
         VBox vBox = new VBox(6);
         vBox.setFillWidth(true);
 
-        JFXButton addMultiple = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 16, 16));
+        Button addMultiple = new Button("", JEConfig.getSVGImage(Icon.PLUS, 16, 16));
 
-        JFXComboBox<ReportType> reportTypeComboBox = getReportTypeComboBox();
+        ComboBox<ReportType> reportTypeComboBox = getReportTypeComboBox();
         reportTypeComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != oldValue) {
                 reportType = newValue;
@@ -542,8 +542,8 @@ public class ReportWizardDialog {
         }
     }
 
-    private JFXComboBox<ReportType> getReportTypeComboBox() {
-        JFXComboBox<ReportType> box = new JFXComboBox<>();
+    private ComboBox<ReportType> getReportTypeComboBox() {
+        ComboBox<ReportType> box = new ComboBox<>();
 
         box.setItems(FXCollections.observableArrayList(ReportType.values()));
 

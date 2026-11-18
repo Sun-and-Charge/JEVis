@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.meters.ui;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
-import com.jfoenix.controls.JFXToggleButton;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
+import org.controlsfx.control.ToggleSwitch;
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -69,11 +69,11 @@ public class MeterListTab extends Tab {
     private final JEVisDataSource ds;
     private final ObservableList<SummeryData> summeryData = FXCollections.observableArrayList();
     private final SummeryTable summeryTable;
-    private final JFXComboBox<Integer> yearComboBox;
+    private final ComboBox<Integer> yearComboBox;
     JEVisTypeWrapper typeWrapper;
     JEVisTypeWrapper locationWrapper;
     JEVisTypeWrapper verificationDateWrapper;
-    JFXToggleButton jfxToggleButton = new JFXToggleButton();
+    ToggleSwitch jfxToggleButton = new ToggleSwitch();
     private MeterTable meterTable;
     private List<String> type;
     private List<JEVisClass> jeVisClasses;
@@ -131,7 +131,7 @@ public class MeterListTab extends Tab {
         gridPane.addColumn(5, new Region(), buildTypeFilterButton(meterTable, I18n.getInstance().getString("plugin.meters.location"), meterTable::setLocation, locationWrapper));
         gridPane.addColumn(6, new Label(I18n.getInstance().getString("plugin.meters.overdue")), jfxToggleButton);
 
-        yearComboBox = new JFXComboBox<>(getYearList());
+        yearComboBox = new ComboBox<>(getYearList());
 
 
         gridPane.addColumn(7, new Region(), yearComboBox);
@@ -239,8 +239,8 @@ public class MeterListTab extends Tab {
         }).distinct().sorted(String::compareTo).collect(Collectors.toList());
     }
 
-    private JFXTextField buildSearch(MeterTable meterTable) {
-        JFXTextField textField = new JFXTextField();
+    private TextField buildSearch(MeterTable meterTable) {
+        TextField textField = new TextField();
         textField.textProperty().addListener((observableValue, s, t1) -> {
             meterTable.setContainsTextFilter(t1);
             meterTable.filter();

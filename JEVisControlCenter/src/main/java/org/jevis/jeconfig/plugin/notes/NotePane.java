@@ -20,7 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.notes;
 
-import com.jfoenix.controls.*;
+import javafx.scene.control.*;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Dialog;
@@ -65,12 +66,12 @@ public class NotePane extends Dialog {
     Label timeLabel = new Label(I18n.getInstance().getString("plugin.note.pane.time"));
 
 
-    JFXTextField userField = new JFXTextField();
+    TextField userField = new TextField();
     TextArea noteTextArea = new TextArea();
-    private final JFXDatePicker pickerDate = new JFXDatePicker();
-    JFXButton targetTreeButton;
-    private final JFXTimePicker pickerTime = new JFXTimePicker();
-    JFXListView<String> tagList = new JFXListView<>();
+    private final DatePicker pickerDate = new DatePicker();
+    Button targetTreeButton;
+    private final TimePicker pickerTime = new TimePicker();
+    ListView<String> tagList = new ListView<>();
     HBox hBox = new HBox(pickerDate, pickerTime);
 
     JEVisTree jeVisTree;
@@ -88,9 +89,9 @@ public class NotePane extends Dialog {
         this.dataSource = dataSource;
         parentObject = getParentObject(notesRow);
         if (parentObject != null) {
-            targetTreeButton = new JFXButton(parentObject.getName());
+            targetTreeButton = new Button(parentObject.getName());
         }else {
-            targetTreeButton = new JFXButton((I18n.getInstance().getString("plugin.note.pane.opentree")));
+            targetTreeButton = new Button((I18n.getInstance().getString("plugin.note.pane.opentree")));
         }
 
 

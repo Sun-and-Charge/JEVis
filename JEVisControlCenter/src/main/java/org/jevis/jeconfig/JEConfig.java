@@ -58,7 +58,6 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.ws.sql.userlog.UserLogUtil;
 import org.jevis.jeapi.ws.JEVisDataSourceWS;
 import org.jevis.jeconfig.application.application.I18nWS;
-import org.jevis.jeconfig.application.application.JavaVersionCheck;
 import org.jevis.jeconfig.application.login.FXLogin;
 import org.jevis.jeconfig.application.statusbar.Statusbar;
 import org.jevis.jeconfig.application.tools.Holidays;
@@ -723,11 +722,6 @@ public class JEConfig extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle(PROGRAM_INFO.getName());
-        JavaVersionCheck checkVersion = new JavaVersionCheck();
-        if (!checkVersion.isVersionOK()) {
-            System.exit(1);
-        }
-
         _primaryStage = primaryStage;
         /* certificates accepted earlier by this user, before the first connection to the server */
         UserTrustStore.install();

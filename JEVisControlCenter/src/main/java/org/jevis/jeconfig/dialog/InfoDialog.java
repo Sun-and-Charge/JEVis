@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -91,7 +91,7 @@ public class InfoDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton ok = new JFXButton("OK");
+        Button ok = new Button("OK");
         ok.setDefaultButton(true);
 
         buttonPanel.getChildren().addAll(ok);

@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,7 +29,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
-public class YearBox extends JFXComboBox<Integer> {
+public class YearBox extends ComboBox<Integer> {
 
     private MonthBox monthBox;
     private DayBox dayBox;

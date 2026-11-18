@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -96,8 +96,8 @@ public class ScheduleEditor implements AttributeEditor {
         gridPane.setHgap(10);
         gridPane.setVgap(5);
 
-        JFXTimePicker start = buildStartPicker(rule);
-        JFXTimePicker end = buildEndPicker(rule);
+        TimePicker start = buildStartPicker(rule);
+        TimePicker end = buildEndPicker(rule);
 
         List<ToggleButton> buttonListMonths = buildMonthButtons(rule);
         HBox monthButtons = new HBox();
@@ -233,8 +233,8 @@ public class ScheduleEditor implements AttributeEditor {
         return oldString;
     }
 
-    private JFXTimePicker buildEndPicker(JsonSchedulerRule rule) {
-        JFXTimePicker end = new JFXTimePicker();
+    private TimePicker buildEndPicker(JsonSchedulerRule rule) {
+        TimePicker end = new TimePicker();
         end.set24HourView(true);
         end.setConverter(new LocalTimeStringConverter(FormatStyle.MEDIUM));
         LocalTime endTime = null;
@@ -255,8 +255,8 @@ public class ScheduleEditor implements AttributeEditor {
         return end;
     }
 
-    private JFXTimePicker buildStartPicker(JsonSchedulerRule rule) {
-        JFXTimePicker start = new JFXTimePicker();
+    private TimePicker buildStartPicker(JsonSchedulerRule rule) {
+        TimePicker start = new TimePicker();
         start.set24HourView(true);
         start.setConverter(new LocalTimeStringConverter(FormatStyle.MEDIUM));
         LocalTime startTime = null;
@@ -557,7 +557,7 @@ public class ScheduleEditor implements AttributeEditor {
 
         timeZones.addAll(FXCollections.observableArrayList(org.joda.time.DateTimeZone.getAvailableIDs()));
 
-        JFXComboBox jfxComboBoxTimeZone = new JFXComboBox(timeZones);
+        ComboBox jfxComboBoxTimeZone = new ComboBox(timeZones);
 
         jfxComboBoxTimeZone.getSelectionModel().select(inputValue.getTimezone());
 
@@ -599,7 +599,7 @@ public class ScheduleEditor implements AttributeEditor {
             fillTab(newTab, rule);
         }
 
-        JFXButton jfxButtonAddRule = new JFXButton();
+        Button jfxButtonAddRule = new Button();
         jfxButtonAddRule.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 16, 16));
         jfxButtonAddRule.setOnAction(event -> {
             JsonSchedulerRule newRule = new JsonSchedulerRule();
@@ -623,7 +623,7 @@ public class ScheduleEditor implements AttributeEditor {
             tabPane.getTabs().add(newTab);
         });
 
-        JFXButton jfxButtonDeleteRule = new JFXButton();
+        Button jfxButtonDeleteRule = new Button();
         jfxButtonDeleteRule.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 16, 16));
         jfxButtonDeleteRule.setOnAction(event -> {
             int index = tabPane.getSelectionModel().getSelectedIndex();

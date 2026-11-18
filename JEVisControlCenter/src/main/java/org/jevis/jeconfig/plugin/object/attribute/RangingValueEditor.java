@@ -20,6 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,8 +29,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -82,7 +82,7 @@ public class RangingValueEditor implements AttributeEditor {
     }
 
     private void initGui() {
-        JFXButton openConfig = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.gapfillingeditor.openconfig"));
+        Button openConfig = new Button(I18n.getInstance().getString("plugin.object.attribute.gapfillingeditor.openconfig"));
         openConfig.setOnAction(action -> {
             try {
                 show();
@@ -228,9 +228,9 @@ public class RangingValueEditor implements AttributeEditor {
         Label toLabel = new Label(I18n.getInstance().getString("plugin.graph.dialog.export.to"));
         Label valueLabel = new Label(I18n.getInstance().getString("plugin.graph.table.value"));
 
-        JFXTextField fromField = new JFXTextField();
-        JFXTextField toField = new JFXTextField();
-        JFXTextField valueField = new JFXTextField();
+        TextField fromField = new TextField();
+        TextField toField = new TextField();
+        TextField valueField = new TextField();
 
         NumberFormat numberFormat = NumberFormat.getInstance(I18n.getInstance().getLocale());
 

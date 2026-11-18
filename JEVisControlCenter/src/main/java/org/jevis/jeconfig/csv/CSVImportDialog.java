@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.csv;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -73,20 +73,20 @@ public class CSVImportDialog {
     private static final Logger logger = LogManager.getLogger(CSVImportDialog.class);
 
     public static String ICON = Icon.PNG_TABLE_VIEW;
-    final JFXButton ok = new JFXButton(I18n.getInstance().getString("csv.ok"));
-    final JFXButton automatic = new JFXButton(I18n.getInstance().getString("csv.automatic"));
-    final JFXButton fileButton = new JFXButton(I18n.getInstance().getString("csv.file_select"));
-    final JFXButton saveFormat = new JFXButton(I18n.getInstance().getString("csv.save_formate"));
+    final Button ok = new Button(I18n.getInstance().getString("csv.ok"));
+    final Button automatic = new Button(I18n.getInstance().getString("csv.automatic"));
+    final Button fileButton = new Button(I18n.getInstance().getString("csv.file_select"));
+    final Button saveFormat = new Button(I18n.getInstance().getString("csv.save_formate"));
     final NumberSpinner headerRowCount = new NumberSpinner(BigDecimal.valueOf(0), BigDecimal.valueOf(1));
     final ToggleGroup textDiGroup = new ToggleGroup();
     final AnchorPane tableRootPane = new AnchorPane();
     private final double LEFT_PADDING = 30;
-    private final JFXComboBox<Separator> separatorComboBox = new JFXComboBox<>(FXCollections.observableArrayList(Separator.values()));
-    private final JFXTextField otherSeparatorField = new JFXTextField();
-    private final JFXComboBox<Enclosed> enclosedComboBox = new JFXComboBox<>(FXCollections.observableArrayList(Enclosed.values()));
+    private final ComboBox<Separator> separatorComboBox = new ComboBox<>(FXCollections.observableArrayList(Separator.values()));
+    private final TextField otherSeparatorField = new TextField();
+    private final ComboBox<Enclosed> enclosedComboBox = new ComboBox<>(FXCollections.observableArrayList(Enclosed.values()));
     private final NotificationPane notificationPane = new NotificationPane();
-    private final JFXTextField otherEnclosedField = new JFXTextField();
-    private final JFXTextField customNoteField = new JFXTextField();
+    private final TextField otherEnclosedField = new TextField();
+    private final TextField customNoteField = new TextField();
     ObservableList<String> formatOptions;
     private String _encloser = "";
     private String separator = "";
@@ -104,7 +104,7 @@ public class CSVImportDialog {
     private VBox dynamicConfigSection;
     private VBox csvSectionBox;
     private VBox xlsxSectionBox;
-    private JFXComboBox<String> sheetComboBox;
+    private ComboBox<String> sheetComboBox;
     private int selectedSheetIndex = 0;
 
     public CSVImportDialog() {
@@ -298,7 +298,7 @@ public class CSVImportDialog {
         gp.setVgap(5);
 
         Label sheetLabel = new Label(I18n.getInstance().getString("csv.xlsx.sheet"));
-        sheetComboBox = new JFXComboBox<>();
+        sheetComboBox = new ComboBox<>();
         sheetComboBox.setMinWidth(200);
         sheetComboBox.setOnAction(event -> {
             int idx = sheetComboBox.getSelectionModel().getSelectedIndex();
@@ -379,7 +379,7 @@ public class CSVImportDialog {
         ok.setDefaultButton(true);
         saveFormat.setDisable(true);
 
-        JFXButton cancel = new JFXButton(I18n.getInstance().getString("csv.cancel"));
+        Button cancel = new Button(I18n.getInstance().getString("csv.cancel"));
         cancel.setCancelButton(true);
 
         buttonPanel.getChildren().setAll(ok, cancel);
@@ -591,7 +591,7 @@ public class CSVImportDialog {
             }
         };
 
-        final JFXComboBox<Charset> charsetBox = new JFXComboBox<>(options);
+        final ComboBox<Charset> charsetBox = new ComboBox<>(options);
         charsetBox.setCellFactory(cellFactory);
         charsetBox.setButtonCell(cellFactory.call(null));
         charsetBox.valueProperty().addListener(new ChangeListener<Charset>() {
@@ -609,7 +609,7 @@ public class CSVImportDialog {
         for (Format format : Format.values()) {
             formatOptions.add(format.name());
         }
-        final JFXComboBox<String> formats = new JFXComboBox<>(formatOptions);
+        final ComboBox<String> formats = new ComboBox<>(formatOptions);
         formats.getSelectionModel().selectFirst();
 
         fileButton.setPrefWidth(200);

@@ -18,7 +18,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -75,7 +75,7 @@ public class WebViewEditor implements AttributeEditor {
                     logger.error("Could not add date to dat list.");
                 }
             }
-            JFXComboBox<DateTime> dateTimeComboBox = new JFXComboBox<>(FXCollections.observableList(dateTimeList));
+            ComboBox<DateTime> dateTimeComboBox = new ComboBox<>(FXCollections.observableList(dateTimeList));
             try {
                 if (_lastSample != null) {
                     dateTimeComboBox.getSelectionModel().select(_lastSample.getTimestamp());

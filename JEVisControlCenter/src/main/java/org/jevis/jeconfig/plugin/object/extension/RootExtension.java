@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.extension;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -175,7 +175,7 @@ public class RootExtension implements ObjectEditorExtension {
 
                 groupBox.getChildren().addAll(usericon, nameLabel);
 
-                JFXButton remove = new JFXButton();
+                Button remove = new Button();
                 remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 17, 17));
                 remove.setOnAction(t -> {
 
@@ -235,7 +235,7 @@ public class RootExtension implements ObjectEditorExtension {
         GridPane.setValignment(newOwnerlabel, VPos.CENTER);
         HBox addNewBox = new HBox(5);
 
-        JFXButton newB = new JFXButton();
+        Button newB = new Button();
         newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 17, 17));
 
         newB.setOnAction(t -> {

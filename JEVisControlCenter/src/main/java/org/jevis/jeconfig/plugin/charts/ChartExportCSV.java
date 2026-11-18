@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
@@ -140,7 +140,7 @@ public class ChartExportCSV {
     }
 
     private void showDialogs(Map<Chart, List<ChartDataRow>> model, String analysisName) {
-        JFXComboBox decimalSeparatorChoiceBox = new JFXComboBox(choices);
+        ComboBox decimalSeparatorChoiceBox = new ComboBox(choices);
 
         Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>() {
             @Override
@@ -184,7 +184,7 @@ public class ChartExportCSV {
 
         Label selection = new Label(I18n.getInstance().getString("plugin.graph.dialog.export.decimalseparator.selection"));
         Label withUserNotesLabel = new Label(I18n.getInstance().getString("plugin.graph.dialog.export.withusernotes"));
-        JFXCheckBox withUserNotes = new JFXCheckBox();
+        CheckBox withUserNotes = new CheckBox();
         Label emptyLine1 = new Label("");
         Label emptyLine2 = new Label("");
 

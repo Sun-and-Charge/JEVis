@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.classes.editor;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextArea;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -78,15 +78,15 @@ public class ClassEditor {
     private static final Logger logger = LogManager.getLogger(ClassEditor.class);
     //    private final UnitChooser pop = new UnitChooser();
     private final VBox _view;
-    JFXButton fIcon;
-    JFXTextField fName = new JFXTextField();
-    JFXTextArea fDescription = new JFXTextArea();
+    Button fIcon;
+    TextField fName = new TextField();
+    TextArea fDescription = new TextArea();
     //    private Desktop desktop = Desktop.getDesktop();
     private JEVisClass _class;
-    JFXCheckBox fUnique = new JFXCheckBox();
+    CheckBox fUnique = new CheckBox();
     private TitledPane t2;
     private List<JEVisType> _toDelete;
-    private JFXTextField fInherit;
+    private TextField fInherit;
     private ClassTree _tree = null;
 
     public ClassEditor() {
@@ -130,7 +130,7 @@ public class ClassEditor {
 
                 fName.prefWidthProperty().set(250d);
 
-                fIcon = new JFXButton("", getIcon(jclass));
+                fIcon = new Button("", getIcon(jclass));
 
                 fUnique.setSelected(false);
 
@@ -390,7 +390,7 @@ public class ClassEditor {
                     }
                 });
 
-                JFXTextField description = new JFXTextField(type.getDescription() == null ? "" : type.getDescription());
+                TextField description = new TextField(type.getDescription() == null ? "" : type.getDescription());
                 description.setPrefWidth(250);
                 description.textProperty().addListener((observable, oldValue, newValue) -> {
                     try {
@@ -401,17 +401,17 @@ public class ClassEditor {
                 });
 
                 final int index = i;
-                JFXButton up = new JFXButton();
+                Button up = new Button();
                 up.setGraphic(JEConfig.getSVGImage(Icon.ARROW_UP, 20, 20));
                 up.setDisable(!editable || index == 0 || types.get(index - 1).isInherited());
                 up.setOnAction(t -> swapPosition(type, types.get(index - 1)));
 
-                JFXButton down = new JFXButton();
+                Button down = new Button();
                 down.setGraphic(JEConfig.getSVGImage(Icon.ARROW_DOWN, 20, 20));
                 down.setDisable(!editable || index == types.size() - 1 || types.get(index + 1).isInherited());
                 down.setOnAction(t -> swapPosition(type, types.get(index + 1)));
 
-                JFXButton remove = new JFXButton();
+                Button remove = new Button();
                 remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 20, 20));
                 remove.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.classes.editor.type.remove.tooltip")));
                 remove.setOnAction(t -> {
@@ -458,11 +458,11 @@ public class ClassEditor {
         Separator newSep = new Separator();
         gridPane.add(newSep, 0, row++, 8, 1);
 
-        final JFXTextField fName = new JFXTextField();
+        final TextField fName = new TextField();
         fName.setPromptText(I18n.getInstance().getString("plugin.classes.editor.type.newname"));
 //        final ChoiceBox pTypeBox = buildPrimitiveTypeBox(null);
 
-        JFXButton newB = new JFXButton();
+        Button newB = new Button();
         newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 20, 20));
         newB.setOnAction(new EventHandler<ActionEvent>() {
             @Override

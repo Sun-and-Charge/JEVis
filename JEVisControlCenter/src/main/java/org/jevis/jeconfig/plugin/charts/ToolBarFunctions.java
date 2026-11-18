@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
-import com.jfoenix.controls.*;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -223,19 +223,19 @@ public class ToolBarFunctions {
 
         Label baseLoadTimeFrame = new Label(I18n.getInstance().getString("dialog.baseload.timeframe"));
 
-        JFXDatePicker baseLoadStartDate = new JFXDatePicker(LocalDate.now());
+        DatePicker baseLoadStartDate = new DatePicker(LocalDate.now());
         baseLoadStartDate.setPrefWidth(120d);
 
-        JFXTimePicker baseLoadStartTime = new JFXTimePicker(LocalTime.now());
+        TimePicker baseLoadStartTime = new TimePicker(LocalTime.now());
         baseLoadStartTime.setPrefWidth(100d);
         baseLoadStartTime.setMaxWidth(100d);
         baseLoadStartTime.set24HourView(true);
         baseLoadStartTime.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
 
-        JFXDatePicker baseLoadEndDate = new JFXDatePicker(LocalDate.now());
+        DatePicker baseLoadEndDate = new DatePicker(LocalDate.now());
         baseLoadEndDate.setPrefWidth(120d);
 
-        JFXTimePicker baseLoadEndTime = new JFXTimePicker(LocalTime.now());
+        TimePicker baseLoadEndTime = new TimePicker(LocalTime.now());
         baseLoadEndTime.setPrefWidth(100d);
         baseLoadEndTime.setMaxWidth(100d);
         baseLoadEndTime.set24HourView(true);
@@ -243,7 +243,7 @@ public class ToolBarFunctions {
 
         Label baseLoadBinding = new Label(I18n.getInstance().getString("dialog.baseload.repeatingtimeframe"));
         ObservableList<Integer> list = FXCollections.observableArrayList(0, 1, 2, 3, 4);
-        JFXComboBox<Integer> boundSpecificBox = new JFXComboBox<>(list);
+        ComboBox<Integer> boundSpecificBox = new ComboBox<>(list);
 
         Callback<ListView<Integer>, ListCell<Integer>> cellFactoryBoundToSpecificBox = new Callback<javafx.scene.control.ListView<Integer>, ListCell<Integer>>() {
             @Override
@@ -285,19 +285,19 @@ public class ToolBarFunctions {
 
         Label resultTimeFrame = new Label(I18n.getInstance().getString("dialog.baseload.resulttimeframe"));
 
-        JFXDatePicker resultStartDate = new JFXDatePicker(dataSettings.getAnalysisTimeFrame().getLocalStartDate());
+        DatePicker resultStartDate = new DatePicker(dataSettings.getAnalysisTimeFrame().getLocalStartDate());
         resultStartDate.setPrefWidth(120d);
 
-        JFXTimePicker resultStartTime = new JFXTimePicker(dataSettings.getAnalysisTimeFrame().getLocalStartTime());
+        TimePicker resultStartTime = new TimePicker(dataSettings.getAnalysisTimeFrame().getLocalStartTime());
         resultStartTime.setPrefWidth(100d);
         resultStartTime.setMaxWidth(100d);
         resultStartTime.set24HourView(true);
         resultStartTime.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
 
-        JFXDatePicker resultEndDate = new JFXDatePicker(dataSettings.getAnalysisTimeFrame().getLocalEndDate());
+        DatePicker resultEndDate = new DatePicker(dataSettings.getAnalysisTimeFrame().getLocalEndDate());
         resultEndDate.setPrefWidth(120d);
 
-        JFXTimePicker resultEndTime = new JFXTimePicker(dataSettings.getAnalysisTimeFrame().getLocalEndTime());
+        TimePicker resultEndTime = new TimePicker(dataSettings.getAnalysisTimeFrame().getLocalEndTime());
         resultEndTime.setPrefWidth(100d);
         resultEndTime.setMaxWidth(100d);
         resultEndTime.set24HourView(true);
@@ -388,19 +388,19 @@ public class ToolBarFunctions {
 
         Label resultTimeFrame = new Label(I18n.getInstance().getString("dialog.baseload.resulttimeframe"));
 
-        JFXDatePicker resultStartDate = new JFXDatePicker(dataSettings.getAnalysisTimeFrame().getLocalStartDate());
+        DatePicker resultStartDate = new DatePicker(dataSettings.getAnalysisTimeFrame().getLocalStartDate());
         resultStartDate.setPrefWidth(120d);
 
-        JFXTimePicker resultStartTime = new JFXTimePicker(dataSettings.getAnalysisTimeFrame().getLocalStartTime());
+        TimePicker resultStartTime = new TimePicker(dataSettings.getAnalysisTimeFrame().getLocalStartTime());
         resultStartTime.setPrefWidth(100d);
         resultStartTime.setMaxWidth(100d);
         resultStartTime.set24HourView(true);
         resultStartTime.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
 
-        JFXDatePicker resultEndDate = new JFXDatePicker(dataSettings.getAnalysisTimeFrame().getLocalEndDate());
+        DatePicker resultEndDate = new DatePicker(dataSettings.getAnalysisTimeFrame().getLocalEndDate());
         resultEndDate.setPrefWidth(120d);
 
-        JFXTimePicker resultEndTime = new JFXTimePicker(dataSettings.getAnalysisTimeFrame().getLocalEndTime());
+        TimePicker resultEndTime = new TimePicker(dataSettings.getAnalysisTimeFrame().getLocalEndTime());
         resultEndTime.setPrefWidth(100d);
         resultEndTime.setMaxWidth(100d);
         resultEndTime.set24HourView(true);
@@ -421,13 +421,13 @@ public class ToolBarFunctions {
         gp.add(resultEndTime, 3, row);
         row++;
 
-        JFXCheckBox insideBox = new JFXCheckBox(I18n.getInstance().getString("graph.dialog.buttons.values.inside"));
+        CheckBox insideBox = new CheckBox(I18n.getInstance().getString("graph.dialog.buttons.values.inside"));
         insideBox.selectedProperty().addListener((observableValue, aBoolean, t1) -> valuesSetting.setInside(t1));
         insideBox.setSelected(true);
         gp.add(insideBox, 0, row, 2, 1);
 
         Label signLabel = new Label(I18n.getInstance().getString("plugin.graph.values.sign"));
-        JFXComboBox<ValuesSetting.Sign> signBox = new JFXComboBox<>(FXCollections.observableArrayList(ValuesSetting.Sign.values()));
+        ComboBox<ValuesSetting.Sign> signBox = new ComboBox<>(FXCollections.observableArrayList(ValuesSetting.Sign.values()));
         Callback<ListView<ValuesSetting.Sign>, ListCell<ValuesSetting.Sign>> signCellFactory = new Callback<ListView<ValuesSetting.Sign>, ListCell<ValuesSetting.Sign>>() {
             @Override
             public ListCell<ValuesSetting.Sign> call(ListView<ValuesSetting.Sign> param) {
@@ -657,7 +657,7 @@ public class ToolBarFunctions {
         alert.setHeaderText(I18n.getInstance().getString("dialog.calchoursabovebelow.entervalue"));
 
         Label limitLabel = new Label(I18n.getInstance().getString("plugin.scada.element.setting.label.lowerlimit.limitvalue"));
-        JFXTextField limitField = new JFXTextField();
+        TextField limitField = new TextField();
         DoubleValidator validator = DoubleValidator.getInstance();
         limitField.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
@@ -778,7 +778,7 @@ public class ToolBarFunctions {
                                             setGraphic(null);
 
                                             if (item != null && !empty) {
-                                                JFXTextArea jfxTextArea = new JFXTextArea(item);
+                                                TextArea jfxTextArea = new TextArea(item);
                                                 jfxTextArea.setWrapText(true);
                                                 setGraphic(jfxTextArea);
                                             }
@@ -805,7 +805,7 @@ public class ToolBarFunctions {
                                             setGraphic(null);
 
                                             if (item != null && !empty) {
-                                                JFXTextArea jfxTextArea = new JFXTextArea(item);
+                                                TextArea jfxTextArea = new TextArea(item);
                                                 jfxTextArea.setWrapText(true);
                                                 setGraphic(jfxTextArea);
                                             }

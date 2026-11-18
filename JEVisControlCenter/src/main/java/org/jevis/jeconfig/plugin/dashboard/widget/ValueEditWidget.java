@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.widget;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -62,7 +62,7 @@ public class ValueEditWidget extends Widget implements DataModelWidget {
 
     private static final Logger logger = LogManager.getLogger(ValueEditWidget.class);
     public static String WIDGET_ID = "Value Editor";
-    private final JFXTextField labelValue = new JFXTextField();
+    private final TextField labelValue = new TextField();
     private final Label labelTimeStamp = new Label();
     private static final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
     //private DataModelDataHandler sampleHandler;
@@ -71,7 +71,7 @@ public class ValueEditWidget extends Widget implements DataModelWidget {
     private Limit limit;
     private Interval lastInterval = null;
     private EnterDataDialog enterDataDialog = null;
-    private final JFXButton addButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 34, 34));
+    private final Button addButton = new Button("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 34, 34));
     private final boolean forceLastValue = true;
     private JEVisSample lastSample = null;
     private Boolean customWorkday = true;

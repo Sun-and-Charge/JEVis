@@ -24,9 +24,9 @@ package org.jevis.jeconfig.dialog;
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -157,9 +157,9 @@ public class NoteDialog extends Dialog<ButtonType> {
                         } else {
                             RowNote rowNote = (RowNote) getTableRow().getItem();
 
-                            JFXTextArea textArea = new JFXTextArea(rowNote.getUserNote());
+                            TextArea textArea = new TextArea(rowNote.getUserNote());
 
-                            JFXButton expand = new JFXButton(null);
+                            Button expand = new Button(null);
                             expand.setBackground(new Background(new BackgroundImage(
                                     imgExpand,
                                     BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
@@ -241,7 +241,7 @@ public class NoteDialog extends Dialog<ButtonType> {
                         } else {
                             RowNote rowNote = (RowNote) getTableRow().getItem();
 
-                            JFXTextField textField = new JFXTextField();
+                            TextField textField = new TextField();
                             if (!rowNote.getUserValue().equals("")) {
                                 double userValue = Double.parseDouble(rowNote.getUserValue()) * rowNote.getScaleFactor();
                                 textField.setText(String.valueOf(userValue));

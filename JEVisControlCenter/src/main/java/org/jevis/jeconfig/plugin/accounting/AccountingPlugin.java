@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ibm.icu.text.NumberFormat;
-import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
@@ -132,18 +131,18 @@ public class AccountingPlugin extends TablePlugin {
     private final BorderPane borderPane = new BorderPane();
     private final TabPane motherTabPane = new TabPane();
     private final TabPane enterDataTabPane = new TabPane();
-    private final JFXComboBox<JEVisObject> configComboBox = new JFXComboBox<>();
+    private final ComboBox<JEVisObject> configComboBox = new ComboBox<>();
     private final Tab enterDataTab = new Tab(I18n.getInstance().getString("plugin.accounting.tab.enterdata"));
     private final Tab energySupplierTab = new Tab();
     private final Tab energyMeteringOperatorsTab = new Tab();
     private final Tab energyGridOperatorsTab = new Tab();
     private final Tab energyContractorTab = new Tab();
     private final Tab governmentalDuesTab = new Tab();
-    private final JFXComboBox<JEVisObject> trcs = new JFXComboBox<>();
+    private final ComboBox<JEVisObject> trcs = new ComboBox<>();
     private final Callback<ListView<JEVisClass>, ListCell<JEVisClass>> classNameCellFactory = new Callback<ListView<JEVisClass>, ListCell<JEVisClass>>() {
         @Override
         public ListCell<JEVisClass> call(ListView<JEVisClass> param) {
-            return new JFXListCell<JEVisClass>() {
+            return new ListCell<JEVisClass>() {
                 @Override
                 protected void updateItem(JEVisClass obj, boolean empty) {
                     super.updateItem(obj, empty);
@@ -165,7 +164,7 @@ public class AccountingPlugin extends TablePlugin {
     private final Callback<ListView<JEVisObject>, ListCell<JEVisObject>> objectNameCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
         @Override
         public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-            return new JFXListCell<JEVisObject>() {
+            return new ListCell<JEVisObject>() {
                 @Override
                 protected void updateItem(JEVisObject obj, boolean empty) {
                     super.updateItem(obj, empty);
@@ -179,12 +178,12 @@ public class AccountingPlugin extends TablePlugin {
             };
         }
     };
-    private final JFXComboBox<ComboBoxItem> energySupplierBox = new JFXComboBox<>();
+    private final ComboBox<ComboBoxItem> energySupplierBox = new ComboBox<>();
 
     private final Callback<ListView<ComboBoxItem>, ListCell<ComboBoxItem>> comboBoxItemCellFactory = new Callback<ListView<ComboBoxItem>, ListCell<ComboBoxItem>>() {
         @Override
         public ListCell<ComboBoxItem> call(ListView<ComboBoxItem> param) {
-            return new JFXListCell<ComboBoxItem>() {
+            return new ListCell<ComboBoxItem>() {
                 @Override
                 protected void updateItem(ComboBoxItem obj, boolean empty) {
                     super.updateItem(obj, empty);
@@ -205,22 +204,22 @@ public class AccountingPlugin extends TablePlugin {
             };
         }
     };
-    private final JFXComboBox<ComboBoxItem> energyMeteringOperatorBox = new JFXComboBox<>();
-    private final JFXComboBox<ComboBoxItem> energyGridOperatorBox = new JFXComboBox<>();
-    private final JFXComboBox<ComboBoxItem> energyContractorBox = new JFXComboBox<>();
-    private final JFXComboBox<JEVisObject> governmentalDuesBox = new JFXComboBox<>();
+    private final ComboBox<ComboBoxItem> energyMeteringOperatorBox = new ComboBox<>();
+    private final ComboBox<ComboBoxItem> energyGridOperatorBox = new ComboBox<>();
+    private final ComboBox<ComboBoxItem> energyContractorBox = new ComboBox<>();
+    private final ComboBox<JEVisObject> governmentalDuesBox = new ComboBox<>();
     private final List<AttributeEditor> attributeEditors = new ArrayList<>();
     private final TemplateHandler templateHandler = new TemplateHandler();
     private final OutputView viewTab;
     private final Tab contractsTab = new Tab(I18n.getInstance().getString("plugin.accounting.tab.config"));
-    private final JFXTextField contractNumberField = new JFXTextField();
-    private final JFXComboBox<ContractType> contractTypeBox = new JFXComboBox<>();
-    private final JFXTextField marketLocationNumberField = new JFXTextField();
-    private final JFXDatePicker contractDatePicker = new JFXDatePicker();
-    private final JFXDatePicker firstRatePicker = new JFXDatePicker();
-    private final JFXDatePicker periodOfNoticePicker = new JFXDatePicker();
-    private final JFXDatePicker contractStartPicker = new JFXDatePicker();
-    private final JFXDatePicker contractEndPicker = new JFXDatePicker();
+    private final TextField contractNumberField = new TextField();
+    private final ComboBox<ContractType> contractTypeBox = new ComboBox<>();
+    private final TextField marketLocationNumberField = new TextField();
+    private final DatePicker contractDatePicker = new DatePicker();
+    private final DatePicker firstRatePicker = new DatePicker();
+    private final DatePicker periodOfNoticePicker = new DatePicker();
+    private final DatePicker contractStartPicker = new DatePicker();
+    private final DatePicker contractEndPicker = new DatePicker();
     private final GridPane contractsGP = new GridPane();
     private final Label timeframeField = new Label();
     private boolean initialized = false;
@@ -363,7 +362,7 @@ public class AccountingPlugin extends TablePlugin {
         Callback<ListView<ContractType>, ListCell<ContractType>> contractTypeCellFactory = new Callback<ListView<ContractType>, ListCell<ContractType>>() {
             @Override
             public ListCell<ContractType> call(ListView<ContractType> param) {
-                return new JFXListCell<ContractType>() {
+                return new ListCell<ContractType>() {
                     @Override
                     protected void updateItem(ContractType type, boolean empty) {
                         super.updateItem(type, empty);
@@ -1056,8 +1055,8 @@ public class AccountingPlugin extends TablePlugin {
                 if (motherTabPane.getSelectionModel().getSelectedItem().equals(enterDataTab)) {
                     JEVisObject directory = null;
                     List<JEVisClass> newObjectClasses = new ArrayList<>();
-                    JFXComboBox<JEVisObject> selected = null;
-                    JFXComboBox<ComboBoxItem> selectedOther = null;
+                    ComboBox<JEVisObject> selected = null;
+                    ComboBox<ComboBoxItem> selectedOther = null;
 
                     if (enterDataTabPane.getSelectionModel().getSelectedItem().equals(energySupplierTab)) {
                         directory = accountingDirectories.getEnergySupplyDir();
@@ -1089,13 +1088,13 @@ public class AccountingPlugin extends TablePlugin {
                         selected = governmentalDuesBox;
                     }
 
-                    JFXComboBox<JEVisClass> box = new JFXComboBox<>();
+                    ComboBox<JEVisClass> box = new ComboBox<>();
                     box.setCellFactory(classNameCellFactory);
                     box.setButtonCell(classNameCellFactory.call(null));
                     box.getItems().addAll(newObjectClasses);
                     box.getSelectionModel().selectFirst();
 
-                    JFXTextField nameField = new JFXTextField();
+                    TextField nameField = new TextField();
                     nameField.setPromptText(I18n.getInstance().getString("newobject.name.prompt"));
 
                     VBox vBox = new VBox(12, nameField, box);
@@ -1124,8 +1123,8 @@ public class AccountingPlugin extends TablePlugin {
 
                     cancelButton.setOnAction(event -> dialog.close());
                     JEVisObject finalDirectory = directory;
-                    JFXComboBox<JEVisObject> finalSelected = selected;
-                    JFXComboBox<ComboBoxItem> finalSelectedOther = selectedOther;
+                    ComboBox<JEVisObject> finalSelected = selected;
+                    ComboBox<ComboBoxItem> finalSelectedOther = selectedOther;
                     okButton.setOnAction(event -> {
                         try {
                             JEVisObject jeVisObject = finalDirectory.buildObject(nameField.getText(), box.getSelectionModel().getSelectedItem());
@@ -1284,7 +1283,7 @@ public class AccountingPlugin extends TablePlugin {
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> attributeCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override
             public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-                return new JFXListCell<JEVisObject>() {
+                return new ListCell<JEVisObject>() {
                     @Override
                     protected void updateItem(JEVisObject obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -1347,7 +1346,7 @@ public class AccountingPlugin extends TablePlugin {
         Separator separator1b = new Separator(Orientation.HORIZONTAL);
         separator1b.setPadding(new Insets(8, 0, 8, 0));
 
-        JFXButton esRename = new JFXButton(I18n.getInstance().getString("plugin.meters.button.rename"));
+        Button esRename = new Button(I18n.getInstance().getString("plugin.meters.button.rename"));
         esRename.setOnAction(event -> {
             if (energySupplierBox.getSelectionModel().getSelectedItem() != null) {
                 RenameDialog renameDialog = new RenameDialog(energySupplierBox.getSelectionModel().getSelectedItem().getObject());
@@ -1389,7 +1388,7 @@ public class AccountingPlugin extends TablePlugin {
         Separator separator2b = new Separator(Orientation.HORIZONTAL);
         separator2b.setPadding(new Insets(8, 0, 8, 0));
 
-        JFXButton emoRename = new JFXButton(I18n.getInstance().getString("plugin.meters.button.rename"));
+        Button emoRename = new Button(I18n.getInstance().getString("plugin.meters.button.rename"));
         emoRename.setOnAction(event -> {
             if (energyMeteringOperatorBox.getSelectionModel().getSelectedItem() != null) {
                 RenameDialog renameDialog = new RenameDialog(energyMeteringOperatorBox.getSelectionModel().getSelectedItem().getObject());
@@ -1430,7 +1429,7 @@ public class AccountingPlugin extends TablePlugin {
         Separator separator3b = new Separator(Orientation.HORIZONTAL);
         separator3b.setPadding(new Insets(8, 0, 8, 0));
 
-        JFXButton egoRename = new JFXButton(I18n.getInstance().getString("plugin.meters.button.rename"));
+        Button egoRename = new Button(I18n.getInstance().getString("plugin.meters.button.rename"));
         egoRename.setOnAction(event -> {
             if (energyGridOperatorBox.getSelectionModel().getSelectedItem() != null) {
                 RenameDialog renameDialog = new RenameDialog(energyGridOperatorBox.getSelectionModel().getSelectedItem().getObject());
@@ -1463,7 +1462,7 @@ public class AccountingPlugin extends TablePlugin {
         Separator separator4 = new Separator(Orientation.HORIZONTAL);
         separator4.setPadding(new Insets(8, 0, 8, 0));
 
-        JFXButton cvRename = new JFXButton(I18n.getInstance().getString("plugin.meters.button.rename"));
+        Button cvRename = new Button(I18n.getInstance().getString("plugin.meters.button.rename"));
         cvRename.setOnAction(event -> {
             if (energyContractorBox.getSelectionModel().getSelectedItem() != null) {
                 RenameDialog renameDialog = new RenameDialog(energyContractorBox.getSelectionModel().getSelectedItem().getObject());
@@ -1496,7 +1495,7 @@ public class AccountingPlugin extends TablePlugin {
         Separator separator5 = new Separator(Orientation.HORIZONTAL);
         separator5.setPadding(new Insets(8, 0, 8, 0));
 
-        JFXButton gdRename = new JFXButton(I18n.getInstance().getString("plugin.meters.button.rename"));
+        Button gdRename = new Button(I18n.getInstance().getString("plugin.meters.button.rename"));
         gdRename.setOnAction(event -> {
             if (governmentalDuesBox.getSelectionModel().getSelectedItem() != null) {
                 RenameDialog renameDialog = new RenameDialog(governmentalDuesBox.getSelectionModel().getSelectedItem());
@@ -1764,7 +1763,7 @@ public class AccountingPlugin extends TablePlugin {
     }
 
 
-    private void forceUpdateComboBox(JFXComboBox<ComboBoxItem> comboBox) {
+    private void forceUpdateComboBox(ComboBox<ComboBoxItem> comboBox) {
         int selectedIndex = comboBox.getSelectionModel().getSelectedIndex();
         List<ComboBoxItem> tmp = comboBox.getItems().stream().collect(Collectors.toList());
         comboBox.getItems().clear();
@@ -1907,7 +1906,7 @@ public class AccountingPlugin extends TablePlugin {
                             VBox labelVBox = new VBox(lastValueLabel);
                             labelVBox.setAlignment(Pos.CENTER);
 
-                            JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 12, 12));
+                            Button manSampleButton = new Button("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 12, 12));
                             manSampleButton.setOnAction(actionEvent -> {
                                 EnterDataDialog enterDataDialog = new EnterDataDialog(ds);
                                 enterDataDialog.setShowDetailedTarget(false);
@@ -1946,7 +1945,7 @@ public class AccountingPlugin extends TablePlugin {
                             editorBox.setAlignment(Pos.CENTER);
                         }
                     } else {
-                        JFXComboBox<JEVisObject> contractorBox = new JFXComboBox<>();
+                        ComboBox<JEVisObject> contractorBox = new ComboBox<>();
                         contractorBox.setCellFactory(objectNameCellFactory);
                         contractorBox.setButtonCell(objectNameCellFactory.call(null));
 

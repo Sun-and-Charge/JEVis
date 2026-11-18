@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -66,7 +66,7 @@ public class TargetEditor implements AttributeEditor {
     private final JEVisTree tree;
     private boolean _readOnly = true;
     JEVisSample newSample;
-    private JFXButton _treeButton;
+    private Button _treeButton;
     private boolean initialized = false;
 
     public TargetEditor(JEVisAttribute att, MODE mode, JEVisTree tree) {
@@ -121,12 +121,12 @@ public class TargetEditor implements AttributeEditor {
     }
 
     private void init() {
-        _treeButton = new JFXButton(I18n
+        _treeButton = new Button(I18n
                 .getInstance().getString("plugin.object.attribute.target.button"),
                 JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         _treeButton.wrapTextProperty().setValue(true);
 
-        JFXButton gotoButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.goto"),
+        Button gotoButton = new Button(I18n.getInstance().getString("plugin.object.attribute.target.goto"),
                 JEConfig.getSVGImage(Icon.GO_TO_SOURCE, 18, 18));//icon
         gotoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip")));
 

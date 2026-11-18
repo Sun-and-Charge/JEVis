@@ -19,6 +19,7 @@
  */
 package org.jevis.jeconfig.tool;
 
+import javafx.scene.control.TextField;
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -81,7 +82,7 @@ public class NumberSpinner extends HBox {
         this.setId(DEFAULT_STYLE_CLASS);
         this.stepWidthProperty.set(stepWidth);
 
-        // JFXTextField
+        // TextField
         numberField = new NumberTextField(value, nf);
         numberField.setId(NUMBER_FIELD);
         numberField.setPrefWidth(40);

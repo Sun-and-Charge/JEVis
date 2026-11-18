@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.tree;
 
-import com.jfoenix.controls.JFXTreeView;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import org.jevis.api.JEVisAttribute;
@@ -36,7 +36,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-public class JEVisTreeView extends JFXTreeView<JEVisTreeViewItem> {
+public class JEVisTreeView extends TreeView<JEVisTreeViewItem> {
     private final double iconSize = 18d;
     private final AlphanumComparator alphanumComparator = new AlphanumComparator();
     private final boolean showAttributes;

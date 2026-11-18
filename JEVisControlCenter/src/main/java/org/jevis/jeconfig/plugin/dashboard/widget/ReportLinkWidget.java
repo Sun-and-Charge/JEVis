@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.widget;
 
+import javafx.scene.control.Button;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXButton;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -64,7 +64,7 @@ public class ReportLinkWidget extends Widget {
     private static final Logger logger = LogManager.getLogger(ReportLinkWidget.class);
     private final ObjectMapper mapper = new ObjectMapper();
     private final AnchorPane anchorPane = new AnchorPane();
-    private final JFXButton linkButton = new JFXButton("", JEConfig.getSVGImage(Icon.REPORT, 20, 20));
+    private final Button linkButton = new Button("", JEConfig.getSVGImage(Icon.REPORT, 20, 20));
     private ReportLinkerNode linkerNode = new ReportLinkerNode();
     private JEVisObject linkedReportObj;
 

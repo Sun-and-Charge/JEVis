@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.application.statusbar;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXPopup;
-import com.jfoenix.controls.JFXProgressBar;
+import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
+import javafx.stage.Popup;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -86,12 +86,12 @@ public class Statusbar extends ToolBar {
     private JEVisDataSource _ds;
     private final Tooltip tt = new Tooltip(I18n.getInstance().getString("statusbar.connection.lost"));
     private int retryCount = 0;
-    private final JFXProgressBar progressBar = new JFXProgressBar();
+    private final ProgressBar progressBar = new ProgressBar();
     private final HBox progressbox = new HBox();
     private final Label messageBox = new Label();
     private final TaskProgressView taskProgressView = new TaskProgressView<>();
-    private final JFXPopup popup = new JFXPopup();
-    private final JFXButton showTaskViewButton = new JFXButton("", JEConfig.getSVGImage(Icon.TASK_LIST, 15, 15));
+    private final Popup popup = new Popup();
+    private final Button showTaskViewButton = new Button("", JEConfig.getSVGImage(Icon.TASK_LIST, 15, 15));
     private final Map<String, Image> imageList = new HashMap<>();
     private boolean hideTaskList = false;
     private final Label titleLabel = new Label(I18n.getInstance().getString("statusbar.taskmon.title"));
@@ -134,16 +134,17 @@ public class Statusbar extends ToolBar {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         anchorPane.setTop(hBox);
 
-        popup.setPopupContent(anchorPane);
+        popup.getContent().setAll(anchorPane);
         popup.setAutoHide(true);
         popup.setAutoFix(true);
-        popup.setAnchorLocation(PopupWindow.AnchorLocation.WINDOW_TOP_LEFT);
+        /* above the status item, right aligned (the JFoenix popup used before positioned itself) */
+        popup.setAnchorLocation(PopupWindow.AnchorLocation.WINDOW_BOTTOM_RIGHT);
         showTaskViewButton.setStyle("-fx-padding: 0;");
         showTaskViewButton.setOnAction(event -> {
             if (popup.isShowing()) {
                 popup.hide();
             } else {
-                popup.show(onlineInfo);
+                showPopup();
             }
 
         });
@@ -186,7 +187,7 @@ public class Statusbar extends ToolBar {
                             try {
                                 hideTaskListPane.setVisible(false);
                                 if (!hideTaskList && !popup.isShowing()) {
-                                    popup.show(onlineInfo);
+                                    showPopup();
                                     progressBar.setVisible(true);
                                 }
 
@@ -551,7 +552,14 @@ public class Statusbar extends ToolBar {
         return taskList;
     }
 
-    public JFXPopup getPopup() {
+    private void showPopup() {
+        javafx.geometry.Bounds bounds = onlineInfo.localToScreen(onlineInfo.getBoundsInLocal());
+        if (bounds != null) {
+            popup.show(onlineInfo, bounds.getMaxX(), bounds.getMinY());
+        }
+    }
+
+    public Popup getPopup() {
         return popup;
     }
 

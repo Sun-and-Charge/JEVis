@@ -20,13 +20,13 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -60,8 +60,8 @@ public class GaugePojo {
 
     private final double iconSize = 20;
 
-    private final JFXButton jfxButtonDelete = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
-    private final JFXButton jfxButtonAdd = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, this.iconSize, this.iconSize));
+    private final Button jfxButtonDelete = new Button("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
+    private final Button jfxButtonAdd = new Button("", JEConfig.getSVGImage(Icon.PLUS, this.iconSize, this.iconSize));
 
     int gaugeWidgetID = -1;
 
@@ -89,17 +89,17 @@ public class GaugePojo {
 
     ObservableList<String> skins = FXCollections.observableArrayList();
 
-    private JFXCheckBox jfxCheckBoxShowTitle;
+    private CheckBox jfxCheckBoxShowTitle;
 
-    private JFXCheckBox jfxCheckBoxShowValue;
+    private CheckBox jfxCheckBoxShowValue;
 
-    private JFXCheckBox jfxCheckBoxShowUnit;
+    private CheckBox jfxCheckBoxShowUnit;
 
-    private JFXCheckBox jfxCheckBoxInPercent;
+    private CheckBox jfxCheckBoxInPercent;
 
-    private JFXTextField minTextField;
+    private TextField minTextField;
 
-    private JFXTextField maxTextField;
+    private TextField maxTextField;
 
     private GaugeSectionTableView tableViewSections;
 
@@ -318,21 +318,21 @@ public class GaugePojo {
     private void createMaxMin() {
 
 
-        jfxCheckBoxShowTitle = new JFXCheckBox();
+        jfxCheckBoxShowTitle = new CheckBox();
         jfxCheckBoxShowTitle.setSelected(showTitle);
-        jfxCheckBoxShowValue = new JFXCheckBox();
+        jfxCheckBoxShowValue = new CheckBox();
         jfxCheckBoxShowValue.setSelected(showValue);
-        jfxCheckBoxShowUnit = new JFXCheckBox();
+        jfxCheckBoxShowUnit = new CheckBox();
         jfxCheckBoxShowUnit.setSelected(showUnit);
 
 
-        jfxCheckBoxInPercent = new JFXCheckBox();
+        jfxCheckBoxInPercent = new CheckBox();
         jfxCheckBoxInPercent.setSelected(inPercent);
 
 
-        minTextField = new JFXTextField(String.valueOf(minimum));
+        minTextField = new TextField(String.valueOf(minimum));
 
-        maxTextField = new JFXTextField(String.valueOf(maximum));
+        maxTextField = new TextField(String.valueOf(maximum));
 
         gridPane.addRow(0, new Label(I18n.getInstance().getString("plugin.dashboard.gaugewidget.showTitle")), jfxCheckBoxShowTitle);
         gridPane.addRow(1, new Label(I18n.getInstance().getString("plugin.dashboard.gaugewidget.showUnit")), jfxCheckBoxShowUnit);

@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -65,8 +65,8 @@ public class ActionPlanForm extends Alert {
     Label enpiLabel = new Label("EnPI");
     Label sueLabel = new Label("SEU");
     Label numberPrefix = new Label("Nr. Prefix");
-    JFXTextField f_numberPrefix = new JFXTextField();
-    JFXTextField nameField = new JFXTextField();
+    TextField f_numberPrefix = new TextField();
+    TextField nameField = new TextField();
     ListView<String> statusListView = new ListView<>();
     ListView<String> fieldsListView = new ListView<>();
     TableView<Medium> mediumListView = new TableView<>();

@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.widget;
 
+import javafx.scene.control.CheckBox;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXCheckBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -196,7 +196,7 @@ public class AlarmCountWidget extends Widget {
         Tab tab = new Tab(I18n.getInstance().getString("plugin.dashboard.alarmwidget.tab"));
         widgetConfigDialog.addTab(tab);
 
-        JFXCheckBox filterBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.alarmwidget.filter"));
+        CheckBox filterBox = new CheckBox(I18n.getInstance().getString("plugin.dashboard.alarmwidget.filter"));
         ListView<JEVisObject> listView = new ListView<>();
         try {
             ObjectRelations objectRelations = new ObjectRelations(getDataSource());

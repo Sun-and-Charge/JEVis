@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.sample;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -106,8 +106,8 @@ public class AttributeUnitExtension implements SampleEditorExtension {
             SamplingRateUI iuRate = new SamplingRateUI(att.getInputSampleRate());
             SamplingRateUI ouRate = new SamplingRateUI(att.getDisplaySampleRate());
 
-            JFXButton applyToRight = new JFXButton("", JEConfig.getSVGImage(Icon.CHEVRON_RIGHT, 12, 12));
-            JFXButton applyToLeft = new JFXButton("", JEConfig.getSVGImage(Icon.CHEVRON_LEFT, 12, 12));
+            Button applyToRight = new Button("", JEConfig.getSVGImage(Icon.CHEVRON_RIGHT, 12, 12));
+            Button applyToLeft = new Button("", JEConfig.getSVGImage(Icon.CHEVRON_LEFT, 12, 12));
 
             applyToRight.setOnAction(event -> {
                 try {

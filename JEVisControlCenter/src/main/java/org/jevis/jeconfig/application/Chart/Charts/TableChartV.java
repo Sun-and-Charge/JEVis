@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.application.Chart.Charts;
 
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import com.ibm.icu.text.NumberFormat;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -98,7 +98,7 @@ import java.util.Map;
 public class TableChartV extends XYChart {
     private static final Logger logger = LogManager.getLogger(TableChartV.class);
     private final DateTime maxDate = new DateTime(9999, 1, 1, 0, 0, 0, 0);
-    private final JFXCheckBox filterEnabledBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dtrc.dialog.limiterlabel"));
+    private final CheckBox filterEnabledBox = new CheckBox(I18n.getInstance().getString("plugin.dtrc.dialog.limiterlabel"));
     private final HashMap<TableColumn<TableSample, ?>, String> columnFilter = new HashMap<>();
     private final HashMap<TableColumn<TableSample, ?>, Node> newGraphicNodes = new HashMap<>();
     private final HashMap<TableColumn<TableSample, ?>, String> columnTitles = new HashMap<>();
@@ -361,7 +361,7 @@ public class TableChartV extends XYChart {
                 columnNameLabel.setAlignment(Pos.CENTER);
                 HBox nameLabelBox = new HBox(columnNameLabel);
                 nameLabelBox.setAlignment(Pos.CENTER);
-                JFXTextField filterField = new JFXTextField();
+                TextField filterField = new TextField();
                 filterField.setPromptText(I18n.getInstance().getString("plugin.chart.tablev.filter.prompt"));
                 String columnTitle = xyChartSerie.getTableEntryName();
                 String savedFilterText = chartModel.getFilterTexts().get(columnTitle);
@@ -539,7 +539,7 @@ public class TableChartV extends XYChart {
                 columnNameLabel.setAlignment(Pos.CENTER);
                 HBox nameLabelBox = new HBox(columnNameLabel);
                 nameLabelBox.setAlignment(Pos.CENTER);
-                JFXTextField filterBox = new JFXTextField();
+                TextField filterBox = new TextField();
                 filterBox.setPromptText(I18n.getInstance().getString("plugin.chart.tablev.filter.prompt"));
                 String savedFilterText = chartModel.getFilterTexts().get(identifierColumnTitle);
                 if (chartModel.isFilterEnabled() && savedFilterText != null && !savedFilterText.isEmpty()) {
@@ -880,7 +880,7 @@ public class TableChartV extends XYChart {
         this.showColumnSums = showColumnSums;
     }
 
-    public JFXCheckBox getFilterEnabledBox() {
+    public CheckBox getFilterEnabledBox() {
         return filterEnabledBox;
     }
 }

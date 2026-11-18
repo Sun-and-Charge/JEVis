@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.wizard;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -49,10 +49,10 @@ public class Wizard {
 
     private final JEVisDataSource jeVisDataSource;
     public ObjectProperty<Widget> selectedWidget = new SimpleObjectProperty<>();
-    private final JFXButton nextButton = new JFXButton("Next");
-    private final JFXButton previousButton = new JFXButton("Previous");
-    private final JFXButton finishButton = new JFXButton("Finish");
-    private final JFXButton cancelButton = new JFXButton("Cancel");
+    private final Button nextButton = new Button("Next");
+    private final Button previousButton = new Button("Previous");
+    private final Button finishButton = new Button("Finish");
+    private final Button cancelButton = new Button("Cancel");
     private final BorderPane rootPane = new BorderPane();
     private final AnchorPane contentPane = new AnchorPane();
     private final VBox bottomContent = new VBox(10);

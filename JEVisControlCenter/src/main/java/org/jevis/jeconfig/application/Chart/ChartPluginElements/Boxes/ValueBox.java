@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
 import javafx.scene.control.Tooltip;
@@ -36,8 +36,8 @@ public class ValueBox extends HBox {
     public ValueBox(JEVisSample sample) {
         this.setSpacing(6);
 
-        JFXTextField valueField = new JFXTextField();
-        JFXTextField unitField = new JFXTextField();
+        TextField valueField = new TextField();
+        TextField unitField = new TextField();
 
         if (sample != null) {
             try {

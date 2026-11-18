@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -115,7 +115,7 @@ public class GapFillingEditor implements AttributeEditor {
      * Build main UI
      */
     private void init() {
-        JFXButton openConfig = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.gapfillingeditor.openconfig"));
+        Button openConfig = new Button(I18n.getInstance().getString("plugin.object.attribute.gapfillingeditor.openconfig"));
         openConfig.setOnAction(action -> {
             try {
                 show();
@@ -204,8 +204,8 @@ public class GapFillingEditor implements AttributeEditor {
         NumberSpinner referencePeriodCountText = new NumberSpinner(new BigDecimal(1), new BigDecimal(1));
         referencePeriodCountText.setMin(new BigDecimal(1));
         referencePeriodCountText.setMax(new BigDecimal(99));
-        JFXTextField boundaryText = new JFXTextField();
-        JFXTextField defaultValueText = new JFXTextField();
+        TextField boundaryText = new TextField();
+        TextField defaultValueText = new TextField();
 
         /**
          * Text layout

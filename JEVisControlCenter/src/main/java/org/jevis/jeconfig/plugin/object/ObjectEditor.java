@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -304,7 +304,7 @@ public class ObjectEditor {
                         _lastOpenEditor = installedExtensions.get(0).getTitle();
                     }
 
-                    JFXButton helpButton = new JFXButton("", JEConfig.getSVGImage(Icon.HELP, 34, 34));
+                    Button helpButton = new Button("", JEConfig.getSVGImage(Icon.HELP, 34, 34));
                     helpButton.setStyle("-fx-padding: 0 2 0 2;-fx-background-insets: 0;-fx-background-radius: 0;-fx-background-color: transparent;");
 
                     //Header

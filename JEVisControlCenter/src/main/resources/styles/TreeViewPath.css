@@ -1,0 +1,20 @@
+/* Selection path above the tree of the selection dialogs (TreeViewPath; before J25 the JFoenix stylesheet). */
+.jfx-tree-view-path,
+.jfx-tree-view-path:focused {
+    -jfx-offset: 10;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.jfx-tree-view-path > .viewport,
+.jfx-tree-view-path:focused > .viewport,
+.jfx-tree-view-path .buttons-container {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.jfx-tree-view-path .path-arrow {
+    -fx-background-color: black;
+}

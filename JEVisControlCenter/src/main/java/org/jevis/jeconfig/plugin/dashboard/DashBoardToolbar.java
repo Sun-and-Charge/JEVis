@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.dashboard;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -105,13 +105,13 @@ public class DashBoardToolbar extends ToolBar {
     private final ToggleButton infoButton = JEVisHelp.getInstance().buildInfoButtons(iconSize, iconSize);
     private final Separator separatorEditMode = new Separator();
     private ToolBarIntervalSelector toolBarIntervalSelector;
-    private JFXComboBox<Double> listZoomLevel;
+    private ComboBox<Double> listZoomLevel;
     private Boolean multiSite = null;
     private Boolean multiDir = null;
-    private JFXButton newWidget;
+    private Button newWidget;
     private NewWidgetSelector widgetSelector;
     private boolean disableEventListener = false;
-    private JFXComboBox<JEVisObject> listAnalysesComboBox;
+    private ComboBox<JEVisObject> listAnalysesComboBox;
 
 
     public DashBoardToolbar(DashboardControl dashboardControl) {
@@ -122,7 +122,7 @@ public class DashBoardToolbar extends ToolBar {
     }
 
 
-    public static JFXComboBox<Double> buildZoomLevelListView() {
+    public static ComboBox<Double> buildZoomLevelListView() {
         ObservableList<Double> zoomLevel = FXCollections.observableArrayList();
 
         List<Double> zoomLevels = new ArrayList<>();
@@ -130,7 +130,7 @@ public class DashBoardToolbar extends ToolBar {
         zoomLevel.add(DashboardControl.fitToWidth);
         zoomLevel.add(DashboardControl.fitToHeight);
 
-        /** JFXComboBox need all posible values or the buttonCell will not work work in java 1.8 **/
+        /** ComboBox need all posible values or the buttonCell will not work work in java 1.8 **/
         double zs = 0;
         for (double d = 0; d <= DashboardControl.MAX_ZOOM; d += DashboardControl.zoomSteps) {
             zs = Precision.round((zs + 0.05d), 2);
@@ -139,7 +139,7 @@ public class DashBoardToolbar extends ToolBar {
         zoomLevel.addAll(zoomLevels);
 
 
-        JFXComboBox<Double> doubleComboBox = new JFXComboBox<>(zoomLevel);
+        ComboBox<Double> doubleComboBox = new ComboBox<>(zoomLevel);
         DecimalFormat df = new DecimalFormat("##0");
         df.setMaximumFractionDigits(2);
         Callback<ListView<Double>, ListCell<Double>> cellFactory = new Callback<ListView<Double>, ListCell<Double>>() {
@@ -198,7 +198,7 @@ public class DashBoardToolbar extends ToolBar {
     public void initLayout() {
         logger.debug("InitLayout");
         ObservableList<JEVisObject> observableList = this.dashboardControl.getAllDashboards();
-        this.listAnalysesComboBox = new JFXComboBox<>(observableList);
+        this.listAnalysesComboBox = new ComboBox<>(observableList);
         setCellFactoryForComboBox();
         this.listAnalysesComboBox.setPrefWidth(350);
         this.listAnalysesComboBox.setMinWidth(350);
@@ -686,7 +686,7 @@ public class DashBoardToolbar extends ToolBar {
         return multiDir;
     }
 
-    public JFXComboBox<JEVisObject> getListAnalysesComboBox() {
+    public ComboBox<JEVisObject> getListAnalysesComboBox() {
         return this.listAnalysesComboBox;
     }
 

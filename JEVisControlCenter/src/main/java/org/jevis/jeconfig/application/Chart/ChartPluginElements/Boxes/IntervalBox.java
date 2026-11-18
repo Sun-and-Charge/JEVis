@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.DatePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ObjectPropertyBase;
 import javafx.event.ActionEvent;
@@ -39,8 +39,8 @@ import java.time.format.FormatStyle;
 public class IntervalBox extends HBox {
 
 
-    private final JFXDatePicker datePicker = new JFXDatePicker();
-    private final JFXTimePicker timePicker = new JFXTimePicker();
+    private final DatePicker datePicker = new DatePicker();
+    private final TimePicker timePicker = new TimePicker();
     private final ObjectProperty<EventHandler<ActionEvent>> onAction = new ObjectPropertyBase<EventHandler<ActionEvent>>() {
         @Override
         protected void invalidated() {

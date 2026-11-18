@@ -19,10 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.nonconformities.ui.tab;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
-import com.sun.javafx.scene.control.skin.TextAreaSkin;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
 import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -52,25 +51,25 @@ import java.util.regex.Pattern;
 public class GeneralTab extends DataTab<NonconformityData> {
 
     private static final Logger logger = LogManager.getLogger(GeneralTab.class);
-    private final JFXDatePicker f_deadlineDate = new JFXDatePicker();
-    private final JFXDatePicker f_doneDate = new JFXDatePicker();
+    private final DatePicker f_deadlineDate = new DatePicker();
+    private final DatePicker f_doneDate = new DatePicker();
 
-    private final JFXDatePicker f_createDate = new JFXDatePicker();
+    private final DatePicker f_createDate = new DatePicker();
 
-    private JFXComboBox<String> f_mediaTags;
-    private JFXComboBox<String> f_SEU;
+    private ComboBox<String> f_mediaTags;
+    private ComboBox<String> f_SEU;
 
     private TextArea f_Description = new TextArea();
     private TextArea f_Cause = new TextArea();
-    private JFXDatePicker f_CreateDate = new JFXDatePicker();
-    private JFXTextField f_Nr = new JFXTextField();
-    private JFXTextField f_Title = new JFXTextField();
-    private JFXTextField f_action = new JFXTextField();
-    private JFXTextField f_Creator = new JFXTextField();
+    private DatePicker f_CreateDate = new DatePicker();
+    private TextField f_Nr = new TextField();
+    private TextField f_Title = new TextField();
+    private TextField f_action = new TextField();
+    private TextField f_Creator = new TextField();
 
-    private JFXTextField f_Attachment = new JFXTextField();
+    private TextField f_Attachment = new TextField();
 
-    private JFXTextField f_Responsible = new JFXTextField();
+    private TextField f_Responsible = new TextField();
 
     private TextArea f_ImmediateMeasures = new TextArea();
 
@@ -232,11 +231,14 @@ public class GeneralTab extends DataTab<NonconformityData> {
         f_Cause.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
-                if (keyEvent.getCode() == KeyCode.TAB) {
+                /* Tab moves the focus instead of inserting a tab; a text area does that for Ctrl+Tab (the skin
+                   behaviour used before is not public since JavaFX 9) */
+                if (keyEvent.getCode() == KeyCode.TAB && !keyEvent.isControlDown()) {
                     Node node = (Node) keyEvent.getSource();
                     if (node instanceof TextArea) {
-                        TextAreaSkin skin = (TextAreaSkin) ((TextArea) node).getSkin();
-                        skin.getBehavior().traverseNext();
+                        keyEvent.consume();
+                        node.fireEvent(new KeyEvent(node, node, KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                                keyEvent.isShiftDown(), true, false, false));
                     }
                 }
             }
@@ -254,10 +256,10 @@ public class GeneralTab extends DataTab<NonconformityData> {
         f_CorrectiveActions.textProperty().bindBidirectional(data.correctiveActionsProperty());
         f_ImmediateMeasures.textProperty().bindBidirectional(data.immediateMeasuresProperty());
         f_Creator.textProperty().bindBidirectional(data.creatorProperty());
-        f_mediaTags = new JFXComboBox<>(data.getNonconformityPlan().getMediumTags());
+        f_mediaTags = new ComboBox<>(data.getNonconformityPlan().getMediumTags());
         f_fieldTags = new CheckComboBox<>(data.getNonconformityPlan().getFieldsTags());
         f_action.textProperty().bindBidirectional(data.actionProperty());
-        f_SEU = new JFXComboBox<>(data.getNonconformityPlan().getSignificantEnergyUseTags());
+        f_SEU = new ComboBox<>(data.getNonconformityPlan().getSignificantEnergyUseTags());
         f_SEU.valueProperty().bindBidirectional(data.seuProperty());
 
         f_mediaTags.valueProperty().bindBidirectional(data.mediumProperty());
@@ -364,7 +366,7 @@ public class GeneralTab extends DataTab<NonconformityData> {
 
     }
 
-    public JFXTextField getF_action() {
+    public TextField getF_action() {
         return f_action;
     }
 
@@ -373,7 +375,7 @@ public class GeneralTab extends DataTab<NonconformityData> {
     }
 
 
-    public JFXDatePicker getF_doneDate() {
+    public DatePicker getF_doneDate() {
         return f_doneDate;
     }
 }

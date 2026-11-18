@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.legal.ui;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -97,7 +97,7 @@ public class NewlegalCadastreDialog {
         int x = 0;
 
         Label lName = new Label(I18n.getInstance().getString("jevistree.dialog.new.name"));
-        final JFXTextField fName = new JFXTextField();
+        final TextField fName = new TextField();
         fName.setPromptText(I18n.getInstance().getString("jevistree.dialog.new.name.prompt"));
 
 
@@ -148,7 +148,7 @@ public class NewlegalCadastreDialog {
             }
         };
 
-        final JFXComboBox<JEVisObject> comboBox = new JFXComboBox<>(optionsParents);
+        final ComboBox<JEVisObject> comboBox = new ComboBox<>(optionsParents);
         comboBox.setCellFactory(cellFactory);
         comboBox.setButtonCell(cellFactory.call(null));
 

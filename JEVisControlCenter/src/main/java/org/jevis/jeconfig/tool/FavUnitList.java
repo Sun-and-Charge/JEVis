@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.tool;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -42,7 +42,7 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.dialog.UnitDialog;
 import tech.units.indriya.AbstractUnit;
 
-public class FavUnitList extends JFXComboBox<JEVisUnit> {
+public class FavUnitList extends ComboBox<JEVisUnit> {
     private static final Logger logger = LogManager.getLogger(FavUnitList.class);
 
     public FavUnitList(JEVisAttribute att, JEVisUnit selectedUnit, boolean autoCommit) {

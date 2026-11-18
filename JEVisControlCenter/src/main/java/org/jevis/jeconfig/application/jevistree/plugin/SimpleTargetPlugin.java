@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.application.jevistree.plugin;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -219,7 +219,7 @@ public class SimpleTargetPlugin implements TreePlugin {
 
                                         StackPane stackPane = new StackPane();
                                         StackPane.setAlignment(stackPane, Pos.CENTER_LEFT);
-                                        JFXCheckBox box = new JFXCheckBox();
+                                        CheckBox box = new CheckBox();
                                         stackPane.getChildren().add(box);
 
                                         if (isPreselected(getTreeTableRow().getItem())) {

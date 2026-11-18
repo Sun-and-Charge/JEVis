@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.tool;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -61,7 +61,7 @@ public class NewClassDialog {
     //https://www.iconfinder.com/icons/68795/blue_question_icon#size=64
     public static String ICON_QUESTION = Icon.PNG_UNKNOWN;
 
-    final JFXCheckBox iherit = new JFXCheckBox("Inherit:");
+    final CheckBox iherit = new CheckBox("Inherit:");
 
     private JEVisClass inherit = null;
     private String name;
@@ -96,10 +96,10 @@ public class NewClassDialog {
 
         HBox buttonPanel = new HBox();
 
-        final JFXButton ok = new JFXButton("OK");
+        final Button ok = new Button("OK");
         ok.setDefaultButton(true);
 
-        JFXButton cancel = new JFXButton("Cancel");
+        Button cancel = new Button("Cancel");
         cancel.setCancelButton(true);
 
         buttonPanel.getChildren().addAll(ok, cancel);
@@ -109,13 +109,13 @@ public class NewClassDialog {
         buttonPanel.setMaxHeight(25);
 
         Label nameL = new Label("Name:");
-        final JFXTextField nameF = new JFXTextField();
+        final TextField nameF = new TextField();
         nameF.setPromptText("Enter new name here");
 
         final Label warning = new Label("Exists!");
         warning.setTextFill(Color.web("#CB5959"));
 
-        final JFXTextField heritB = new JFXTextField();
+        final TextField heritB = new TextField();
         heritB.setPromptText("Iherit class name");
         heritB.setDisable(true);
 

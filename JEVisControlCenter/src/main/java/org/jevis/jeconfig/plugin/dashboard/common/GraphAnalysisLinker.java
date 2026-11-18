@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.common;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Tooltip;
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +50,7 @@ public class GraphAnalysisLinker {
     private ManipulationMode manipulationMode;
     private Interval interval;
     boolean targetIsreachable = false;
-    JFXButton button = new JFXButton("", JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
+    Button button = new Button("", JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
 
     public GraphAnalysisLinker(JEVisDataSource dataSource) {
         button.setStyle("-fx-background-color: transparent;");
@@ -63,7 +63,7 @@ public class GraphAnalysisLinker {
 
     }
 
-    public JFXButton getLinkerButton() {
+    public Button getLinkerButton() {
         return button;
     }
 
@@ -155,7 +155,7 @@ public class GraphAnalysisLinker {
 
     }
 
-//    public void applyConfig(JFXButton button, List<ChartDataModel> dataModels, Interval interval) {
+//    public void applyConfig(Button button, List<ChartDataModel> dataModels, Interval interval) {
 //        button.setOnAction(event -> {
 //            try {
 //                AggregationPeriod aggregationPeriod = AggregationPeriod.HOURLY;

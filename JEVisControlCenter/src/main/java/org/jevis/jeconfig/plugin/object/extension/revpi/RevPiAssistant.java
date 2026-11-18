@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.object.extension.revpi;
 
+import javafx.scene.control.Button;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jfoenix.controls.JFXButton;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -33,7 +33,6 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -217,8 +216,8 @@ public class RevPiAssistant {
         }
     }
 
-    private JFXButton buildTargetButton() {
-        final JFXButton button = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
+    private Button buildTargetButton() {
+        final Button button = new Button(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         button.wrapTextProperty().setValue(true);
         button.setOnAction(actionEvent -> {
 
@@ -246,8 +245,8 @@ public class RevPiAssistant {
         return button;
     }
 
-    private JFXButton buildImportButton() {
-        JFXButton importTrends = new JFXButton("import");
+    private Button buildImportButton() {
+        Button importTrends = new Button("import");
         importTrends.setOnAction(actionEvent -> {
             //if (targetDataObject != null) {
                 List<RevPiTrend> selectedTrends = revPiTrends.stream().filter(revPiTrend -> revPiTrend.isSelected()).collect(Collectors.toList());

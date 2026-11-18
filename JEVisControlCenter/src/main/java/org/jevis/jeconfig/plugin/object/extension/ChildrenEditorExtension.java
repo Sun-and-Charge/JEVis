@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.object.extension;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
@@ -49,20 +49,20 @@ public class ChildrenEditorExtension implements ObjectEditorExtension {
     private final BorderPane borderPane = new BorderPane();
     private final int iconSize = 20;
     private JEVisObject parentObject = null;
-    private final JFXDatePicker startDatePicker = new JFXDatePicker(LocalDate.now());
-    private final JFXDatePicker endDatePicker = new JFXDatePicker(LocalDate.now());
+    private final DatePicker startDatePicker = new DatePicker(LocalDate.now());
+    private final DatePicker endDatePicker = new DatePicker(LocalDate.now());
     private final ToggleButton reloadButton = new ToggleButton("", JEConfig.getSVGImage(Icon.REFRESH, iconSize, iconSize));
     private final ToggleButton xlsxButton = new ToggleButton("", JEConfig.getSVGImage(Icon.EXCEL, iconSize, iconSize));
     private final Label columnLabel = new Label(I18n.getInstance().getString("searchbar.filter") + " " + I18n.getInstance().getString("plugin.dtrc.dialog.columnlabel"));
     private final Label includeLabel = new Label(I18n.getInstance().getString("plugin.object.childreneditor.includelabel"));
     private final Label excludeLabel = new Label(I18n.getInstance().getString("plugin.object.childreneditor.excludelabel"));
-    private final JFXComboBox<String> columnBox = new JFXComboBox<>();
+    private final ComboBox<String> columnBox = new ComboBox<>();
     private final String nameString = I18n.getInstance().getString("plugin.object.attribute.overview.name");
     private final String classString = I18n.getInstance().getString("plugin.dtrc.dialog.classlabel");
     private final String sourceString = I18n.getInstance().getString("jevis.types.source");
-    private final JFXTextField filterInclude = new JFXTextField();
-    private final JFXTextField filterExclude = new JFXTextField();
-    private final JFXCheckBox sourceDetails = new JFXCheckBox(I18n.getInstance().getString("plugin.object.childreneditor.sourcedetails"));
+    private final TextField filterInclude = new TextField();
+    private final TextField filterExclude = new TextField();
+    private final CheckBox sourceDetails = new CheckBox(I18n.getInstance().getString("plugin.object.childreneditor.sourcedetails"));
 
     private final GridPane dateSelection = new GridPane();
 

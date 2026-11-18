@@ -11,7 +11,7 @@
 
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import de.gsi.chart.Chart;
 import de.gsi.chart.XYChart;
 import de.gsi.chart.axes.Axis;
@@ -91,8 +91,8 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
             logger.error("Could not get translated attribute name of attribute {} of object {}:{}", att.getName(), att.getObject().getName(), att.getObject().getID(), e);
             nameValue.setText(att.getName());
         }
-        JFXTextField value = new JFXTextField();
-        JFXTextField unit = new JFXTextField();
+        TextField value = new TextField();
+        TextField unit = new TextField();
 
         HBox valueBox = new HBox(4, nameValue, value, unit);
         valueBox.setAlignment(Pos.CENTER);
@@ -171,8 +171,8 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
         Label timeStampLabel = new Label(I18n.getInstance().getString("alarms.table.captions.timestamp") + ": " +
                 minMax[0].toString("yyyy-MM-dd HH:mm:ss") + " - " + minMax[1].toString("yyyy-MM-dd HH:mm:ss"));
 
-        JFXTextField value = new JFXTextField();
-        JFXTextField unit = new JFXTextField();
+        TextField value = new TextField();
+        TextField unit = new TextField();
 
         Label nameValue = new Label();
         try {
@@ -229,7 +229,7 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
         });
     }
 
-    private void getUnitName(JEVisAttribute att, JFXTextField unit) {
+    private void getUnitName(JEVisAttribute att, TextField unit) {
         try {
             if (att.getObject().getJEVisClassName().equals("Clean Data")) {
                 if (att.getDisplayUnit() != null && !att.getInputUnit().getLabel().isEmpty()) {
@@ -322,7 +322,7 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
         double prevX = Double.MIN_VALUE;
         double nextX = Double.MAX_VALUE;
 
-        final int nDataCount = dataSet.getDataCount(DataSet.DIM_X);
+        final int nDataCount = dataSet.getDataCount();
         for (int i = 0, size = nDataCount; i < size; i++) {
             final double currentX = dataSet.get(DataSet.DIM_X, i);
 

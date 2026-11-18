@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.unit;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -48,10 +48,10 @@ import javax.measure.Prefix;
  */
 public class UnitSelectUI {
 
-    private final JFXTextField symbolField = new JFXTextField();
+    private final TextField symbolField = new TextField();
     private static final Logger logger = LogManager.getLogger(UnitSelectUI.class);
-    private final JFXComboBox<Prefix> prefixBox;
-    private final JFXButton changeBaseUnit = new JFXButton();//new JFXButton("Basic Unit");
+    private final ComboBox<Prefix> prefixBox;
+    private final Button changeBaseUnit = new Button();//new Button("Basic Unit");
     private JEVisUnit jeVisUnit;
     //workaround
     private final BooleanProperty valueChangedProperty = new SimpleBooleanProperty(false);
@@ -65,7 +65,7 @@ public class UnitSelectUI {
 
         prefixes.add(0, CustomPrefix.NONE);
 
-        prefixBox = new JFXComboBox<>(prefixes);
+        prefixBox = new ComboBox<>(prefixes);
         prefixBox.setButtonCell(new ListCell<Prefix>() {
             @Override
             protected void updateItem(Prefix prefix, boolean bln) {
@@ -167,15 +167,15 @@ public class UnitSelectUI {
         this.jeVisUnit = unit;
     }
 
-    public JFXTextField getSymbolField() {
+    public TextField getSymbolField() {
         return symbolField;
     }
 
-    public JFXButton getUnitButton() {
+    public Button getUnitButton() {
         return changeBaseUnit;
     }
 
-    public JFXComboBox<Prefix> getPrefixBox() {
+    public ComboBox<Prefix> getPrefixBox() {
         return prefixBox;
     }
 }

@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.tool;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -167,8 +167,8 @@ public class AttributeCopy {
         Region spacer = new Region();
         spacer.setMinWidth(20);
 
-        final JFXCheckBox question = new JFXCheckBox(I18n.getInstance().getString("dialog.attributecopy.replace"));
-        final JFXCheckBox clearBefore = new JFXCheckBox(I18n.getInstance().getString("dialog.attributecopy.delete"));
+        final CheckBox question = new CheckBox(I18n.getInstance().getString("dialog.attributecopy.replace"));
+        final CheckBox clearBefore = new CheckBox(I18n.getInstance().getString("dialog.attributecopy.delete"));
         clearBefore.selectedProperty().set(true);
 
         gridLayout.add(header, 0, 0, 1, 1);
@@ -262,7 +262,7 @@ public class AttributeCopy {
 
             for (JEVisAttribute jeVisAttribute : object.getAttributes()) {
                 try {
-                    JFXCheckBox jfxCheckBox = new JFXCheckBox(I18nWS.getInstance().getAttributeName(jeVisAttribute));
+                    CheckBox jfxCheckBox = new CheckBox(I18nWS.getInstance().getAttributeName(jeVisAttribute));
                     listGrid.add(jfxCheckBox, 1, ++row, 1, 1);
                     jfxCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
                         if (newValue) {

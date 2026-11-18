@@ -20,7 +20,6 @@
  */
 package org.jevis.jeconfig.application.login;
 
-import com.jfoenix.controls.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -63,6 +62,8 @@ import org.jevis.jeconfig.application.resource.ResourceLoader;
 import org.jevis.jeconfig.tool.Layouts;
 
 import java.awt.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -87,16 +88,16 @@ public class FXLogin extends AnchorPane {
     private static final Logger logger = LogManager.getLogger(FXLogin.class);
     public static String checkMarkSymbol = "\uD83D\uDDF8";
     private final Stage mainStage;
-    private final JFXButton loginButton = new JFXButton();
-    private final JFXButton closeButton = new JFXButton();
-    private final JFXTextField userName = new JFXTextField();
-    private final JFXCheckBox storeConfig = new JFXCheckBox();
+    private final Button loginButton = new Button();
+    private final Button closeButton = new Button();
+    private final TextField userName = new TextField();
+    private final CheckBox storeConfig = new CheckBox();
     private final Label userLabel = new Label();
     private final Label passwordLabel = new Label();
     private final Label languageLabel = new Label();
     private Hyperlink registerLink;
     private Hyperlink forgotLink;
-    private final JFXPasswordField userPassword = new JFXPasswordField();
+    private final PasswordField userPassword = new PasswordField();
     private final GridPane authGrid = new GridPane();
     private final Preferences jevisPref = Preferences.userRoot().node("JEVis");
     private final TextArea messageBox = new TextArea("");
@@ -118,7 +119,7 @@ public class FXLogin extends AnchorPane {
      * Language of the startup parameters, otherwise set by {@link #applyInitialLocale()}.
      */
     private Locale selectedLocale = null;
-    private JFXComboBox<Locale> langSelect;
+    private ComboBox<Locale> langSelect;
     private boolean hasCredentials = false;
     private String token = null;
     private static final String PREF_USER = "JEVisUser";
@@ -615,7 +616,7 @@ public class FXLogin extends AnchorPane {
      *
      * @return
      */
-    private JFXComboBox<Locale> buildLanguageBox() {
+    private ComboBox<Locale> buildLanguageBox() {
 
         Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>() {
             @Override
@@ -655,7 +656,7 @@ public class FXLogin extends AnchorPane {
 
         ObservableList<Locale> options = FXCollections.observableArrayList(I18n.getInstance().getAvailableLang());
 
-        final JFXComboBox<Locale> comboBox = new JFXComboBox<Locale>(options);
+        final ComboBox<Locale> comboBox = new ComboBox<Locale>(options);
         comboBox.setCellFactory(cellFactory);
         comboBox.setButtonCell(cellFactory.call(null));
 
@@ -1001,23 +1002,23 @@ public class FXLogin extends AnchorPane {
         setDefaultStyle(titel, "-fx-font-weight: bold;");
 
         Label nameLabel = new Label("Name:");
-        JFXTextField nameF = new JFXTextField();
+        TextField nameF = new TextField();
         Label urlLabel = new Label("Server:");
-        JFXTextField urlF = new JFXTextField();
+        TextField urlF = new TextField();
         Label portLabel = new Label("Port:");
-        JFXTextField portF = new JFXTextField();
+        TextField portF = new TextField();
         Label schema = new Label("Schema:");
-        JFXTextField schemaF = new JFXTextField();
+        TextField schemaF = new TextField();
         Label userL = new Label("Username:");
-        JFXTextField userF = new JFXTextField();
+        TextField userF = new TextField();
         Label passL = new Label("Password:");
-        JFXTextField passF = new JFXTextField();
+        TextField passF = new TextField();
 
-        JFXButton ok = new JFXButton("Save");
+        Button ok = new Button("Save");
         ok.setDefaultButton(true);
-        JFXButton addNewButton = new JFXButton("Save as new");
+        Button addNewButton = new Button("Save as new");
         ok.setDefaultButton(true);
-        JFXButton cancel = new JFXButton("Cancel");
+        Button cancel = new Button("Cancel");
         cancel.setCancelButton(true);
         Region spacer = new Region();
 
@@ -1058,8 +1059,8 @@ public class FXLogin extends AnchorPane {
         root.getChildren().setAll(titel, grid, buttons, bottomSpacer);
         root.setPadding(new Insets(10));
 
-//        JFXButton configureServer = new JFXButton("", JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
-        JFXButton configureServer = new JFXButton("", JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
+//        Button configureServer = new Button("", JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
+        Button configureServer = new Button("", JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
 
         PopOver serverConfigPop = new PopOver(root);
         serverConfigPop.setArrowLocation(PopOver.ArrowLocation.LEFT_CENTER);

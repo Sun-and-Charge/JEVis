@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.basedata;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.StringProperty;
@@ -163,7 +163,7 @@ public class BaseDataPlugin extends TablePlugin {
                                     } else {
                                         RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
                                         JEVisAttribute att = registerTableRow.getAttributeMap().get(type);
-                                        JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, tableIconSize, tableIconSize));
+                                        Button manSampleButton = new Button("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, tableIconSize, tableIconSize));
                                         manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
 
                                         if (att != null) {

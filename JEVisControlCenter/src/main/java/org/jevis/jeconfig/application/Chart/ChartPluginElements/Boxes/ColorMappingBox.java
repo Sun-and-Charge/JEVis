@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import eu.hansolo.fx.charts.tools.ColorMapping;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ListCell;
@@ -29,7 +29,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.Chart.ChartSetting;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 
-public class ColorMappingBox extends JFXComboBox<ColorMapping> {
+public class ColorMappingBox extends ComboBox<ColorMapping> {
     public ColorMappingBox() {
         super(FXCollections.observableArrayList(ColorMapping.values()));
 

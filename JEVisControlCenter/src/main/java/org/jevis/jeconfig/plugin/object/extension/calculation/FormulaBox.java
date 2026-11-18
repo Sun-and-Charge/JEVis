@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.object.extension.calculation;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import com.udojava.evalex.Expression;
 import org.jevis.commons.calculation.CalcExpressions;
 import javafx.application.Platform;
@@ -63,11 +63,11 @@ public class FormulaBox extends HBox {
     private static final Logger logger = LogManager.getLogger(FormulaBox.class);
     private final List<String> variables = new ArrayList<>();
     Label errorArea = new Label();
-    //    JFXTextArea textArea = new TextArea();
-    JFXTextArea textArea = new JFXTextArea();
+    //    TextArea textArea = new TextArea();
+    TextArea textArea = new TextArea();
     private static final String DATA_DIRECTORY_CLASS = "Data Directory";
     private JEVisObject calcObj;
-    private JFXButton outputButton;
+    private Button outputButton;
     private JEVisTree tree;
 
     public FormulaBox() {
@@ -375,7 +375,7 @@ public class FormulaBox extends HBox {
         }
     }
 
-    public void setOutputButton(JFXButton buttonOutput) {
+    public void setOutputButton(Button buttonOutput) {
         outputButton = buttonOutput;
         try {
             JEVisClass outputClass = this.calcObj.getDataSource().getJEVisClass("Output");

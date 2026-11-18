@@ -19,15 +19,15 @@
  */
 package org.jevis.jeconfig.plugin.action.ui.control;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class TextFieldWithUnit extends HBox {
 
-    private JFXTextField jfxTextField = new JFXTextField();
-    private JFXTextField unitField = new JFXTextField();
+    private TextField jfxTextField = new TextField();
+    private TextField unitField = new TextField();
 
     public TextFieldWithUnit() {
         super();
@@ -47,11 +47,11 @@ public class TextFieldWithUnit extends HBox {
         unitField.setEditable(edible);
     }
 
-    public JFXTextField getTextField() {
+    public TextField getTextField() {
         return jfxTextField;
     }
 
-    public JFXTextField getUnitField() {
+    public TextField getUnitField() {
         return unitField;
     }
 }

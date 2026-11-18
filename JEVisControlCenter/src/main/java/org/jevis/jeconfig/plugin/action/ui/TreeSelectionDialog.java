@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -77,7 +77,7 @@ public class TreeSelectionDialog extends Dialog {
     private final List<JEVisClass> allReportClasses = new ArrayList<>();
 
     private final JEVisTreeView treeView;
-    private final JFXTextField filterTextField = new JFXTextField();
+    private final TextField filterTextField = new TextField();
     public ButtonType buttonOK = new ButtonType(I18n.getInstance().getString("plugin.action.form.save"), ButtonBar.ButtonData.APPLY);
     public ButtonType buttonCancel = new ButtonType(I18n.getInstance().getString("plugin.action.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
     private final Response response = Response.CANCEL;
@@ -156,7 +156,7 @@ public class TreeSelectionDialog extends Dialog {
 
         updateFilter(classFilter);
 
-        JFXButton ok = new JFXButton(I18n.getInstance().getString("graph.dialog.ok"));
+        Button ok = new Button(I18n.getInstance().getString("graph.dialog.ok"));
         ok.setOnAction(event -> {
             try {
 
@@ -189,7 +189,7 @@ public class TreeSelectionDialog extends Dialog {
             }
         });
 
-        JFXButton cancel = new JFXButton(I18n.getInstance().getString("graph.dialog.cancel"));
+        Button cancel = new Button(I18n.getInstance().getString("graph.dialog.cancel"));
         cancel.setOnAction(event ->
         {
             this.setResult(buttonCancel);

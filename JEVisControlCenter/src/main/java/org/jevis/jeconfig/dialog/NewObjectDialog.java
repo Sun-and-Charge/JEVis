@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -124,7 +124,7 @@ public class NewObjectDialog {
         int x = 0;
 
         Label lName = new Label(I18n.getInstance().getString("jevistree.dialog.new.name"));
-        final JFXTextField fName = new JFXTextField();
+        final TextField fName = new TextField();
         fName.setPromptText(I18n.getInstance().getString("jevistree.dialog.new.name.prompt"));
 
         if (objName != null) {
@@ -213,7 +213,7 @@ public class NewObjectDialog {
         };
 
         Label templateLabel = new Label(I18n.getInstance().getString("jevistree.dialog.new.template"));
-        JFXComboBox<Template> templateBox = new JFXComboBox<>();
+        ComboBox<Template> templateBox = new ComboBox<>();
         templateBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             Platform.runLater(() -> optionsGrid.getChildren().clear());
             template = newValue;
@@ -239,8 +239,8 @@ public class NewObjectDialog {
         templateBox.setCellFactory(templateCellFactory);
         templateBox.setButtonCell(templateCellFactory.call(null));
 
-        final JFXComboBox<JEVisClass> jeVisClassComboBox = new JFXComboBox<>(options);
-        JFXCheckBox createCleanData = new JFXCheckBox(I18n.getInstance().getString("jevistree.dialog.new.withcleandata"));
+        final ComboBox<JEVisClass> jeVisClassComboBox = new ComboBox<>(options);
+        CheckBox createCleanData = new CheckBox(I18n.getInstance().getString("jevistree.dialog.new.withcleandata"));
         createCleanData.setVisible(true);
 
         jeVisClassComboBox.setCellFactory(cellFactory);

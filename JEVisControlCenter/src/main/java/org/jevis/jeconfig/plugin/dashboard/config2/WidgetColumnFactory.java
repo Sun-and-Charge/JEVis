@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -193,8 +193,8 @@ public class WidgetColumnFactory {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            JFXButton downButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 15, 15));
-                            JFXButton upButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_UP, 15, 15));
+                            Button downButton = new Button("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 15, 15));
+                            Button upButton = new Button("", JEConfig.getSVGImage(Icon.ARROW_UP, 15, 15));
 
                             upButton.setOnAction(event -> {
                                 if (table.getSelectionModel().getSelectedItems().contains(item)) {
@@ -315,7 +315,7 @@ public class WidgetColumnFactory {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            JFXButton button = new JFXButton("", JEConfig.getSVGImage(Icon.SETTINGS, 15, 15));
+                            Button button = new Button("", JEConfig.getSVGImage(Icon.SETTINGS, 15, 15));
 
                             button.setOnAction(event -> {
                                 item.openConfig();
@@ -433,7 +433,7 @@ public class WidgetColumnFactory {
                     @Override
                     protected void updateItem(String item, boolean empty) {
                         if (item != null && !empty) {
-                            JFXTextField textField = new JFXTextField(item);
+                            TextField textField = new TextField(item);
 
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 setWidgetTitle(textField.getText(), (Widget) getTableRow().getItem());
@@ -607,7 +607,7 @@ public class WidgetColumnFactory {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
                         if (item != null && !empty) {
-                            JFXTextField textField = buildDoubleTextField(item.toString());
+                            TextField textField = buildDoubleTextField(item.toString());
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 try {
                                     setWidgetXPosition(textField, (Widget) getTableRow().getItem());
@@ -661,7 +661,7 @@ public class WidgetColumnFactory {
                     protected void updateItem(Double item, boolean empty) {
                         setGraphic(null);
                         if (item != null && !empty) {
-                            JFXTextField textField = buildDoubleTextField(item.toString());
+                            TextField textField = buildDoubleTextField(item.toString());
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 try {
                                     setWidgetYPosition(textField, (Widget) getTableRow().getItem());
@@ -711,7 +711,7 @@ public class WidgetColumnFactory {
                     protected void updateItem(Double item, boolean empty) {
 
                         if (item != null && !empty) {
-                            JFXTextField textField = buildDoubleTextField(item.toString());
+                            TextField textField = buildDoubleTextField(item.toString());
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 try {
                                     setWidgetWidth(textField, (Widget) getTableRow().getItem());
@@ -872,8 +872,8 @@ public class WidgetColumnFactory {
     }
 
 
-    private JFXTextField buildDoubleTextField(String text) {
-        JFXTextField textField = new JFXTextField(text);
+    private TextField buildDoubleTextField(String text) {
+        TextField textField = new TextField(text);
         textField.focusedProperty().addListener(WidgetColumnFactory.this.focusListener);
         textField.setMaxWidth(this.numberColumDefaultSize);
         return textField;
@@ -888,7 +888,7 @@ public class WidgetColumnFactory {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
                         if (item != null && !empty) {
-                            JFXTextField textField = buildDoubleTextField(item.toString());
+                            TextField textField = buildDoubleTextField(item.toString());
 
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 try {

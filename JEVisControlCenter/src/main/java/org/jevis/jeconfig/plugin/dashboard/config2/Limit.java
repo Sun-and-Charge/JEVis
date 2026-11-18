@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.ComboBox;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -134,7 +134,7 @@ public class Limit {
 
 
         Label limitTypeLabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.type"));
-        JFXComboBox<MODE> limitTypeBox = new JFXComboBox<>(types);
+        ComboBox<MODE> limitTypeBox = new ComboBox<>(types);
         Callback<ListView<MODE>, ListCell<MODE>> cellFactory = new Callback<ListView<MODE>, ListCell<MODE>>() {
             @Override
             public ListCell<MODE> call(ListView<MODE> param) {

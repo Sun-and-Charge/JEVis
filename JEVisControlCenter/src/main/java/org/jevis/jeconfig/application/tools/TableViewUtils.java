@@ -20,8 +20,8 @@
 package org.jevis.jeconfig.application.tools;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableViewSkin;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -427,9 +427,7 @@ public class TableViewUtils {
             public void onChanged(Change<?> c) {
                 for (Object column : view.getColumns()) {
                     try {
-                        Method fitTosize = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-                        fitTosize.setAccessible(true);
-                        fitTosize.invoke(view.getSkin(), column, -1);
+                        ColumnAutoFit.fit(view, column);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -496,7 +494,7 @@ public class TableViewUtils {
             maxWidth = Math.max(maxWidth, tc.getWidth());
         }
 
-        tc.impl_setWidth(maxWidth);
+        tc.setPrefWidth(maxWidth);
     }
 
 }

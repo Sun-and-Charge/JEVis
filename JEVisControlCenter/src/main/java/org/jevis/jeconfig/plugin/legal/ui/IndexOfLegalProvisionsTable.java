@@ -19,8 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.legal.ui;
 
-import com.jfoenix.controls.JFXButton;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.Button;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -64,16 +65,7 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
     private static final Logger logger = LogManager.getLogger(IndexOfLegalProvisionsTable.class);
 
 
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     ObservableList<ObligationData> data = FXCollections.observableArrayList();
     FilteredList<ObligationData> filteredData;
@@ -319,7 +311,7 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
         for (TableColumn<ObligationData, ?> column : this.getColumns()) {
             try {
                 if (getSkin() != null) {
-                    columnToFitMethod.invoke(getSkin(), column, -1);
+                    ColumnAutoFit.fit(this, column);
                 }
             } catch (Exception e) {
             }
@@ -477,8 +469,8 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
                             setGraphic(null);
                         } else {
                             HBox hBox = new HBox();
-                            JFXButton jfxButtonMoveUp = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_UP, 10, 10));
-                            JFXButton jfxButtonMoveDown = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 10, 10));
+                            Button jfxButtonMoveUp = new Button("", JEConfig.getSVGImage(Icon.ARROW_UP, 10, 10));
+                            Button jfxButtonMoveDown = new Button("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 10, 10));
                             hBox.setSpacing(3);
                             hBox.getChildren().addAll(jfxButtonMoveUp, jfxButtonMoveDown);
 

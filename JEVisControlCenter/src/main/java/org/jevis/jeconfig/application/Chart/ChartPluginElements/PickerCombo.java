@@ -20,8 +20,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTimePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Tooltip;
@@ -52,10 +51,10 @@ public class PickerCombo {
     private static final Logger logger = LogManager.getLogger(PickerCombo.class);
     private final JEVisDataSource ds;
     private final PresetDateBox presetDateBox;
-    private final JFXDatePicker startDatePicker = new JFXDatePicker();
-    private final JFXDatePicker endDatePicker = new JFXDatePicker();
-    private final JFXTimePicker startTimePicker = new JFXTimePicker();
-    private final JFXTimePicker endTimePicker = new JFXTimePicker();
+    private final DatePicker startDatePicker = new DatePicker();
+    private final DatePicker endDatePicker = new DatePicker();
+    private final TimePicker startTimePicker = new TimePicker();
+    private final TimePicker endTimePicker = new TimePicker();
     private final DataSettings dataSettings;
     private final ChartPlugin chartPlugin;
 
@@ -251,19 +250,19 @@ public class PickerCombo {
         return dataModel;
     }
 
-    public JFXDatePicker getStartDatePicker() {
+    public DatePicker getStartDatePicker() {
         return startDatePicker;
     }
 
-    public JFXDatePicker getEndDatePicker() {
+    public DatePicker getEndDatePicker() {
         return endDatePicker;
     }
 
-    public JFXTimePicker getStartTimePicker() {
+    public TimePicker getStartTimePicker() {
         return startTimePicker;
     }
 
-    public JFXTimePicker getEndTimePicker() {
+    public TimePicker getEndTimePicker() {
         return endTimePicker;
     }
 

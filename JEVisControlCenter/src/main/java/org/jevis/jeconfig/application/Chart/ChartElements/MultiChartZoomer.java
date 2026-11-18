@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartElements;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import de.gsi.chart.Chart;
 import de.gsi.chart.XYChart;
 import de.gsi.chart.axes.Axis;
@@ -566,16 +566,16 @@ public class MultiChartZoomer extends de.gsi.chart.plugins.ChartPlugin {
         separator.setOrientation(Orientation.VERTICAL);
         final HBox buttonBar = new HBox();
         buttonBar.setPadding(new Insets(1, 1, 1, 1));
-        final JFXButton zoomOut = new JFXButton(null, new Glyph(FONT_AWESOME, "\uf0b2").size(FONT_SIZE));
+        final Button zoomOut = new Button(null, new Glyph(FONT_AWESOME, "\uf0b2").size(FONT_SIZE));
         zoomOut.setPadding(new Insets(3, 3, 3, 3));
         zoomOut.setTooltip(new Tooltip("zooms to origin and enables auto-ranging"));
-        final JFXButton zoomModeXY = new JFXButton(null, new Glyph(FONT_AWESOME, "\uf047").size(FONT_SIZE));
+        final Button zoomModeXY = new Button(null, new Glyph(FONT_AWESOME, "\uf047").size(FONT_SIZE));
         zoomModeXY.setPadding(new Insets(3, 3, 3, 3));
         zoomModeXY.setTooltip(new Tooltip("set zoom-mode to X & Y range (N.B. disables auto-ranging)"));
-        final JFXButton zoomModeX = new JFXButton(null, new Glyph(FONT_AWESOME, "\uf07e").size(FONT_SIZE));
+        final Button zoomModeX = new Button(null, new Glyph(FONT_AWESOME, "\uf07e").size(FONT_SIZE));
         zoomModeX.setPadding(new Insets(3, 3, 3, 3));
         zoomModeX.setTooltip(new Tooltip("set zoom-mode to X range (N.B. disables auto-ranging)"));
-        final JFXButton zoomModeY = new JFXButton(null, new Glyph(FONT_AWESOME, "\uf07d").size(FONT_SIZE));
+        final Button zoomModeY = new Button(null, new Glyph(FONT_AWESOME, "\uf07d").size(FONT_SIZE));
         zoomModeY.setPadding(new Insets(3, 3, 3, 3));
         zoomModeY.setTooltip(new Tooltip("set zoom-mode to Y range (N.B. disables auto-ranging)"));
 
@@ -982,7 +982,8 @@ public class MultiChartZoomer extends de.gsi.chart.plugins.ChartPlugin {
         }
     }
 
-    private boolean isMouseEventWithinCanvas(final MouseEvent mouseEvent) {
+    @Override
+    protected boolean isMouseEventWithinCanvas(final MouseEvent mouseEvent) {
         final Canvas canvas = getChart().getCanvas();
         // listen to only events within the canvas
         final Point2D mouseLoc = new Point2D(mouseEvent.getScreenX(), mouseEvent.getScreenY());
@@ -990,7 +991,8 @@ public class MultiChartZoomer extends de.gsi.chart.plugins.ChartPlugin {
         return screenBounds.contains(mouseLoc);
     }
 
-    private boolean isMouseEventWithinCanvas(final ScrollEvent mouseEvent) {
+    @Override
+    protected boolean isMouseEventWithinCanvas(final ScrollEvent mouseEvent) {
         final Canvas canvas = getChart().getCanvas();
         // listen to only events within the canvas
         final Point2D mouseLoc = new Point2D(mouseEvent.getScreenX(), mouseEvent.getScreenY());

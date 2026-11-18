@@ -20,14 +20,14 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -64,8 +64,8 @@ public class NetGraphPojo {
 
     private final double iconSize = 20;
 
-    private final JFXButton jfxButtonDelete = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
-    private final JFXButton jfxButtonAdd = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, this.iconSize, this.iconSize));
+    private final Button jfxButtonDelete = new Button("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
+    private final Button jfxButtonAdd = new Button("", JEConfig.getSVGImage(Icon.PLUS, this.iconSize, this.iconSize));
 
     int gaugeWidgetID = -1;
 
@@ -84,14 +84,14 @@ public class NetGraphPojo {
 
     private NetGraphWidget.SKIN skin = NetGraphWidget.SKIN.SECTOR;
 
-    private JFXComboBox<NetGraphWidget.SKIN> jfxComboBox;
+    private ComboBox<NetGraphWidget.SKIN> jfxComboBox;
 
 
     ObservableList<String> skins = FXCollections.observableArrayList();
 
-    private JFXCheckBox jfxCheckBoxInPercent;
+    private CheckBox jfxCheckBoxInPercent;
 
-    private JFXTextField jfxTextFieldMax;
+    private TextField jfxTextFieldMax;
 
 
     private TableView tableViewSections;
@@ -217,8 +217,8 @@ public class NetGraphPojo {
 
     private void createShowCheckboxes(NetGraphTableFactory netGraphTableFactory) {
 
-        jfxTextFieldMax = new JFXTextField(String.valueOf(max));
-        jfxCheckBoxInPercent = new JFXCheckBox();
+        jfxTextFieldMax = new TextField(String.valueOf(max));
+        jfxCheckBoxInPercent = new CheckBox();
         jfxCheckBoxInPercent.setSelected(inPercent);
         netGraphTableFactory.setDisable(!inPercent);
         jfxCheckBoxInPercent.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -229,7 +229,7 @@ public class NetGraphPojo {
                 hideMinMax();
             }
         });
-        jfxComboBox = new JFXComboBox<>();
+        jfxComboBox = new ComboBox<>();
 
         for (NetGraphWidget.SKIN s : NetGraphWidget.SKIN.values()) {
             jfxComboBox.getItems().add(s);

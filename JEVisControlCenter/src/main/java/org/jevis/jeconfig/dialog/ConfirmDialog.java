@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -117,10 +117,10 @@ public class ConfirmDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton ok = new JFXButton("OK");
+        Button ok = new Button("OK");
         ok.setDefaultButton(true);
 
-        JFXButton cancel = new JFXButton(I18n.getInstance().getString("graph.dialog.cancel"));
+        Button cancel = new Button(I18n.getInstance().getString("graph.dialog.cancel"));
         cancel.setCancelButton(true);
 
         buttonPanel.getChildren().addAll(ok, cancel);
@@ -132,7 +132,7 @@ public class ConfirmDialog {
         HBox messagePanel = new HBox();
         messagePanel.setPadding(new Insets(30, 0, 30, 30));
 
-        JFXTextArea messageLabel = new JFXTextArea(message);
+        TextArea messageLabel = new TextArea(message);
         messageLabel.getStylesheets().add(ConfirmDialog.class.getResource("/styles/TransparentTextArea.css").toExternalForm());
 //        messagePanel.getChildren().add(messageLabel);
         messageLabel.setPrefRowCount(5);

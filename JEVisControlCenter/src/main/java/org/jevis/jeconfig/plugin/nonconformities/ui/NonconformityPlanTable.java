@@ -19,7 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.nonconformities.ui;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
@@ -59,16 +60,7 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
     private static final Logger logger = LogManager.getLogger(NonconformityPlanTable.class);
 
 
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     ObservableList<NonconformityData> data = FXCollections.observableArrayList();
     FilteredList<NonconformityData> filteredData;
@@ -291,7 +283,7 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
         for (TableColumn<NonconformityData, ?> column : this.getColumns()) {
             try {
                 if (getSkin() != null) {
-                    columnToFitMethod.invoke(getSkin(), column, -1);
+                    ColumnAutoFit.fit(this, column);
                 }
             } catch (Exception e) {
             }

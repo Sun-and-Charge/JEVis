@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.widget;
 
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.AtomicDouble;
-import com.jfoenix.controls.JFXTextField;
 import eu.hansolo.medusa.Gauge;
 import eu.hansolo.medusa.GaugeBuilder;
 import javafx.application.Platform;
@@ -351,7 +351,7 @@ public class BatteryWidget extends Widget implements DataModelWidget {
                                     objectName.setText(calcInputObject.getValueAttribute().getObject().getName());
                                 }
 
-                                JFXTextField field = new JFXTextField();
+                                TextField field = new TextField();
                                 field.setMinWidth(240);
                                 Double value = Double.NaN;
                                 DateTime date = new DateTime();

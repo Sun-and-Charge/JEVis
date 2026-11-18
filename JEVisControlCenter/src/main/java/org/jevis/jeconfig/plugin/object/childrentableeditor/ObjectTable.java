@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.object.childrentableeditor;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
@@ -77,7 +77,7 @@ public class ObjectTable {
     private Map<Long, List<Long>> calcMap = new HashMap<>();
     private JEVisDataSource ds;
 
-    public ObjectTable(JEVisObject parentObject, JFXDatePicker startDatePicker, JFXDatePicker endDatePicker, ToggleButton reloadButton, ToggleButton xlsxButton, JFXTextField filterInclude, JFXTextField filterExclude, JFXComboBox<String> columnBox, JFXCheckBox sourceDetails) {
+    public ObjectTable(JEVisObject parentObject, DatePicker startDatePicker, DatePicker endDatePicker, ToggleButton reloadButton, ToggleButton xlsxButton, TextField filterInclude, TextField filterExclude, ComboBox<String> columnBox, CheckBox sourceDetails) {
 
         reloadButton.setOnAction(event -> reload());
         LocalDate startLocalDate = startDatePicker.getValue();

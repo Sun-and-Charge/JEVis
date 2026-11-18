@@ -18,7 +18,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -152,7 +152,7 @@ public class DynamicEnumEditor implements AttributeEditor {
                         };
                     }
                 };
-                JFXComboBox<String> picker = new JFXComboBox(observableList);
+                ComboBox<String> picker = new ComboBox(observableList);
                 picker.setPrefWidth(GenericAttributeExtension.editorWidth.getValue());
                 picker.setCellFactory(cellFactory);
                 picker.setButtonCell(cellFactory.call(null));

@@ -19,6 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.wizard;
 
+import javafx.scene.control.Button;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
@@ -58,7 +59,7 @@ public class PageWidgetSelection extends Page {
 
 //        Widgets.getAvabableWidgets(JEConfig.getDataSource(), null).forEach(widget -> {
 //
-//            JFXButton widgetButton = new JFXButton(widget.typeID(), widget.getImagePreview());
+//            Button widgetButton = new Button(widget.typeID(), widget.getImagePreview());
 //            widgetButton.setContentDisplay(ContentDisplay.TOP);
 //
 //            widgetListPane.getChildren().add(widgetButton);

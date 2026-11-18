@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -58,15 +58,15 @@ public class SideConfigPanel extends GridPane {
     private static final Logger logger = LogManager.getLogger(SideConfigPanel.class);
     private final DashboardControl control;
     private final double iconSize = 16;
-    private final JFXComboBox<Integer> layerComboBox = new JFXComboBox<>();
+    private final ComboBox<Integer> layerComboBox = new ComboBox<>();
     private final ColorPickerAdv bgColorPicker = new ColorPickerAdv();
     private final ColorPickerAdv fColorPicker = new ColorPickerAdv();
-    private final JFXCheckBox showShadowField = new JFXCheckBox();
-    private final JFXCheckBox showValueField = new JFXCheckBox();
+    private final CheckBox showShadowField = new CheckBox();
+    private final CheckBox showValueField = new CheckBox();
     private final Spinner<Integer> fontSizeSpinner = new Spinner<Integer>(5, 50, 12);
     private final FontWeightBox fontWeightBox = new FontWeightBox();
     private final FontPostureBox fontPostureBox = new FontPostureBox();
-    private final JFXCheckBox fontUnderlined = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.controls.fontunderlined"));
+    private final CheckBox fontUnderlined = new CheckBox(I18n.getInstance().getString("plugin.dashboard.controls.fontunderlined"));
     private final Spinner<Integer> precisionSpinner = new Spinner<Integer>(0, 20, 2);
     private final Label fColorLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.fontcolor"));
     private final Label bgColorLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.color"));
@@ -82,23 +82,23 @@ public class SideConfigPanel extends GridPane {
     private final Label xPosLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.xpos"));
     private final Label yPosLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.ypos"));
     private final Label alignmentLabel = new Label(I18n.getInstance().getString("plugin.dashboard.edit.general.alignment"));
-    private final JFXTextField widthText = new JFXTextField();
-    private final JFXTextField heightText = new JFXTextField();
-    private final JFXTextField xPosText = new JFXTextField();
-    private final JFXTextField yPosText = new JFXTextField();
-    private final JFXButton leftButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_LEFT, iconSize, iconSize));
-    private final JFXButton rightButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_RIGHT, iconSize, iconSize));
-    private final JFXButton downButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_DOWN, iconSize, iconSize));
-    private final JFXButton upButton = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_UP, iconSize, iconSize));
-    private final JFXButton switchSide = new JFXButton("", JEConfig.getSVGImage(Icon.SWAP, 20, 20));
-    private final JFXButton equalizeDataModelButton = new JFXButton(I18n.getInstance().getString("plugin.dashboard.edit.general.equalizeDataModel"));
-    private final JFXComboBox<Pos> alignmentBox = new JFXComboBox<>(FXCollections.observableArrayList(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT, Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT));
-    private final JFXTextField titleText = new JFXTextField();
+    private final TextField widthText = new TextField();
+    private final TextField heightText = new TextField();
+    private final TextField xPosText = new TextField();
+    private final TextField yPosText = new TextField();
+    private final Button leftButton = new Button("", JEConfig.getSVGImage(Icon.ARROW_LEFT, iconSize, iconSize));
+    private final Button rightButton = new Button("", JEConfig.getSVGImage(Icon.ARROW_RIGHT, iconSize, iconSize));
+    private final Button downButton = new Button("", JEConfig.getSVGImage(Icon.ARROW_DOWN, iconSize, iconSize));
+    private final Button upButton = new Button("", JEConfig.getSVGImage(Icon.ARROW_UP, iconSize, iconSize));
+    private final Button switchSide = new Button("", JEConfig.getSVGImage(Icon.SWAP, 20, 20));
+    private final Button equalizeDataModelButton = new Button(I18n.getInstance().getString("plugin.dashboard.edit.general.equalizeDataModel"));
+    private final ComboBox<Pos> alignmentBox = new ComboBox<>(FXCollections.observableArrayList(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT, Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT));
+    private final TextField titleText = new TextField();
     private final TextField pixels = new TextField("25");
     private final GridPane dataPointConfigPane = new GridPane();
     //-----------
     //ObservableList<String> dataItems = FXCollections.observableArrayList("One", "Two", "Three", "Four", "Five", "Six","Seven", "Eight", "Nine", "Ten");
-    JFXComboBox<JEVisObject> objectSelectionBox = new JFXComboBox<>();
+    ComboBox<JEVisObject> objectSelectionBox = new ComboBox<>();
     ListView<JEVisObject> selectedObjectsListView = new ListView();
     ObservableList<JEVisObject> dataItems = FXCollections.observableArrayList();
     FilteredList<JEVisObject> filteredItems = new FilteredList<>(dataItems, p -> true);
@@ -577,7 +577,7 @@ public class SideConfigPanel extends GridPane {
 
         JEVisDataSource ds = control.getDataSource();
         ObjectRelations objectRelations = new ObjectRelations(ds);
-        JFXTextField filterTextField = new JFXTextField();
+        TextField filterTextField = new TextField();
         filterTextField.setPromptText("Type to filter...");
         filterTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             //System.out.println("newValue: " + newValue);

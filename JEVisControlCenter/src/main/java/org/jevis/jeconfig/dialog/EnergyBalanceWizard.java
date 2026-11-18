@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -78,12 +78,12 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
     private final JEVisObject object;
     private final JEVisTree tree;
     private final JEVisDataSource ds;
-    private final JFXTextField nameField = new JFXTextField();
+    private final TextField nameField = new TextField();
     private final MeterRow mainRow;
     private final List<MeterRow> subRows = new ArrayList<>();
     private final VBox subRowBox = new VBox(6);
-    private final JFXButton directoryButton = new JFXButton();
-    private final JFXCheckBox percentBox = new JFXCheckBox(I18n.getInstance().getString("plugin.energybalance.percent"));
+    private final Button directoryButton = new Button();
+    private final CheckBox percentBox = new CheckBox(I18n.getInstance().getString("plugin.energybalance.percent"));
     private final Label previewLabel = new Label();
     private JEVisObject calculationDirectory;
     private JEVisObject dataDirectory;
@@ -114,7 +114,7 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
 
         mainRow = new MeterRow(false);
 
-        JFXButton addButton = new JFXButton(I18n.getInstance().getString("plugin.energybalance.addsubmeter"),
+        Button addButton = new Button(I18n.getInstance().getString("plugin.energybalance.addsubmeter"),
                 JEConfig.getSVGImage(Icon.PLUS, 15, 15));
         addButton.setOnAction(event -> addSubRow());
         addSubRow();
@@ -484,9 +484,9 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
      * One meter of the balance: selection button, input data type and, for sub-meters, sign and remove button.
      */
     private class MeterRow extends HBox {
-        private final JFXComboBox<Sign> signBox = new JFXComboBox<>();
-        private final JFXComboBox<CalcInputType> typeBox = new JFXComboBox<>();
-        private final JFXButton selectButton = new JFXButton(I18n.getInstance().getString("plugin.energybalance.select"));
+        private final ComboBox<Sign> signBox = new ComboBox<>();
+        private final ComboBox<CalcInputType> typeBox = new ComboBox<>();
+        private final Button selectButton = new Button(I18n.getInstance().getString("plugin.energybalance.select"));
         private JEVisObject target;
 
         MeterRow(boolean subMeter) {
@@ -521,7 +521,7 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
                 signBox.getSelectionModel().select(Sign.MINUS);
                 signBox.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.energybalance.sign")));
                 signBox.valueProperty().addListener((observable, oldValue, newValue) -> updatePreview());
-                JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, 15, 15));
+                Button removeButton = new Button("", JEConfig.getSVGImage(Icon.DELETE, 15, 15));
                 removeButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.energybalance.removesubmeter")));
                 removeButton.setOnAction(event -> removeSubRow(this));
                 getChildren().addAll(signBox, selectButton, typeBox, removeButton);

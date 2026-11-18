@@ -19,13 +19,13 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -69,13 +69,13 @@ public class SankeyPojo {
 
     private final TableView sankeyTable;
 
-    private JFXCheckBox jfxCheckBoxShowValue;
+    private CheckBox jfxCheckBoxShowValue;
 
-    private JFXCheckBox jfxCheckBoxAutoGap;
-    private JFXCheckBox jfxCheckBoxShowPercent;
-    private JFXComboBox<String> jfxComboBoxRefersTo;
-    private JFXTextField jfxTextFieldGap;
-    private JFXTextField jfxTextFieldErrorTolerance;
+    private CheckBox jfxCheckBoxAutoGap;
+    private CheckBox jfxCheckBoxShowPercent;
+    private ComboBox<String> jfxComboBoxRefersTo;
+    private TextField jfxTextFieldGap;
+    private TextField jfxTextFieldErrorTolerance;
     private final Map<Integer, Spinner<Integer>> offsetUIList = new HashMap<>();
     private Map<Integer, Integer> offsetMap = new HashMap<>();
 
@@ -166,10 +166,10 @@ public class SankeyPojo {
     public Tab getConfigTab(ObservableList<ChartData> tableList) {
         GridPane gridPane = createGridpane();
 
-        jfxCheckBoxShowValue = new JFXCheckBox();
+        jfxCheckBoxShowValue = new CheckBox();
         jfxCheckBoxShowValue.setSelected(showValue);
 
-        jfxCheckBoxShowPercent = new JFXCheckBox();
+        jfxCheckBoxShowPercent = new CheckBox();
         jfxCheckBoxShowPercent.setSelected(showPercent);
 
         createRefersToComboBox();
@@ -177,16 +177,16 @@ public class SankeyPojo {
 
         setVisibiltyRefersTo(labelRefersTo);
 
-        jfxTextFieldGap = new JFXTextField();
+        jfxTextFieldGap = new TextField();
         jfxTextFieldGap.setText(String.valueOf(gap));
         Label labelGap = new Label();
         labelGap.setText(I18n.getInstance().getString("plugin.dashboard.sankey.gap"));
-        jfxCheckBoxAutoGap = new JFXCheckBox();
+        jfxCheckBoxAutoGap = new CheckBox();
         jfxCheckBoxAutoGap.setSelected(autoGap);
         setGapVisbilty(labelGap);
 
 
-        jfxTextFieldErrorTolerance = new JFXTextField();
+        jfxTextFieldErrorTolerance = new TextField();
         jfxTextFieldErrorTolerance.setText(String.valueOf(errorTolerance));
 
 
@@ -284,7 +284,7 @@ public class SankeyPojo {
     }
 
     private void createRefersToComboBox() {
-        jfxComboBoxRefersTo = new JFXComboBox<>();
+        jfxComboBoxRefersTo = new ComboBox<>();
         if (percentRefersTo.equals(SankeyWidget.REFERS_TO.PARENT)) {
             jfxComboBoxRefersTo.setValue(PARENT);
         } else if (percentRefersTo.equals(SankeyWidget.REFERS_TO.ROOT)) {

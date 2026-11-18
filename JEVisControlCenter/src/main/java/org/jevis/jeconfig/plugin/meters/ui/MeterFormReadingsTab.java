@@ -19,9 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.meters.ui;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.DatePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -58,8 +57,8 @@ public class MeterFormReadingsTab extends Tab implements MeterFormTab {
     private final YearBox yearBox = new YearBox(null);
     private final DayBox dayBox = new DayBox();
     private final MonthBox monthBox = new MonthBox();
-    private final JFXDatePicker datePicker = new JFXDatePicker(LocalDate.now());
-    private final JFXTimePicker timePicker = new JFXTimePicker(LocalTime.of(0, 0, 0));
+    private final DatePicker datePicker = new DatePicker(LocalDate.now());
+    private final TimePicker timePicker = new TimePicker(LocalTime.of(0, 0, 0));
 
     private final Label dateLabel = new Label(I18n.getInstance().getString("graph.dialog.column.timestamp"));
     private final TargetHelper targetHelper;
@@ -188,9 +187,9 @@ public class MeterFormReadingsTab extends Tab implements MeterFormTab {
         Label newMeter_Label = new Label("Neuer Zählerstand");
 
 
-        TextField oldMeter_Value = new JFXTextField();
+        TextField oldMeter_Value = new TextField();
 
-        TextField newMeter_Value = new JFXTextField();
+        TextField newMeter_Value = new TextField();
 
 
         // gridPane.add(gridPane, 0, rowcount, 4, 1);

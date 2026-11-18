@@ -20,7 +20,6 @@
  */
 package org.jevis.jeconfig.plugin.dtrc.dialogs;
 
-import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -96,7 +95,7 @@ public class TemplateCalculationInputDialog extends Dialog {
         boolean oldNameFound = templateInput.getVariableName() != null;
         String oldName = templateInput.getVariableName();
         AtomicBoolean changedName = new AtomicBoolean(false);
-        JFXTextField variableNameField = new JFXTextField(templateInput.getVariableName());
+        TextField variableNameField = new TextField(templateInput.getVariableName());
         GridPane.setHgrow(variableNameField, Priority.ALWAYS);
 
         variableNameField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -106,11 +105,11 @@ public class TemplateCalculationInputDialog extends Dialog {
             }
         });
 
-        JFXComboBox<InputVariableType> inputVariableTypeJFXComboBox = new JFXComboBox<>(FXCollections.observableArrayList(InputVariableType.values()));
+        ComboBox<InputVariableType> inputVariableTypeJFXComboBox = new ComboBox<>(FXCollections.observableArrayList(InputVariableType.values()));
         Callback<ListView<InputVariableType>, ListCell<InputVariableType>> inputVariableTypeJFXComboBoxCellFactory = new Callback<ListView<InputVariableType>, ListCell<InputVariableType>>() {
             @Override
             public ListCell<InputVariableType> call(ListView<InputVariableType> param) {
-                return new JFXListCell<InputVariableType>() {
+                return new ListCell<InputVariableType>() {
                     @Override
                     protected void updateItem(InputVariableType obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -161,14 +160,14 @@ public class TemplateCalculationInputDialog extends Dialog {
         GridPane.setHgrow(inputVariableTypeJFXComboBox, Priority.ALWAYS);
 
         Label isQuantitylabel = new Label("Quantity");
-        JFXCheckBox isQuantityCheckBox = new JFXCheckBox();
+        CheckBox isQuantityCheckBox = new CheckBox();
         isQuantityCheckBox.setSelected(templateInput.isQuantity());
         isQuantityCheckBox.selectedProperty().addListener((observableValue, aBoolean, t1) -> templateInput.setQuantity(t1));
 
         Label limiterLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.limiterlabel"));
         GridPane.setHgrow(limiterLabel, Priority.ALWAYS);
 
-        JFXTextField filterField = new JFXTextField();
+        TextField filterField = new TextField();
         filterField.setPromptText(I18n.getInstance().getString("searchbar.filterinput.prompttext"));
         GridPane.setHgrow(filterField, Priority.ALWAYS);
 
@@ -176,7 +175,7 @@ public class TemplateCalculationInputDialog extends Dialog {
             filterField.setText(templateInput.getFilter());
         }
 
-        JFXCheckBox groupCheckBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dtrc.dialog.grouplabel"));
+        CheckBox groupCheckBox = new CheckBox(I18n.getInstance().getString("plugin.dtrc.dialog.grouplabel"));
         GridPane.setHgrow(groupCheckBox, Priority.ALWAYS);
 
         if (templateInput.getGroup() != null) {
@@ -185,16 +184,16 @@ public class TemplateCalculationInputDialog extends Dialog {
 
         groupCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> templateInput.setGroup(newValue));
 
-        JFXComboBox<JEVisClass> classSelector = new JFXComboBox<>();
-        JFXComboBox<JEVisType> attributeSelector = new JFXComboBox<>();
+        ComboBox<JEVisClass> classSelector = new ComboBox<>();
+        ComboBox<JEVisType> attributeSelector = new ComboBox<>();
 
-        JFXListView<JEVisObject> listView = new JFXListView<>();
+        ListView<JEVisObject> listView = new ListView<>();
         listView.setPrefSize(WindowSize.fitWidth(JEConfig.getStage(), 450), WindowSize.fitHeight(JEConfig.getStage(), 550, 250));
         listView.setMinSize(300, 200);
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> listViewCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override
             public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-                return new JFXListCell<JEVisObject>() {
+                return new ListCell<JEVisObject>() {
                     @Override
                     protected void updateItem(JEVisObject obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -250,7 +249,7 @@ public class TemplateCalculationInputDialog extends Dialog {
             Callback<ListView<JEVisClass>, ListCell<JEVisClass>> classCellFactory = new Callback<ListView<JEVisClass>, ListCell<JEVisClass>>() {
                 @Override
                 public ListCell<JEVisClass> call(ListView<JEVisClass> param) {
-                    return new JFXListCell<JEVisClass>() {
+                    return new ListCell<JEVisClass>() {
                         @Override
                         protected void updateItem(JEVisClass obj, boolean empty) {
                             super.updateItem(obj, empty);
@@ -301,7 +300,7 @@ public class TemplateCalculationInputDialog extends Dialog {
             Callback<ListView<JEVisType>, ListCell<JEVisType>> attributeCellFactory = new Callback<ListView<JEVisType>, ListCell<JEVisType>>() {
                 @Override
                 public ListCell<JEVisType> call(ListView<JEVisType> param) {
-                    return new JFXListCell<JEVisType>() {
+                    return new ListCell<JEVisType>() {
                         @Override
                         protected void updateItem(JEVisType obj, boolean empty) {
                             super.updateItem(obj, empty);
@@ -399,14 +398,14 @@ public class TemplateCalculationInputDialog extends Dialog {
         }
 
         Label formulaLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.formulalabel"));
-        JFXComboBox<TemplateFormula> formulaBox = new JFXComboBox<>(FXCollections.observableArrayList(rcTemplate.getTemplateFormulas()));
+        ComboBox<TemplateFormula> formulaBox = new ComboBox<>(FXCollections.observableArrayList(rcTemplate.getTemplateFormulas()));
         TemplateFormula none = new TemplateFormula();
         none.setName(I18n.getInstance().getString("dialog.regression.type.none"));
         formulaBox.getItems().add(0, none);
         Callback<ListView<TemplateFormula>, ListCell<TemplateFormula>> formulaCellFactory = new Callback<ListView<TemplateFormula>, ListCell<TemplateFormula>>() {
             @Override
             public ListCell<TemplateFormula> call(ListView<TemplateFormula> param) {
-                return new JFXListCell<TemplateFormula>() {
+                return new ListCell<TemplateFormula>() {
                     @Override
                     protected void updateItem(TemplateFormula obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -425,14 +424,14 @@ public class TemplateCalculationInputDialog extends Dialog {
         formulaBox.setButtonCell(formulaCellFactory.call(null));
 
         Label dependencyLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.dependencylabel"));
-        JFXComboBox<TemplateInput> dependencyBox = new JFXComboBox<>(FXCollections.observableArrayList(rcTemplate.getTemplateInputs()));
+        ComboBox<TemplateInput> dependencyBox = new ComboBox<>(FXCollections.observableArrayList(rcTemplate.getTemplateInputs()));
         TemplateInput noneInput = new TemplateInput();
         noneInput.setVariableName(I18n.getInstance().getString("dialog.regression.type.none"));
         dependencyBox.getItems().add(0, noneInput);
         Callback<ListView<TemplateInput>, ListCell<TemplateInput>> dependencyCellFactory = new Callback<ListView<TemplateInput>, ListCell<TemplateInput>>() {
             @Override
             public ListCell<TemplateInput> call(ListView<TemplateInput> param) {
-                return new JFXListCell<TemplateInput>() {
+                return new ListCell<TemplateInput>() {
                     @Override
                     protected void updateItem(TemplateInput obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -451,15 +450,15 @@ public class TemplateCalculationInputDialog extends Dialog {
         dependencyBox.setButtonCell(dependencyCellFactory.call(null));
 
         Label timeRestrictionsLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.timerestictions"));
-        JFXCheckBox timeRestrictionEnabledCheckBox = new JFXCheckBox(I18n.getInstance().getString("jevistree.dialog.enable.title.enable"));
+        CheckBox timeRestrictionEnabledCheckBox = new CheckBox(I18n.getInstance().getString("jevistree.dialog.enable.title.enable"));
         timeRestrictionEnabledCheckBox.setSelected(templateInput.getTimeRestrictionEnabled());
         timeRestrictionEnabledCheckBox.selectedProperty().addListener((observableValue, aBoolean, t1) -> templateInput.setTimeRestrictionEnabled(t1));
 
-        JFXComboBox<TimeFrame> fixedTimeFrameBox = new JFXComboBox<>();
+        ComboBox<TimeFrame> fixedTimeFrameBox = new ComboBox<>();
         Callback<ListView<TimeFrame>, ListCell<TimeFrame>> fixedTimeFrameJFXComboBoxCellFactory = new Callback<ListView<TimeFrame>, ListCell<TimeFrame>>() {
             @Override
             public ListCell<TimeFrame> call(ListView<TimeFrame> param) {
-                return new JFXListCell<TimeFrame>() {
+                return new ListCell<TimeFrame>() {
                     @Override
                     protected void updateItem(TimeFrame obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -484,11 +483,11 @@ public class TemplateCalculationInputDialog extends Dialog {
         }
         fixedTimeFrameBox.getSelectionModel().selectedItemProperty().addListener((observableValue, timeFrame, t1) -> templateInput.setFixedTimeFrame(t1.getID()));
 
-        JFXComboBox<TimeFrame> reducingTimeFrameBox = new JFXComboBox<>();
+        ComboBox<TimeFrame> reducingTimeFrameBox = new ComboBox<>();
         Callback<ListView<TimeFrame>, ListCell<TimeFrame>> reducingTimeFrameJFXComboBoxCellFactory = new Callback<ListView<TimeFrame>, ListCell<TimeFrame>>() {
             @Override
             public ListCell<TimeFrame> call(ListView<TimeFrame> param) {
-                return new JFXListCell<TimeFrame>() {
+                return new ListCell<TimeFrame>() {
                     @Override
                     protected void updateItem(TimeFrame obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -688,7 +687,7 @@ public class TemplateCalculationInputDialog extends Dialog {
         getDialogPane().setContent(gridPane);
     }
 
-    private void createFilterList(TemplateInput templateInput, JFXTextField limiterField, JFXListView<JEVisObject> listView, ObservableList<JEVisObject> objects) {
+    private void createFilterList(TemplateInput templateInput, TextField limiterField, ListView<JEVisObject> listView, ObservableList<JEVisObject> objects) {
         FilteredList<JEVisObject> filteredList = new FilteredList<>(objects, s -> true);
 
         limiterField.textProperty().addListener(obs -> {

@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.meters.ui;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -56,9 +56,9 @@ public class NewMeterDialog extends Dialog {
     private final MeterList meterList;
     private final JEVisDataSource jeVisDataSource;
     private ComboBox<JEVisClassWrapper> comboBox = new ComboBox<>();
-    private JFXTextField jfxTextFieldName = new JFXTextField();
-    private JFXButton jfxButtonTarget = new JFXButton("", JEConfig.getSVGImage(Icon.TREE, 20, 20));
-    private JFXButton removeParent = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, 20, 20));
+    private TextField jfxTextFieldName = new TextField();
+    private Button jfxButtonTarget = new Button("", JEConfig.getSVGImage(Icon.TREE, 20, 20));
+    private Button removeParent = new Button("", JEConfig.getSVGImage(Icon.DELETE, 20, 20));
     private Optional<JEVisObject> parent = Optional.empty();
     private SingleSelectionModel<JEVisClassWrapper> jeVisClassSingleSelectionModel;
     private JEVisClassWrapper air;

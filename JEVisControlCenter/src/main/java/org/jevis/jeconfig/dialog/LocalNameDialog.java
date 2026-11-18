@@ -20,9 +20,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -66,16 +65,7 @@ public class LocalNameDialog{
     private final ObservableList<TranslationRow> translationRows = FXCollections.observableArrayList();
     private String newName = "";
 
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     public LocalNameDialog(JEVisObject object) {
         this.object = object;
@@ -99,7 +89,7 @@ public class LocalNameDialog{
 
 
         Label objLocalNameLabel = new Label(I18n.getInstance().getString("jevistree.dialog.new.name"));
-        JFXTextField objectLocalNameTest = new JFXTextField();
+        TextField objectLocalNameTest = new TextField();
         Image img = new Image("/icons/flags2/" + I18n.getInstance().getLocale().getLanguage() + ".png");
         ImageView imageViewFlag = new ImageView(img);
         imageViewFlag.fitHeightProperty().setValue(20);
@@ -148,7 +138,7 @@ public class LocalNameDialog{
                     try {
                         if (item == null) {
                             TranslationRow rowItem = (TranslationRow) getTableRow().getItem();
-                            JFXComboBox<Locale> langBox = buildLangBox(null);
+                            ComboBox<Locale> langBox = buildLangBox(null);
                             langBox.valueProperty().addListener((observable, oldValue, newValue) -> {
                                 try {
                                     rowItem.setLanguage(newValue.getLanguage());
@@ -161,7 +151,7 @@ public class LocalNameDialog{
                             setGraphic(langBox);
                         } else {
                             TranslationRow rowItem = (TranslationRow) getTableRow().getItem();
-                            JFXComboBox<Locale> langBox = buildLangBox(new Locale(item));
+                            ComboBox<Locale> langBox = buildLangBox(new Locale(item));
                             langBox.valueProperty().addListener((observable, oldValue, newValue) -> {
                                 try {
                                     rowItem.setLanguage(newValue.getLanguage());
@@ -252,9 +242,9 @@ public class LocalNameDialog{
         NO, YES, CANCEL
     }
 
-    private JFXComboBox<Locale> buildLangBox(Locale selected) {
+    private ComboBox<Locale> buildLangBox(Locale selected) {
         ObservableList<Locale> langList = FXCollections.observableArrayList(I18n.getInstance().getAvailableLang());
-        JFXComboBox picker = new JFXComboBox(langList);
+        ComboBox picker = new ComboBox(langList);
 
         Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>() {
             @Override

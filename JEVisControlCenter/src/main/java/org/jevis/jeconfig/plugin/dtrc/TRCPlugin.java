@@ -23,7 +23,6 @@ package org.jevis.jeconfig.plugin.dtrc;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
@@ -80,7 +79,7 @@ public class TRCPlugin implements Plugin {
     protected final ObjectRelations objectRelations;
     protected final String title;
     protected final AlphanumComparator alphanumComparator = new AlphanumComparator();
-    protected final JFXTextField filterInput = new JFXTextField();
+    protected final TextField filterInput = new TextField();
     private final Image taskImage = JEConfig.getImage(Icon.PNG_GAUGE);
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.TRCPlugin");
     private final BorderPane borderPane = new BorderPane();
@@ -96,8 +95,8 @@ public class TRCPlugin implements Plugin {
     private final TemplateHandler templateHandler = new TemplateHandler();
     private OutputView viewTab;
     private boolean initialized = false;
-    private JFXComboBox<JEVisObject> trcs;
-    private final Map<String, JFXCheckBox> intervalSelectorMap = new HashMap<>();
+    private ComboBox<JEVisObject> trcs;
+    private final Map<String, CheckBox> intervalSelectorMap = new HashMap<>();
 
     public TRCPlugin(JEVisDataSource ds) {
         this.ds = ds;
@@ -233,11 +232,11 @@ public class TRCPlugin implements Plugin {
 
         printButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.reports.toolbar.tooltip.print")));
 
-        trcs = new JFXComboBox<>();
+        trcs = new ComboBox<>();
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> attributeCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override
             public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-                return new JFXListCell<JEVisObject>() {
+                return new ListCell<JEVisObject>() {
                     @Override
                     protected void updateItem(JEVisObject obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -617,7 +616,7 @@ public class TRCPlugin implements Plugin {
         intervalSelectionVBox.setPadding(new Insets(15));
         TimeFrameFactory timeFrameFactory = new TimeFrameFactory(ds);
         for (TimeFrame timeFrame : timeFrameFactory.getReduced()) {
-            JFXCheckBox checkBox = new JFXCheckBox(timeFrame.getListName());
+            CheckBox checkBox = new CheckBox(timeFrame.getListName());
             checkBox.setSelected(false);
             intervalSelectorMap.put(timeFrame.getID(), checkBox);
 
@@ -634,8 +633,8 @@ public class TRCPlugin implements Plugin {
 
     }
 
-    private JFXButton buildAddFormulaButton() {
-        JFXButton addFormulaButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
+    private Button buildAddFormulaButton() {
+        Button addFormulaButton = new Button("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
 
         addFormulaButton.setOnAction(event -> {
             TemplateFormula templateFormula = new TemplateFormula();
@@ -674,8 +673,8 @@ public class TRCPlugin implements Plugin {
         templateHandler.getRcTemplate().getTemplateInputs().removeAll(templateInputsToRemove);
     }
 
-    private JFXButton buildAddInputButton() {
-        JFXButton addInputButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
+    private Button buildAddInputButton() {
+        Button addInputButton = new Button("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
 
         addInputButton.setOnAction(event -> {
             TemplateInput templateInput = new TemplateInput();
@@ -694,8 +693,8 @@ public class TRCPlugin implements Plugin {
         return addInputButton;
     }
 
-    private JFXButton buildAddOutputButton() {
-        JFXButton addOutputButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
+    private Button buildAddOutputButton() {
+        Button addOutputButton = new Button("", JEConfig.getSVGImage(Icon.PLUS, 15, 15));
 
         addOutputButton.setOnAction(event -> {
             TemplateOutput templateOutput = new TemplateOutput();
@@ -789,8 +788,8 @@ public class TRCPlugin implements Plugin {
         }
     }
 
-    private JFXButton createFormulaButton(TemplateFormula templateFormula, int index) {
-        JFXButton formulaButton = new JFXButton(templateFormula.getName());
+    private Button createFormulaButton(TemplateFormula templateFormula, int index) {
+        Button formulaButton = new Button(templateFormula.getName());
         formulaButton.setMnemonicParsing(false);
 
         if (templateFormula.getName() == null || templateFormula.getName().equals("")) {
@@ -816,9 +815,9 @@ public class TRCPlugin implements Plugin {
         return formulaButton;
     }
 
-    private JFXButton createFormulaInputButton(TemplateFormula templateFormula, int index) {
+    private Button createFormulaInputButton(TemplateFormula templateFormula, int index) {
 
-        JFXButton formulaInputButton = new JFXButton(templateFormula.getName());
+        Button formulaInputButton = new Button(templateFormula.getName());
         formulaInputButton.setMnemonicParsing(false);
         formulaInputButton.setStyle("-fx-background-color: derive(-fx-base, 120%);");
 
@@ -829,8 +828,8 @@ public class TRCPlugin implements Plugin {
         return formulaInputButton;
     }
 
-    private JFXButton createInputButton(TemplateInput templateInput) {
-        JFXButton inputButton = new JFXButton(templateInput.getVariableName());
+    private Button createInputButton(TemplateInput templateInput) {
+        Button inputButton = new Button(templateInput.getVariableName());
         inputButton.setMnemonicParsing(false);
 
         inputButton.setOnAction(event -> {
@@ -850,8 +849,8 @@ public class TRCPlugin implements Plugin {
         return inputButton;
     }
 
-    private JFXButton createOutputButton(TemplateOutput templateOutput) {
-        JFXButton outputButton = new JFXButton(templateOutput.getName());
+    private Button createOutputButton(TemplateOutput templateOutput) {
+        Button outputButton = new Button(templateOutput.getName());
         outputButton.setMnemonicParsing(false);
 
         outputButton.setOnAction(event -> {

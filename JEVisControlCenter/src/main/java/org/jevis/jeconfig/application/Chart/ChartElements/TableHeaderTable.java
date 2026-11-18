@@ -19,7 +19,8 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartElements;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -46,16 +47,7 @@ import java.util.List;
  */
 public class TableHeaderTable extends TableView {
     private static final Logger logger = LogManager.getLogger(TableHeaderTable.class);
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            logger.error("Could not find TableViewSkin.resizeColumnToFitContent via reflection — autoFitTable will be a no-op", e);
-        }
-    }
 
     private final double VALUE_COLUMNS_PREF_SIZE = 200;
     private final double VALUE_COLUMNS_MIN_SIZE = VALUE_COLUMNS_PREF_SIZE - 60;
@@ -92,7 +84,7 @@ public class TableHeaderTable extends TableView {
     public void autoFitTable() {
         for (Object column : getColumns()) {
             try {
-                columnToFitMethod.invoke(getSkin(), column, -1);
+                ColumnAutoFit.fit(this, column);
             } catch (Exception ignored) {
             }
         }

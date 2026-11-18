@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.reports;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXListView;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.StringProperty;
@@ -85,10 +85,10 @@ public class ReportPlugin implements Plugin {
     private final ToolBar toolBar = new ToolBar();
     private boolean initialized = false;
     private final Pagination pagination = new Pagination();
-    private final JFXComboBox<String> fileComboBox = new JFXComboBox<>();
+    private final ComboBox<String> fileComboBox = new ComboBox<>();
     private final Map<String, JEVisFileWithSample> sampleMap = new HashMap<>();
     private final List<JEVisObject> disabledItemList = new ArrayList<>();
-    private final JFXTextField filterInput = new JFXTextField();
+    private final TextField filterInput = new TextField();
     private final int iconSize = 20;
     private boolean multipleDirectories;
     private final PDFModel model = new PDFModel();
@@ -101,7 +101,7 @@ public class ReportPlugin implements Plugin {
     private final AlphanumComparator alphanumComparator = new AlphanumComparator();
     private final ObservableList<JEVisObject> reports = FXCollections.observableArrayList();
     private final FilteredList<JEVisObject> filteredData = new FilteredList<>(reports, s -> true);
-    private final JFXListView<JEVisObject> listView = new JFXListView<>();
+    private final ListView<JEVisObject> listView = new ListView<>();
     private final ObservableList<String> fileNames = FXCollections.observableArrayList();
     private final SortedList<String> sortedList = new SortedList<>(fileNames);
 

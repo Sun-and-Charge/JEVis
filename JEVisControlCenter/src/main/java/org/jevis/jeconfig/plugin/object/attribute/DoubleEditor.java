@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.validation.base.ValidatorBase;
+import org.jevis.jeconfig.application.control.TextValidator;
 import javafx.beans.DefaultProperty;
 import javafx.scene.control.TextInputControl;
 import org.apache.commons.validator.routines.DoubleValidator;
@@ -41,8 +41,8 @@ public class DoubleEditor extends BasicEditor {
     }
 
     @Override
-    public ValidatorBase getValidator() {
-        ValidatorBase validator = new LocalDoubleValidator();
+    public TextValidator getValidator() {
+        TextValidator validator = new LocalDoubleValidator();
         validator.setMessage("Value must be a number");
         return validator;
 
@@ -103,8 +103,7 @@ public class DoubleEditor extends BasicEditor {
         return false;
     }
 
-    @DefaultProperty(value = "icon")
-    private class LocalDoubleValidator extends ValidatorBase {
+    private class LocalDoubleValidator extends TextValidator {
 
 
         public LocalDoubleValidator() {

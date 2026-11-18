@@ -20,7 +20,6 @@
  */
 package org.jevis.jeconfig.tool.dwdbrowser;
 
-import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
@@ -85,8 +84,8 @@ public class DWDBrowser extends Dialog<ButtonType> {
     private final DateTimeFormatter monthFormatter = DateTimeFormat.forPattern("yyyyMM").withZoneUTC();
     private final DateTimeFormatter yearFormatter = DateTimeFormat.forPattern("yyyy").withZoneUTC();
     private final JEVisObject targetObject;
-    private final JFXDatePicker startDatePicker = new JFXDatePicker();
-    private final JFXDatePicker endDatePicker = new JFXDatePicker();
+    private final DatePicker startDatePicker = new DatePicker();
+    private final DatePicker endDatePicker = new DatePicker();
     private FilteredList<Station> filteredStations;
     private JEVisAttribute target;
     private DateTime firstDate = DateTime.now();
@@ -141,13 +140,13 @@ public class DWDBrowser extends Dialog<ButtonType> {
         gridPane.add(attributeBox, 1, row);
         row++;
 
-        JFXButton loadStationsButton = new JFXButton(I18n.getInstance().getString("plugin.object.dwd.button.loadstations"));
+        Button loadStationsButton = new Button(I18n.getInstance().getString("plugin.object.dwd.button.loadstations"));
 
         gridPane.add(loadStationsButton, 0, row);
         row++;
 
-        JFXTextField stationFilter = new JFXTextField();
-        JFXComboBox<Station> stationBox = new JFXComboBox<>();
+        TextField stationFilter = new TextField();
+        ComboBox<Station> stationBox = new ComboBox<>();
         StringConverter<Station> stationStringConverter = new StringConverter<Station>() {
             @Override
             public String toString(Station station) {
@@ -165,14 +164,14 @@ public class DWDBrowser extends Dialog<ButtonType> {
         gridPane.add(stationBox, 1, row);
         row++;
 
-        JFXButton loadDataButton = new JFXButton(I18n.getInstance().getString("plugin.object.dwd.button.loaddata"));
+        Button loadDataButton = new Button(I18n.getInstance().getString("plugin.object.dwd.button.loaddata"));
         loadDataButton.setDisable(true);
 
 
         gridPane.add(loadDataButton, 0, row);
         row++;
 
-        JFXButton showDescriptionButton = new JFXButton("", JEConfig.getSVGImage(Icon.INFO, 12, 12));
+        Button showDescriptionButton = new Button("", JEConfig.getSVGImage(Icon.INFO, 12, 12));
         showDescriptionButton.setDisable(true);
 
         gridPane.add(dataLabel, 0, row);
@@ -180,7 +179,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
         gridPane.add(showDescriptionButton, 2, row);
         row++;
 
-        JFXButton targetButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"),
+        Button targetButton = new Button(I18n.getInstance().getString("plugin.object.attribute.target.button"),
                 JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         targetButton.wrapTextProperty().setValue(true);
         targetButton.setDisable(true);
@@ -199,7 +198,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
         }
 
         Label messageLabel = new Label(I18n.getInstance().getString("plugin.object.dwd.label.message"));
-        JFXTextField messageField = new JFXTextField();
+        TextField messageField = new TextField();
         gridPane.add(messageLabel, 0, row, 1, 1);
         gridPane.add(messageField, 1, row, 2, 1);
         row++;
@@ -212,7 +211,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
         gridPane.add(endDatePicker, 1, row, 1, 1);
         row++;
 
-        JFXCheckBox createDataPoint = new JFXCheckBox(I18n.getInstance().getString("plugin.object.dwd.label.createdatapoint"));
+        CheckBox createDataPoint = new CheckBox(I18n.getInstance().getString("plugin.object.dwd.label.createdatapoint"));
         createDataPoint.setSelected(true);
         gridPane.add(createDataPoint, 0, row, 1, 1);
 
@@ -445,7 +444,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
         return stationId.equals(channelId) && selectedAttribute.equals(channelAttribute) && selectedAggregation.equals(channelAggregation) && selectedDataName.equals(channelDataName);
     }
 
-    private void loadData(JFXComboBox<Station> stationBox, JFXButton targetButton, JFXButton showDescriptionButton, Button okButton, JFXTextField messageField, FTPClient ftpClient, StationData stationData, List<String> allDataNames) {
+    private void loadData(ComboBox<Station> stationBox, Button targetButton, Button showDescriptionButton, Button okButton, TextField messageField, FTPClient ftpClient, StationData stationData, List<String> allDataNames) {
         try {
             Station selectedStation = stationBox.getSelectionModel().getSelectedItem();
             StringBuilder idString = new StringBuilder(String.valueOf(selectedStation.getId()));
@@ -570,7 +569,7 @@ public class DWDBrowser extends Dialog<ButtonType> {
         }
     }
 
-    private void loadStations(JFXComboBox<Station> stationBox, JFXButton loadDataButton, List<String> stationFiles, FTPClient ftpClient) {
+    private void loadStations(ComboBox<Station> stationBox, Button loadDataButton, List<String> stationFiles, FTPClient ftpClient) {
         try {
             ftpClient.connect("opendata.dwd.de");
 

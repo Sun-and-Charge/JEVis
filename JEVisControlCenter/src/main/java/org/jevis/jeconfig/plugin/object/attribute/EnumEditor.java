@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -103,7 +103,7 @@ public class EnumEditor implements AttributeEditor {
         AlphanumComparator ac = new AlphanumComparator();
         enumList.sort(ac);
 
-        JFXComboBox picker = new JFXComboBox(enumList);
+        ComboBox picker = new ComboBox(enumList);
         picker.setPrefWidth(GenericAttributeExtension.editorWidth.getValue());
 
         if (sample != null) {

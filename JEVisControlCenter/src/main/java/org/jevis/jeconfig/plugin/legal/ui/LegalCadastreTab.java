@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.legal.ui;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -69,7 +69,7 @@ public class LegalCadastreTab extends Tab {
 
 
         Label lSuche = new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.search"));
-        JFXTextField fsearch = new JFXTextField();
+        TextField fsearch = new TextField();
         fsearch.setPromptText(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.searchfor"));
 
 

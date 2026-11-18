@@ -19,7 +19,8 @@
  */
 package org.jevis.jeconfig.application.table;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -39,16 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SummeryTable extends TableView<SummeryData> implements TableFindScrollbar {
 
     public static final String COLUMN_SEPARATOR = "#";
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     private final TableView dataTable;
 
@@ -158,7 +150,7 @@ public class SummeryTable extends TableView<SummeryData> implements TableFindScr
                 cellCopie.setMinWidth(newValue.doubleValue());
                 cellCopie.setMaxWidth(newValue.doubleValue());
                 try {
-                    //  columnToFitMethod.invoke(getSkin(), cellCopie, -1);
+                    //  ColumnAutoFit.fit(this, cellCopie);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -180,7 +172,7 @@ public class SummeryTable extends TableView<SummeryData> implements TableFindScr
                     /*ignore this columns for now, there are to big to autoresize*/
                 } else {
                     if (getSkin() != null) {
-                        columnToFitMethod.invoke(getSkin(), column, -1);
+                        ColumnAutoFit.fit(this, column);
                     }
                 }
 

@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.dialog;
 
+import javafx.scene.control.ComboBox;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jfoenix.controls.JFXComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -65,7 +65,7 @@ public class JsonViewerDialog {
     private final int iconSize = 32;
     private final ImageView rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);
     private final ImageView leftImage = JEConfig.getImage(Icon.PNG_CHEVRON_LEFT, 20, 20);
-    private final JFXComboBox<JEVisFileWithSample> fileComboBox = new JFXComboBox<>(FXCollections.observableArrayList());
+    private final ComboBox<JEVisFileWithSample> fileComboBox = new ComboBox<>(FXCollections.observableArrayList());
     private final Map<JEVisFile, JEVisSample> sampleMap = new HashMap<>();
     private final ImageView jsonIcon = JEConfig.getImage(Icon.PNG_JSON, iconSize, iconSize);
     private final ObjectMapper objectMapper = new ObjectMapper();

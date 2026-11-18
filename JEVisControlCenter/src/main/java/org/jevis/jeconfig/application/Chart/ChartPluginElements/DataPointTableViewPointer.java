@@ -11,7 +11,7 @@
 
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import de.gsi.chart.Chart;
 import de.gsi.chart.XYChart;
 import de.gsi.chart.axes.Axis;
@@ -136,7 +136,7 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
         double prevX = Double.MIN_VALUE;
         double nextX = Double.MAX_VALUE;
 
-        final int nDataCount = dataSet.getDataCount(DataSet.DIM_X);
+        final int nDataCount = dataSet.getDataCount();
         for (int i = 0; i < nDataCount; i++) {
             final double currentX = dataSet.get(DataSet.DIM_X, i);
 
@@ -236,7 +236,7 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
                             tableChart.updateTable(null, nearest);
                             tableChart.setBlockDatePickerEvent(true);
                             TableTopDatePicker tableTopDatePicker = tableChart.getTableTopDatePicker();
-                            JFXComboBox<DateTime> datePicker = tableTopDatePicker.getDatePicker();
+                            ComboBox<DateTime> datePicker = tableTopDatePicker.getDatePicker();
                             Platform.runLater(() -> {
                                 datePicker.getSelectionModel().select(nearest);
                                 tableChart.setBlockDatePickerEvent(false);

@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -102,14 +102,14 @@ public class EquipmentDialog extends Dialog {
         VBox parentVBox = new VBox(parentLabel);
         parentVBox.setAlignment(Pos.CENTER);
 
-        JFXButton treeButton = new JFXButton(I18n
+        Button treeButton = new Button(I18n
                 .getInstance().getString("plugin.object.attribute.target.button"),
                 JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
 
         Label nameLabel = new Label(I18n.getInstance().getString("newobject.name"));
         VBox nameVBox = new VBox(nameLabel);
         nameVBox.setAlignment(Pos.CENTER);
-        JFXTextField nameField = new JFXTextField();
+        TextField nameField = new TextField();
 
         Region targetSpace = new Region();
         targetSpace.setPrefWidth(20);
@@ -231,16 +231,16 @@ public class EquipmentDialog extends Dialog {
         Label nameLabel = new Label(I18n.getInstance().getString("newobject.name"));
         VBox nameVBox = new VBox(nameLabel);
         nameVBox.setAlignment(Pos.CENTER);
-        JFXTextField nameField = new JFXTextField(selectedMeter.getName());
+        TextField nameField = new TextField(selectedMeter.getName());
 
         HBox targetBox = new HBox(nameVBox, nameField);
         targetBox.setSpacing(4);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        JFXButton ok = new JFXButton(I18n.getInstance().getString("jevistree.dialog.new.ok"));
+        Button ok = new Button(I18n.getInstance().getString("jevistree.dialog.new.ok"));
         HBox.setHgrow(ok, Priority.NEVER);
-        JFXButton cancel = new JFXButton(I18n.getInstance().getString("jevistree.dialog.new.cancel"));
+        Button cancel = new Button(I18n.getInstance().getString("jevistree.dialog.new.cancel"));
         HBox.setHgrow(cancel, Priority.NEVER);
 
         Separator sep1 = new Separator(Orientation.HORIZONTAL);

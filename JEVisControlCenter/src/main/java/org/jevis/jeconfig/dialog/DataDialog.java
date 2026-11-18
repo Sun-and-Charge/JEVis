@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -77,8 +77,8 @@ public class DataDialog extends Dialog {
     private final Pagination pagination = new Pagination();
     private final List<DataSample> deleteList = new ArrayList<>();
     private final List<DataSample> data = new ArrayList<>();
-    private final JFXDatePicker startDatePicker = new JFXDatePicker(LocalDate.now().minusDays(1));
-    private final JFXDatePicker endDatePicker = new JFXDatePicker(LocalDate.now());
+    private final DatePicker startDatePicker = new DatePicker(LocalDate.now().minusDays(1));
+    private final DatePicker endDatePicker = new DatePicker(LocalDate.now());
     private final WorkDays workDays;
     private final DoubleValidator doubleValidator = DoubleValidator.getInstance();
     private final NumberFormat nf = NumberFormat.getInstance(I18n.getInstance().getLocale());
@@ -196,7 +196,7 @@ public class DataDialog extends Dialog {
             }
         });
 
-        JFXComboBox<String> dateConfig = new JFXComboBox<>();
+        ComboBox<String> dateConfig = new ComboBox<>();
         dateConfig.getItems().addAll("Auto", "Man");
 
         Label fromLabel = new Label(I18n.getInstance().getString("plugin.graph.dialog.export.from"));
@@ -234,7 +234,7 @@ public class DataDialog extends Dialog {
             }
         });
 
-        JFXButton addButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, ICON_SIZE, ICON_SIZE));
+        Button addButton = new Button("", JEConfig.getSVGImage(Icon.PLUS, ICON_SIZE, ICON_SIZE));
         addButton.setOnAction(actionEvent -> {
             int currentPageIndex = pagination.getCurrentPageIndex();
             List<DataSample> selectedItems = tableView.getSelectionModel().getSelectedItems();
@@ -256,7 +256,7 @@ public class DataDialog extends Dialog {
             createPage(currentPageIndex);
         });
 
-        JFXButton removeButton = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, ICON_SIZE, ICON_SIZE));
+        Button removeButton = new Button("", JEConfig.getSVGImage(Icon.DELETE, ICON_SIZE, ICON_SIZE));
         removeButton.prefWidthProperty().bind(addButton.widthProperty());
         removeButton.setOnAction(actionEvent -> {
             int currentPageIndex = pagination.getCurrentPageIndex();

@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.object.extension;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -77,11 +77,11 @@ public class RoleExtention implements ObjectEditorExtension {
     private TableView groupTableView;
     private TableView userTableView;
     private boolean needLoad = true;
-    private JFXTextField filterFieldGroup;
-    private JFXTextField filterFieldUser;
+    private TextField filterFieldGroup;
+    private TextField filterFieldUser;
     private RoleManager roleManager;
-    private JFXComboBox<JEVisObject> dashboardList;
-    private JFXCheckBox overwriteDashboard;
+    private ComboBox<JEVisObject> dashboardList;
+    private CheckBox overwriteDashboard;
     private Long orgaID = 0L;
 
     public RoleExtention(JEVisObject obj) {
@@ -235,8 +235,8 @@ public class RoleExtention implements ObjectEditorExtension {
         return prefix;
     }
 
-    private JFXComboBox<JEVisObject> buildDashboardListView() {
-        JFXComboBox<JEVisObject> view = new JFXComboBox<>();
+    private ComboBox<JEVisObject> buildDashboardListView() {
+        ComboBox<JEVisObject> view = new ComboBox<>();
         try {
             Callback<ListView<JEVisObject>, ListCell<JEVisObject>> cellFactory = new Callback<javafx.scene.control.ListView<JEVisObject>, ListCell<JEVisObject>>() {
                 @Override
@@ -290,14 +290,14 @@ public class RoleExtention implements ObjectEditorExtension {
 
         Label userTitle = new Label(I18n.getInstance().getString("plugin.object.role.users"));
         Label groupTitle = new Label(I18n.getInstance().getString("plugin.object.role.grouprights"));
-        JFXCheckBox showActiveMember = new JFXCheckBox(I18n.getInstance().getString("plugin.object.role.autofilter"));
-        JFXCheckBox showActiveUser = new JFXCheckBox(I18n.getInstance().getString("plugin.object.role.autofilter"));
+        CheckBox showActiveMember = new CheckBox(I18n.getInstance().getString("plugin.object.role.autofilter"));
+        CheckBox showActiveUser = new CheckBox(I18n.getInstance().getString("plugin.object.role.autofilter"));
         Label dashboardLabel = new Label(I18n.getInstance().getString("plugin.object.role.dashboard"));
         Label filterGroupTable = new Label(I18n.getInstance().getString("plugin.object.role.filter"));
         Label filterUserTable = new Label(I18n.getInstance().getString("plugin.object.role.filter"));
-        filterFieldGroup = new JFXTextField();
-        filterFieldUser = new JFXTextField();
-        overwriteDashboard = new JFXCheckBox(I18n.getInstance().getString("plugin.object.role.overwritedashboard"));
+        filterFieldGroup = new TextField();
+        filterFieldUser = new TextField();
+        overwriteDashboard = new CheckBox(I18n.getInstance().getString("plugin.object.role.overwritedashboard"));
         filterFieldGroup.setPromptText(I18n.getInstance().getString("plugin.object.role.filterprompt"));
         filterFieldUser.setPromptText(I18n.getInstance().getString("plugin.object.role.filterprompt"));
         HBox userFilterBox = new HBox(8, filterUserTable, filterFieldUser);

@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.action.ui.tab;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -72,13 +72,13 @@ public class DetailsTab extends Tab {
     private final Button beforeDateButton = new Button("", JEConfig.getSVGImage(Icon.CALENDAR, 14, 14));
     private final Button afterDateButton = new Button("", JEConfig.getSVGImage(Icon.CALENDAR, 14, 14));
     private final Button diffDateButton = new Button("", JEConfig.getSVGImage(Icon.CALENDAR, 14, 14));
-    private final JFXButton buttonOpenAnalysisBefore = new JFXButton("", JEConfig.getSVGImage(Icon.GRAPH, 14, 14));
+    private final Button buttonOpenAnalysisBefore = new Button("", JEConfig.getSVGImage(Icon.GRAPH, 14, 14));
     private final Button buttonOpenAnalysisAfter = new Button("", JEConfig.getSVGImage(Icon.GRAPH, 14, 14));
     private final Button buttonOpenAnalysisaDiff = new Button("", JEConfig.getSVGImage(Icon.GRAPH, 14, 14));
-    private final JFXComboBox<JEVisObject> f_EnpiSelection;
+    private final ComboBox<JEVisObject> f_EnpiSelection;
     private final Label l_EnpiSelection = new Label(I18n.getInstance().getString("plugin.action.enpi"));//"EnPI"
     private final Label l_mediaTags = new Label();
-    private final JFXComboBox<Medium> f_mediaTags;
+    private final ComboBox<Medium> f_mediaTags;
     private final TextArea f_correctionIfNeeded = new TextArea("");
     private final TextFieldWithUnit f_enpiAfter = new TextFieldWithUnit();
     private final TextFieldWithUnit f_enpiBefore = new TextFieldWithUnit();
@@ -89,7 +89,7 @@ public class DetailsTab extends Tab {
     private final TextFieldWithUnit f_consumptionAfter = new TextFieldWithUnit();
     private final TextFieldWithUnit f_consumptionDiff = new TextFieldWithUnit();
 
-    private final JFXTextField f_toUser = new JFXTextField();
+    private final TextField f_toUser = new TextField();
 
 
     public DetailsTab(ActionData data) {
@@ -130,7 +130,7 @@ public class DetailsTab extends Tab {
                 };
             }
         };
-        f_EnpiSelection = new JFXComboBox(data.getActionPlan().getEnpis());
+        f_EnpiSelection = new ComboBox(data.getActionPlan().getEnpis());
         f_EnpiSelection.setCellFactory(enpiCellFactory);
         f_EnpiSelection.setButtonCell(enpiCellFactory.call(null));
         try {
@@ -179,7 +179,7 @@ public class DetailsTab extends Tab {
 
         l_mediaTags.setText(I18n.getInstance().getString("actionform.editor.tab.deteils.medium"));
 
-        f_mediaTags = new JFXComboBox<>(data.getActionPlan().getMedium());
+        f_mediaTags = new ComboBox<>(data.getActionPlan().getMedium());
         f_mediaTags.setConverter(new StringConverter<Medium>() {
             @Override
             public String toString(Medium medium) {
@@ -207,7 +207,7 @@ public class DetailsTab extends Tab {
 
         /*
 
-        //_mediaTags = new JFXComboBox<>(data.getActionPlan().getMediumTags());
+        //_mediaTags = new ComboBox<>(data.getActionPlan().getMediumTags());
         f_mediaTags.getSelectionModel().select(data.mediaTagsProperty().getValue());
         f_mediaTags.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override

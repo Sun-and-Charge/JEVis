@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.object.extension.calculation;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.FlowPane;
@@ -70,7 +70,7 @@ public class VariablesBox extends FlowPane {
     private void buildVarButton(JEVisObject inputObject) {
 
         try {
-            JFXButton button = new JFXButton();
+            Button button = new Button();
             button.setFocusTraversable(false);
             JEVisAttribute id = inputObject.getAttribute("Identifier");
             if (id != null) {
@@ -108,7 +108,7 @@ public class VariablesBox extends FlowPane {
     public void listVariables(JEVisObject obj) {
         getChildren().clear();
 
-        JFXButton addInputButton = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 15, 15));
+        Button addInputButton = new Button("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 15, 15));
         addInputButton.setOnAction(event -> {
             try {
                 TreeHelper.createCalcInput(obj, null, this, expression);

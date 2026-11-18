@@ -20,6 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -503,7 +505,7 @@ public class ConfigManager {
          newAnalysis.setTitle(I18n.getInstance().getString("plugin.graph.dialog.new.title"));
          Label newText = new Label(I18n.getInstance().getString("plugin.graph.dialog.new.name"));
          Label directoryText = new Label(I18n.getInstance().getString("plugin.graph.dialog.new.directory"));
-         JFXTextField name = new JFXTextField();
+         TextField name = new TextField();
 
          JEVisClass analysesDirectory = null;
          List<JEVisObject> listAnalysesDirectories = null;
@@ -518,7 +520,7 @@ public class ConfigManager {
          }
 
          ObjectProperty<JEVisObject> currentAnalysisDirectory = new SimpleObjectProperty<>(null);
-         JFXComboBox<JEVisObject> parentsDirectories = new JFXComboBox<>(FXCollections.observableArrayList(listAnalysesDirectories));
+         ComboBox<JEVisObject> parentsDirectories = new ComboBox<>(FXCollections.observableArrayList(listAnalysesDirectories));
 
          Callback<ListView<JEVisObject>, ListCell<JEVisObject>> cellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
         @Override public ListCell<JEVisObject> call(ListView<JEVisObject> param) {

@@ -19,11 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.legal.ui.tab;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
-import com.sun.javafx.scene.control.skin.TextAreaSkin;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -47,24 +46,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GeneralTab extends DataTab<ObligationData> {
-    private final JFXDatePicker f_issueDate = new JFXDatePicker();
-    private final JFXDatePicker f_activeVersion = new JFXDatePicker();
-    private final JFXDatePicker f_dateOfExamination = new JFXDatePicker();
+    private final DatePicker f_issueDate = new DatePicker();
+    private final DatePicker f_activeVersion = new DatePicker();
+    private final DatePicker f_dateOfExamination = new DatePicker();
 
-    private final JFXCheckBox f_relevance = new JFXCheckBox();
+    private final CheckBox f_relevance = new CheckBox();
 
-    private final JFXTextField f_Nr = new JFXTextField();
-    private final JFXTextField f_title = new JFXTextField();
-    private final JFXTextField f_designation = new JFXTextField();
+    private final TextField f_Nr = new TextField();
+    private final TextField f_title = new TextField();
+    private final TextField f_designation = new TextField();
     private final TextArea f_description = new TextArea();
 
-    private final JFXComboBox f_category = new JFXComboBox();
-    private final JFXComboBox f_scope = new JFXComboBox();
+    private final ComboBox f_category = new ComboBox();
+    private final ComboBox f_scope = new ComboBox();
 
-    private final JFXTextField f_Attachment = new JFXTextField();
+    private final TextField f_Attachment = new TextField();
 
     private final TextArea f_importanceForTheCompany = new TextArea();
-    private final JFXTextField f_link = new JFXTextField();
+    private final TextField f_link = new TextField();
 
 
     private final Label l_title = new Label();
@@ -249,11 +248,14 @@ public class GeneralTab extends DataTab<ObligationData> {
         f_Cause.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
-                if (keyEvent.getCode() == KeyCode.TAB) {
+                /* Tab moves the focus instead of inserting a tab; a text area does that for Ctrl+Tab (the skin
+                   behaviour used before is not public since JavaFX 9) */
+                if (keyEvent.getCode() == KeyCode.TAB && !keyEvent.isControlDown()) {
                     Node node = (Node) keyEvent.getSource();
                     if (node instanceof TextArea) {
-                        TextAreaSkin skin = (TextAreaSkin) ((TextArea) node).getSkin();
-                        skin.getBehavior().traverseNext();
+                        keyEvent.consume();
+                        node.fireEvent(new KeyEvent(node, node, KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                                keyEvent.isShiftDown(), true, false, false));
                     }
                 }
             }

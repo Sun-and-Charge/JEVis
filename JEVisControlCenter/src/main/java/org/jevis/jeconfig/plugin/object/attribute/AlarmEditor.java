@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -100,7 +100,7 @@ public class AlarmEditor implements AttributeEditor {
      * Build main UI
      */
     private void init() {
-        JFXButton openConfig = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.alarmeditor.openconfig"));
+        Button openConfig = new Button(I18n.getInstance().getString("plugin.object.attribute.alarmeditor.openconfig"));
         openConfig.setOnAction(action -> {
             try {
                 show();
@@ -317,14 +317,14 @@ public class AlarmEditor implements AttributeEditor {
         Label standbyLabel = new Label(I18n.getInstance().getString("plugin.object.attribute.alarmeditor.label.standbyTime"));
         Label toleranceLabel = new Label(I18n.getInstance().getString("plugin.object.attribute.alarmeditor.label.tolerance"));
 
-        JFXTextField nameField = new JFXTextField();
+        TextField nameField = new TextField();
 
         HBox limitDataBox = new HBox();
-        JFXButton treeButton = new JFXButton(I18n
+        Button treeButton = new Button(I18n
                 .getInstance().getString("plugin.object.attribute.target.button"),
                 JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
 
-        JFXButton gotoButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.goto"),
+        Button gotoButton = new Button(I18n.getInstance().getString("plugin.object.attribute.target.goto"),
                 JEConfig.getSVGImage(Icon.GO_TO_SOURCE, 18, 18));//icon
         gotoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip")));
 
@@ -426,10 +426,10 @@ public class AlarmEditor implements AttributeEditor {
             }
         });
 
-        JFXTextField limitField = new JFXTextField();
+        TextField limitField = new TextField();
         Label unitField = new Label(unitString);
 
-        JFXComboBox<AlarmConstants.Operator> operator = new JFXComboBox<>(this.operator);
+        ComboBox<AlarmConstants.Operator> operator = new ComboBox<>(this.operator);
         Callback<ListView<AlarmConstants.Operator>, ListCell<AlarmConstants.Operator>> cellFactory = new Callback<ListView<AlarmConstants.Operator>, ListCell<AlarmConstants.Operator>>() {
             @Override
             public ListCell<AlarmConstants.Operator> call(ListView<AlarmConstants.Operator> param) {
@@ -450,7 +450,7 @@ public class AlarmEditor implements AttributeEditor {
         operator.setCellFactory(cellFactory);
         operator.setButtonCell(cellFactory.call(null));
 
-        JFXTextField toleranceField = new JFXTextField();
+        TextField toleranceField = new TextField();
         Label toleranceUnitLabel = new Label("%");
 
         ScheduleEditor silentTime;

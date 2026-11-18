@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
@@ -218,7 +218,7 @@ public class TopMenu extends MenuBar {
                     }
 
                     String suggestedName = favoriteAnalysis.createName(JEConfig.getDataSource());
-                    JFXTextField favoriteName = new JFXTextField();
+                    TextField favoriteName = new TextField();
                     favoriteName.setMinWidth(450);
                     favoriteName.textProperty().bindBidirectional(favoriteAnalysis.nameProperty());
                     favoriteName.setText(suggestedName);
@@ -537,7 +537,7 @@ public class TopMenu extends MenuBar {
 
             pinDialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);
 
-            JFXTextField pinField = new JFXTextField();
+            TextField pinField = new TextField();
             pinDialog.getDialogPane().setContent(pinField);
 
             Button okButton = (Button) pinDialog.getDialogPane().lookupButton(okType);

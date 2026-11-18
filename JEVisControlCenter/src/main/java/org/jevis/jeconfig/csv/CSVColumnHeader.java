@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.csv;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXRadioButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -74,7 +74,7 @@ public class CSVColumnHeader {
     private static final Logger logger = LogManager.getLogger(CSVColumnHeader.class);
     private static final double FIELD_WIDTH = 210;
     private static final double ROW_HIGHT = 25;
-    final JFXButton unitButton = new JFXButton(I18n.getInstance().getString("csv.table.unit"));
+    final Button unitButton = new Button(I18n.getInstance().getString("csv.table.unit"));
     private final VBox root = new VBox(5);
     private final Label typeL = new Label(I18n.getInstance().getString("csv.table.meaning"));
     private final Label formatL = new Label(I18n.getInstance().getString("csv.table.format"));
@@ -84,7 +84,7 @@ public class CSVColumnHeader {
     private final HashMap<Integer, CSVCellGraphic> _valueGraphic = new HashMap<Integer, CSVCellGraphic>();
     private final CSVTable _table;
     private JEVisAttribute _target = null;
-    private JFXComboBox<Meaning> meaning;
+    private ComboBox<Meaning> meaning;
     private DateTimeZone _selectedTimeZone = DateTimeZone.getDefault();
     private String _currentFormat;
     private char _decimalSeparator;
@@ -406,7 +406,7 @@ public class CSVColumnHeader {
                 };
             }
         };
-        meaning = new JFXComboBox<Meaning>(options);
+        meaning = new ComboBox<Meaning>(options);
         meaning.setCellFactory(meaningFactory);
         meaning.setButtonCell(meaningFactory.call(null));
         meaning.getSelectionModel().selectFirst();
@@ -420,7 +420,7 @@ public class CSVColumnHeader {
         root.setPadding(new Insets(8, 8, 8, 8));
 
         Label targetL = new Label("Target:");
-        JFXButton targetB = buildTargetButton(preselectedTarget);
+        Button targetB = buildTargetButton(preselectedTarget);
 
         Region spacer = new Region();
 
@@ -452,13 +452,13 @@ public class CSVColumnHeader {
 
         ToggleGroup deciSepGroup = new ToggleGroup();
         Label deciSeperator = new Label(I18n.getInstance().getString("csv.deci_seperator"));
-        final JFXRadioButton comma = new JFXRadioButton(I18n.getInstance().getString("csv.comma"));
+        final RadioButton comma = new RadioButton(I18n.getInstance().getString("csv.comma"));
         comma.setId("commaRadio");
-        final JFXRadioButton dot = new JFXRadioButton(I18n.getInstance().getString("csv.dot"));
+        final RadioButton dot = new RadioButton(I18n.getInstance().getString("csv.dot"));
         dot.setId("dotRadio");
         Label targetL = new Label(I18n.getInstance().getString("csv.target"));
         Label unitLabel = new Label(I18n.getInstance().getString("csv.unit"));
-        final JFXButton unitButton = new JFXButton(I18n.getInstance().getString("csv.table.unit"));
+        final Button unitButton = new Button(I18n.getInstance().getString("csv.table.unit"));
 //        unitButton.setDisable(true);
         unitButton.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -515,7 +515,7 @@ public class CSVColumnHeader {
 
         spebox.getChildren().setAll(deciSeperator, dot, comma);
 
-        JFXButton targetB = buildTargetButton(preselectedTarget);
+        Button targetB = buildTargetButton(preselectedTarget);
 
         GridPane gp = new GridPane();
         gp.setHgap(5);
@@ -551,8 +551,8 @@ public class CSVColumnHeader {
     private void buildDateTime(Meaning mode) {
         root.setPadding(new Insets(8, 8, 8, 8));
 
-        final JFXComboBox<String> timeZone;
-        final JFXTextField format = new JFXTextField();
+        final ComboBox<String> timeZone;
+        final TextField format = new TextField();
         Label timeZoneL = new Label(I18n.getInstance().getString("csv.timezone"));
         format.setPromptText(I18n.getInstance().getString("csv.format.prompt"));
 
@@ -560,7 +560,7 @@ public class CSVColumnHeader {
         Set<String> allTimeZones = DateTimeZone.getAvailableIDs();
 
         timeZoneOpt = FXCollections.observableArrayList(allTimeZones);
-        timeZone = new JFXComboBox<>(timeZoneOpt);
+        timeZone = new ComboBox<>(timeZoneOpt);
         timeZone.getSelectionModel().select(TimeZone.getDefault().getID());
         timeZone.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -720,8 +720,8 @@ public class CSVColumnHeader {
         return "yyyy-MM-dd HH:mm:ss";
     }
 
-    private JFXButton buildTargetButton(JEVisAttribute preselectedTarget) {
-        final JFXButton button = new JFXButton(I18n.getInstance().getString("csv.import_target"));//, JEConfig.getSVGImage(Icon.TREE, 15, 15));
+    private Button buildTargetButton(JEVisAttribute preselectedTarget) {
+        final Button button = new Button(I18n.getInstance().getString("csv.import_target"));//, JEConfig.getSVGImage(Icon.TREE, 15, 15));
         if (preselectedTarget != null) {
             _target = preselectedTarget;
             button.setText(preselectedTarget.getObject().getName());

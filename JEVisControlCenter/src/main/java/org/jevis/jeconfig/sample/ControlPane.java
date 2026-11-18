@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.sample;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -66,12 +66,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ControlPane extends GridPane {
 
     private static final Logger logger = LogManager.getLogger(ControlPane.class);
-    private final JFXButton ok = new JFXButton(I18n.getInstance().getString("newobject.ok"));
-    private final JFXDatePicker startDate = new JFXDatePicker();
-    private final JFXDatePicker endDate = new JFXDatePicker();
-    private final JFXButton cancel = new JFXButton(I18n.getInstance().getString("attribute.editor.cancel"));
+    private final Button ok = new Button(I18n.getInstance().getString("newobject.ok"));
+    private final DatePicker startDate = new DatePicker();
+    private final DatePicker endDate = new DatePicker();
+    private final Button cancel = new Button(I18n.getInstance().getString("attribute.editor.cancel"));
 
-    private final JFXButton reloadButton = new JFXButton("", JEConfig.getSVGImage(Icon.REFRESH, 12, 12));
+    private final Button reloadButton = new Button("", JEConfig.getSVGImage(Icon.REFRESH, 12, 12));
     private final Tooltip reloadTooltip = new Tooltip(I18n.getInstance().getString("plugin.alarms.reload.progress.tooltip"));
     private final Label timeHeader = new Label(I18n.getInstance().getString("attribute.editor.timerange"));
     private final Label processorHeader = new Label(I18n.getInstance().getString("attribute.editor.dataprocessing"));

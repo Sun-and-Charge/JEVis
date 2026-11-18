@@ -19,7 +19,6 @@
  */
 package org.jevis.jeconfig.sample.tableview;
 
-import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -541,7 +540,7 @@ public class SampleTable extends TableView<TableSample> {
                             setGraphic(null);
                         } else {
                             TableSample tableSample = (TableSample) getTableRow().getItem();
-                            JFXTextField textField = new JFXTextField(dateViewFormat.print(tableSample.getTimeStamp()));
+                            TextField textField = new TextField(dateViewFormat.print(tableSample.getTimeStamp()));
                             setDefaultFieldStyle(this, textField);
 
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -600,7 +599,7 @@ public class SampleTable extends TableView<TableSample> {
                         } else {
                             try {
                                 TableSample tableSample = (TableSample) getTableRow().getItem();
-                                JFXCheckBox checkBox = new JFXCheckBox();
+                                CheckBox checkBox = new CheckBox();
                                 checkBox.setSelected(tableSample.isSelected());
                                 checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
                                     tableSample.setSelected(newValue);
@@ -735,7 +734,7 @@ public class SampleTable extends TableView<TableSample> {
                             setGraphic(null);
                         } else {
                             TableSample tableSample = (TableSample) getTableRow().getItem();
-                            JFXTextField textField = new JFXTextField();
+                            TextField textField = new TextField();
                             setDefaultFieldStyle(this, textField);
                             /* true while the text is replaced by the display or edit format, not by the user */
                             boolean[] formatting = {false};
@@ -864,7 +863,7 @@ public class SampleTable extends TableView<TableSample> {
                             } catch (JEVisException e) {
                                 e.printStackTrace();
                             }
-                            JFXButton downloadButton = new JFXButton(fileName, JEConfig.getSVGImage(Icon.SAVE, 14, 14));
+                            Button downloadButton = new Button(fileName, JEConfig.getSVGImage(Icon.SAVE, 14, 14));
 
                             downloadButton.setOnAction(event -> {
 
@@ -890,7 +889,7 @@ public class SampleTable extends TableView<TableSample> {
 
                             HBox hBox = new HBox(downloadButton);
                             if (isPDF) {
-                                JFXButton pdfButton = new JFXButton("", JEConfig.getSVGImage(Icon.PDF, 14, 14));
+                                Button pdfButton = new Button("", JEConfig.getSVGImage(Icon.PDF, 14, 14));
                                 hBox.getChildren().add(pdfButton);
                                 pdfButton.setOnAction(event -> {
                                     PDFViewerDialog pdfViewerDialog = new PDFViewerDialog();
@@ -903,7 +902,7 @@ public class SampleTable extends TableView<TableSample> {
                             }
 
                             if (isImage) {
-                                JFXButton imageButton = new JFXButton("", JEConfig.getSVGImage(Icon.IMAGE, 18, 18));
+                                Button imageButton = new Button("", JEConfig.getSVGImage(Icon.IMAGE, 18, 18));
                                 hBox.getChildren().add(imageButton);
                                 imageButton.setOnAction(event -> {
                                     ImageViewerDialog imageViewerDialog = new ImageViewerDialog();
@@ -989,9 +988,9 @@ public class SampleTable extends TableView<TableSample> {
                         } else {
                             TableSample tableSample = (TableSample) getTableRow().getItem();
 
-                            JFXTextArea textField = new JFXTextArea(tableSample.getValue().toString());
+                            TextArea textField = new TextArea(tableSample.getValue().toString());
 
-                            JFXButton expand = new JFXButton(null);
+                            Button expand = new Button(null);
                             expand.setBackground(new Background(new BackgroundImage(
                                     JEConfig.getImage(Icon.PNG_EXPAND_MORE),
                                     BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
@@ -1113,7 +1112,7 @@ public class SampleTable extends TableView<TableSample> {
                         } else {
                             TableSample tableSample = (TableSample) getTableRow().getItem();
 
-                            JFXPasswordField textField = new JFXPasswordField();
+                            PasswordField textField = new PasswordField();
                             textField.setText(tableSample.getValue().toString());
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 try {
@@ -1158,7 +1157,7 @@ public class SampleTable extends TableView<TableSample> {
                             setGraphic(null);
                         } else {
                             TableSample tableSample = (TableSample) getTableRow().getItem();
-                            JFXTextField textField = new JFXTextField(tableSample.getValue().toString());
+                            TextField textField = new TextField(tableSample.getValue().toString());
                             setDefaultFieldStyle(this, textField);
 //                            textField.setDisable(!SampleTable.this.isEditable());
 //                            this.disableProperty().bind(textField.disableProperty());
@@ -1278,7 +1277,7 @@ public class SampleTable extends TableView<TableSample> {
                             setDefaultCellStyle(this);
                             TableSample tableSample = (TableSample) getTableRow().getItem();
 
-                            JFXTextField textField = new JFXTextField(tableSample.getNote());
+                            TextField textField = new TextField(tableSample.getNote());
 //                            textField.setDisable(!SampleTable.this.isEditable());
 //                            this.disableProperty().bind(textField.disableProperty());
 

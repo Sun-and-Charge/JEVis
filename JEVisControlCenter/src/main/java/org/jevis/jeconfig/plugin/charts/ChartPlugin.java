@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextArea;
 import com.google.common.util.concurrent.AtomicDouble;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextArea;
 import de.gsi.chart.axes.AxisMode;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -262,11 +262,11 @@ public class ChartPlugin implements Plugin {
                             "    -fx-text-alignment: left;\n";
 //                    "    -fx-text-fill: #0076a3;\n";
 
-            JFXButton newAnalysis = new JFXButton(I18n.getInstance().getString("plugin.graph.analysis.new"), JEConfig.getSVGImage(Icon.ADD_CHART, 32, 32));
+            Button newAnalysis = new Button(I18n.getInstance().getString("plugin.graph.analysis.new"), JEConfig.getSVGImage(Icon.ADD_CHART, 32, 32));
             newAnalysis.setStyle(style);
             newAnalysis.setAlignment(Pos.CENTER);
 
-            JFXButton loadAnalysis = new JFXButton(I18n.getInstance().getString("plugin.graph.analysis.load"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 32, 32));
+            Button loadAnalysis = new Button(I18n.getInstance().getString("plugin.graph.analysis.load"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 32, 32));
             loadAnalysis.setStyle(style);
             loadAnalysis.setAlignment(Pos.CENTER);
 
@@ -646,7 +646,7 @@ public class ChartPlugin implements Plugin {
             infoBox.setResizable(true);
             infoBox.setTitle(I18n.getInstance().getString("dialog.regression.title"));
             infoBox.setHeaderText(I18n.getInstance().getString("dialog.regression.headertext"));
-            JFXTextArea textArea = new JFXTextArea(allFormulas.toString());
+            TextArea textArea = new TextArea(allFormulas.toString());
             textArea.setWrapText(true);
             textArea.setPrefWidth(450);
             textArea.setPrefHeight(200);
@@ -1191,7 +1191,7 @@ public class ChartPlugin implements Plugin {
                 case TABLE:
                     TableChart chart = (TableChart) cv;
                     TableTopDatePicker tableTopDatePicker = chart.getTableTopDatePicker();
-                    JFXComboBox<DateTime> datePicker = tableTopDatePicker.getDatePicker();
+                    ComboBox<DateTime> datePicker = tableTopDatePicker.getDatePicker();
                     ChartDataRow singleRow = chart.getSingleRow();
                     datePicker.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                         if (datePicker.getSelectionModel().selectedIndexProperty().get() < singleRow.getSamples().size()

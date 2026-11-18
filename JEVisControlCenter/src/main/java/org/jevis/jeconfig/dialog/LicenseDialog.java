@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
@@ -96,7 +96,7 @@ public class LicenseDialog {
                 new Tab(I18n.getInstance().getString("licenses.tab.libraries"), buildComponentTab(THIRD_PARTY_FILE)),
                 new Tab(I18n.getInstance().getString("licenses.tab.assets"), buildComponentTab(BUNDLED_ASSETS_FILE)));
 
-        JFXButton close = new JFXButton(I18n.getInstance().getString("licenses.close"));
+        Button close = new Button(I18n.getInstance().getString("licenses.close"));
         close.setDefaultButton(true);
         close.setOnAction(event -> stage.close());
         HBox buttonPanel = new HBox(close);
@@ -120,7 +120,7 @@ public class LicenseDialog {
         Hyperlink projectLink = new Hyperlink(PROJECT_URL);
         projectLink.setOnAction(event -> openBrowser(PROJECT_URL));
 
-        JFXTextArea text = new JFXTextArea();
+        TextArea text = new TextArea();
         text.setEditable(false);
         text.setWrapText(true);
         String notice = readResource(NOTICE_FILE);
@@ -141,7 +141,7 @@ public class LicenseDialog {
         List<Component> components = readComponents(resource);
         FilteredList<Component> filtered = new FilteredList<>(FXCollections.observableArrayList(components), c -> true);
 
-        JFXTextField search = new JFXTextField();
+        TextField search = new TextField();
         search.setPromptText(I18n.getInstance().getString("licenses.search"));
         search.textProperty().addListener((observable, oldValue, newValue) -> {
             String filter = newValue == null ? "" : newValue.trim().toLowerCase(Locale.ROOT);

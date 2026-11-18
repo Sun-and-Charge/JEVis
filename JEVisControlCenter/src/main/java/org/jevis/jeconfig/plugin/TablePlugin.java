@@ -20,10 +20,11 @@
  */
 package org.jevis.jeconfig.plugin;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
@@ -93,7 +94,6 @@ import java.util.stream.IntStream;
 
 public class TablePlugin implements Plugin {
     protected static final Logger logger = LogManager.getLogger(TablePlugin.class);
-    private static Method columnToFitMethod;
     protected final TabPane tabPane = new TabPane();
     private Boolean multiSite;
     protected final int toolBarIconSize = 20;
@@ -103,21 +103,13 @@ public class TablePlugin implements Plugin {
     protected final ToggleButton increaseFractionDigitsButton = new ToggleButton("", JEConfig.getSVGImage(Icon.MORE_DIGITS, toolBarIconSize, toolBarIconSize, 90));
     protected final ToggleButton xlsxButton = new ToggleButton("", JEConfig.getSVGImage(Icon.EXPORT, toolBarIconSize, toolBarIconSize));
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     protected final JEVisDataSource ds;
     protected final Map<JEVisAttribute, AttributeValueChange> changeMap = new HashMap<>();
     protected final ObjectRelations objectRelations;
     protected final String title;
     protected final AlphanumComparator alphanumComparator = new AlphanumComparator();
-    protected final JFXTextField filterInput = new JFXTextField("");
+    protected final TextField filterInput = new TextField("");
     protected final BorderPane borderPane = new BorderPane();
 
     public TablePlugin(JEVisDataSource ds, String title) {
@@ -172,7 +164,7 @@ public class TablePlugin implements Plugin {
 //            if (column.isVisible()) {
             try {
                 if (tableView.getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
-                    TablePlugin.columnToFitMethod.invoke(tableView.getSkin(), column, -1);
+                    ColumnAutoFit.fit(tableView, column);
                 }
             } catch (Exception e) {
             }
@@ -238,7 +230,7 @@ public class TablePlugin implements Plugin {
                             setGraphic(null);
                         } else {
 
-                            JFXDatePicker pickerDate = new JFXDatePicker();
+                            DatePicker pickerDate = new DatePicker();
 
                             if (item.hasSample()) {
                                 try {
@@ -251,7 +243,7 @@ public class TablePlugin implements Plugin {
 
                                     if (item.getName().equals("Verification Date")) {
                                         if (date.isBefore(new DateTime())) {
-                                            pickerDate.setDefaultColor(Color.RED);
+                                            pickerDate.getEditor().setStyle("-fx-text-fill: red;");
                                         }
                                     }
                                 } catch (Exception ex) {
@@ -273,7 +265,7 @@ public class TablePlugin implements Plugin {
                         }
                     }
 
-                    private DateTime getCurrentDate(JFXDatePicker pickerDate) {
+                    private DateTime getCurrentDate(DatePicker pickerDate) {
                         return new DateTime(
                                 pickerDate.valueProperty().get().getYear(), pickerDate.valueProperty().get().getMonthValue(), pickerDate.valueProperty().get().getDayOfMonth(),
                                 0, 0, 0,
@@ -308,14 +300,14 @@ public class TablePlugin implements Plugin {
                         } else {
                             RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
 
-                            JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, tableIconSize, tableIconSize));
+                            Button manSampleButton = new Button("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, tableIconSize, tableIconSize));
                             manSampleButton.setDisable(true);
                             manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
-                            JFXButton treeButton = new JFXButton("",
+                            Button treeButton = new Button("",
                                     JEConfig.getSVGImage(Icon.FOLDER_OPEN, tableIconSize, tableIconSize));
                             treeButton.wrapTextProperty().setValue(true);
 
-                            JFXButton gotoButton = new JFXButton("",
+                            Button gotoButton = new Button("",
                                     JEConfig.getSVGImage(Icon.GO_TO_SOURCE, tableIconSize, tableIconSize));//icon
                             gotoButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.attribute.target.goto.tooltip")));
 
@@ -454,7 +446,7 @@ public class TablePlugin implements Plugin {
         };
     }
 
-    protected void addEventManSampleAction(JEVisSample targetSample, JFXButton buttonToAddEvent, String headerText) {
+    protected void addEventManSampleAction(JEVisSample targetSample, Button buttonToAddEvent, String headerText) {
 
         buttonToAddEvent.setOnAction(event -> {
             if (targetSample != null) {
@@ -492,7 +484,7 @@ public class TablePlugin implements Plugin {
         });
     }
 
-    private boolean setToolTipText(JFXButton treeButton, JEVisAttribute att) {
+    private boolean setToolTipText(Button treeButton, JEVisAttribute att) {
         boolean foundTarget = false;
         try {
             TargetHelper th = new TargetHelper(ds, att);
@@ -558,7 +550,7 @@ public class TablePlugin implements Plugin {
                         } else {
                             RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
 
-                            JFXTextField textField = new JFXTextField();
+                            TextField textField = new TextField();
 
                             try {
                                 JEVisAttribute attribute = registerTableRow.getAttributeMap().get(item.getType());
@@ -615,9 +607,9 @@ public class TablePlugin implements Plugin {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            JFXButton downloadButton = new JFXButton("", JEConfig.getSVGImage(Icon.FILE_DOWNLOAD, tableIconSize, tableIconSize));
-                            JFXButton previewButton = new JFXButton("", JEConfig.getSVGImage(Icon.PREVIEW, tableIconSize, tableIconSize));
-                            JFXButton uploadButton = new JFXButton("", JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, tableIconSize, tableIconSize));
+                            Button downloadButton = new Button("", JEConfig.getSVGImage(Icon.FILE_DOWNLOAD, tableIconSize, tableIconSize));
+                            Button previewButton = new Button("", JEConfig.getSVGImage(Icon.PREVIEW, tableIconSize, tableIconSize));
+                            Button uploadButton = new Button("", JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, tableIconSize, tableIconSize));
 
                             downloadButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.download")));
                             previewButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.preview")));
@@ -718,7 +710,7 @@ public class TablePlugin implements Plugin {
         };
     }
 
-    private void setPreviewButton(JFXButton button, AttributeValueChange valueChange) {
+    private void setPreviewButton(Button button, AttributeValueChange valueChange) {
 
         button.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -793,7 +785,7 @@ public class TablePlugin implements Plugin {
                         } else {
                             RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
 
-                            JFXTextField textField = new JFXTextField();
+                            TextField textField = new TextField();
 
                             /**
                              if (getTableRow().getIndex() % 2 == 0) {
@@ -875,7 +867,7 @@ public class TablePlugin implements Plugin {
                         } else {
                             RegisterTableRow registerTableRow = (RegisterTableRow) getTableRow().getItem();
 
-                            JFXTextField textField = new JFXTextField();
+                            TextField textField = new TextField();
 
                             /**
                              if (getTableRow().getIndex() % 2 == 0) {

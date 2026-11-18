@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -48,7 +48,7 @@ public class PasswordEditor implements AttributeEditor {
     private final HBox box = new HBox();
     public JEVisAttribute _attribute;
     private boolean _hasChanged = false;
-    private JFXButton _setPW;
+    private Button _setPW;
     private boolean _readOnly = true;
     private boolean initialized = false;
 
@@ -120,7 +120,7 @@ public class PasswordEditor implements AttributeEditor {
 
     private void buildTextField() {
         if (_setPW == null) {
-            _setPW = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.password.button"),
+            _setPW = new Button(I18n.getInstance().getString("plugin.object.attribute.password.button"),
                     JEConfig.getSVGImage(Icon.LOCK, 18, 18));
             _setPW.setDisable(_readOnly);
             _setPW.setOnAction(new EventHandler<ActionEvent>() {

@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -84,7 +84,7 @@ public class EnterDataDialog extends Dialog implements EventTarget {
     private static final Logger logger = LogManager.getLogger(EnterDataDialog.class);
     private final JEVisDataSource ds;
     private final ObjectRelations objectRelations;
-    private final JFXTextField doubleField = new JFXTextField();
+    private final TextField doubleField = new TextField();
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance(I18n.getInstance().getLocale());
     private final Label messageLabel = new Label(I18n.getInstance().getString("plugin.object.dialog.data.message.notdiffquantity"));
     private final ObjectProperty<JEVisSample> newSampleProperty = new SimpleObjectProperty<>();
@@ -99,8 +99,8 @@ public class EnterDataDialog extends Dialog implements EventTarget {
     private final Label valueLabel = new Label(I18n.getInstance().getString("plugin.dashboard.tablewidget.column.value"));
     private final Label lastRawValueLabel = new Label(I18n.getInstance().getString("status.table.captions.lastrawvalue"));
     private final Label dateTypeLabel = new Label(I18n.getInstance().getString("plugin.object.dialog.data.datetype.label"));
-    private final JFXTextField searchIdField = new JFXTextField();
-    private final JFXButton treeButton = new JFXButton(I18n
+    private final TextField searchIdField = new TextField();
+    private final Button treeButton = new Button(I18n
             .getInstance().getString("plugin.object.attribute.target.button"),
             JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
     private final Label targetLabel = new Label();
@@ -108,8 +108,8 @@ public class EnterDataDialog extends Dialog implements EventTarget {
     private final DayBox dayBox = new DayBox();
     private final MonthBox monthBox = new MonthBox();
     private final Label dateLabel = new Label(I18n.getInstance().getString("graph.dialog.column.timestamp"));
-    private final JFXDatePicker datePicker = new JFXDatePicker(LocalDate.now());
-    private final JFXTimePicker timePicker = new JFXTimePicker(LocalTime.of(0, 0, 0));
+    private final DatePicker datePicker = new DatePicker(LocalDate.now());
+    private final TimePicker timePicker = new TimePicker(LocalTime.of(0, 0, 0));
     private final SimpleObjectProperty<DateTime> lastTS = new SimpleObjectProperty<>(new DateTime(1990, 1, 1, 0, 0, 0, 0));
     private final GridPane gridPane = new GridPane();
     private JEVisObject selectedObject;
@@ -750,7 +750,7 @@ public class EnterDataDialog extends Dialog implements EventTarget {
         return nextTS;
     }
 
-    private void filterGridPane(GridPane gridPane, YearBox yearBox, DayBox dayBox, MonthBox monthBox, Label dateLabel, JFXDatePicker datePicker, JFXTimePicker timePicker, EnterDataTypes newValue) {
+    private void filterGridPane(GridPane gridPane, YearBox yearBox, DayBox dayBox, MonthBox monthBox, Label dateLabel, DatePicker datePicker, TimePicker timePicker, EnterDataTypes newValue) {
         switch (newValue) {
             case YEAR:
                 Platform.runLater(() -> gridPane.getChildren().removeAll(dateLabel, datePicker, timePicker, yearBox, monthBox, dayBox));

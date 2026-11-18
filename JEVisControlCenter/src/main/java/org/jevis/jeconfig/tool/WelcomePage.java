@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.tool;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -62,7 +62,7 @@ public class WelcomePage {
 
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.Welcome");
     private final boolean isLoading = true;
-    JFXCheckBox remember = new JFXCheckBox(I18n.getInstance().getString("welcome.dontshow"));
+    CheckBox remember = new CheckBox(I18n.getInstance().getString("welcome.dontshow"));
 
     public WelcomePage() {
 
@@ -138,7 +138,7 @@ public class WelcomePage {
         bot.setAlignment(Pos.BOTTOM_RIGHT);
         bot.setSpacing(5);
         bot.setPadding(new Insets(10));
-        JFXButton close = new JFXButton(I18n.getInstance().getString("welcome.close"));
+        Button close = new Button(I18n.getInstance().getString("welcome.close"));
         close.setCancelButton(true);
         close.setDefaultButton(true);
 

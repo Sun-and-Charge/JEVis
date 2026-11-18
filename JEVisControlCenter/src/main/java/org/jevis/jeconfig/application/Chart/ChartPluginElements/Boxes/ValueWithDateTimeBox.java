@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
+import javafx.scene.control.TextField;
 import com.ibm.icu.text.NumberFormat;
-import com.jfoenix.controls.JFXTextField;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
 import javafx.scene.control.Tooltip;
@@ -35,7 +35,7 @@ public class ValueWithDateTimeBox extends HBox {
         this.setSpacing(6);
         NumberFormat nf = value.getNumberFormat();
 
-        JFXTextField valueField = new JFXTextField();
+        TextField valueField = new TextField();
 
         if (value != null) {
             try {

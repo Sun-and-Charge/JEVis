@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -82,7 +82,7 @@ public class SaveAnalysisDialog extends Dialog {
 
         Label newText = new Label(I18n.getInstance().getString("plugin.graph.dialog.new.name"));
         Label directoryText = new Label(I18n.getInstance().getString("plugin.graph.dialog.new.directory"));
-        JFXTextField name = new JFXTextField();
+        TextField name = new TextField();
 
         JEVisClass analysesDirectory = null;
         List<JEVisObject> listAnalysesDirectories = null;
@@ -93,7 +93,7 @@ public class SaveAnalysisDialog extends Dialog {
             e.printStackTrace();
         }
 
-        JFXComboBox<JEVisObject> parentsDirectories = new JFXComboBox<>(FXCollections.observableArrayList(listAnalysesDirectories));
+        ComboBox<JEVisObject> parentsDirectories = new ComboBox<>(FXCollections.observableArrayList(listAnalysesDirectories));
 
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> cellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override

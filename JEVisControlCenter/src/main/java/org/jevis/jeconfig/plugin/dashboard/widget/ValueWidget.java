@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.widget;
 
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.AtomicDouble;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -526,7 +526,7 @@ public class ValueWidget extends Widget implements DataModelWidget {
                                     objectName.setText(calcInputObject.getValueAttribute().getObject().getName());
                                 }
 
-                                JFXTextField field = new JFXTextField();
+                                TextField field = new TextField();
                                 field.setMinWidth(240);
                                 Double value = Double.NaN;
                                 DateTime date = new DateTime();
@@ -612,7 +612,7 @@ public class ValueWidget extends Widget implements DataModelWidget {
      * Display options of the value widget.
      */
     private class DisplayTab extends Tab implements ConfigTab {
-        private final JFXCheckBox dimIncompleteBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.dimincomplete"));
+        private final CheckBox dimIncompleteBox = new CheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.dimincomplete"));
 
         DisplayTab() {
             super(I18n.getInstance().getString("plugin.dashboard.valuewidget.display.tab"));

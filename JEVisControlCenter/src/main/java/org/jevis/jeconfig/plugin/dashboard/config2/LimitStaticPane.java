@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -39,10 +39,10 @@ public class LimitStaticPane extends GridPane {
     private final Label lowerVlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.valuelabel.lower"));
     private final Label upperColorlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.color.upper"));
     private final Label lowerColorlabel = new Label(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.color.lower"));
-    private final JFXCheckBox enableUpperBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.upper"));
-    private final JFXCheckBox enableLowerBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.lower"));
-    private final JFXTextField upperValueField = new JFXTextField();
-    private final JFXTextField lowerValueField = new JFXTextField();
+    private final CheckBox enableUpperBox = new CheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.upper"));
+    private final CheckBox enableLowerBox = new CheckBox(I18n.getInstance().getString("plugin.dashboard.valuewidget.limit.enable.lower"));
+    private final TextField upperValueField = new TextField();
+    private final TextField lowerValueField = new TextField();
     private final ColorPickerAdv upperColorPicker = new ColorPickerAdv();
     private final ColorPickerAdv lowerColorPicker = new ColorPickerAdv();
 

@@ -20,13 +20,13 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.widget;
 
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.AtomicDouble;
-import com.jfoenix.controls.JFXTextField;
 import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.TileBuilder;
 import eu.hansolo.tilesfx.chart.ChartData;
-import eu.hansolo.tilesfx.chart.RadarChart;
+import eu.hansolo.tilesfx.chart.RadarChartMode;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -103,7 +103,7 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
 
         netGraph = TileBuilder.create().skinType(Tile.SkinType.RADAR_CHART)
                 .prefSize(150, 150)
-                .radarChartMode(RadarChart.Mode.POLYGON)
+                .radarChartMode(RadarChartMode.POLYGON)
                 .startFromZero(false)
                 .minValue(10)
                 .autoScale(false)
@@ -302,10 +302,10 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
         }
         switch (netGraphPojo.getSkin()) {
             case SECTOR:
-                netGraph.setRadarChartMode(RadarChart.Mode.SECTOR);
+                netGraph.setRadarChartMode(RadarChartMode.SECTOR);
                 break;
             case POLYGON:
-                netGraph.setRadarChartMode(RadarChart.Mode.POLYGON);
+                netGraph.setRadarChartMode(RadarChartMode.POLYGON);
                 break;
         }
 
@@ -384,7 +384,7 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
                                     objectName.setText(calcInputObject.getValueAttribute().getObject().getName());
                                 }
 
-                                JFXTextField field = new JFXTextField();
+                                TextField field = new TextField();
                                 field.setMinWidth(240);
                                 Double value = Double.NaN;
                                 DateTime date = new DateTime();

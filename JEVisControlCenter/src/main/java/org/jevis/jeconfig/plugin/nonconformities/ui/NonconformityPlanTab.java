@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.nonconformities.ui;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -68,7 +68,7 @@ public class NonconformityPlanTab extends Tab {
 
 
         Label lSuche = new Label(I18n.getInstance().getString("plugin.nonconformities.serach"));
-        JFXTextField fsearch = new JFXTextField();
+        TextField fsearch = new TextField();
         fsearch.setPromptText(I18n.getInstance().getString("plugin.nonconformities.serachfor"));
 
 

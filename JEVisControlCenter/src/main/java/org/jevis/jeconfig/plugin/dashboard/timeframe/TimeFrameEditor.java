@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.timeframe;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.skins.JFXDatePickerContent;
-import com.jfoenix.skins.JFXDatePickerSkin;
+import javafx.scene.control.DatePicker;
+import javafx.scene.Node;
+import javafx.scene.control.skin.DatePickerSkin;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Popup;
@@ -30,8 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.time.LocalDate;
 
 public class TimeFrameEditor extends Popup {
@@ -39,34 +37,18 @@ public class TimeFrameEditor extends Popup {
     private static final Logger logger = LogManager.getLogger(TimeFrameEditor.class);
     private final SimpleObjectProperty<Interval> intervalProperty;
     private TimeFrame timeFrame;
-    private static Method getPopupContent;
 
-    static {
-        try {
-            getPopupContent = JFXDatePickerSkin.class.getDeclaredMethod("getPopupContent");
-            getPopupContent.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            logger.error("Failed to access JFXDatePickerSkin popup content method via reflection", e);
-        }
-    }
-
-    JFXDatePicker datePicker;
+    DatePicker datePicker;
 
     public TimeFrameEditor(TimeFrame timeFrame, Interval interval) {
         super();
         this.intervalProperty = new SimpleObjectProperty<>(this, "interval", interval);
         this.timeFrame = timeFrame;
-        this.datePicker = new JFXDatePicker(LocalDate.now());
+        this.datePicker = new DatePicker(LocalDate.now());
         this.datePicker.setShowWeekNumbers(true);
-        JFXDatePickerSkin datePickerSkin = new JFXDatePickerSkin(this.datePicker);
-        JFXDatePickerContent popupContent = null;
-        try {
-            popupContent = (JFXDatePickerContent) TimeFrameEditor.getPopupContent.invoke(datePickerSkin);
-        } catch (IllegalAccessException e) {
-            logger.error("Failed to invoke getPopupContent on date picker skin", e);
-        } catch (InvocationTargetException e) {
-            logger.error("InvocationTargetException when getting date picker popup content", e);
-        }
+        /* the calendar of the date picker shown directly (public API of the skin since JavaFX 9) */
+        DatePickerSkin datePickerSkin = new DatePickerSkin(this.datePicker);
+        Node popupContent = datePickerSkin.getPopupContent();
 
 
         BorderPane borderPane = new BorderPane();

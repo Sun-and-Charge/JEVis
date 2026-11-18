@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -104,10 +104,10 @@ public class AboutDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton licenses = new JFXButton(I18n.getInstance().getString("menu.help.licenses"));
+        Button licenses = new Button(I18n.getInstance().getString("menu.help.licenses"));
         licenses.setOnAction(event -> new LicenseDialog().show());
 
-        JFXButton cancel = new JFXButton(I18n.getInstance().getString("licenses.close"));
+        Button cancel = new Button(I18n.getInstance().getString("licenses.close"));
         cancel.setDefaultButton(true);
 
         buttonPanel.getChildren().addAll(licenses, cancel);

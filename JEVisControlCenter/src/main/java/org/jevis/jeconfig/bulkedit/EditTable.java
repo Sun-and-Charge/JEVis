@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.bulkedit;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -142,7 +142,7 @@ public class EditTable {
             }
         };
 
-        JFXComboBox<JEVisClass> classComboBox = new JFXComboBox<JEVisClass>(options);
+        ComboBox<JEVisClass> classComboBox = new ComboBox<JEVisClass>(options);
         classComboBox.setCellFactory(cellFactory);
         classComboBox.setButtonCell(cellFactory.call(null));
         classComboBox.setMinWidth(250);
@@ -150,8 +150,8 @@ public class EditTable {
         selectedClass = classComboBox.getSelectionModel().getSelectedItem();
 
         addListChildren(parent, selectedClass);
-        JFXButton editBtn = new JFXButton("Edit Structure");
-        JFXButton cancelBtn = new JFXButton("Cancel");
+        Button editBtn = new Button("Edit Structure");
+        Button cancelBtn = new Button("Cancel");
 
         try {
             if (selectedClass.getName().equals("Data")) {
@@ -170,7 +170,7 @@ public class EditTable {
         hBoxTop.setSpacing(10);
         //hBoxTop.setPadding(new Insets(3, 3, 3, 3));
         Label lClass = new Label("Class:");
-        JFXButton help = new JFXButton("Help", JEConfig.getSVGImage(Icon.HELP, 22, 22));
+        Button help = new Button("Help", JEConfig.getSVGImage(Icon.HELP, 22, 22));
         Separator sep1 = new Separator();
         hBoxTop.getChildren().addAll(lClass, classComboBox, sep1, help);
         root.setTop(hBoxTop);
@@ -552,7 +552,7 @@ public class EditTable {
 
         private final ObservableList<Pair<JEVisObject, ObservableList<Pair<String, String>>>> listObjectAndAttribute = FXCollections.observableArrayList();
 
-        public CreateNewDataEditTable(JEVisObject parent, JFXButton editBtn) {
+        public CreateNewDataEditTable(JEVisObject parent, Button editBtn) {
 
             String[] colNames = {"Object ID", "Object Name", "Display Prefix", "Display Symbol", "Display Sample Rate", "Input Prefix", "Input Symbol", "Input Sample Rate"};
             try {

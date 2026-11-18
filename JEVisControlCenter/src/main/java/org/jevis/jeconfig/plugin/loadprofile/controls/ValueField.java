@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.loadprofile.controls;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
 import javafx.scene.input.KeyCode;
@@ -34,7 +34,7 @@ public class ValueField extends HBox {
     public ValueField(Object value) {
         this.setSpacing(6);
 
-        JFXTextField valueField = new JFXTextField();
+        TextField valueField = new TextField();
 
         if (value != null) {
             try {

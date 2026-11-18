@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
 import javafx.scene.control.ListCell;
@@ -37,7 +37,7 @@ import org.jevis.commons.utils.CommonMethods;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProcessorBox extends JFXComboBox<JEVisObject> {
+public class ProcessorBox extends ComboBox<JEVisObject> {
     final static String RAW_DATA_STRING = I18n.getInstance().getString("graph.processing.raw");
 
     public ProcessorBox(JEVisDataSource ds, Long id) {

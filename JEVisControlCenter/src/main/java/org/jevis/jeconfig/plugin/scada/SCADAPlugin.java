@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.scada;
 
+import javafx.scene.control.ComboBox;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jfoenix.controls.JFXComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
@@ -242,7 +242,7 @@ public class SCADAPlugin implements Plugin {
     private void updateToolbar(ToolBar toolBar, final SCADAAnalysis analyses) {
         logger.info("==Update Toolbar==");
         Label analysisLabel = new Label(I18n.getInstance().getString("plugin.scada.analysis"));
-        JFXComboBox<JEVisObject> listAnalysesComboBox = new JFXComboBox();
+        ComboBox<JEVisObject> listAnalysesComboBox = new ComboBox();
         listAnalysesComboBox.setPrefWidth(300);
 
         try {
@@ -284,7 +284,7 @@ public class SCADAPlugin implements Plugin {
         listAnalysesComboBox.setCellFactory(cellFactory);
         listAnalysesComboBox.setButtonCell(cellFactory.call(null));
 
-        JFXComboBox<SCADAAnalysis.BGMode> listBGType = new JFXComboBox();
+        ComboBox<SCADAAnalysis.BGMode> listBGType = new ComboBox();
         listBGType.setItems(FXCollections.observableArrayList(SCADAAnalysis.BGMode.values()));
 
         Callback<ListView<SCADAAnalysis.BGMode>, ListCell<SCADAAnalysis.BGMode>> bgFactory = new Callback<ListView<SCADAAnalysis.BGMode>, ListCell<SCADAAnalysis.BGMode>>() {

@@ -19,8 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.extension;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXListCell;
+import javafx.scene.control.ComboBox;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.embed.swing.SwingFXUtils;
@@ -118,11 +117,11 @@ public class StatisticExtension implements ObjectEditorExtension {
                     imageView.setFitHeight(24);
 
 
-                    JFXComboBox<JEVisObject> box = new JFXComboBox<>();
+                    ComboBox<JEVisObject> box = new ComboBox<>();
                     Callback<ListView<JEVisObject>, ListCell<JEVisObject>> objectNameCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
                         @Override
                         public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-                            return new JFXListCell<JEVisObject>() {
+                            return new ListCell<JEVisObject>() {
                                 @Override
                                 protected void updateItem(JEVisObject obj, boolean empty) {
                                     super.updateItem(obj, empty);

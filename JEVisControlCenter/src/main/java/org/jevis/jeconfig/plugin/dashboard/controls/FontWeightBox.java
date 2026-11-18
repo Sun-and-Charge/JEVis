@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.controls;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -27,7 +27,7 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Callback;
 import org.jevis.commons.i18n.I18n;
 
-public class FontWeightBox extends JFXComboBox<FontWeight> {
+public class FontWeightBox extends ComboBox<FontWeight> {
 
     public FontWeightBox() {
         super(FXCollections.observableArrayList(FontWeight.values()));

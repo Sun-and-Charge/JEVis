@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.skins.JFXComboBoxListViewSkin;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ListCell;
@@ -47,7 +47,7 @@ import java.util.List;
 
 import static org.jevis.jeconfig.application.Chart.TimeFrame.CUSTOM_START_END;
 
-public class PresetDateBox extends JFXComboBox<AnalysisTimeFrame> {
+public class PresetDateBox extends ComboBox<AnalysisTimeFrame> {
     private static final Logger logger = LogManager.getLogger(PresetDateBox.class);
     private final DateHelper dateHelper = new DateHelper();
     private final JEVisDataSource ds;
@@ -62,8 +62,8 @@ public class PresetDateBox extends JFXComboBox<AnalysisTimeFrame> {
 
         this.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
             Platform.runLater(() -> {
-                JFXComboBoxListViewSkin<?> skin = (JFXComboBoxListViewSkin<?>) this.getSkin();
-                if (skin != null) {
+                if (this.getSkin() instanceof ComboBoxListViewSkin) {
+                    ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) this.getSkin();
                     ListView<?> popupContent = (ListView<?>) skin.getPopupContent();
                     if (popupContent != null) {
                         popupContent.scrollTo(this.getSelectionModel().getSelectedIndex());

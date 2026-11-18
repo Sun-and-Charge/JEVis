@@ -19,7 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -41,16 +42,7 @@ import java.util.Locale;
 
 public class NPVTableView extends TableView<NPVYearData> {
 
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     private DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
     private NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
@@ -127,7 +119,7 @@ public class NPVTableView extends TableView<NPVYearData> {
         for (TableColumn<NPVYearData, ?> column : this.getColumns()) {
             try {
                 if (getSkin() != null) {
-                    columnToFitMethod.invoke(getSkin(), column, -1);
+                    ColumnAutoFit.fit(this, column);
                 }
             } catch (Exception e) {
             }

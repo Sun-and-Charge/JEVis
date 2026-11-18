@@ -20,7 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -65,16 +66,7 @@ public class ActionTable extends TableView<ActionData> {
 
     private static final Logger logger = LogManager.getLogger(ActionTable.class);
 
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     private final DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
     private final Statistics statistic;
@@ -583,7 +575,7 @@ public class ActionTable extends TableView<ActionData> {
                     /*ignore this columns for now, there are to big to autoresize*/
                 } else {
                     if (getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
-                        columnToFitMethod.invoke(getSkin(), column, -1);
+                        ColumnAutoFit.fit(this, column);
                     }
                 }
 

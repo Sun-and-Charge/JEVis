@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Label;
@@ -48,11 +48,11 @@ public class NewWidgetSelector extends GridPane {
 
     private static final Logger logger = LogManager.getLogger(NewWidgetSelector.class);
 
-    final JFXComboBox<WidgetSelection> widgetComboBox = new JFXComboBox<>();
+    final ComboBox<WidgetSelection> widgetComboBox = new ComboBox<>();
     final ObjectProperty<Widget> selectedWidgetProperty = new SimpleObjectProperty<>();
     final DashboardControl control;
 
-    private final JFXButton newB = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS, 20, 20));
+    private final Button newB = new Button("", JEConfig.getSVGImage(Icon.PLUS, 20, 20));
 
 
     public NewWidgetSelector(DashboardControl dashboardControl) {
@@ -91,7 +91,7 @@ public class NewWidgetSelector extends GridPane {
     /*
     @TODO
      */
-    public JFXButton getNewB() {
+    public Button getNewB() {
         this.getChildren().remove(newB);
         return newB;
     }

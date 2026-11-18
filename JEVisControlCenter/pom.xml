@@ -14,10 +14,9 @@
         <mainClass>org.jevis.jeconfig.JEConfig</mainClass>
         <additionalparam>-Xdoclint:none</additionalparam>
         <skipjnlp>none</skipjnlp>
-        <!-- compiled and tested with the JDK 8 toolchain (JavaFX 8 of Zulu FX), javac 8 has no release option -->
-        <maven.compiler.release></maven.compiler.release>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- J25: Java 25 with OpenJFX (before: JDK 8 toolchain with the JavaFX 8 of Zulu FX) -->
+        <maven.compiler.release>25</maven.compiler.release>
+        <javafx.version>25.0.5</javafx.version>
     </properties>
 
     <organization>
@@ -35,6 +34,32 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- OpenJFX; the platform jars (classifier per OS) come with the javafx-graphics dependency -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.librepdf</groupId>
@@ -62,7 +87,7 @@
         <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>tilesfx</artifactId>
-            <version>1.6.8</version>
+            <version>21.0.9</version>
         </dependency>
         <dependency>
             <groupId>commons-validator</groupId>
@@ -79,6 +104,7 @@
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
+            <version>11.2.7</version>
         </dependency>
         <dependency>
             <groupId>org.jxmapviewer</groupId>
@@ -92,17 +118,12 @@
         <dependency>
             <groupId>org.jfxtras</groupId>
             <artifactId>jfxtras-controls</artifactId>
-            <version>8.0-r6</version>
+            <version>17-r1</version>
         </dependency>
         <dependency>
             <groupId>de.gsi.chart</groupId>
             <artifactId>chartfx-chart</artifactId>
-            <version>8.1.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jfoenix</groupId>
-            <artifactId>jfoenix</artifactId>
-            <version>8.0.10</version>
+            <version>11.2.7</version>
         </dependency>
         <dependency>
             <groupId>com.udojava</groupId>
@@ -148,7 +169,7 @@
         <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>Medusa</artifactId>
-            <version>8.3</version>
+            <version>16.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -220,20 +241,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <jdkToolchain>
-                        <version>1.8</version>
-                    </jdkToolchain>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <jdkToolchain>
-                        <version>1.8</version>
-                    </jdkToolchain>
-                </configuration>
             </plugin>
 
             <!-- Collects the licenses of all dependencies for the license dialog (Help > Licenses).
@@ -288,7 +295,7 @@
                     <archive>
                         <manifestEntries>
                             <Permissions>all-permissions</Permissions>
-                            <JavaFX-Version>8.0</JavaFX-Version>
+                            <JavaFX-Version>${javafx.version}</JavaFX-Version>
                             <url>${project.parent.url}</url>
                             <implementation-vendor>${project.organization.name}</implementation-vendor>
                             <implementation-title>${project.name}</implementation-title>
@@ -296,7 +303,7 @@
                             <Application-Name>${project.name}</Application-Name>
                         </manifestEntries>
                         <manifest>
-                            <mainClass>org.jevis.jeconfig.JEConfig</mainClass>
+                            <mainClass>org.jevis.jeconfig.Launcher</mainClass>
                         </manifest>
                     </archive>
 

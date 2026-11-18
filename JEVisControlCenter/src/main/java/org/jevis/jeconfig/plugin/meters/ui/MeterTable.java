@@ -20,7 +20,6 @@
  */
 package org.jevis.jeconfig.plugin.meters.ui;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -68,16 +67,7 @@ public class MeterTable extends TableView<MeterData> implements TableFindScrollb
     private static final int MEDIUM_WIDTH = 120;
     private static final int BIG_WIDTH = 200;
     private static final int SMALL_WIDTH = 60;
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            logger.error(e);
-        }
-    }
 
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.MeterPlugin");
     private final JEVisDataSource ds;

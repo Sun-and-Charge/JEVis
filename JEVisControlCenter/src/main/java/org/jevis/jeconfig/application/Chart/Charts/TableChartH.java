@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.Charts;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import eu.hansolo.fx.charts.tools.Helper;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -70,7 +70,7 @@ import java.util.*;
  */
 public class TableChartH extends XYChart {
     private static final Logger logger = LogManager.getLogger(TableChartH.class);
-    private final JFXCheckBox filterEnabledBox = new JFXCheckBox(I18n.getInstance().getString("plugin.dtrc.dialog.limiterlabel"));
+    private final CheckBox filterEnabledBox = new CheckBox(I18n.getInstance().getString("plugin.dtrc.dialog.limiterlabel"));
     private FilteredList<TableHSample> filteredList;
     private TableColumn<TableHSample, String> nameColumn;
     private TableColumn<TableHSample, Double> valueColumn;
@@ -328,7 +328,7 @@ public class TableChartH extends XYChart {
         this.showColumnSums = showColumnSums;
     }
 
-    public JFXCheckBox getFilterEnabledBox() {
+    public CheckBox getFilterEnabledBox() {
         return filterEnabledBox;
     }
 }

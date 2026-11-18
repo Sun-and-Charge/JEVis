@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.dtrc;
 
+import org.jevis.jeconfig.application.control.TimePicker;
 import com.ibm.icu.text.NumberFormat;
-import com.jfoenix.controls.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -86,10 +86,10 @@ public class OutputView extends Tab {
     private static final Insets INSETS = new Insets(12);
     private final NumberFormat nf = NumberFormat.getInstance(I18n.getInstance().getLocale());
     private final JEVisDataSource ds;
-    private final JFXDatePicker startDate = new JFXDatePicker(LocalDate.now());
-    private final JFXDatePicker endDate = new JFXDatePicker(LocalDate.now());
-    private final JFXTimePicker startTime = new JFXTimePicker(LocalTime.of(0, 0, 0));
-    private final JFXTimePicker endTime = new JFXTimePicker(LocalTime.of(23, 59, 59));
+    private final DatePicker startDate = new DatePicker(LocalDate.now());
+    private final DatePicker endDate = new DatePicker(LocalDate.now());
+    private final TimePicker startTime = new TimePicker(LocalTime.of(0, 0, 0));
+    private final TimePicker endTime = new TimePicker(LocalTime.of(23, 59, 59));
     private final TemplateHandler templateHandler;
     private final GridPane gridPane = new GridPane();
     private final SimpleBooleanProperty showInputs = new SimpleBooleanProperty(true);
@@ -370,7 +370,7 @@ public class OutputView extends Tab {
 
             if (templateOutput.getLink()) {
                 logger.debug("Found linked output, creating Manual Data Button");
-                JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 12, 12));
+                Button manSampleButton = new Button("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 12, 12));
                 manSampleButton.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.meters.table.mansample")));
 
                 if (templateOutput.getTarget() != null) {
@@ -537,7 +537,7 @@ public class OutputView extends Tab {
             }
 
             try {
-                JFXComboBox<JEVisObject> objectSelector = createObjectSelector(ungroupedInput.getObjectClass(), ungroupedInput.getFilter());
+                ComboBox<JEVisObject> objectSelector = createObjectSelector(ungroupedInput.getObjectClass(), ungroupedInput.getFilter());
 
                 try {
                     Long objectID = ungroupedInput.getObjectID();
@@ -649,7 +649,7 @@ public class OutputView extends Tab {
             label.setMinWidth(120);
             label.setAlignment(Pos.CENTER_LEFT);
 
-            JFXComboBox<JEVisObject> objectSelector = createObjectSelector(firstGroupedInput.getObjectClass(), firstGroupedInput.getFilter());
+            ComboBox<JEVisObject> objectSelector = createObjectSelector(firstGroupedInput.getObjectClass(), firstGroupedInput.getFilter());
 
             try {
                 Long objectID = groupedInputs.stream().filter(input -> input.getObjectID() != -1L).findFirst().map(TemplateSelected::getObjectID).orElse(-1L);
@@ -741,7 +741,7 @@ public class OutputView extends Tab {
 
                 Label label = new Label(templateOutput.getVariableName());
 
-                JFXButton targetButton = new JFXButton(I18n
+                Button targetButton = new Button(I18n
                         .getInstance().getString("plugin.object.attribute.target.button"),
                         JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
                 targetButton.wrapTextProperty().setValue(true);
@@ -780,7 +780,7 @@ public class OutputView extends Tab {
         }
     }
 
-    public EventHandler<ActionEvent> getTargetButtonActionEventEventHandler(TemplateOutput templateOutput, JFXButton targetButton) {
+    public EventHandler<ActionEvent> getTargetButtonActionEventEventHandler(TemplateOutput templateOutput, Button targetButton) {
         return t -> {
             try {
                 SelectTargetDialog selectTargetDialog = null;
@@ -845,7 +845,7 @@ public class OutputView extends Tab {
         };
     }
 
-    void setButtonText(TemplateOutput templateOutput, JFXButton targetButton) {
+    void setButtonText(TemplateOutput templateOutput, Button targetButton) {
         TargetHelper th = null;
         try {
             if (templateOutput.getTarget() != null) {
@@ -922,7 +922,7 @@ public class OutputView extends Tab {
         }
     }
 
-    private JFXComboBox<JEVisObject> createObjectSelector(String jeVisClassName, String filter) {
+    private ComboBox<JEVisObject> createObjectSelector(String jeVisClassName, String filter) {
 
         List<JEVisObject> objects = new ArrayList<>();
         try {
@@ -1026,13 +1026,13 @@ public class OutputView extends Tab {
             return alphanumComparator.compare(o1.getName(), o2.getName());
         });
 
-        JFXComboBox<JEVisObject> objectSelector = new JFXComboBox<>(FXCollections.observableArrayList(objects));
+        ComboBox<JEVisObject> objectSelector = new ComboBox<>(FXCollections.observableArrayList(objects));
         objectSelector.setMaxWidth(Double.MAX_VALUE);
 
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> attributeCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override
             public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-                return new JFXListCell<JEVisObject>() {
+                return new ListCell<JEVisObject>() {
                     @Override
                     protected void updateItem(JEVisObject obj, boolean empty) {
                         super.updateItem(obj, empty);

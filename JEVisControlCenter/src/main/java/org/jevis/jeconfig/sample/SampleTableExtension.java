@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.sample;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -103,7 +103,7 @@ public class SampleTableExtension implements SampleEditorExtension {
 
         boolean canDelete = false;
         boolean canWrite = false;
-        JFXButton deleteAll = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.deleteall.titlelong"));
+        Button deleteAll = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.deleteall.titlelong"));
 
         try {
             canDelete = att.getObject().getDataSource().getCurrentUser().canDelete(att.getObject().getID());
@@ -138,7 +138,7 @@ public class SampleTableExtension implements SampleEditorExtension {
             }
         });
 
-        JFXButton deleteSelected = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.deleteselected.titlelong"));
+        Button deleteSelected = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.deleteselected.titlelong"));
         deleteSelected.setDisable(!table.deleteSelectedProperty().getValue());
         deleteSelected.disableProperty().bind(table.deleteSelectedProperty().not());
 
@@ -168,7 +168,7 @@ public class SampleTableExtension implements SampleEditorExtension {
 
                 }
         );
-        JFXButton saveButton = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.save"));
+        Button saveButton = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.save"));
         saveButton.disableProperty().bind(table.needSaveProperty().not());
         saveButton.setOnAction(event -> {
             table.commitChanges();
@@ -176,7 +176,7 @@ public class SampleTableExtension implements SampleEditorExtension {
         });
         saveButton.setDefaultButton(true);
 
-        JFXButton addNewSample = new JFXButton(null, JEConfig.getSVGImage(Icon.PLUS, 17, 17));
+        Button addNewSample = new Button(null, JEConfig.getSVGImage(Icon.PLUS, 17, 17));
         addNewSample.setDisable(!canWrite);
 
         addNewSample.setOnAction(event -> {
@@ -203,7 +203,7 @@ public class SampleTableExtension implements SampleEditorExtension {
             }
         });
 
-        JFXButton deleteInBetween = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.deleteinbetween.titlelong"));
+        Button deleteInBetween = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.deleteinbetween.titlelong"));
         deleteInBetween.setDisable(table.deleteInBetweenProperty().getValue());
         deleteInBetween.disableProperty().bind(table.deleteInBetweenProperty().not());
 
@@ -241,7 +241,7 @@ public class SampleTableExtension implements SampleEditorExtension {
 
         deleteBox.getChildren().setAll(addNewSample, deleteAll, deleteSelected, deleteInBetween, saveButton);
 
-        JFXButton addNewUserValue = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.addnewuservalue.titlelong"));
+        Button addNewUserValue = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.addnewuservalue.titlelong"));
         addNewUserValue.setDisable(!table.deleteSelectedProperty().getValue());
         addNewUserValue.disableProperty().bind(table.deleteSelectedProperty().not());
 
@@ -255,7 +255,7 @@ public class SampleTableExtension implements SampleEditorExtension {
             }
         });
 
-        JFXButton addUserValuesInBetween = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.adduservalueinbetwen.titlelong"));
+        Button addUserValuesInBetween = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.adduservalueinbetwen.titlelong"));
         addUserValuesInBetween.setDisable(table.deleteInBetweenProperty().getValue());
         addUserValuesInBetween.disableProperty().bind(table.deleteInBetweenProperty().not());
 
@@ -270,7 +270,7 @@ public class SampleTableExtension implements SampleEditorExtension {
             }
         });
 
-        JFXButton addValuesInBetween = new JFXButton(I18n.getInstance().getString("sampleeditor.confirmationdialog.addvalueinbetwen.titlelong"));
+        Button addValuesInBetween = new Button(I18n.getInstance().getString("sampleeditor.confirmationdialog.addvalueinbetwen.titlelong"));
         addValuesInBetween.setDisable(table.deleteInBetweenProperty().getValue());
         addValuesInBetween.disableProperty().bind(table.deleteInBetweenProperty().not());
 
@@ -290,7 +290,7 @@ public class SampleTableExtension implements SampleEditorExtension {
                 stage.setAlwaysOnTop(true);
 
                 Label valueLabel = new Label(I18n.getInstance().getString("plugin.graph.table.value"));
-                JFXTextField valueField = new JFXTextField();
+                TextField valueField = new TextField();
 
                 valueField.textProperty().addListener((observable, oldValue, newValue) -> {
                     try {
@@ -301,7 +301,7 @@ public class SampleTableExtension implements SampleEditorExtension {
                 });
 
                 Label noteLabel = new Label(I18n.getInstance().getString("plugin.graph.table.note"));
-                JFXTextField noteField = new JFXTextField();
+                TextField noteField = new TextField();
 
                 GridPane gridPane = new GridPane();
                 gridPane.setPadding(new Insets(10));
@@ -327,7 +327,7 @@ public class SampleTableExtension implements SampleEditorExtension {
                 Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
                 cancelButton.setCancelButton(true);
 
-                final JFXCheckBox more = new JFXCheckBox(I18n.getInstance().getString("graph.tabs.charts"));
+                final CheckBox more = new CheckBox(I18n.getInstance().getString("graph.tabs.charts"));
                 more.setSelected(false);
                 final Map<Integer, DaySchedule> dayScheduleMap = new HashMap<>();
                 more.selectedProperty().addListener((observable, oldValue, newValue) -> showSettings(gridPane, newValue, dayScheduleMap));

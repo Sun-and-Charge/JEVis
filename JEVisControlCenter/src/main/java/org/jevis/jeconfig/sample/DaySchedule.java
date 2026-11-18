@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.sample;
 
-import com.jfoenix.controls.JFXTimePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.geometry.Pos;
@@ -43,9 +43,9 @@ public class DaySchedule {
     private final int dayOfWeek;
     private final ToggleButton dayButton;
     private final VBox startVBox;
-    private final JFXTimePicker start;
+    private final TimePicker start;
     private final VBox endVBox;
-    private final JFXTimePicker end;
+    private final TimePicker end;
 
     public DaySchedule(int dayOfWeek) {
 
@@ -61,7 +61,7 @@ public class DaySchedule {
         startVBox = new VBox(startLabel);
         startVBox.setAlignment(Pos.CENTER);
 
-        start = new JFXTimePicker(LocalTime.of(0, 0, 0));
+        start = new TimePicker(LocalTime.of(0, 0, 0));
         start.setPrefWidth(100d);
         start.setMaxWidth(100d);
         start.set24HourView(true);
@@ -73,7 +73,7 @@ public class DaySchedule {
         endVBox = new VBox(endLabel);
         endVBox.setAlignment(Pos.CENTER);
 
-        end = new JFXTimePicker(LocalTime.of(23, 59, 59, 999999999));
+        end = new TimePicker(LocalTime.of(23, 59, 59, 999999999));
         end.setPrefWidth(100d);
         end.setMaxWidth(100d);
         end.set24HourView(true);
@@ -117,7 +117,7 @@ public class DaySchedule {
         return startVBox;
     }
 
-    public JFXTimePicker getStart() {
+    public TimePicker getStart() {
         return start;
     }
 
@@ -125,7 +125,7 @@ public class DaySchedule {
         return endVBox;
     }
 
-    public JFXTimePicker getEnd() {
+    public TimePicker getEnd() {
         return end;
     }
 

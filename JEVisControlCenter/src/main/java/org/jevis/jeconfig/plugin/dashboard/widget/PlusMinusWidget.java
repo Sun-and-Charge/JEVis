@@ -23,7 +23,7 @@ package org.jevis.jeconfig.plugin.dashboard.widget;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.TileBuilder;
-import eu.hansolo.tilesfx.events.TileEvent;
+import eu.hansolo.tilesfx.events.TileEvt;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -78,10 +78,10 @@ public class PlusMinusWidget extends Widget implements DataModelWidget {
     public PlusMinusWidget(DashboardControl control, WidgetPojo config) {
         super(control, config);
         minusPlus = TileBuilder.create().skinType(Tile.SkinType.PLUS_MINUS).animated(false).backgroundColor(Color.TRANSPARENT).build();
-        minusPlus.setOnTileEvent(tileEvent -> {
+        minusPlus.addTileObserver(TileEvt.FINISHED, tileEvent -> {
             try {
-                if (tileEvent.getEventType().equals(TileEvent.EventType.FINISHED)) {
-                    logger.debug(tileEvent.getEventType().toString());
+                if (TileEvt.FINISHED.equals(tileEvent.getEvtType())) {
+                    logger.debug(tileEvent.getEvtType().toString());
                     BigDecimal bd = BigDecimal.valueOf(minusPlus.getValue());
                     bd = bd.setScale(config.getDecimals(), RoundingMode.HALF_UP);
                     setData(bd.doubleValue());

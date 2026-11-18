@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -195,8 +195,8 @@ public class SankeyTableFactory {
                             setGraphic(null);
                         } else {
                             HBox hBox = new HBox();
-                            JFXButton jfxButtonMoveUp = new JFXButton("",JEConfig.getSVGImage(Icon.ARROW_UP,10,10));
-                            JFXButton jfxButtonMoveDown = new JFXButton("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 10, 10));
+                            Button jfxButtonMoveUp = new Button("",JEConfig.getSVGImage(Icon.ARROW_UP,10,10));
+                            Button jfxButtonMoveDown = new Button("", JEConfig.getSVGImage(Icon.ARROW_DOWN, 10, 10));
                             hBox.setSpacing(3);
                             hBox.getChildren().addAll(jfxButtonMoveUp, jfxButtonMoveDown);
 
@@ -267,8 +267,8 @@ public class SankeyTableFactory {
     }
 
 
-    private JFXTextField buildTextField(String text) {
-        JFXTextField textField = new JFXTextField(text);
+    private TextField buildTextField(String text) {
+        TextField textField = new TextField(text);
         textField.focusedProperty().addListener(SankeyTableFactory.this.focusListener);
         //textField.setMaxWidth(this.numberColumDefaultSize);
         return textField;

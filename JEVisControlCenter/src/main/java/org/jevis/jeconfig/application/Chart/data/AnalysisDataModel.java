@@ -19,6 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.data;
 
+import javafx.scene.control.Button;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.hansolo.fx.charts.tools.ColorMapping;
@@ -376,7 +377,7 @@ public class AnalysisDataModel {
 ////        ProgressDialog pd = new ProgressDialog(service);
 ////        pd.setHeaderText(I18n.getInstance().getString("graph.progress.header"));
 ////        pd.setTitle(I18n.getInstance().getString("graph.progress.title"));
-////        JFXButton cancelButton = new JFXButton(I18n.getInstance().getString("attribute.editor.cancel"));
+////        Button cancelButton = new Button(I18n.getInstance().getString("attribute.editor.cancel"));
 ////        cancelButton.setOnAction(event -> service.cancel());
 ////        pd.getDialogPane().setContent(cancelButton);
 ////

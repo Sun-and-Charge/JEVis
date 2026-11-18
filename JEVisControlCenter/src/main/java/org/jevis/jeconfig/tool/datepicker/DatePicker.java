@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.tool.datepicker;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -140,7 +140,7 @@ public class DatePicker extends HBox {
         return format;
     }
 
-    private final JFXTextField textField;
+    private final TextField textField;
 
     /**
      * Use this to set further properties of the calendar.
@@ -231,7 +231,7 @@ public class DatePicker extends HBox {
         calendarView = new CalendarView(locale, car);
 //        calendarView = new CalendarView(locale);
 
-        textField = new JFXTextField();
+        textField = new TextField();
         this.locale.set(locale);
 
         calendarView.setEffect(new DropShadow());
@@ -363,7 +363,7 @@ public class DatePicker extends HBox {
             }
         });
 
-        JFXButton button = new JFXButton(">");
+        Button button = new Button(">");
         button.setFocusTraversable(false);
         button.setOnAction(new EventHandler<ActionEvent>() {
             @Override

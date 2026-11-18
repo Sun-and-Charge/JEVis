@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
@@ -28,7 +28,7 @@ import javafx.util.Callback;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.report.PeriodMode;
 
-public class ReportPeriodBox extends JFXComboBox<PeriodMode> {
+public class ReportPeriodBox extends ComboBox<PeriodMode> {
 
     public ReportPeriodBox(ObservableList<PeriodMode> items) {
         super(items);

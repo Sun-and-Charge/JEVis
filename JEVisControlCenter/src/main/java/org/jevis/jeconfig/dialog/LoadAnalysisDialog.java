@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.*;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -76,9 +76,9 @@ public class LoadAnalysisDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(LoadAnalysisDialog.class);
     private final ObjectRelations objectRelations;
     private final ChartPlugin chartPlugin;
-    private final JFXTextField filterInput = new JFXTextField();
+    private final TextField filterInput = new TextField();
     private final FilteredList<JEVisObject> filteredData;
-    private final JFXListView<JEVisObject> analysisListView;
+    private final ListView<JEVisObject> analysisListView;
     private final JEVisDataSource ds;
     private final AggregationPeriodBox aggregationBox = new AggregationPeriodBox(AggregationPeriod.NONE);
     private final DisabledItemsComboBox<ManipulationMode> mathBox = getMathBox();
@@ -109,13 +109,13 @@ public class LoadAnalysisDialog extends Dialog {
     private final ButtonType newType = new ButtonType(I18n.getInstance().getString("plugin.graph.analysis.new"), ButtonBar.ButtonData.NEXT_FORWARD);
     private Response response = Response.CANCEL;
     private PickerCombo pickerCombo;
-    private JFXDatePicker pickerDateStart;
-    private JFXTimePicker pickerTimeStart;
-    private JFXDatePicker pickerDateEnd;
-    private JFXTimePicker pickerTimeEnd;
+    private DatePicker pickerDateStart;
+    private TimePicker pickerTimeStart;
+    private DatePicker pickerDateEnd;
+    private TimePicker pickerTimeEnd;
     private PresetDateBox presetDateBox;
     private List<CustomPeriodObject> finalListCustomPeriodObjects;
-    private JFXComboBox<String> comboBoxCustomPeriods = null;
+    private ComboBox<String> comboBoxCustomPeriods = null;
 
     public LoadAnalysisDialog(ChartPlugin chartPlugin, JEVisDataSource ds, ObservableList<JEVisObject> analyses) {
         this.ds = ds;
@@ -164,7 +164,7 @@ public class LoadAnalysisDialog extends Dialog {
             }
         });
 
-        analysisListView = new JFXListView<>();
+        analysisListView = new ListView<>();
         analysisListView.setItems(filteredData);
         analysisListView.getSelectionModel().selectedIndexProperty().addListener(
                 (observable, oldValue, newValue) ->
@@ -222,7 +222,7 @@ public class LoadAnalysisDialog extends Dialog {
         JEVisHelp.getInstance().update();
 
     }
-    //private JFXCheckBox drawOptimization;
+    //private CheckBox drawOptimization;
 
     private void initializeControls() {
         comboBoxCustomPeriods = getCustomPeriodsComboBox();
@@ -580,7 +580,7 @@ public class LoadAnalysisDialog extends Dialog {
         return math;
     }
 
-    private JFXComboBox<String> getCustomPeriodsComboBox() {
+    private ComboBox<String> getCustomPeriodsComboBox() {
 
         ObservableList<String> customPeriods = FXCollections.observableArrayList();
         List<JEVisObject> listCalendarDirectories = new ArrayList<>();
@@ -633,7 +633,7 @@ public class LoadAnalysisDialog extends Dialog {
             }
         }
 
-        JFXComboBox<String> tempBox = new JFXComboBox<>(customPeriods);
+        ComboBox<String> tempBox = new ComboBox<>(customPeriods);
 
         finalListCustomPeriodObjects = listCustomPeriodObjects;
         if (customPeriods.size() > 1) {
@@ -748,7 +748,7 @@ public class LoadAnalysisDialog extends Dialog {
                 aggregationBox, mathBox, presetDateBox, comboBoxCustomPeriods);
     }
 
-    public JFXTextField getFilterInput() {
+    public TextField getFilterInput() {
         return filterInput;
     }
 }

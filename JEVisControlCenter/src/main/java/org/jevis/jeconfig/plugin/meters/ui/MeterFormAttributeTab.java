@@ -21,9 +21,9 @@
 package org.jevis.jeconfig.plugin.meters.ui;
 
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -203,7 +203,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
 
         Label fileName = new Label();
         Label label = new Label();
-        JFXButton uploadButton = new JFXButton("", JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, 18, 18));
+        Button uploadButton = new Button("", JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, 18, 18));
         HBox hBox = new HBox(uploadButton, fileName);
         hBox.setSpacing(5);
         hBox.setAlignment(Pos.CENTER_RIGHT);
@@ -254,7 +254,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
 
     private void buildCal(MeterData meterData, JEVisType jeVisType, Optional<JEVisSample> optionalJEVisSample) {
         Label label = new Label();
-        JFXDatePicker jfxDatePicker = new JFXDatePicker();
+        DatePicker jfxDatePicker = new DatePicker();
         jfxDatePicker.getEditor().setAlignment(Pos.CENTER_RIGHT);
         JEVisObject jeVisObject = meterData.getJeVisObject();
         try {
@@ -301,7 +301,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
 
         Label label = new Label();
         Label linkName = new Label();
-        JFXButton jfxButton = new JFXButton("", JEConfig.getSVGImage(Icon.TREE, 18, 18));
+        Button jfxButton = new Button("", JEConfig.getSVGImage(Icon.TREE, 18, 18));
         jfxButton.setAlignment(Pos.CENTER_RIGHT);
 
         try {
@@ -450,7 +450,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
 
     private void buildTextField(MeterData meterData, JEVisType jeVisType, Optional<JEVisSample> optionalJEVisSample) {
         Label label = new Label();
-        JFXTextField textField = new JFXTextField();
+        TextField textField = new TextField();
         textField.setPrefWidth(200);
         textField.setAlignment(Pos.CENTER_RIGHT);
 

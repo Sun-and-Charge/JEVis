@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.action.ui.control;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -46,7 +46,7 @@ public class TagButton extends Button {
     HashMap<String, BooleanProperty> activeTags = new HashMap<>();
     ObservableList<String> allTags = FXCollections.observableArrayList();
 
-    private List<JFXCheckBox> boxes = new ArrayList<>();
+    private List<CheckBox> boxes = new ArrayList<>();
     private BooleanProperty allSelected = new SimpleBooleanProperty(true);
 
     public TagButton(String text, ObservableList<String> entry, ObservableList<String> selected) {
@@ -92,7 +92,7 @@ public class TagButton extends Button {
         cm.getItems().addAll(selectAllMenuItem, deselectAllMenuItem);
 
         allTags.forEach(s -> {
-            JFXCheckBox cb = new JFXCheckBox(s);
+            CheckBox cb = new CheckBox(s);
             cb.setSelected(true);
             boxes.add(cb);
             cb.setOnAction(event -> {

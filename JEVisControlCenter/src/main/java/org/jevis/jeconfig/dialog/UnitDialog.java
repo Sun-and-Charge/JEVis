@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -43,7 +43,7 @@ import org.jevis.jeconfig.plugin.unit.UnitSelectUI;
 public class UnitDialog extends Dialog {
     private static final Logger logger = LogManager.getLogger(UnitDialog.class);
 
-    public UnitDialog(JEVisAttribute attribute, JFXTextField ubutton) throws JEVisException {
+    public UnitDialog(JEVisAttribute attribute, TextField ubutton) throws JEVisException {
         super();
         setTitle(I18n.getInstance().getString("plugin.configuration.unitdialog.title"));
         setHeaderText(I18n.getInstance().getString("plugin.configuration.unitdialog.header"));
@@ -108,7 +108,7 @@ public class UnitDialog extends Dialog {
         getDialogPane().setMinSize(270, 140);
     }
 
-    public UnitDialog(JEVisAttribute attribute, JFXComboBox<JEVisUnit> unitListView) throws JEVisException {
+    public UnitDialog(JEVisAttribute attribute, ComboBox<JEVisUnit> unitListView) throws JEVisException {
         super();
         setTitle(I18n.getInstance().getString("plugin.configuration.unitdialog.title"));
         setHeaderText(I18n.getInstance().getString("plugin.configuration.unitdialog.header"));

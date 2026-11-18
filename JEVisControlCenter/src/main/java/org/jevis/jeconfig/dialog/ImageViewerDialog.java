@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -68,7 +68,7 @@ public class ImageViewerDialog {
     private static final Logger logger = LogManager.getLogger(ImageViewerDialog.class);
     private final int iconSize = 32;
     private final ImageView imageView = new ImageView();
-    private final JFXComboBox<JEVisFileWithSample> fileComboBox = new JFXComboBox<>(FXCollections.observableArrayList());
+    private final ComboBox<JEVisFileWithSample> fileComboBox = new ComboBox<>(FXCollections.observableArrayList());
     private final Map<JEVisFile, JEVisSample> sampleMap = new HashMap<>();
     private final ImageView imageIcon = JEConfig.getImage(Icon.PNG_IMAGE, iconSize, iconSize);
     private final ImageView rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);

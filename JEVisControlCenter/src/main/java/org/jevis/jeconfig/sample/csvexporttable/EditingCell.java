@@ -23,7 +23,7 @@ package org.jevis.jeconfig.sample.csvexporttable;
  * @author br
  */
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -48,7 +48,7 @@ import java.util.List;
  * @deprecated
  */
 public class EditingCell extends TableCell<CSVExportTableSample, String> {
-    private JFXTextField textField;
+    private TextField textField;
 
     public EditingCell() {
     }
@@ -98,7 +98,7 @@ public class EditingCell extends TableCell<CSVExportTableSample, String> {
     }
 
     private void createTextField() {
-        textField = new JFXTextField(getString());
+        textField = new TextField(getString());
         textField.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
         textField.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override

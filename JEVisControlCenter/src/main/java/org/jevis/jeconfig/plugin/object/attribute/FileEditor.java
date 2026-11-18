@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -62,8 +62,8 @@ public class FileEditor implements AttributeEditor {
     public JEVisAttribute attribute;
     private final HBox box = new HBox();
     private final boolean hasChanged = false;
-    private JFXButton _downloadButton;
-    private JFXButton uploadButton;
+    private Button _downloadButton;
+    private Button uploadButton;
     private boolean readOnly = true;
     //Enable the automatic download of the smaple fo rthe filename
     //This function is suboptial and gives a abd user experience.
@@ -117,9 +117,9 @@ public class FileEditor implements AttributeEditor {
 
     private void init() {
 
-        _downloadButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.file.download")
+        _downloadButton = new Button(I18n.getInstance().getString("plugin.object.attribute.file.download")
                 , JEConfig.getSVGImage(Icon.FILE_DOWNLOAD, 18, 18));
-        uploadButton = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.file.upload"),
+        uploadButton = new Button(I18n.getInstance().getString("plugin.object.attribute.file.upload"),
                 JEConfig.getSVGImage(Icon.CLOUD_UPLOAD, 18, 18));
 
         boolean isPDF = false;
@@ -166,7 +166,7 @@ public class FileEditor implements AttributeEditor {
         box.getChildren().setAll(uploadButton, _downloadButton, rightSpacer);
 
         if (isPDF) {
-            JFXButton pdfButton = new JFXButton("", JEConfig.getSVGImage(Icon.PDF, 18, 18));
+            Button pdfButton = new Button("", JEConfig.getSVGImage(Icon.PDF, 18, 18));
             box.getChildren().add(2, pdfButton);
             pdfButton.setOnAction(event -> {
                 PDFViewerDialog pdfViewerDialog = new PDFViewerDialog();
@@ -182,7 +182,7 @@ public class FileEditor implements AttributeEditor {
         }
 
         if (isImage) {
-            JFXButton imageButton = new JFXButton("", JEConfig.getSVGImage(Icon.IMAGE, 18, 18));
+            Button imageButton = new Button("", JEConfig.getSVGImage(Icon.IMAGE, 18, 18));
             box.getChildren().add(2, imageButton);
             imageButton.setOnAction(event -> {
                 ImageViewerDialog imageViewerDialog = new ImageViewerDialog();
@@ -198,7 +198,7 @@ public class FileEditor implements AttributeEditor {
         }
 
         if (isJson) {
-            JFXButton jsonButton = new JFXButton("", JEConfig.getSVGImage(Icon.JSON, 18, 18));
+            Button jsonButton = new Button("", JEConfig.getSVGImage(Icon.JSON, 18, 18));
             box.getChildren().add(2, jsonButton);
             jsonButton.setOnAction(event -> {
                 JsonViewerDialog jsonViewerDialog = new JsonViewerDialog();

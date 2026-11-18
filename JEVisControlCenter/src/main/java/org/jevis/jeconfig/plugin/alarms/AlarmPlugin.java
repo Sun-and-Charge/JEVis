@@ -20,10 +20,11 @@
  */
 package org.jevis.jeconfig.plugin.alarms;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -101,16 +102,7 @@ public class AlarmPlugin implements Plugin {
     public static String PLUGIN_NAME = "Alarm Plugin";
     public static String ALARM_CONFIG_CLASS = "Alarm Configuration";
     private static int ROWS_PER_PAGE = 25;
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     private final JEVisDataSource ds;
     private final String title;
@@ -136,8 +128,8 @@ public class AlarmPlugin implements Plugin {
     private final List<AlarmRow> data = Collections.synchronizedList(new ArrayList<>());
     private final TableView<AlarmRow> tableView = new TableView<>();
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance(I18n.getInstance().getLocale());
-    private final JFXDatePicker startDatePicker = new JFXDatePicker();
-    private final JFXDatePicker endDatePicker = new JFXDatePicker();
+    private final DatePicker startDatePicker = new DatePicker();
+    private final DatePicker endDatePicker = new DatePicker();
     private boolean init = false;
     private DateTime start;
     private DateTime end;
@@ -187,7 +179,7 @@ public class AlarmPlugin implements Plugin {
         for (TableColumn<AlarmRow, ?> column : tableView.getColumns()) {
             try {
                 if (tableView.getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
-                    columnToFitMethod.invoke(tableView.getSkin(), column, -1);
+                    ColumnAutoFit.fit(tableView, column);
                 }
             } catch (Exception e) {
             }
@@ -251,7 +243,7 @@ public class AlarmPlugin implements Plugin {
         startDatePicker.valueProperty().addListener(startDateChangeListener);
         endDatePicker.valueProperty().addListener(endDateChangeListener);
 
-        JFXComboBox<String> filterBox = new JFXComboBox<>();
+        ComboBox<String> filterBox = new ComboBox<>();
         String showOnlyUncheckedAlarms = I18n.getInstance().getString("plugin.alarm.label.showunchecked");
         String showOnlyCheckedAlarms = I18n.getInstance().getString("plugin.alarm.label.showchecked");
         String showAllAlarms = I18n.getInstance().getString("plugin.alarm.label.showall");
@@ -321,7 +313,7 @@ public class AlarmPlugin implements Plugin {
 
     }
 
-    private final JFXComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();
+    private final ComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();
 
     private Node createPage(int pageIndex) {
         int numOfPages = 1;
@@ -340,7 +332,7 @@ public class AlarmPlugin implements Plugin {
         tableView.setItems(FXCollections.observableArrayList(page));
 
         return tableView;
-    }    //    private ObservableList<AlarmRow> alarmRows = FXCollections.observableArrayList();    private final JFXComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();    //    private ObservableList<AlarmRow> alarmRows = FXCollections.observableArrayList();    private final JFXComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();
+    }    //    private ObservableList<AlarmRow> alarmRows = FXCollections.observableArrayList();    private final ComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();    //    private ObservableList<AlarmRow> alarmRows = FXCollections.observableArrayList();    private final ComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();
 
     private void checkForRunningTasks() throws InterruptedException {
         AtomicBoolean hasActiveChartTasks = new AtomicBoolean(false);
@@ -829,7 +821,7 @@ public class AlarmPlugin implements Plugin {
 
                                     LimitEditor limitEditor = new LimitEditor(limitConfigAttribute);
                                     HBox hbox = (HBox) limitEditor.getEditor();
-                                    JFXButton jfxButton = (JFXButton) hbox.getChildren().get(0);
+                                    Button jfxButton = (Button) hbox.getChildren().get(0);
                                     jfxButton.setText(I18nWS.getInstance().getTypeName(limitConfigAttribute.getType()));
                                     limitEditor.getEditor().setDisable(!ds.getCurrentUser().canWrite(limitConfigAttribute.getObjectID()));
 
@@ -839,7 +831,7 @@ public class AlarmPlugin implements Plugin {
 
                                     GapFillingEditor gapFillingEditor = new GapFillingEditor(gapFillingConfiguration);
                                     HBox hbox = (HBox) gapFillingEditor.getEditor();
-                                    JFXButton jfxButton = (JFXButton) hbox.getChildren().get(0);
+                                    Button jfxButton = (Button) hbox.getChildren().get(0);
                                     jfxButton.setText(I18nWS.getInstance().getTypeName(gapFillingConfiguration.getType()));
                                     gapFillingEditor.getEditor().setDisable(!ds.getCurrentUser().canWrite(gapFillingConfiguration.getObjectID()));
 
@@ -850,7 +842,7 @@ public class AlarmPlugin implements Plugin {
 
                                     AlarmEditor alarmEditor = new AlarmEditor(alarmConfigAttribute);
                                     HBox hbox = (HBox) alarmEditor.getEditor();
-                                    JFXButton jfxButton = (JFXButton) hbox.getChildren().get(0);
+                                    Button jfxButton = (Button) hbox.getChildren().get(0);
                                     jfxButton.setText(I18nWS.getInstance().getTypeName(alarmConfigAttribute.getType()));
                                     alarmEditor.getEditor().setDisable(!ds.getCurrentUser().canWrite(alarmConfigAttribute.getObjectID()));
 
@@ -988,8 +980,8 @@ public class AlarmPlugin implements Plugin {
         return list;
     }
 
-    private JFXComboBox<TimeFrame> getTimeFrameComboBox() {
-        JFXComboBox<TimeFrame> box = new JFXComboBox<>();
+    private ComboBox<TimeFrame> getTimeFrameComboBox() {
+        ComboBox<TimeFrame> box = new ComboBox<>();
 
         final String today = I18n.getInstance().getString("plugin.graph.changedate.buttontoday");
         final String yesterday = I18n.getInstance().getString("plugin.graph.changedate.buttonyesterday");

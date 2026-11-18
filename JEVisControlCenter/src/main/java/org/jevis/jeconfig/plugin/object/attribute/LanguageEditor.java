@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -123,8 +123,8 @@ public class LanguageEditor implements AttributeEditor {
         ObservableList<Locale> enumList = FXCollections.observableArrayList();
         enumList.addAll(getEnumList());
 
-//        JFXComboBox picker = new JFXComboBox(enumList);
-        JFXComboBox picker = new JFXComboBox(enumList);
+//        ComboBox picker = new ComboBox(enumList);
+        ComboBox picker = new ComboBox(enumList);
 
         Callback<ListView<Locale>, ListCell<Locale>> cellFactory = new Callback<ListView<Locale>, ListCell<Locale>>() {
             @Override

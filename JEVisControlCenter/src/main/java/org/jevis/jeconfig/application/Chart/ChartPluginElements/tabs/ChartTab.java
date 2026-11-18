@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXTextField;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
@@ -85,7 +85,7 @@ public class ChartTab extends Tab {
     private final Label maxFractionDigitsLabel = new Label(I18n.getInstance().getString("plugin.graph.chart.selectiondialog.maxfractiondigits"));
     /* the values of each data row are shown with the decimal places of the data row (#1194) */
     private final Label fractionDigitsAutoLabel = new Label(I18n.getInstance().getString("plugin.graph.chart.selectiondialog.fractiondigitsauto"));
-    private final JFXCheckBox fractionDigitsAuto = new JFXCheckBox();
+    private final CheckBox fractionDigitsAuto = new CheckBox();
     private final Label labelChartType = new Label(I18n.getInstance().getString("graph.tabs.tab.charttype"));
     private final ChartTypeComboBox chartTypeComboBox;
     private final Label labelGroupingInterval = new Label(I18n.getInstance().getString("graph.tabs.tab.groupinginterval"));
@@ -97,17 +97,17 @@ public class ChartTab extends Tab {
     private final Label labelDayEnd = new Label(I18n.getInstance().getString("graph.tabs.tab.dayend"));
     private final Label labelxAxisTitle = new Label(I18n.getInstance().getString("graph.tabs.tab.xaxistitle"));
     private final Label labelyAxisTitle = new Label(I18n.getInstance().getString("graph.tabs.tab.yaxistitle"));
-    private final JFXCheckBox fixYAxisToZero = new JFXCheckBox();
-    private final JFXCheckBox enableColoring = new JFXCheckBox();
+    private final CheckBox fixYAxisToZero = new CheckBox();
+    private final CheckBox enableColoring = new CheckBox();
     private final Table chartTable;
     private final GridPane chartSettings = new GridPane();
     private final VBox vBox = new VBox();
     private final ToolBar tableMenu;
     private final NumberSpinner groupingInterval;
-    private final JFXCheckBox showColumnSums = new JFXCheckBox();
-    private final JFXCheckBox showRowSums = new JFXCheckBox();
-    private final JFXTimePicker dayStartPicker = new JFXTimePicker();
-    private final JFXTimePicker dayEndPicker = new JFXTimePicker();
+    private final CheckBox showColumnSums = new CheckBox();
+    private final CheckBox showRowSums = new CheckBox();
+    private final TimePicker dayStartPicker = new TimePicker();
+    private final TimePicker dayEndPicker = new TimePicker();
     private final List<JEVisClass> dataProcessorClasses = new ArrayList<>();
     private final List<JEVisClass> allDataClasses = new ArrayList<>();
     private final List<Color> usedColors = new ArrayList<>();
@@ -121,9 +121,9 @@ public class ChartTab extends Tab {
     private final Label labelColorMapping = new Label(I18n.getInstance().getString("plugin.graph.tabs.tab.colormapping"));
     private final ColorMappingBox colorMappingBox;
     private final Label chartNameLabel = new Label(I18n.getInstance().getString("graph.title"));
-    private final JFXTextField chartNameSecondTextField = new JFXTextField();
-    private final JFXTextField xAxisTitleTextField = new JFXTextField();
-    private final JFXTextField yAxisTitleTextField = new JFXTextField();
+    private final TextField chartNameSecondTextField = new TextField();
+    private final TextField xAxisTitleTextField = new TextField();
+    private final TextField yAxisTitleTextField = new TextField();
     private boolean showChartSettings = true;
     private ChartModel chartModel;
     private final ChangeListener<BigDecimal> groupingIntervalChangeListener = (observable, oldValue, newValue) -> {
@@ -196,7 +196,7 @@ public class ChartTab extends Tab {
         nameLabel.textProperty().bind(chartModel.chartNameProperty());
         setGraphic(nameLabel);
 
-        JFXTextField chartNameTextField = new JFXTextField();
+        TextField chartNameTextField = new TextField();
         nameLabel.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 chartNameTextField.setText(nameLabel.getText());
@@ -653,7 +653,7 @@ public class ChartTab extends Tab {
         }
     }
 
-    void setButtonText(JFXButton targetButton, JEVisObject target) {
+    void setButtonText(Button targetButton, JEVisObject target) {
 
         try {
             if (target != null) {

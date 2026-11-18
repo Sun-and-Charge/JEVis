@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.object.extension.paramter;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -62,7 +62,7 @@ public class ParameterGui {
 
     public Node buildGui(JEVisSample pathSample, JEVisSample parameterSample, String textOfTextFiled) {
         GridPane gridPane = new GridPane();
-        JFXTextField textFieldPath = new JFXTextField();
+        TextField textFieldPath = new TextField();
 
 
 
@@ -93,8 +93,8 @@ public class ParameterGui {
             });
             gridPane.addRow(0, new Label(textOfTextFiled), textFieldPath);
             ParameterTable parameterTable = new ParameterTable();
-            JFXButton add = new JFXButton("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 20, 20));
-            JFXButton remove = new JFXButton("", JEConfig.getSVGImage(Icon.MINUS_CIRCLE, 20, 20));
+            Button add = new Button("", JEConfig.getSVGImage(Icon.PLUS_CIRCLE, 20, 20));
+            Button remove = new Button("", JEConfig.getSVGImage(Icon.MINUS_CIRCLE, 20, 20));
             add.setOnAction(actionEvent -> {
                 parameters.add(new Parameter());
             });

@@ -21,10 +21,10 @@
 package org.jevis.jeconfig.plugin.object.extension.OPC;
 
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -93,8 +93,8 @@ public class NodeTreeTable {
     private final VBox view = new VBox();
     private final TreeTableView<Node> opcUATreeTableView = new TreeTableView<>();
     private final OPCClient opcClient;
-    private final JFXButton importDataStructureJFXButton;
-    private final JFXButton selectTargetJFXButton;
+    private final Button importDataStructureJFXButton;
+    private final Button selectTargetJFXButton;
     private final ObservableList<Node> nodeObservableList = FXCollections.observableArrayList();
     private final Image taskIcon = JEConfig.getImage(Icon.PNG_DASHBOARD);
     private final JEVisObject trendRoot;
@@ -285,7 +285,7 @@ public class NodeTreeTable {
                                 try {
 
                                     if (getTreeTableRow().getTreeItem().getValue().getDescriptionProperty().isObject()) {
-                                        JFXCheckBox box = new JFXCheckBox();
+                                        CheckBox box = new CheckBox();
                                         box.setSelected(item);
                                         box.selectedProperty().addListener((observableValue, aBoolean, t1) -> {
 
@@ -359,9 +359,9 @@ public class NodeTreeTable {
             Label valueLabel = new Label(I18n.getInstance().getString("plugin.graph.table.value"));
 
             HBox hbox = new HBox(6);
-            JFXTextField valueField = new JFXTextField();
+            TextField valueField = new TextField();
 
-            JFXComboBox<Boolean> valueComboBox = new JFXComboBox();
+            ComboBox<Boolean> valueComboBox = new ComboBox();
             valueComboBox.getItems().addAll(true, false);
 
 
@@ -715,8 +715,8 @@ public class NodeTreeTable {
     }
 
 
-    private JFXButton buildTargetButton() {
-        final JFXButton button = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
+    private Button buildTargetButton() {
+        final Button button = new Button(I18n.getInstance().getString("plugin.object.attribute.target.button"), JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
         button.wrapTextProperty().setValue(true);
         button.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -766,8 +766,8 @@ public class NodeTreeTable {
         return button;
     }
 
-    private JFXButton buildImportDataStructureButton() {
-        JFXButton jfxButton = new JFXButton();
+    private Button buildImportDataStructureButton() {
+        Button jfxButton = new Button();
         jfxButton.setText(I18n.getInstance().getString("plugin.object.opcua.button.import"));
         /* enabled once a target is selected */
         jfxButton.setDisable(targetDataObject == null);

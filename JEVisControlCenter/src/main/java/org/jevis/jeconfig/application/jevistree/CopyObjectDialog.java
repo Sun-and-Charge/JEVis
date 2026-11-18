@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.application.jevistree;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXRadioButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -60,15 +60,15 @@ public class CopyObjectDialog extends Dialog {
 
     public static String ICON = Icon.PNG_MOVE;
 
-    private final JFXTextField nameField = new JFXTextField();
+    private final TextField nameField = new TextField();
     private boolean recursionAllowed = false;
     private final boolean includeDataAllowed = true;
-    private final JFXCheckBox includeValues = new JFXCheckBox(I18n.getInstance().getString("jevistree.dialog.copy.addvalues"));
-    private final JFXRadioButton move = new JFXRadioButton(I18n.getInstance().getString("jevistree.dialog.copy.move"));
-    private final JFXRadioButton link = new JFXRadioButton(I18n.getInstance().getString("jevistree.dialog.copy.link"));
-    private final JFXRadioButton copy = new JFXRadioButton(I18n.getInstance().getString("jevistree.dialog.copy.copy"));
-    private final JFXCheckBox recursion = new JFXCheckBox(I18n.getInstance().getString("jevistree.dialog.copy.substructure"));
-    private final JFXCheckBox includeSamples = new JFXCheckBox(I18n.getInstance().getString("jevistree.dialog.copy.adddata"));
+    private final CheckBox includeValues = new CheckBox(I18n.getInstance().getString("jevistree.dialog.copy.addvalues"));
+    private final RadioButton move = new RadioButton(I18n.getInstance().getString("jevistree.dialog.copy.move"));
+    private final RadioButton link = new RadioButton(I18n.getInstance().getString("jevistree.dialog.copy.link"));
+    private final RadioButton copy = new RadioButton(I18n.getInstance().getString("jevistree.dialog.copy.copy"));
+    private final CheckBox recursion = new CheckBox(I18n.getInstance().getString("jevistree.dialog.copy.substructure"));
+    private final CheckBox includeSamples = new CheckBox(I18n.getInstance().getString("jevistree.dialog.copy.adddata"));
     private final boolean includeValuesAllowed = true;
     private final NumberSpinner count = new NumberSpinner(BigDecimal.valueOf(1), BigDecimal.valueOf(1));
 

@@ -19,14 +19,13 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXCheckBox;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import org.jevis.commons.i18n.I18n;
 
-public class CheckBox extends JFXCheckBox {
+public class CheckBox extends javafx.scene.control.CheckBox {
 
     public CheckBox() {
         super();

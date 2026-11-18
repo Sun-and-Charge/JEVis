@@ -20,8 +20,7 @@
  */
 package org.jevis.jeconfig.application.jevistree;
 
-import com.jfoenix.controls.*;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -307,8 +306,8 @@ public class TreeHelper {
                     rawData.setSelected(false);
 
                     Label dateLabelFrom = new Label(I18n.getInstance().getString("tree.treehelper.from"));
-                    JFXDatePicker datePickerFrom = new JFXDatePicker();
-                    JFXTimePicker timePickerFrom = new JFXTimePicker();
+                    DatePicker datePickerFrom = new DatePicker();
+                    TimePicker timePickerFrom = new TimePicker();
                     timePickerFrom.set24HourView(true);
                     timePickerFrom.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
                     AtomicBoolean changedFrom = new AtomicBoolean(false);
@@ -326,8 +325,8 @@ public class TreeHelper {
                     });
 
                     Label dateLabelTo = new Label(I18n.getInstance().getString("tree.treehelper.to"));
-                    JFXDatePicker datePickerTo = new JFXDatePicker();
-                    JFXTimePicker timePickerTo = new JFXTimePicker();
+                    DatePicker datePickerTo = new DatePicker();
+                    TimePicker timePickerTo = new TimePicker();
                     timePickerTo.set24HourView(true);
                     timePickerTo.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
                     AtomicBoolean changedTo = new AtomicBoolean(false);
@@ -571,8 +570,8 @@ public class TreeHelper {
                         cancelButton.setCancelButton(true);
 
                         Label dateLabelFrom = new Label(I18n.getInstance().getString("tree.treehelper.from"));
-                        JFXDatePicker datePickerFrom = new JFXDatePicker();
-                        JFXTimePicker timePickerFrom = new JFXTimePicker();
+                        DatePicker datePickerFrom = new DatePicker();
+                        TimePicker timePickerFrom = new TimePicker();
                         timePickerFrom.set24HourView(true);
                         timePickerFrom.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
                         AtomicBoolean changedFrom = new AtomicBoolean(false);
@@ -677,8 +676,8 @@ public class TreeHelper {
                     gp.setVgap(6);
 
                     Label dateLabelFrom = new Label(I18n.getInstance().getString("tree.treehelper.from"));
-                    JFXDatePicker datePickerFrom = new JFXDatePicker();
-                    JFXTimePicker timePickerFrom = new JFXTimePicker();
+                    DatePicker datePickerFrom = new DatePicker();
+                    TimePicker timePickerFrom = new TimePicker();
                     timePickerFrom.set24HourView(true);
                     timePickerFrom.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
                     AtomicBoolean changedFrom = new AtomicBoolean(false);
@@ -696,8 +695,8 @@ public class TreeHelper {
                     });
 
                     Label dateLabelTo = new Label(I18n.getInstance().getString("tree.treehelper.to"));
-                    JFXDatePicker datePickerTo = new JFXDatePicker();
-                    JFXTimePicker timePickerTo = new JFXTimePicker();
+                    DatePicker datePickerTo = new DatePicker();
+                    TimePicker timePickerTo = new TimePicker();
                     timePickerTo.set24HourView(true);
                     timePickerTo.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
                     AtomicBoolean changedTo = new AtomicBoolean(false);
@@ -828,13 +827,13 @@ public class TreeHelper {
                     gp.setHgap(4);
                     gp.setVgap(6);
                     Label multiplierLabel = new Label("Multiplier");
-                    JFXTextField multiplier = new JFXTextField();
+                    TextField multiplier = new TextField();
                     Label differentialLabel = new Label("Differential");
                     ToggleSwitchPlus differential = new ToggleSwitchPlus();
                     differential.setSelected(false);
                     Label dateLabel = new Label("Date");
-                    JFXDatePicker datePicker = new JFXDatePicker();
-                    JFXTimePicker timePicker = new JFXTimePicker();
+                    DatePicker datePicker = new DatePicker();
+                    TimePicker timePicker = new TimePicker();
                     timePicker.set24HourView(true);
                     timePicker.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
 
@@ -922,15 +921,15 @@ public class TreeHelper {
                     final Label l_example = new Label(I18n.getInstance().getString("attribute.editor.unit.symbol"));
                     final Label l_SampleRate = new Label(I18n.getInstance().getString("attribute.editor.unit.samplingrate"));
 
-                    JFXCheckBox setUnit = new JFXCheckBox("Unit");
+                    CheckBox setUnit = new CheckBox("Unit");
                     setUnit.setSelected(true);
-                    JFXCheckBox setPeriod = new JFXCheckBox("Period");
-                    JFXCheckBox setNewTypePeriod = new JFXCheckBox("New Type Period");
+                    CheckBox setPeriod = new CheckBox("Period");
+                    CheckBox setNewTypePeriod = new CheckBox("New Type Period");
                     setPeriod.setSelected(true);
                     setNewTypePeriod.setSelected(true);
 
-                    JFXDatePicker pickerDate = new JFXDatePicker();
-                    JFXTimePicker pickerTime = new JFXTimePicker();
+                    DatePicker pickerDate = new DatePicker();
+                    TimePicker pickerTime = new TimePicker();
                     pickerDate.setPrefWidth(120d);
                     pickerTime.setPrefWidth(110d);
                     pickerTime.set24HourView(true);
@@ -1043,32 +1042,32 @@ public class TreeHelper {
                     gp.setHgap(4);
                     gp.setVgap(6);
 
-                    JFXCheckBox auto = new JFXCheckBox("Automatische Festlegung");
+                    CheckBox auto = new CheckBox("Automatische Festlegung");
 
                     Label presetDateLabel = new Label("Zeitbereich zur Bestimmung");
                     PresetDateBox presetDateBox = new PresetDateBox(tree.getJEVisDataSource(), null);
-                    JFXCheckBox minIsZero = new JFXCheckBox("Untere Grenze ist immer 0");
+                    CheckBox minIsZero = new CheckBox("Untere Grenze ist immer 0");
 
                     Label limit1MinSubLabel = new Label("Toleranz der unteren Grenze [%]");
-                    JFXTextField limit1MinSub = new JFXTextField("0");
+                    TextField limit1MinSub = new TextField("0");
                     Label limit1MaxAddLabel = new Label("Toleranz der oberen Grenze [%]");
-                    JFXTextField limit1MaxAdd = new JFXTextField("15");
+                    TextField limit1MaxAdd = new TextField("15");
 
                     Label limit1MinTimesXLimit2MinLabel = new Label("Vielfaches des niedrigesten Wertes des Zeitbereichs");
-                    JFXTextField limit1MinTimesXLimit2Min = new JFXTextField("2");
+                    TextField limit1MinTimesXLimit2Min = new TextField("2");
 
                     Label limit1MaxTimesXLimit2MaxLabel = new Label("Vielfaches des höchsten Wertes des Zeitbereichs");
-                    JFXTextField limit1MaxTimesXLimit2Max = new JFXTextField("2");
+                    TextField limit1MaxTimesXLimit2Max = new TextField("2");
 
                     Label limit1MinLabel = new Label("Limit 1 Min");
-                    JFXTextField limit1Min = new JFXTextField();
+                    TextField limit1Min = new TextField();
                     Label limit1MaxLabel = new Label("Limit 1 Max");
-                    JFXTextField limit1Max = new JFXTextField();
+                    TextField limit1Max = new TextField();
 
                     Label limit2MinLabel = new Label("Limit 2 Min");
-                    JFXTextField limit2Min = new JFXTextField();
+                    TextField limit2Min = new TextField();
                     Label limit2MaxLabel = new Label("Limit 2 Max");
-                    JFXTextField limit2Max = new JFXTextField();
+                    TextField limit2Max = new TextField();
 
                     auto.selectedProperty().addListener((observable, oldValue, newValue) -> {
                         if (newValue) {
@@ -1358,9 +1357,7 @@ public class TreeHelper {
                 if (target.getID().equals(child.getValue().getJEVisObject().getID())) {
                     tree.getSelectionModel().select(child);
                     try {
-                        VirtualFlow flow = (VirtualFlow) tree.getChildrenUnmodifiable().get(1);
-                        int selected = tree.getSelectionModel().getSelectedIndex();
-                        flow.show(selected);
+                        tree.scrollTo(tree.getSelectionModel().getSelectedIndex());
                     } catch (Exception ex) {
 
                     }
@@ -2027,7 +2024,7 @@ public class TreeHelper {
                     AlphanumComparator ac = new AlphanumComparator();
                     jeVisClassesStrings.sort(ac);
                     jeVisClassesStrings.add(0, "All");
-                    JFXComboBox<String> jeVisClassComboBox = new JFXComboBox<>(FXCollections.observableList(jeVisClassesStrings));
+                    ComboBox<String> jeVisClassComboBox = new ComboBox<>(FXCollections.observableList(jeVisClassesStrings));
                     jeVisClassComboBox.getSelectionModel().selectFirst();
                     vBox.getChildren().addAll(qLabel, jeVisClassComboBox);
 
@@ -2178,12 +2175,12 @@ public class TreeHelper {
         Alert warning = new Alert(AlertType.WARNING);
         TopMenu.applyActiveTheme(warning.getDialogPane().getScene());
 
-        JFXTextField textField = new JFXTextField();
+        TextField textField = new TextField();
         Label message = new Label("You really sure you know what you're doing? Move all data/clean data samples between start and end their period x field");
 
         Label dateLabelFrom = new Label(I18n.getInstance().getString("tree.treehelper.from"));
-        JFXDatePicker datePickerFrom = new JFXDatePicker();
-        JFXTimePicker timePickerFrom = new JFXTimePicker();
+        DatePicker datePickerFrom = new DatePicker();
+        TimePicker timePickerFrom = new TimePicker();
         timePickerFrom.set24HourView(true);
         timePickerFrom.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
         AtomicBoolean changedFrom = new AtomicBoolean(false);
@@ -2201,8 +2198,8 @@ public class TreeHelper {
         });
 
         Label dateLabelTo = new Label(I18n.getInstance().getString("tree.treehelper.to"));
-        JFXDatePicker datePickerTo = new JFXDatePicker();
-        JFXTimePicker timePickerTo = new JFXTimePicker();
+        DatePicker datePickerTo = new DatePicker();
+        TimePicker timePickerTo = new TimePicker();
         timePickerTo.set24HourView(true);
         timePickerTo.setConverter(new LocalTimeStringConverter(FormatStyle.SHORT));
         AtomicBoolean changedTo = new AtomicBoolean(false);
@@ -2219,11 +2216,11 @@ public class TreeHelper {
             }
         });
 
-        JFXCheckBox correctUTC = new JFXCheckBox("Correct UTC diff");
-        JFXCheckBox dataObjectsCheckBox = new JFXCheckBox("Data Objects");
-        JFXCheckBox cleanDataObjectsCheckBox = new JFXCheckBox("Clean Data Objects");
-        JFXCheckBox onlyConversionToDiffObjectsCheckBox = new JFXCheckBox("Only Conversion To Diff Clean Objects");
-        JFXCheckBox allObjects = new JFXCheckBox("All Objects");
+        CheckBox correctUTC = new CheckBox("Correct UTC diff");
+        CheckBox dataObjectsCheckBox = new CheckBox("Data Objects");
+        CheckBox cleanDataObjectsCheckBox = new CheckBox("Clean Data Objects");
+        CheckBox onlyConversionToDiffObjectsCheckBox = new CheckBox("Only Conversion To Diff Clean Objects");
+        CheckBox allObjects = new CheckBox("All Objects");
         Label tzInputLabel = new Label("Input Timezone");
         Label tzOutputLabel = new Label("Output Timezone");
         TimeZoneBox timeZoneBoxInput = new TimeZoneBox();
@@ -2247,7 +2244,7 @@ public class TreeHelper {
         warning.showAndWait().ifPresent(buttonType -> {
             if (buttonType.equals(ButtonType.OK)) {
                 JEVisDataSource ds = tree.getJEVisDataSource();
-                JFXTextArea textArea = new JFXTextArea();
+                TextArea textArea = new TextArea();
                 textArea.setPrefRowCount(20);
                 Alert info = new Alert(AlertType.INFORMATION);
                 info.getDialogPane().setContent(textArea);

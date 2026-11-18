@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.classes.relationship;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -100,7 +100,7 @@ public class ValidParentEditor {
                                               classBox.getChildren().setAll(icon, otherClass);
 
                                               gb.add(classBox, 0, ++x);
-                                              JFXButton remove = new JFXButton();
+                                              Button remove = new Button();
                                               remove.setDisable(!JEConfig.getDataSource().getCurrentUser().isSysAdmin());
                                               remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 20, 20));
                                               gb.add(remove, 1, x);
@@ -128,13 +128,13 @@ public class ValidParentEditor {
                                       logger.fatal(ex);
                                   }
 
-                                  final JFXButton newB = new JFXButton();
+                                  final Button newB = new Button();
 
                                   newB.setGraphic(JEConfig.getSVGImage(Icon.PLUS, 20, 20));
                                   newB.setDisable(true);
 
                                   //TODO: replace with Tree selection dialog
-                                  final JFXTextField newTF = new JFXTextField();
+                                  final TextField newTF = new TextField();
 
                                   newTF.setPromptText(I18n.getInstance().getString("plugin.classes.relationship.name.prompt"));
                                   gb.add(new Separator(Orientation.HORIZONTAL), 0, ++x, 2, 1);
@@ -218,8 +218,8 @@ public class ValidParentEditor {
 
     }
 
-    public JFXComboBox<String> buildTypeBox(JEVisClassRelationship rel) throws JEVisException {
-        JFXComboBox<String> box = new JFXComboBox<>();
+    public ComboBox<String> buildTypeBox(JEVisClassRelationship rel) throws JEVisException {
+        ComboBox<String> box = new ComboBox<>();
         box.getItems().add(INHERIT);
         box.getItems().add(NESTED);
         box.getItems().add(OK_PARENT);
@@ -249,8 +249,8 @@ public class ValidParentEditor {
         return box;
     }
 
-    public JFXComboBox<String> buildDirectionBox(JEVisClassRelationship rel, JEVisClass jclass) throws JEVisException {
-        JFXComboBox<String> box = new JFXComboBox<>();
+    public ComboBox<String> buildDirectionBox(JEVisClassRelationship rel, JEVisClass jclass) throws JEVisException {
+        ComboBox<String> box = new ComboBox<>();
         box.getItems().add("Forward");
         box.getItems().add("Backward");
 

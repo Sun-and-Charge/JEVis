@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.jfoenix.controls.JFXDatePicker;
+import javafx.scene.control.DatePicker;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -31,8 +31,8 @@ import java.time.LocalDate;
 
 public class TimeRangeDialog extends Alert {
 
-    JFXDatePicker fromDatePicker = new JFXDatePicker();
-    JFXDatePicker untilDatePicker = new JFXDatePicker();
+    DatePicker fromDatePicker = new DatePicker();
+    DatePicker untilDatePicker = new DatePicker();
 
     public TimeRangeDialog(DateTime from, DateTime until) {
         super(AlertType.CONFIRMATION);

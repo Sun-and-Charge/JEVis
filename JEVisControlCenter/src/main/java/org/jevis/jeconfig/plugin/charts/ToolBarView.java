@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.DatePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -84,10 +84,10 @@ public class ToolBarView {
     private final SimpleBooleanProperty disabledIcons = new SimpleBooleanProperty(true);
     private final PickerCombo pickerCombo;
     private final PresetDateBox presetDateBox;
-    private final JFXDatePicker pickerDateStart;
-    private final JFXTimePicker pickerTimeStart;
-    private final JFXDatePicker pickerDateEnd;
-    private final JFXTimePicker pickerTimeEnd;
+    private final DatePicker pickerDateStart;
+    private final TimePicker pickerTimeStart;
+    private final DatePicker pickerDateEnd;
+    private final TimePicker pickerTimeEnd;
     private final DateHelper dateHelper = new DateHelper();
     private final ToolBarFunctions toolBarFunctions;
     private ToggleButton save;

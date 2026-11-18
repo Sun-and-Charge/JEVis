@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.tools;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -29,7 +29,7 @@ import javafx.util.Callback;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DisabledItemsComboBox<T> extends JFXComboBox<T> {
+public class DisabledItemsComboBox<T> extends ComboBox<T> {
 
     private ArrayList<T> disabledItems = new ArrayList<T>();
 
@@ -59,6 +59,11 @@ public class DisabledItemsComboBox<T> extends JFXComboBox<T> {
 
             @Override
             public void select(int index) {
+                /* JavaFX 9+ also selects -1 to clear the selection */
+                if (index < 0 || index >= getItems().size()) {
+                    super.select(index);
+                    return;
+                }
                 T item = getItems().get(index);
 
                 if (disabledItems.contains(item)) {

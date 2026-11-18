@@ -20,9 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -73,8 +73,8 @@ public class WidgetNavigator {
     private WidgetColumnFactory widgetColumnFactory;
     /* placeholder entry of the type filter for "all types" */
     private static final String ALL_TYPES = "";
-    private final JFXTextField nameFilterField = new JFXTextField();
-    private final JFXComboBox<String> typeFilterBox = new JFXComboBox<>();
+    private final TextField nameFilterField = new TextField();
+    private final ComboBox<String> typeFilterBox = new ComboBox<>();
     private final ListChangeListener<Widget> widgetListListener = c -> Platform.runLater(this::updateTypeFilterItems);
 
     public WidgetNavigator(DashboardControl control) {
@@ -151,10 +151,10 @@ public class WidgetNavigator {
         Region spacer = new Region();
         spacer.setPrefWidth(20d);
 
-        JFXTextField nameField = new JFXTextField();
-        JFXTextField widthField = new JFXTextField();
-        JFXTextField heightField = new JFXTextField();
-        JFXComboBox<Double> listZoomLevel = DashBoardToolbar.buildZoomLevelListView();
+        TextField nameField = new TextField();
+        TextField widthField = new TextField();
+        TextField heightField = new TextField();
+        ComboBox<Double> listZoomLevel = DashBoardToolbar.buildZoomLevelListView();
 
 
         TimeFactoryBox timeFactoryBox = new TimeFactoryBox(false);
@@ -163,14 +163,14 @@ public class WidgetNavigator {
         timeFactoryBox.selectValue(control.getActiveDashboard().getTimeFrame());
         //timeFactoryBox.selectValue(control.getActiveTimeFrame());
 
-        JFXButton backgroundButton = new JFXButton("", JEConfig.getSVGImage(Icon.BACKGROUND, this.iconSize, this.iconSize));
-        JFXButton removeBGIcon = new JFXButton("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
+        Button backgroundButton = new Button("", JEConfig.getSVGImage(Icon.BACKGROUND, this.iconSize, this.iconSize));
+        Button removeBGIcon = new Button("", JEConfig.getSVGImage(Icon.DELETE, this.iconSize, this.iconSize));
         ColorPickerAdv pickerAdv = new ColorPickerAdv();
         pickerAdv.setValue(control.getActiveDashboard().getBackgroundColor());
         /* the button has no height before layout, so follow its height instead of copying 0 */
         pickerAdv.minHeightProperty().bind(backgroundButton.heightProperty());
 
-        JFXComboBox<String> bhModeBox = buildBGMOdeBox();
+        ComboBox<String> bhModeBox = buildBGMOdeBox();
 
         HBox imageBox = new HBox();
         imageBox.setSpacing(5);
@@ -267,10 +267,10 @@ public class WidgetNavigator {
     }
 
 
-    private JFXComboBox<String> buildBGMOdeBox() {
+    private ComboBox<String> buildBGMOdeBox() {
         ObservableList<String> modeList = FXCollections.observableArrayList();
         modeList.addAll(BackgroundMode.defaultMode, BackgroundMode.repeat, BackgroundMode.stretch);
-        JFXComboBox<String> comboBox = new JFXComboBox<>(modeList);
+        ComboBox<String> comboBox = new ComboBox<>(modeList);
         comboBox.setValue(control.getActiveDashboard().backgroundMode);
 
 

@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.bulkedit;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -93,7 +93,7 @@ public class CreateTable {
         } catch (JEVisException ex) {
             logger.fatal(ex);
         }
-        //cellFactory for the JFXComboBox
+        //cellFactory for the ComboBox
         Callback<ListView<JEVisClass>, ListCell<JEVisClass>> cellFactory = new Callback<ListView<JEVisClass>, ListCell<JEVisClass>>() {
             @Override
             public ListCell<JEVisClass> call(ListView<JEVisClass> param) {
@@ -127,7 +127,7 @@ public class CreateTable {
         };
 
         //ComboBox ist fuer die Kinder vom ausgewaehlten Parent zu zeigen.
-        JFXComboBox<JEVisClass> classComboBox = new JFXComboBox<JEVisClass>(options);
+        ComboBox<JEVisClass> classComboBox = new ComboBox<JEVisClass>(options);
         classComboBox.setCellFactory(cellFactory);
         classComboBox.setButtonCell(cellFactory.call(null));
         classComboBox.setMinWidth(250);
@@ -135,8 +135,8 @@ public class CreateTable {
         //Wähle das erste Item aus und initialisiere createClass.
         createClass = classComboBox.getSelectionModel().getSelectedItem();
 
-        JFXButton createBtn = new JFXButton("Create Structure");
-        JFXButton cancelBtn = new JFXButton("Cancel");
+        Button createBtn = new Button("Create Structure");
+        Button cancelBtn = new Button("Cancel");
 
         //Wenn createclass ein JEconfig "Data" object ist,wird CreateNewDataTable aufgerufen.
         //Wenn nicht wird CreateNewTable aufgerufen.
@@ -157,8 +157,8 @@ public class CreateTable {
         hBoxTop.setSpacing(10);
         //hBoxTop.setPadding(new Insets(3, 3, 3, 3));
         Label lClass = new Label("Class:");
-        //Help JFXButton ist fuer den WebBrowser in den WebBrowser wird die batch_mode_help.html Datei aufgerufen.
-        JFXButton help = new JFXButton("Help", JEConfig.getSVGImage(Icon.HELP, 22, 22));
+        //Help Button ist fuer den WebBrowser in den WebBrowser wird die batch_mode_help.html Datei aufgerufen.
+        Button help = new Button("Help", JEConfig.getSVGImage(Icon.HELP, 22, 22));
         Separator sep1 = new Separator();
         hBoxTop.getChildren().addAll(lClass, classComboBox, sep1, help);
 
@@ -210,7 +210,7 @@ public class CreateTable {
 
             }
         });
-        //Wenn man vom JFXComboBox ein neues Objekt auswählt,wird die Tabelle neue Strukturiert.
+        //Wenn man vom ComboBox ein neues Objekt auswählt,wird die Tabelle neue Strukturiert.
         classComboBox.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -235,7 +235,7 @@ public class CreateTable {
             }
         });
 
-        //Help JFXButton für die help Datei.
+        //Help Button für die help Datei.
         help.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {

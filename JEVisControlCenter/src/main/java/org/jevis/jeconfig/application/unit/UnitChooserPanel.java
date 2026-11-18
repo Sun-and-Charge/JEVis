@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.unit;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -54,14 +54,14 @@ public class UnitChooserPanel {
     private static final Logger logger = LogManager.getLogger(UnitChooserPanel.class);
 
     private JEVisUnit _unit = null;
-    private final JFXTextField altSymbolField = new JFXTextField("");
+    private final TextField altSymbolField = new TextField("");
     private String _altSymbol = "";
-    private final JFXComboBox<?> boxMeaning = new JFXComboBox<Object>();
-    private final JFXComboBox<MetricPrefix> boxPrefix = new JFXComboBox<MetricPrefix>();
-    private final JFXComboBox<JEVisUnit> boxQuantity = new JFXComboBox<JEVisUnit>();
-    private final JFXComboBox<JEVisUnit> boxUnit = new JFXComboBox<JEVisUnit>();
+    private final ComboBox<?> boxMeaning = new ComboBox<Object>();
+    private final ComboBox<MetricPrefix> boxPrefix = new ComboBox<MetricPrefix>();
+    private final ComboBox<JEVisUnit> boxQuantity = new ComboBox<JEVisUnit>();
+    private final ComboBox<JEVisUnit> boxUnit = new ComboBox<JEVisUnit>();
     private final Label example = new Label("1234.56");
-    private final JFXTextField searchField = new JFXTextField();
+    private final TextField searchField = new TextField();
     private final GridPane root = new GridPane();
     private final Label lQuantity = new Label("Quantity:");
     private final Label lUnit = new Label("Unit:");

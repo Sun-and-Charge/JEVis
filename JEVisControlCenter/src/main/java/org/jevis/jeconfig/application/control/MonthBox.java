@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,7 +33,7 @@ import org.joda.time.DateTime;
 
 import java.time.YearMonth;
 
-public class MonthBox extends JFXComboBox<Months> {
+public class MonthBox extends ComboBox<Months> {
     private YearBox yearBox;
     private DayBox dayBox;
     private WorkDays workDays;

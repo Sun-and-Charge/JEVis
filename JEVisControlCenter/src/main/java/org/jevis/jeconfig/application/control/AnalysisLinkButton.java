@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.scene.Node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +33,7 @@ import org.jevis.jeconfig.plugin.AnalysisRequest;
 import org.jevis.jeconfig.plugin.charts.ChartPlugin;
 import org.joda.time.DateTime;
 
-public class AnalysisLinkButton extends JFXButton {
+public class AnalysisLinkButton extends Button {
 
     private static final Logger logger = LogManager.getLogger(AnalysisLinkButton.class);
     Node icon;

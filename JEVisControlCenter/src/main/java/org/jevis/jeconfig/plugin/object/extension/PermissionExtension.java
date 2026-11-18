@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.object.extension;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -179,7 +179,7 @@ public class PermissionExtension implements ObjectEditorExtension {
 
                 groupBox.getChildren().addAll(usericon, nameLabel);
 
-                JFXButton remove = new JFXButton();
+                Button remove = new Button();
                 remove.setGraphic(JEConfig.getSVGImage(Icon.DELETE, 17, 17));
                 remove.setOnAction(t -> {
 
@@ -210,7 +210,7 @@ public class PermissionExtension implements ObjectEditorExtension {
                     });
                 });
 
-                JFXButton forAllChildren = new JFXButton();
+                Button forAllChildren = new Button();
                 forAllChildren.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.object.permissions.include_children")));
                 forAllChildren.setGraphic(JEConfig.getSVGImage(Icon.TREE, 17, 17));
                 forAllChildren.setOnAction(t -> {
@@ -403,9 +403,9 @@ public class PermissionExtension implements ObjectEditorExtension {
         addNewBox.setHgap(10);
         addNewBox.setVgap(4);
 
-        JFXButton newB = new JFXButton();
+        Button newB = new Button();
         //ToDo
-        final JFXComboBox<JEVisObject> groupsCBox = new JFXComboBox<>();
+        final ComboBox<JEVisObject> groupsCBox = new ComboBox<>();
         groupsCBox.setMinWidth(300);
 
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> cellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
@@ -445,7 +445,7 @@ public class PermissionExtension implements ObjectEditorExtension {
         }
 
         FilteredList<JEVisObject> filteredData = new FilteredList<>(possibleOwners, s -> true);
-        JFXTextField filterInput = new JFXTextField();
+        TextField filterInput = new TextField();
         filterInput.setPromptText(I18n.getInstance().getString("searchbar.filterinput.prompttext"));
 
         filterInput.textProperty().addListener(obs -> {

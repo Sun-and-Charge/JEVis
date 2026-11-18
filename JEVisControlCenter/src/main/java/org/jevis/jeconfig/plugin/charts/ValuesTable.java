@@ -19,7 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
@@ -37,16 +38,7 @@ import java.util.Collections;
 
 public class ValuesTable extends TableView<Values> {
 
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     private final double VALUE_COLUMNS_PREF_SIZE = 200;
     private final double VALUE_COLUMNS_MIN_SIZE = VALUE_COLUMNS_PREF_SIZE - 60;
@@ -167,7 +159,7 @@ public class ValuesTable extends TableView<Values> {
     public void autoFitTable() {
         for (Object column : getColumns()) {
             try {
-                columnToFitMethod.invoke(getSkin(), column, -1);
+                ColumnAutoFit.fit(this, column);
             } catch (Exception ignored) {
             }
         }

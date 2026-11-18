@@ -18,8 +18,8 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.DatePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -52,8 +52,8 @@ import java.util.Collections;
 public class PeriodEditor implements AttributeEditor {
 
     private static final Logger logger = LogManager.getLogger(PeriodEditor.class);
-    private final JFXDatePicker pickerDate = new JFXDatePicker();
-    private final JFXTimePicker pickerTime = new JFXTimePicker();
+    private final DatePicker pickerDate = new DatePicker();
+    private final TimePicker pickerTime = new TimePicker();
     private final HBox editor = new HBox(4);
     private final JEVisAttribute att;
     private final BooleanProperty _changed = new SimpleBooleanProperty(false);

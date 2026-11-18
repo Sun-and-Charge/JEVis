@@ -20,8 +20,9 @@
  */
 package org.jevis.jeconfig.plugin.notes;
 
-import com.jfoenix.controls.*;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
+import org.controlsfx.control.ToggleSwitch;
+import org.jevis.jeconfig.application.tools.ColumnAutoFit;
+
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
@@ -75,16 +76,7 @@ public class NotesPlugin implements Plugin {
     private static final Logger logger = LogManager.getLogger(NotesPlugin.class);
     public static String PLUGIN_NAME = "Notes Plugin";
     public static String NOTES_CLASS = "Data Notes";
-    private static Method columnToFitMethod;
 
-    static {
-        try {
-            columnToFitMethod = TableViewSkin.class.getDeclaredMethod("resizeColumnToFitContent", TableColumn.class, int.class);
-            columnToFitMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
 
     private final JEVisDataSource ds;
     private final String title;
@@ -97,10 +89,10 @@ public class NotesPlugin implements Plugin {
 
     private final TableView<NotesRow> tableView = new TableView<>();
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance(I18n.getInstance().getLocale());
-    private final JFXDatePicker startDatePicker = new JFXDatePicker();
-    private final JFXDatePicker endDatePicker = new JFXDatePicker();
+    private final DatePicker startDatePicker = new DatePicker();
+    private final DatePicker endDatePicker = new DatePicker();
     private final boolean init = false;
-    private final JFXComboBox<TimeFrame> timeFrameComboBox;
+    private final ComboBox<TimeFrame> timeFrameComboBox;
     ObservableList<NotesRow> data = FXCollections.observableArrayList();
     FilteredList<NotesRow> filteredData = new FilteredList<>(data);
     BooleanProperty searchInNote = new SimpleBooleanProperty(false);
@@ -148,7 +140,7 @@ public class NotesPlugin implements Plugin {
         for (TableColumn<NotesRow, ?> column : tableView.getColumns()) {
             try {
                 if (tableView.getSkin() != null && !TableColumnStateStore.hasStoredWidth(column)) {
-                    columnToFitMethod.invoke(tableView.getSkin(), column, -1);
+                    ColumnAutoFit.fit(tableView, column);
                 }
             } catch (Exception e) {
             }
@@ -160,7 +152,7 @@ public class NotesPlugin implements Plugin {
         gridPane.setPadding(new Insets(12));
         gridPane.setHgap(12);
 
-        JFXTextField searchbar = new JFXTextField();
+        TextField searchbar = new TextField();
         searchbar.setPromptText(I18n.getInstance().getString("plugin.notes.search.prompt"));
         searchbar.setMinWidth(250);
 
@@ -170,17 +162,17 @@ public class NotesPlugin implements Plugin {
 
 
         Label filterLabel = new Label(I18n.getInstance().getString("plugin.notes.search.filterlabel"));
-        JFXToggleButton toggleUser = new JFXToggleButton();
+        ToggleSwitch toggleUser = new ToggleSwitch();
         toggleUser.setText(I18n.getInstance().getString("plugin.notes.search.toggle.user"));
         toggleUser.setSelected(true);
-        JFXToggleButton toggleNote = new JFXToggleButton();
+        ToggleSwitch toggleNote = new ToggleSwitch();
         toggleNote.setText(I18n.getInstance().getString("plugin.notes.search.toggle.note"));
         toggleNote.setSelected(true);
-        JFXToggleButton toggleDR = new JFXToggleButton();
+        ToggleSwitch toggleDR = new ToggleSwitch();
         toggleDR.setText(I18n.getInstance().getString("plugin.notes.search.toggle.data"));
         toggleDR.setSelected(true);
 
-        JFXToggleButton toggleTag = new JFXToggleButton();
+        ToggleSwitch toggleTag = new ToggleSwitch();
         toggleTag.setText(I18n.getInstance().getString("plugin.notes.search.toggle.tag"));
         toggleTag.setSelected(true);
 
@@ -263,7 +255,7 @@ public class NotesPlugin implements Plugin {
         cm.getItems().addAll(selectAllMenuItem, deselectAllMenuItem);
 
         activeTags.forEach((tagKey, tagAktiv) -> {
-            JFXCheckBox cb = new JFXCheckBox(tagKey);
+            CheckBox cb = new CheckBox(tagKey);
             cb.selectedProperty().bindBidirectional(tagAktiv);
             //cb.setSelected(tagAktiv.get());
             cb.setOnAction(event -> {
@@ -274,7 +266,7 @@ public class NotesPlugin implements Plugin {
             cm.getItems().add(cmi);
         });
 
-        JFXButton tagButton = new JFXButton(I18n.getInstance().getString("plugin.notes.contextmenu.tags"));
+        Button tagButton = new Button(I18n.getInstance().getString("plugin.notes.contextmenu.tags"));
         tagButton.setContextMenu(cm);
         tagButton.setOnAction(event -> {
             cm.show(tagButton, Side.BOTTOM, 0, 0);
@@ -459,7 +451,7 @@ public class NotesPlugin implements Plugin {
         } catch (Exception ex) {
             logger.error(ex);
         }
-    }    //    private ObservableList<AlarmRow> alarmRows = FXCollections.observableArrayList();    private final JFXComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();
+    }    //    private ObservableList<AlarmRow> alarmRows = FXCollections.observableArrayList();    private final ComboBox<TimeFrame> timeFrameComboBox = getTimeFrameComboBox();
 
     private void createColumns() {
         TableColumn<NotesRow, DateTime> dateColumn = new TableColumn<>(I18n.getInstance().getString("plugin.notes.table.date"));
@@ -535,7 +527,7 @@ public class NotesPlugin implements Plugin {
                         super.startEdit();
 
                         NotesRow tableSample = (NotesRow) getTableRow().getItem();
-                        JFXTextArea jfxTextArea = new JFXTextArea(tableSample.getNoteProperty().get());
+                        TextArea jfxTextArea = new TextArea(tableSample.getNoteProperty().get());
                         jfxTextArea.setWrapText(true);
                         jfxTextArea.setPrefRowCount(8);
                         jfxTextArea.focusedProperty().addListener((observable, oldValue, newValue) -> {
@@ -928,8 +920,8 @@ public class NotesPlugin implements Plugin {
         ButtonType cancelButtonType = new ButtonType(I18n.getInstance().getString("plugin.note.pane.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
-        //JFXButton okButton = new JFXButton(I18n.getInstance().getString("plugin.note.pane.ok"));
-        //JFXButton cancelButton = new JFXButton(I18n.getInstance().getString("plugin.note.pane.cancel"));
+        //Button okButton = new Button(I18n.getInstance().getString("plugin.note.pane.ok"));
+        //Button cancelButton = new Button(I18n.getInstance().getString("plugin.note.pane.cancel"));
 
         notePane.getDialogPane().getButtonTypes().setAll(okButtonType, cancelButtonType);
 
@@ -984,8 +976,8 @@ public class NotesPlugin implements Plugin {
         }
     };
 
-    private JFXComboBox<TimeFrame> getTimeFrameComboBox() {
-        JFXComboBox<TimeFrame> box = new JFXComboBox<>();
+    private ComboBox<TimeFrame> getTimeFrameComboBox() {
+        ComboBox<TimeFrame> box = new ComboBox<>();
 
         final String today = I18n.getInstance().getString("plugin.graph.changedate.buttontoday");
         final String yesterday = I18n.getInstance().getString("plugin.graph.changedate.buttonyesterday");

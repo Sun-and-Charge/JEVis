@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.map;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -73,7 +73,7 @@ public class MapViewPlugin implements Plugin {
     private TableView table;
     private final BooleanProperty firstStartProperty = new SimpleBooleanProperty(true);
     private final String tooltip = I18n.getInstance().getString("pluginmanager.mapview.tooltip");
-    private JFXComboBox comboBox;
+    private ComboBox comboBox;
 
     private Map<String, GPSRoute> routeData;
 
@@ -172,7 +172,7 @@ public class MapViewPlugin implements Plugin {
             delete.setDisable(true);
 
 //load new stuff
-            JFXButton select = new JFXButton(I18n.getInstance().getString("plugin.map.select"));
+            Button select = new Button(I18n.getInstance().getString("plugin.map.select"));
             select.setOnAction(new EventHandler<ActionEvent>() {
 
                 @Override
@@ -233,7 +233,7 @@ public class MapViewPlugin implements Plugin {
 
             });
 
-            JFXButton defaultMap = new JFXButton(I18n.getInstance().getString("plugin.map.default"));
+            Button defaultMap = new Button(I18n.getInstance().getString("plugin.map.default"));
             defaultMap.setOnAction(new EventHandler<ActionEvent>() {
 
                 @Override
@@ -324,7 +324,7 @@ public class MapViewPlugin implements Plugin {
                 "Example 1",
                 "Example 2"
         );
-        comboBox = new JFXComboBox(options);
+        comboBox = new ComboBox(options);
         comboBox.setPrefWidth(Double.MAX_VALUE);
         StackPane stack = new StackPane(comboBox);
 

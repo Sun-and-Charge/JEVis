@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisAttribute;
@@ -31,7 +31,7 @@ import org.jevis.jeconfig.sample.SampleEditor;
 /**
  * @author fs
  */
-public class AttributeAdvSettingDialogButton extends JFXButton {
+public class AttributeAdvSettingDialogButton extends Button {
 
     private static final Logger logger = LogManager.getLogger(AttributeAdvSettingDialogButton.class);
     private final int height = 17;

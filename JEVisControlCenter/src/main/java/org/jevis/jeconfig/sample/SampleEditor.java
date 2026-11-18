@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.sample;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -137,7 +137,7 @@ public class SampleEditor {
         /** ------------------------------------------- Processor -------------------------------------------------**/
 
 
-        JFXButton config = new JFXButton();
+        Button config = new Button();
         config.setGraphic(JEConfig.getSVGImage(Icon.SETTINGS, 16, 16));
 
 

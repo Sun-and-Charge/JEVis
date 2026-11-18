@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -83,7 +83,7 @@ public class TreeSelectionDialog extends Dialog {
     private final List<JEVisClass> allReportClasses = new ArrayList<>();
 
     private final JEVisTreeView treeView;
-    private final JFXTextField filterTextField = new JFXTextField();
+    private final TextField filterTextField = new TextField();
     private List<JEVisClass> classFilter;
     /**
      * Classes the caller accepts. The filter box only changes what is shown, the selection is always checked against these.

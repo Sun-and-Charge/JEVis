@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -48,11 +48,11 @@ public class TimeFilterSelector extends GridPane {
     private static final Logger logger = LogManager.getLogger(TimeFilterSelector.class);
     private final SimpleObjectProperty<DateFilter> valueProperty = new SimpleObjectProperty<>(null);
     //TODo locale name from Column
-    JFXComboBox<DateFilter.DateField> fDateField = new JFXComboBox<>(FXCollections.observableArrayList(ALL, UMSETZUNG, ABGESCHLOSSEN, ERSTELLT));
-    JFXComboBox<Month> fFromMonth = generateMonthBox();
-    JFXComboBox<Month> fToMonth = generateMonthBox();
-    JFXComboBox<Integer> fFromYear = generateYearBox();
-    JFXComboBox<Integer> fToYear = generateYearBox();
+    ComboBox<DateFilter.DateField> fDateField = new ComboBox<>(FXCollections.observableArrayList(ALL, UMSETZUNG, ABGESCHLOSSEN, ERSTELLT));
+    ComboBox<Month> fFromMonth = generateMonthBox();
+    ComboBox<Month> fToMonth = generateMonthBox();
+    ComboBox<Integer> fFromYear = generateYearBox();
+    ComboBox<Integer> fToYear = generateYearBox();
 
 
     public TimeFilterSelector(ActionPlanData actionPlan) {
@@ -194,7 +194,7 @@ public class TimeFilterSelector extends GridPane {
         return valueProperty.get();
     }
 
-    private JFXComboBox<Month> generateMonthBox() {
+    private ComboBox<Month> generateMonthBox() {
 
         ObservableList<Month> months = FXCollections.observableArrayList();
         months.add(Month.JANUARY);
@@ -210,7 +210,7 @@ public class TimeFilterSelector extends GridPane {
         months.add(Month.NOVEMBER);
         months.add(Month.DECEMBER);
 
-        JFXComboBox<Month> field = new JFXComboBox(months);
+        ComboBox<Month> field = new ComboBox(months);
         field.setConverter(new StringConverter<Month>() {
             @Override
             public String toString(Month object) {
@@ -242,7 +242,7 @@ public class TimeFilterSelector extends GridPane {
         return valueProperty;
     }
 
-    private JFXComboBox<Integer> generateYearBox() {
+    private ComboBox<Integer> generateYearBox() {
 
         ObservableList<Integer> years = FXCollections.observableArrayList();
         int year = 2010; //ISO5001 started 2010
@@ -251,7 +251,7 @@ public class TimeFilterSelector extends GridPane {
             years.add(year);
             year++;
         }
-        JFXComboBox<Integer> field = new JFXComboBox(years);
+        ComboBox<Integer> field = new ComboBox(years);
         field.setConverter(new StringConverter<Integer>() {
             @Override
             public String toString(Integer object) {

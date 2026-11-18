@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.appointment;
 
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.DatePicker;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.util.converter.LocalTimeStringConverter;
@@ -35,8 +35,8 @@ import java.time.format.FormatStyle;
  */
 public class DateTimeInput extends HBox {
 
-    private final JFXDatePicker datePicker = new JFXDatePicker();
-    private final JFXTimePicker timePicker = new JFXTimePicker();
+    private final DatePicker datePicker = new DatePicker();
+    private final TimePicker timePicker = new TimePicker();
 
     public DateTimeInput(LocalDateTime value, LocalTime defaultTime) {
         super(6);

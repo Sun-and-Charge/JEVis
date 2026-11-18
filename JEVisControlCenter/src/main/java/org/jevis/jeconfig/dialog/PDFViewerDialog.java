@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -69,7 +69,7 @@ public class PDFViewerDialog {
     private final SimpleDoubleProperty zoomFactor = new SimpleDoubleProperty(0.3);
     private final ImageView rightImage = JEConfig.getImage(Icon.PNG_CHEVRON_RIGHT, 20, 20);
     private final ImageView leftImage = JEConfig.getImage(Icon.PNG_CHEVRON_LEFT, 20, 20);
-    private final JFXComboBox<JEVisFileWithSample> fileComboBox = new JFXComboBox<>(FXCollections.observableArrayList());
+    private final ComboBox<JEVisFileWithSample> fileComboBox = new ComboBox<>(FXCollections.observableArrayList());
     private final Map<JEVisFile, JEVisSample> sampleMap = new HashMap<>();
     private final ImageView pdfIcon = JEConfig.getImage(Icon.PNG_PDF, iconSize, iconSize);
     private Stage stage;

@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
@@ -28,7 +28,7 @@ import javafx.util.Callback;
 import org.jevis.commons.constants.GapFillingType;
 import org.jevis.commons.i18n.I18n;
 
-public class GapFillingTypeBox extends JFXComboBox<GapFillingType> {
+public class GapFillingTypeBox extends ComboBox<GapFillingType> {
     private final ObservableList<GapFillingType> options = FXCollections.observableArrayList(GapFillingType.NONE, GapFillingType.INTERPOLATION, GapFillingType.AVERAGE,
             GapFillingType.DEFAULT_VALUE, GapFillingType.STATIC, GapFillingType.MINIMUM, GapFillingType.MAXIMUM, GapFillingType.MEDIAN, GapFillingType.DELETE);
 

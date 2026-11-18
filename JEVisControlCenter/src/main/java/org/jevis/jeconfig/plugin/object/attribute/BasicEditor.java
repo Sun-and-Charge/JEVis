@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXTextField;
-import com.jfoenix.validation.base.ValidatorBase;
+import javafx.scene.control.TextField;
+import org.jevis.jeconfig.application.control.TextValidator;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -81,9 +81,9 @@ public abstract class BasicEditor implements AttributeEditor {
 
     private Node buildGui(JEVisAttribute att) {
         HBox hbox = new HBox(6);
-        JFXTextField valueField = new JFXTextField();
+        TextField valueField = new TextField();
 
-        valueField.getValidators().add(getValidator());
+        TextValidator validator = getValidator();
 
         valueField.setPrefWidth(this.maxWidth);
         valueField.setAlignment(Pos.CENTER_RIGHT);
@@ -144,7 +144,7 @@ public abstract class BasicEditor implements AttributeEditor {
                     if ((valueField.getText().isEmpty() && validateEmptyValue())
                             || (!valueField.getText().isEmpty())) {
 
-                        if (valueField.validate()) {
+                        if (validator.validate(valueField)) {
                             this.isValid.setValue(true);
                             this.finalNewValue = parseValue(valueField.getText());
                             this.changedProperty.setValue(true);
@@ -164,7 +164,7 @@ public abstract class BasicEditor implements AttributeEditor {
         return hbox;
     }
 
-    private void setFormattedText(JFXTextField valueField, String text) {
+    private void setFormattedText(TextField valueField, String text) {
         try {
             formatting = true;
             valueField.setText(text);
@@ -263,7 +263,7 @@ public abstract class BasicEditor implements AttributeEditor {
         });
     }
 
-    public abstract ValidatorBase getValidator();
+    public abstract TextValidator getValidator();
 
     public abstract String formatValue(Object value) throws ParseException, JEVisException;
 

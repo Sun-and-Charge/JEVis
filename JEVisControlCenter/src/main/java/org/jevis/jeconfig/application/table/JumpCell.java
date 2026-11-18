@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.table;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -50,8 +50,8 @@ public class JumpCell<T> implements Callback<TableColumn<T, SampleData>, TableCe
         return new TableCell<T,SampleData>() {
             final HBox hBox = new HBox();
 
-            final JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 20, 20));
-            JFXButton analysisLinkButton = new JFXButton("", JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
+            final Button manSampleButton = new Button("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 20, 20));
+            Button analysisLinkButton = new Button("", JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
 
             @Override
             protected void updateItem(SampleData item, boolean empty) {

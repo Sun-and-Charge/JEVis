@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ListCell;
@@ -29,7 +29,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.application.Chart.ChartSetting;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 
-public class OrientationBox extends JFXComboBox<Orientation> {
+public class OrientationBox extends ComboBox<Orientation> {
 
     public OrientationBox() {
         super(FXCollections.observableArrayList(Orientation.values()));

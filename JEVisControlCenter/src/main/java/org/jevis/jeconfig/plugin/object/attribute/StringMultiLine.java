@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -48,7 +48,7 @@ public class StringMultiLine implements AttributeEditor {
     private final BooleanProperty _changed = new SimpleBooleanProperty(false);
     public JEVisAttribute _attribute;
     private final HBox box = new HBox();
-    private JFXTextArea _field;
+    private TextArea _field;
     private JEVisSample _newSample;
     private JEVisSample _lastSample;
     private boolean _readOnly = true;
@@ -115,7 +115,7 @@ public class StringMultiLine implements AttributeEditor {
     private void buildEditor() throws JEVisException {
         if (_field == null) {
             box.getChildren().clear();
-            _field = new JFXTextArea();
+            _field = new TextArea();
             _field.setPrefWidth(GenericAttributeExtension.editorWidth.doubleValue());
 //            _field.setPrefWidth(500);//TODO: remove this workaround
             _field.setPrefRowCount(10);
@@ -164,7 +164,7 @@ public class StringMultiLine implements AttributeEditor {
 
             try {
                 if (_attribute.getType().getValidity() == JEVisConstants.Validity.AT_DATE) {
-                    JFXButton chartView = new JFXButton();
+                    Button chartView = new Button();
                     chartView.setGraphic(JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
                     chartView.setStyle("-fx-padding: 0 2 0 2;-fx-background-insets: 0;-fx-background-radius: 0;-fx-background-color: transparent;");
 

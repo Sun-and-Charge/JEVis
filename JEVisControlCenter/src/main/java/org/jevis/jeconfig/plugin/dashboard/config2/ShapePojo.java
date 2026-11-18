@@ -19,11 +19,11 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -44,7 +44,7 @@ public class ShapePojo {
     private final String JSON_SHAPE = "shape";
     int gaugeWidgetID = -1;
     private SHAPE shape = SHAPE.RECTANGLE;
-    private JFXComboBox<SHAPE> jfxComboBox;
+    private ComboBox<SHAPE> jfxComboBox;
 
     private Color minColor = Color.GREEN;
 
@@ -57,11 +57,11 @@ public class ShapePojo {
     private double increment = 0;
 
 
-    private JFXTextField jfxTextFieldMinValue;
+    private TextField jfxTextFieldMinValue;
 
-    private JFXTextField jfxTextFieldMaxValue;
+    private TextField jfxTextFieldMaxValue;
 
-    private JFXTextField jfxTextFieldStepDistance;
+    private TextField jfxTextFieldStepDistance;
 
     private ColorPickerAdv colorPickerAdvMax;
 
@@ -169,14 +169,14 @@ public class ShapePojo {
         gridPane.setVgap(8);
         gridPane.setPadding(new Insets(5, 8, 5, 8));
 
-        jfxComboBox = new JFXComboBox<>();
+        jfxComboBox = new ComboBox<>();
 
         for (SHAPE s : SHAPE.values()) {
             jfxComboBox.getItems().add(s);
         }
         jfxComboBox.setValue(shape);
 
-        jfxTextFieldMaxValue = new JFXTextField();
+        jfxTextFieldMaxValue = new TextField();
         jfxTextFieldMaxValue.setText(String.valueOf(maxValue));
 
         colorPickerAdvMin = new ColorPickerAdv();
@@ -185,10 +185,10 @@ public class ShapePojo {
         colorPickerAdvMax = new ColorPickerAdv();
         colorPickerAdvMax.setValue(maxColor);
 
-        jfxTextFieldMinValue = new JFXTextField();
+        jfxTextFieldMinValue = new TextField();
         jfxTextFieldMinValue.setText(String.valueOf(minValue));
 
-        jfxTextFieldStepDistance = new JFXTextField();
+        jfxTextFieldStepDistance = new TextField();
         jfxTextFieldStepDistance.setText(String.valueOf(increment));
 
 

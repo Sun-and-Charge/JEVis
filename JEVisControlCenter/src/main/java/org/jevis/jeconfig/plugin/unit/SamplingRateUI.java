@@ -19,10 +19,11 @@
  */
 package org.jevis.jeconfig.plugin.unit;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXSlider;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -52,7 +53,7 @@ import org.joda.time.Period;
 /**
  * @author Florian Simon <florian.simon@envidatec.com>
  */
-public class SamplingRateUI extends JFXComboBox<Period> {
+public class SamplingRateUI extends ComboBox<Period> {
 
     private final Period FREE_SELECTION = Period.years(999);//Workaround, value to show the selection
     private final Period CANCELD_SELECTION = Period.years(998);//workaround, value if the new persio was cancled
@@ -268,12 +269,12 @@ public class SamplingRateUI extends JFXComboBox<Period> {
         final Label l_minutesLabel = new Label(I18n.getInstance().getString("plugin.unit.newperiod.minutes") + ":");
         final Label l_secondsLabel = new Label(I18n.getInstance().getString("plugin.unit.newperiod.seconds") + ":");
         final Label l_periodLabel = new Label(I18n.getInstance().getString("plugin.unit.newperiod.iso") + ":");
-        final JFXSlider sliderMonth = new JFXSlider();
-        final JFXSlider sliderWeek = new JFXSlider();
-        final JFXSlider sliderHours = new JFXSlider();
-        final JFXSlider sliderMinutes = new JFXSlider();
-        final JFXSlider sliderSeconds = new JFXSlider();
-        final JFXTextField fieldISOString = new JFXTextField("");
+        final Slider sliderMonth = new Slider();
+        final Slider sliderWeek = new Slider();
+        final Slider sliderHours = new Slider();
+        final Slider sliderMinutes = new Slider();
+        final Slider sliderSeconds = new Slider();
+        final TextField fieldISOString = new TextField("");
         final ObjectProperty<Period> newPeriod = new SimpleObjectProperty<>(Period.minutes(15));
 
         sliderMonth.setMin(0);
@@ -314,11 +315,11 @@ public class SamplingRateUI extends JFXComboBox<Period> {
         HBox buttonBar = new HBox();
         Region spaceBetween = new Region();
         Stage dia = new Stage();
-        JFXButton okButton = new JFXButton(I18n.getInstance().getString("plugin.graph.dialog.new.ok").toUpperCase());
-        JFXButton calcelButton = new JFXButton(I18n.getInstance().getString("plugin.graph.dialog.new.cancel").toUpperCase());
+        Button okButton = new Button(I18n.getInstance().getString("plugin.graph.dialog.new.ok").toUpperCase());
+        Button calcelButton = new Button(I18n.getInstance().getString("plugin.graph.dialog.new.cancel").toUpperCase());
         okButton.setDefaultButton(true);
         okButton.setAlignment(Pos.BASELINE_RIGHT);
-//        okButton.setButtonType(JFXButton.ButtonType.FLAT);
+//        okButton.setButtonType(Button.ButtonType.FLAT);
         okButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -338,7 +339,7 @@ public class SamplingRateUI extends JFXComboBox<Period> {
 
         //localize
 //        Label enableLabel = new Label("Has fix sample rate:");
-//        final JFXCheckBox enable = new JFXCheckBox("Set fixed sample rate");
+//        final CheckBox enable = new CheckBox("Set fixed sample rate");
         gp.setHgap(5);
         gp.setVgap(5);
         gp.setPadding(new Insets(10, 10, 10, 10));

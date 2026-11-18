@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,7 +33,7 @@ import org.jevis.commons.dataprocessing.CleanDataObject;
 import org.jevis.commons.i18n.I18n;
 import org.joda.time.Period;
 
-public class DataTypeBox extends JFXComboBox<EnterDataTypes> {
+public class DataTypeBox extends ComboBox<EnterDataTypes> {
 
     public DataTypeBox() {
         super();

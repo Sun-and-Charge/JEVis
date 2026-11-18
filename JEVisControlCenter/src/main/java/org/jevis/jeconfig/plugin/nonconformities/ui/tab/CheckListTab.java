@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.nonconformities.ui.tab;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -34,20 +34,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CheckListTab extends DataTab<NonconformityData> {
-    private JFXCheckBox f_ImmediateActionRequired = new JFXCheckBox();
-    private JFXCheckBox f_EffectOnOngoingProcesses = new JFXCheckBox();
-    private JFXCheckBox f_RoutinelyAffected = new JFXCheckBox();
-    private JFXCheckBox f_EmployeeTrained = new JFXCheckBox();
+    private CheckBox f_ImmediateActionRequired = new CheckBox();
+    private CheckBox f_EffectOnOngoingProcesses = new CheckBox();
+    private CheckBox f_RoutinelyAffected = new CheckBox();
+    private CheckBox f_EmployeeTrained = new CheckBox();
 
-    private JFXCheckBox f_DocumentsChangesNeeded = new JFXCheckBox();
+    private CheckBox f_DocumentsChangesNeeded = new CheckBox();
 
-    private JFXCheckBox f_ProcessInstructions = new JFXCheckBox();
-    private JFXCheckBox f_WorkInstructions = new JFXCheckBox();
-    private JFXCheckBox f_TestInstructions = new JFXCheckBox();
-    private JFXCheckBox f_Design = new JFXCheckBox();
-    private JFXCheckBox f_Model = new JFXCheckBox();
-    private JFXCheckBox f_Miscellaneous = new JFXCheckBox();
-    private JFXCheckBox f_Metrics = new JFXCheckBox();
+    private CheckBox f_ProcessInstructions = new CheckBox();
+    private CheckBox f_WorkInstructions = new CheckBox();
+    private CheckBox f_TestInstructions = new CheckBox();
+    private CheckBox f_Design = new CheckBox();
+    private CheckBox f_Model = new CheckBox();
+    private CheckBox f_Miscellaneous = new CheckBox();
+    private CheckBox f_Metrics = new CheckBox();
 
     private Label l_ImmediateActionRequired = new Label();
     private Label l_EffectOnOngoingProcesses = new Label();
@@ -195,8 +195,8 @@ public class CheckListTab extends DataTab<NonconformityData> {
         for (int i = 6; i <= 13; i++) {
             getNodesByRow(i, gridPane).forEach(node -> {
                 if (disable) {
-                    if (node.getClass().equals(JFXCheckBox.class)) {
-                        JFXCheckBox checkbox = (JFXCheckBox) node;
+                    if (node.getClass().equals(CheckBox.class)) {
+                        CheckBox checkbox = (CheckBox) node;
                         checkbox.setSelected(false);
                     }
 

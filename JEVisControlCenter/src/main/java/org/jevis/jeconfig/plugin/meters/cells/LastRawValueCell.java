@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.meters.cells;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -59,7 +59,7 @@ public class LastRawValueCell<T> implements Callback<TableColumn<T, LastRawValue
             /* Cells are reused for different rows, so the controls and the precision listener are created once per
                cell and always work on the current item. */
             private final Label label = new Label();
-            private final JFXButton manSampleButton = new JFXButton("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 18, 18));
+            private final Button manSampleButton = new Button("", JEConfig.getSVGImage(Icon.MANUAL_DATA_ENTRY, 18, 18));
             private final HBox hBox;
 
             {
@@ -108,7 +108,7 @@ public class LastRawValueCell<T> implements Callback<TableColumn<T, LastRawValue
         return ValueFormat.numberFormat(precision).format(value) + " " + unitLabel;
     }
 
-    protected void addEventManSampleAction(JEVisAttribute targetAttribute, JFXButton buttonToAddEvent) {
+    protected void addEventManSampleAction(JEVisAttribute targetAttribute, Button buttonToAddEvent) {
 
         buttonToAddEvent.setOnAction(event -> {
             if (targetAttribute != null) {

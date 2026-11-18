@@ -20,7 +20,6 @@
  */
 package org.jevis.jeconfig.plugin.dtrc.dialogs;
 
-import com.jfoenix.controls.*;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -69,14 +68,14 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         stage.setAlwaysOnTop(true);
 
         Label nameLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.namelabel"));
-        JFXTextField jfxTextField = new JFXTextField(templateFormula.getName());
+        TextField jfxTextField = new TextField(templateFormula.getName());
         jfxTextField.textProperty().addListener((observable, oldValue, newValue) -> templateFormula.setName(newValue));
 
         Separator separator1 = new Separator(Orientation.HORIZONTAL);
         separator1.setPadding(new Insets(8, 0, 8, 0));
 
         Label formulaLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.formulalabel"));
-        JFXTextArea jfxTextArea = new JFXTextArea(templateFormula.getFormula());
+        TextArea jfxTextArea = new TextArea(templateFormula.getFormula());
         jfxTextArea.textProperty().addListener((observable, oldValue, newValue) -> templateFormula.setFormula(newValue));
 
         Separator separator2 = new Separator(Orientation.HORIZONTAL);
@@ -86,7 +85,7 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         FlowPane inputsFlowPane = new FlowPane(4, 4);
 
         for (TemplateInput templateInput : rcTemplate.getTemplateFormulaInputs()) {
-            JFXCheckBox jfxCheckBox = new JFXCheckBox(templateInput.getVariableName());
+            CheckBox jfxCheckBox = new CheckBox(templateInput.getVariableName());
             jfxCheckBox.setStyle("-fx-text-fill: red !important;");
             jfxCheckBox.setMnemonicParsing(false);
 
@@ -105,7 +104,7 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         }
 
         for (TemplateInput templateInput : rcTemplate.getTemplateInputs()) {
-            JFXCheckBox jfxCheckBox = new JFXCheckBox(templateInput.getVariableName());
+            CheckBox jfxCheckBox = new CheckBox(templateInput.getVariableName());
             jfxCheckBox.setMnemonicParsing(false);
 
             if (templateFormula.getInputIds().contains(templateInput.getId())) {
@@ -132,7 +131,7 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         final ToggleGroup outputsToggleGroup = new ToggleGroup();
 
         for (TemplateOutput templateOutput : rcTemplate.getTemplateOutputs()) {
-            JFXRadioButton jfxRadioButton = new JFXRadioButton();
+            RadioButton jfxRadioButton = new RadioButton();
 
             if (templateOutput.getName() != null) {
                 jfxRadioButton.setText(templateOutput.getName());
@@ -150,15 +149,15 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         separator4.setPadding(new Insets(8, 0, 8, 0));
 
         Label timeRestrictionsLabel = new Label(I18n.getInstance().getString("plugin.dtrc.dialog.timerestictions"));
-        JFXCheckBox timeRestrictionEnabledCheckBox = new JFXCheckBox(I18n.getInstance().getString("jevistree.dialog.enable.title.enable"));
+        CheckBox timeRestrictionEnabledCheckBox = new CheckBox(I18n.getInstance().getString("jevistree.dialog.enable.title.enable"));
         timeRestrictionEnabledCheckBox.setSelected(templateFormula.getTimeRestrictionEnabled());
         timeRestrictionEnabledCheckBox.selectedProperty().addListener((observableValue, aBoolean, t1) -> templateFormula.setTimeRestrictionEnabled(t1));
 
-        JFXComboBox<TimeFrame> fixedTimeFrameBox = new JFXComboBox<>();
+        ComboBox<TimeFrame> fixedTimeFrameBox = new ComboBox<>();
         Callback<ListView<TimeFrame>, ListCell<TimeFrame>> fixedTimeFrameJFXComboBoxCellFactory = new Callback<ListView<TimeFrame>, ListCell<TimeFrame>>() {
             @Override
             public ListCell<TimeFrame> call(ListView<TimeFrame> param) {
-                return new JFXListCell<TimeFrame>() {
+                return new ListCell<TimeFrame>() {
                     @Override
                     protected void updateItem(TimeFrame obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -183,11 +182,11 @@ public class TemplateCalculationFormulaDialog extends Dialog {
         }
         fixedTimeFrameBox.getSelectionModel().selectedItemProperty().addListener((observableValue, timeFrame, t1) -> templateFormula.setFixedTimeFrame(t1.getID()));
 
-        JFXComboBox<TimeFrame> reducingTimeFrameBox = new JFXComboBox<>();
+        ComboBox<TimeFrame> reducingTimeFrameBox = new ComboBox<>();
         Callback<ListView<TimeFrame>, ListCell<TimeFrame>> reducingTimeFrameJFXComboBoxCellFactory = new Callback<ListView<TimeFrame>, ListCell<TimeFrame>>() {
             @Override
             public ListCell<TimeFrame> call(ListView<TimeFrame> param) {
-                return new JFXListCell<TimeFrame>() {
+                return new ListCell<TimeFrame>() {
                     @Override
                     protected void updateItem(TimeFrame obj, boolean empty) {
                         super.updateItem(obj, empty);

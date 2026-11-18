@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
@@ -47,7 +47,7 @@ public class PercentPane extends GridPane {
     private final Percent percent;
     private final ObservableList<Widget> widgetList;
     private final DashboardControl dashboardControl;
-    private JFXComboBox<Widget> widgetBox;
+    private ComboBox<Widget> widgetBox;
 
 
     public PercentPane(DashboardControl dashboardControl, Percent percent, ObservableList<Widget> widgetList) {
@@ -112,7 +112,7 @@ public class PercentPane extends GridPane {
             widgetList.add(0, Widgets.emptyValueWidget(dashboardControl));
         }
 
-        widgetBox = new JFXComboBox<>(widgetList.filtered(widget -> widget.typeID().equals(Widgets.emptyValueWidget(dashboardControl).TYPE_ID) || widget.typeID().equals(ValueWidget.WIDGET_ID)));
+        widgetBox = new ComboBox<>(widgetList.filtered(widget -> widget.typeID().equals(Widgets.emptyValueWidget(dashboardControl).TYPE_ID) || widget.typeID().equals(ValueWidget.WIDGET_ID)));
 
 
         Callback<ListView<Widget>, ListCell<Widget>> cellFactory = new Callback<ListView<Widget>, ListCell<Widget>>() {

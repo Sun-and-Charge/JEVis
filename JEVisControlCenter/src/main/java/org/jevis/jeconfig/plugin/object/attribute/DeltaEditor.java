@@ -19,8 +19,8 @@
 package org.jevis.jeconfig.plugin.object.attribute;
 
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -110,7 +110,7 @@ public class DeltaEditor implements AttributeEditor {
      * Build main UI
      */
     private void init() {
-        JFXButton openConfig = new JFXButton(I18n.getInstance().getString("plugin.object.attribute.limitseditor.openconfig"));
+        Button openConfig = new Button(I18n.getInstance().getString("plugin.object.attribute.limitseditor.openconfig"));
         openConfig.setOnAction(action -> {
             try {
                 show();
@@ -265,8 +265,8 @@ public class DeltaEditor implements AttributeEditor {
         Label minLabel = new Label(I18n.getInstance().getString("newobject.title1"));
         Label maxLabel = new Label(I18n.getInstance().getString("newobject.title2"));
 
-        JFXTextField minField = new JFXTextField();
-        JFXTextField maxField = new JFXTextField();
+        TextField minField = new TextField();
+        TextField maxField = new TextField();
 
         /**
          * Fill configuration values into gui elements

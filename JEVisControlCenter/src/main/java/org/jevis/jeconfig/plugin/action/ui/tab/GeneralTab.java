@@ -19,9 +19,9 @@
  */
 package org.jevis.jeconfig.plugin.action.ui.tab;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -51,8 +51,8 @@ import java.util.Optional;
 
 public class GeneralTab extends Tab {
     private static final Logger logger = LogManager.getLogger(GeneralTab.class);
-    private final JFXDatePicker f_plannedDate = new JFXDatePicker();
-    private final JFXDatePicker f_doneDate = new JFXDatePicker();
+    private final DatePicker f_plannedDate = new DatePicker();
+    private final DatePicker f_doneDate = new DatePicker();
     //private ActionData names = new ActionData();
     private final Label l_Note = new Label();
     private final Label l_Description = new Label();
@@ -69,27 +69,27 @@ public class GeneralTab extends Tab {
     private final Label l_statusTags = new Label();
     private final Label l_fieldTags = new Label();
     private final Region col3Spacer = new Region();
-    private final JFXTextField f_savingYear = new JFXTextField();
-    private final JFXTextField f_Investment = new JFXTextField();
-    private final JFXTextField f_ActionNr = new JFXTextField();
-    private final JFXTextField f_Title = new JFXTextField();
-    private final JFXTextField f_Responsible = new JFXTextField();
+    private final TextField f_savingYear = new TextField();
+    private final TextField f_Investment = new TextField();
+    private final TextField f_ActionNr = new TextField();
+    private final TextField f_Title = new TextField();
+    private final TextField f_Responsible = new TextField();
     private final TextArea f_Description = new TextArea();
     private final TextArea f_NoteBewertet = new TextArea();
-    private final JFXComboBox<String> f_statusTags;
+    private final ComboBox<String> f_statusTags;
     private final CheckComboBox<String> f_fieldTags;
     //private JFXCheckComboBox f_fieldTags2;
-    private final JFXTextField f_Attachment = new JFXTextField();
+    private final TextField f_Attachment = new TextField();
     private final TextArea f_Note = new TextArea();
     private final TextArea f_NoteEnergiefluss = new TextArea();
     private final Label l_seu = new Label(I18n.getInstance().getString("actionform.editor.tab.general.seu"));
     private final Label l_FromUser = new Label(I18n.getInstance().getString("plugin.action.fromuser"));
-    private final JFXTextField f_FromUser = new JFXTextField();
+    private final TextField f_FromUser = new TextField();
     private final Label l_CreateDate = new Label(I18n.getInstance().getString("plugin.action.created"));  //
-    private final JFXDatePicker f_CreateDate = new JFXDatePicker();
+    private final DatePicker f_CreateDate = new DatePicker();
     private final Label l_distributor = new Label(I18n.getInstance().getString("plugin.action.distributor"));
-    private final JFXTextField f_distributor = new JFXTextField();
-    private JFXComboBox<String> f_sueTags = new JFXComboBox<>();
+    private final TextField f_distributor = new TextField();
+    private ComboBox<String> f_sueTags = new ComboBox<>();
 
     {
         f_NoteBewertet.setWrapText(true);
@@ -131,9 +131,9 @@ public class GeneralTab extends Tab {
         //Bindings.bindBidirectional(f_ActionNr.textProperty(), data.nr, sdfs);
 
 
-        f_statusTags = new JFXComboBox<>(actionPlan.getStatustags());
+        f_statusTags = new ComboBox<>(actionPlan.getStatustags());
         f_fieldTags = new CheckComboBox<>(actionPlan.getFieldsTags());
-        f_sueTags = new JFXComboBox<>(actionPlan.significantEnergyUseTags());
+        f_sueTags = new ComboBox<>(actionPlan.significantEnergyUseTags());
         //f_mediaTags.setCellFactory();
 
         ObservableList<CheckBoxData> f_fieldTags2Data = FXCollections.observableArrayList();
@@ -244,7 +244,7 @@ public class GeneralTab extends Tab {
 
 
         // f_savingYear.setTextFormatter(new TextFormatter(new UnitDoubleConverter()));
-        JFXTextField l_savingsUnitLabel = new JFXTextField("€");
+        TextField l_savingsUnitLabel = new TextField("€");
         l_savingsUnitLabel.setEditable(false);
         l_savingsUnitLabel.setPrefWidth(25);
         HBox savingsBox = new HBox(f_savingYear, l_savingsUnitLabel);
@@ -252,7 +252,7 @@ public class GeneralTab extends Tab {
         f_savingYear.setAlignment(Pos.BASELINE_RIGHT);
 
 
-        JFXTextField l_investmentUnitLabel = new JFXTextField("€");
+        TextField l_investmentUnitLabel = new TextField("€");
         l_investmentUnitLabel.setEditable(false);
         l_investmentUnitLabel.setPrefWidth(25);
         HBox investBox = new HBox(f_Investment, l_investmentUnitLabel);

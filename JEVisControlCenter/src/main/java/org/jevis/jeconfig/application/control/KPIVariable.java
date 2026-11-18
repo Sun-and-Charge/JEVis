@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.*;
+import javafx.scene.control.*;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.ListCell;
@@ -34,12 +34,12 @@ import org.jevis.commons.relationship.ObjectRelations;
 import java.util.List;
 
 public class KPIVariable extends GridPane {
-    private final JFXTextField field = new JFXTextField();
-    private final JFXListView<JEVisObject> listView = new JFXListView<>();
+    private final TextField field = new TextField();
+    private final ListView<JEVisObject> listView = new ListView<>();
     private final FilteredList<JEVisObject> filteredData;
-    private final JFXButton variableButton = new JFXButton("Get Variable for Formula");
-    private final JFXCheckBox useForName = new JFXCheckBox("Use for name");
-    private final JFXCheckBox useOneForAll = new JFXCheckBox("Use one for all");
+    private final Button variableButton = new Button("Get Variable for Formula");
+    private final CheckBox useForName = new CheckBox("Use for name");
+    private final CheckBox useOneForAll = new CheckBox("Use one for all");
     private final int index;
 
     public KPIVariable(List<JEVisObject> objects, ObjectRelations objectRelations, int number) {
@@ -79,7 +79,7 @@ public class KPIVariable extends GridPane {
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> listViewCellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override
             public ListCell<JEVisObject> call(ListView<JEVisObject> param) {
-                return new JFXListCell<JEVisObject>() {
+                return new ListCell<JEVisObject>() {
                     @Override
                     protected void updateItem(JEVisObject obj, boolean empty) {
                         super.updateItem(obj, empty);
@@ -119,15 +119,15 @@ public class KPIVariable extends GridPane {
         return index;
     }
 
-    public JFXButton getVariableButton() {
+    public Button getVariableButton() {
         return variableButton;
     }
 
-    public JFXCheckBox getUseOneForAll() {
+    public CheckBox getUseOneForAll() {
         return useOneForAll;
     }
 
-    public JFXCheckBox getUseForName() {
+    public CheckBox getUseForName() {
         return useForName;
     }
 }

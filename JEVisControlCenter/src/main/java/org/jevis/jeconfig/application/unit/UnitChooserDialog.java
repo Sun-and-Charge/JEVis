@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.unit;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -105,10 +105,10 @@ public class UnitChooserDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton ok = new JFXButton("OK");
+        Button ok = new Button("OK");
         ok.setDefaultButton(true);
 
-        JFXButton cancel = new JFXButton("Cancel");
+        Button cancel = new Button("Cancel");
         cancel.setCancelButton(true);
 
         buttonPanel.getChildren().addAll(ok, cancel);

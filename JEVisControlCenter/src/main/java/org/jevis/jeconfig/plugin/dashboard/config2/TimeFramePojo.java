@@ -19,10 +19,10 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.config2;
 
+import javafx.scene.control.TextField;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfoenix.controls.JFXTextField;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -52,7 +52,7 @@ public class TimeFramePojo {
     int timeFrameWidgetID = -1;
     private final List<TimeFrameWidgetObject> widgetObjects = new ArrayList<>();
     private TimeFrameTableView timeFrameTable;
-    private JFXTextField jfxTextFieldParser;
+    private TextField jfxTextFieldParser;
 
     //    private Integer selectedWidgetId;
 //    private Widget selectedWidget;
@@ -153,7 +153,7 @@ public class TimeFramePojo {
         gridPane.setPadding(new Insets(8, 5, 8, 5));
 
 
-        jfxTextFieldParser = new JFXTextField(parser);
+        jfxTextFieldParser = new TextField(parser);
         jfxTextFieldParser.setPrefWidth(160d);
 
         gridPane.addRow(0, new Label(I18n.getInstance().getString("plugin.dashboard.timeframe.format")), jfxTextFieldParser);

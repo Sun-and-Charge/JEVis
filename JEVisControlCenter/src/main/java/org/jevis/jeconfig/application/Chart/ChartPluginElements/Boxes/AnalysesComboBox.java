@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.util.StringConverter;
 import org.apache.logging.log4j.LogManager;
@@ -41,7 +41,7 @@ import java.util.List;
 
 import static org.jevis.jeconfig.application.Chart.data.AnalysisHandler.ANALYSIS_FILE_ATTRIBUTE_NAME;
 
-public class AnalysesComboBox extends JFXComboBox<JEVisObject> {
+public class AnalysesComboBox extends ComboBox<JEVisObject> {
     public static final String ORGANIZATION_CLASS_NAME = "Organization";
     public static final String ANALYSES_DIRECTORY_CLASS_NAME = "Analyses Directory";
     public static final String BUILDING_CLASS_NAME = "Building";

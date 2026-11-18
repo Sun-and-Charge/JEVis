@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
@@ -71,8 +71,8 @@ public class ExportDialog extends Dialog {
             Selection selection = new Selection(actionPlan);
             userSelection.add(selection);
 
-            JFXCheckBox planCheck = new JFXCheckBox();
-            JFXCheckBox actionCheck = new JFXCheckBox();
+            CheckBox planCheck = new CheckBox();
+            CheckBox actionCheck = new CheckBox();
 
             actionCheck.setOnAction(event -> selection.setExportDetail(actionCheck.isSelected()));
             planCheck.setOnAction(event -> {

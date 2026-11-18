@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.nonconformities.ui;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -46,9 +46,9 @@ public class NonconfomityPlanForm extends Alert {
 
 
     Label numberPrefix = new Label(I18n.getInstance().getString("plugin.nonconformities.nonconformityplan.dialog.prefix"));
-    JFXTextField f_numberPrefix = new JFXTextField();
+    TextField f_numberPrefix = new TextField();
 
-    JFXTextField nameField = new JFXTextField();
+    TextField nameField = new TextField();
 
 
 

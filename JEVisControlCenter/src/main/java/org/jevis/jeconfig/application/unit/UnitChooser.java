@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.unit;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -62,15 +62,15 @@ public class UnitChooser {
         units.add(Units.HERTZ);
 
         VBox spinner = new VBox();
-        final JFXButton prefixUp = new JFXButton("+");
-        JFXButton prefixDown = new JFXButton("-");
+        final Button prefixUp = new Button("+");
+        Button prefixDown = new Button("-");
         prefixDown.setId("prefixdown");
         prefixUp.setId("prefixup");
 
         Label prefix = new Label(" k ");
         prefix.setId("prefix");
 
-        JFXComboBox unitBox = buildUnitBox(units);
+        ComboBox unitBox = buildUnitBox(units);
         unitBox.setStyle("-fx-background-radius: 0 10 10 0;");
 
         prefixDown.getStylesheets().add("/styles/unitchooser.css");
@@ -123,13 +123,13 @@ public class UnitChooser {
         Label prefix = new Label(" k ");
         prefix.setId("prefix");
 
-        JFXComboBox unitBox = buildUnitBox(units);
+        ComboBox unitBox = buildUnitBox(units);
         unitBox.setStyle("-fx-background-radius: 0 10 10 0;");
 
         List<String> prefixList = new ArrayList<>();
         prefixList.add("k");
 //        ObservableList<String> options2 = FXCollections.observableArrayList(prefixList);
-        JFXComboBox uprefixBox = buildPrefixBox(prefixList);
+        ComboBox uprefixBox = buildPrefixBox(prefixList);
         uprefixBox.setId("prefixBox");
         uprefixBox.setStyle("-fx-background-radius: 10 0 0 10;");
 
@@ -156,7 +156,7 @@ public class UnitChooser {
      * @param units
      * @return
      */
-    private JFXComboBox buildUnitBox(List<Unit> units) {
+    private ComboBox buildUnitBox(List<Unit> units) {
         Callback<ListView<Unit>, ListCell<Unit>> cellFactory = new Callback<ListView<Unit>, ListCell<Unit>>() {
             @Override
             public ListCell<Unit> call(ListView<Unit> param) {
@@ -187,7 +187,7 @@ public class UnitChooser {
 
         ObservableList<Unit> options = FXCollections.observableArrayList(units);
 
-        final JFXComboBox<Unit> comboBox = new JFXComboBox<Unit>(options);
+        final ComboBox<Unit> comboBox = new ComboBox<Unit>(options);
         comboBox.setCellFactory(cellFactory);
         comboBox.setButtonCell(cellFactory.call(null));
 
@@ -200,7 +200,7 @@ public class UnitChooser {
 
     }
 
-    private JFXComboBox buildPrefixBox(List<String> units) {
+    private ComboBox buildPrefixBox(List<String> units) {
         Callback<ListView<String>, ListCell<String>> cellFactory = new Callback<ListView<String>, ListCell<String>>() {
             @Override
             public ListCell<String> call(ListView<String> param) {
@@ -233,7 +233,7 @@ public class UnitChooser {
 
         ObservableList<String> options = FXCollections.observableArrayList(units);
 
-        final JFXComboBox<String> comboBox = new JFXComboBox<String>(options);
+        final ComboBox<String> comboBox = new ComboBox<String>(options);
         comboBox.setCellFactory(cellFactory);
         comboBox.setButtonCell(cellFactory.call(null));
 

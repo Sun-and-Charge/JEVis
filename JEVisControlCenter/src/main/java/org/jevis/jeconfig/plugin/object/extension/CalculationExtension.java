@@ -20,10 +20,10 @@
  */
 package org.jevis.jeconfig.plugin.object.extension;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXRadioButton;
-import com.jfoenix.controls.JFXTimePicker;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.RadioButton;
+import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -125,7 +125,7 @@ public class CalculationExtension implements ObjectEditorExtension {
     public void setVisible() {
 
 
-        //    JFXButton button = new JFXButton();
+        //    Button button = new Button();
         //  button.setText("Calc");
         //ap.getChildren().add(button);
 
@@ -135,7 +135,7 @@ public class CalculationExtension implements ObjectEditorExtension {
         //fxmlLoader.setRoot();
         //fxmlLoader.setController(new CalculationViewController());
         try {
-            JFXButton buttonOutput = new JFXButton(I18n.getInstance().getString("plugin.object.calc.output"));
+            Button buttonOutput = new Button(I18n.getInstance().getString("plugin.object.calc.output"));
             final ScrollPane editConfigPane = fxmlLoader.load();
             control = fxmlLoader.getController();
             control.setData(_obj, buttonOutput, tree);
@@ -197,7 +197,7 @@ public class CalculationExtension implements ObjectEditorExtension {
             Label label = new Label(I18n.getInstance().getString("plugin.scada.element.setting.label.lowerlimit.enable"));
             Label labelOutput = new Label(I18n.getInstance().getString("plugin.object.calc.output"));
 
-            JFXButton calcNowButton = new JFXButton(I18n.getInstance().getString("plugin.object.calc.recalc"));
+            Button calcNowButton = new Button(I18n.getInstance().getString("plugin.object.calc.recalc"));
             calcNowButton.setOnAction(bEvent -> {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.initOwner(getOwnerWindow());
@@ -210,19 +210,19 @@ public class CalculationExtension implements ObjectEditorExtension {
                 gp.setVgap(6);
                 final ToggleGroup toggleGroup = new ToggleGroup();
 
-                JFXRadioButton allRadioButton = new JFXRadioButton(I18n.getInstance().getString("plugin.object.report.dialog.period.all"));
+                RadioButton allRadioButton = new RadioButton(I18n.getInstance().getString("plugin.object.report.dialog.period.all"));
                 allRadioButton.setSelected(true);
                 allRadioButton.setToggleGroup(toggleGroup);
 
-                JFXRadioButton nowRadioButton = new JFXRadioButton(I18n.getInstance().getString("graph.datehelper.referencepoint.now"));
+                RadioButton nowRadioButton = new RadioButton(I18n.getInstance().getString("graph.datehelper.referencepoint.now"));
                 nowRadioButton.setToggleGroup(toggleGroup);
 
-                JFXRadioButton fromRadioButton = new JFXRadioButton(I18n.getInstance().getString("plugin.graph.dialog.export.from"));
+                RadioButton fromRadioButton = new RadioButton(I18n.getInstance().getString("plugin.graph.dialog.export.from"));
                 fromRadioButton.setToggleGroup(toggleGroup);
-                JFXDatePicker fromDatePicker = new JFXDatePicker();
+                DatePicker fromDatePicker = new DatePicker();
                 fromDatePicker.setValue(LocalDate.now());
                 fromDatePicker.setPrefWidth(120d);
-                JFXTimePicker fromTimePicker = new JFXTimePicker();
+                TimePicker fromTimePicker = new TimePicker();
                 fromTimePicker.setValue(LocalTime.now());
                 fromTimePicker.setPrefWidth(100d);
                 fromTimePicker.setMaxWidth(100d);

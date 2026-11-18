@@ -19,8 +19,8 @@
  */
 package org.jevis.jeconfig.application.control;
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -69,7 +69,7 @@ public class SaveUnderDialog extends Dialog {
 
         Label newText = new Label(I18n.getInstance().getString("plugin.graph.dialog.new.name"));
         Label directoryText = new Label(I18n.getInstance().getString("plugin.graph.dialog.new.directory"));
-        JFXTextField name = new JFXTextField();
+        TextField name = new TextField();
         name.setMinWidth(350);
         ObjectRelations objectRelations = new ObjectRelations(jeVisDataSource);
 
@@ -86,7 +86,7 @@ public class SaveUnderDialog extends Dialog {
         }
 
         ObjectProperty<JEVisObject> currentSaveDirectory = new SimpleObjectProperty<>(null);
-        JFXComboBox<JEVisObject> parentsDirectories = new JFXComboBox<>(FXCollections.observableArrayList(listSaveDirectories));
+        ComboBox<JEVisObject> parentsDirectories = new ComboBox<>(FXCollections.observableArrayList(listSaveDirectories));
 
         Callback<ListView<JEVisObject>, ListCell<JEVisObject>> cellFactory = new Callback<ListView<JEVisObject>, ListCell<JEVisObject>>() {
             @Override

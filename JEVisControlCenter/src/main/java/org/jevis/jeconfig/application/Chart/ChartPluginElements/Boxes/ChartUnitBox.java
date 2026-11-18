@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes;
 
-import com.jfoenix.controls.JFXComboBox;
+import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
@@ -33,7 +33,7 @@ import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChartUnitBox extends JFXComboBox<JEVisUnit> {
+public class ChartUnitBox extends ComboBox<JEVisUnit> {
 
     public ChartUnitBox(ChartDataRow chartDataRow) {
         this(chartDataRow.getUnit());

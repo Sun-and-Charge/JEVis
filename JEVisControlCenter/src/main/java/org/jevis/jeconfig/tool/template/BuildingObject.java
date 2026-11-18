@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.tool.template;
 
-import com.jfoenix.controls.JFXCheckBox;
+import javafx.scene.control.CheckBox;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
@@ -100,7 +100,7 @@ public class BuildingObject extends Template {
         Map<String, Node> optionMap = new HashMap<>();
 
         String withNoEntryPointGroupsName = "Create No Entry Points Groups";
-        JFXCheckBox withNoEntryPointGroupsBox = new JFXCheckBox(withNoEntryPointGroupsName);
+        CheckBox withNoEntryPointGroupsBox = new CheckBox(withNoEntryPointGroupsName);
         withNoEntryPointGroupsBox.selectedProperty().bindBidirectional(withNoEntryPointGroups);
 
         String timeZone = "Timezone";

@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.object.attribute;
 
-import com.jfoenix.validation.base.ValidatorBase;
+import org.jevis.jeconfig.application.control.TextValidator;
 import javafx.beans.DefaultProperty;
 import javafx.scene.control.TextInputControl;
 import org.jevis.api.JEVisAttribute;
@@ -36,8 +36,8 @@ public class StringEditor extends BasicEditor {
     }
 
     @Override
-    public ValidatorBase getValidator() {
-        ValidatorBase validator = new LocalDoubleValidator();
+    public TextValidator getValidator() {
+        TextValidator validator = new LocalDoubleValidator();
         validator.setMessage("Value must be a rational number");
         return validator;
 
@@ -72,8 +72,7 @@ public class StringEditor extends BasicEditor {
         return true;
     }
 
-    @DefaultProperty(value = "icon")
-    private class LocalDoubleValidator extends ValidatorBase {
+    private class LocalDoubleValidator extends TextValidator {
 
 
         public LocalDoubleValidator() {

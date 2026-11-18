@@ -20,8 +20,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -117,17 +117,17 @@ public class ExceptionDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton ok = new JFXButton("OK");
+        Button ok = new Button("OK");
         ok.setDefaultButton(true);
 
-        JFXButton cancel = new JFXButton("Cancel");
+        Button cancel = new Button("Cancel");
         cancel.setCancelButton(true);
 
-//        JFXButton exit = new JFXButton("Exit");
-        JFXButton send = new JFXButton("Report");
+//        Button exit = new Button("Exit");
+        Button send = new Button("Report");
 
-        JFXButton details = new JFXButton("Details");
-        JFXButton copyAll = new JFXButton("Copy all");
+        Button details = new Button("Details");
+        Button copyAll = new Button("Copy all");
 
         buttonPanel.getChildren().addAll(details, copyAll, send, ok, cancel);
         buttonPanel.setAlignment(Pos.CENTER_RIGHT);
@@ -266,7 +266,7 @@ public class ExceptionDialog {
         stage.initStyle(StageStyle.UTILITY);
 
         HBox infoBox = new HBox();
-        JFXTextArea info = new JFXTextArea(exceptionToString(ex));
+        TextArea info = new TextArea(exceptionToString(ex));
 
         info.setWrapText(false);
         info.setPrefColumnCount(50);
@@ -277,15 +277,15 @@ public class ExceptionDialog {
 
         HBox buttonPanel = new HBox();
 
-        JFXButton ok = new JFXButton("Close");
+        Button ok = new Button("Close");
         ok.setCancelButton(true);
 
-        JFXButton exit = new JFXButton("Exit");
-        JFXButton send = new JFXButton("Report");
+        Button exit = new Button("Exit");
+        Button send = new Button("Report");
 
         send.setDefaultButton(true);
 
-        JFXButton copyAll = new JFXButton("Copy All");
+        Button copyAll = new Button("Copy All");
 
         buttonPanel.getChildren().addAll(copyAll, send, ok, exit);
         buttonPanel.setAlignment(Pos.CENTER_RIGHT);

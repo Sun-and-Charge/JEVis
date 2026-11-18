@@ -19,7 +19,7 @@
  */
 package org.jevis.jeconfig.plugin.action.ui;
 
-import com.jfoenix.controls.JFXTextField;
+import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -79,7 +79,7 @@ public class ActionTab extends Tab {
 
 
         Label lSuche = new Label("Suche");
-        JFXTextField fsearch = new JFXTextField();
+        TextField fsearch = new TextField();
         fsearch.setPromptText("Suche nach...");
 
 

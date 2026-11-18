@@ -20,7 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard.timeframe;
 
-import com.jfoenix.controls.JFXButton;
+import javafx.scene.control.Button;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
@@ -47,7 +47,7 @@ public class ToolBarIntervalSelector extends HBox {
     protected final ToggleButton nextButton = new ToggleButton("", JEConfig.getSVGImage(Icon.ARROW_RIGHT, iconSize, iconSize));
     protected final TimeFactoryBox timeFactoryBox = new TimeFactoryBox(false);
     protected TimeFrameEditor timeFrameEditor;
-    private final JFXButton dateButton = new JFXButton("");
+    private final Button dateButton = new Button("");
     protected boolean disableEventListener = false;
     private DashboardControl controller;
     protected ObservableList<TimeFrame> timeFrames;
@@ -143,7 +143,7 @@ public class ToolBarIntervalSelector extends HBox {
         return timeFactoryBox;
     }
 
-    public JFXButton getDateButton() {
+    public Button getDateButton() {
         return dateButton;
     }
 
