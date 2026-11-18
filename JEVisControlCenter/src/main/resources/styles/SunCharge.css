@@ -34,4 +34,51 @@
     -fx-selection-bar: #ffde00;
     -fx-selection-bar-non-focused: #fff0a0;
     -fx-text-color: -suc-text;
+
+    /* AtlantaFX Primer tokens (J25.5): Blueberry as accent scale, Sun for the primary button (Styles.css) */
+    -color-accent-0: #e8edf5;
+    -color-accent-1: #c9d4e6;
+    -color-accent-2: #9fb2d1;
+    -color-accent-3: #6f89b5;
+    -color-accent-4: #4a6697;
+    -color-accent-5: #254174;
+    -color-accent-6: #1f3864;
+    -color-accent-7: #1a2a45;
+    -color-accent-8: #131f33;
+    -color-accent-9: #0c1422;
+    -color-accent-fg: #254174;
+    -color-accent-emphasis: #254174;
+    -color-accent-muted: #25417466;
+    -color-accent-subtle: #e8edf5;
+    -color-fg-default: #1f2a3c;
+    -color-fg-muted: #6b768a;
+    -color-fg-subtle: #8a93a3;
+    -color-bg-default: #ffffff;
+    -color-bg-overlay: #ffffff;
+    -color-bg-subtle: #eef1f6;
+    -color-bg-inset: #f4f6f9;
+    -color-border-default: #d3d9e3;
+    -color-border-muted: #d3d9e3;
+    -color-border-subtle: #e3e7ee;
+    -color-danger-fg: #c55a11;
+    -color-cell-bg-selected: #fff0a0;
+    -color-cell-fg-selected: #1a2a45;
+    -color-cell-bg-selected-focused: #ffde00;
+    -color-cell-fg-selected-focused: #1a2a45;
+    -fx-font-size: 13px;
+
+    /* Modena colours still used by ControlsFX and older JEVis stylesheets; AtlantaFX does not define them */
+    -fx-text-base-color: #1f2a3c;
+    -fx-text-background-color: #1f2a3c;
+    -fx-dark-text-color: #1f2a3c;
+    -fx-mid-text-color: #3b475a;
+    -fx-light-text-color: #ffffff;
+    -fx-mark-color: #1f2a3c;
+    -fx-text-box-border: #d3d9e3;
+    -fx-box-border: #d3d9e3;
+    -fx-outer-border: #d3d9e3;
+    -fx-inner-border: #ffffff;
+    -fx-body-color: #eef1f6;
+    -fx-shadow-highlight-color: transparent;
+    -fx-color: #eef1f6;
 }

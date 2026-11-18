@@ -28,6 +28,11 @@ import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+import org.jevis.api.JEVisObject;
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.navigation.QuickSearch;
+import org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.AnalysesComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
@@ -72,6 +77,9 @@ public class PluginManager {
     private final AnchorPane toolbar = new AnchorPane();
     private final SimpleObjectProperty<Plugin> selectedPluginProperty = new SimpleObjectProperty<>();
     private final TabPane tabPane = new TabPane();
+    /* J25.5: grouped sidebar next to the tab pane, whose tab headers are hidden (docs/DESIGN-CC.md) */
+    private final BorderPane view = new BorderPane();
+    private PluginSidebar sidebar;
     private TopMenu menu;
 
     public PluginManager(JEVisDataSource _ds) {
@@ -275,7 +283,12 @@ public class PluginManager {
     public Node getView() {
 
         this.tabPane.setSide(Side.LEFT);
-        this.tabPane.getStyleClass().add("plugin-tab-pane");
+        this.tabPane.getStyleClass().addAll("plugin-tab-pane", "nav-sidebar");
+        this.sidebar = new PluginSidebar(this._plugins, plugin -> this.tabPane.getTabs().forEach(tab -> {
+            if (tab instanceof DraggableTab && ((DraggableTab) tab).getPlugin() == plugin) {
+                this.tabPane.getSelectionModel().select(tab);
+            }
+        }));
 
 //        this.toolbar.setStyle("-fx-background-color: #CCFF99;");
         this.toolbar.getStyleClass().add("tool-bar");
@@ -306,10 +319,12 @@ public class PluginManager {
 
                             new KeyFrame(Duration.seconds(0.5), e -> {
                                 pluginTab.setStyle("");
+                                sidebar.setAttention(plugin, false);
                             }),
 
                             new KeyFrame(Duration.seconds(1.0), e -> {
                                 pluginTab.setStyle("-tab-text-color: -suc-error;");
+                                sidebar.setAttention(plugin, true);
                             })
                     );
                     flasher.setCycleCount(Animation.INDEFINITE);
@@ -321,6 +336,7 @@ public class PluginManager {
                             } else {
                                 flasher.stop();
                                 pluginTab.setStyle("");
+                                sidebar.setAttention(plugin, false);
                             }
                         });
                     });
@@ -382,13 +398,68 @@ public class PluginManager {
             this.getSelectedPlugin().lostFocus();
             if (newValue instanceof DraggableTab) {
                 this.selectedPluginProperty.setValue(((DraggableTab) newValue).getPlugin());
+                this.sidebar.select(((DraggableTab) newValue).getPlugin());
             }
         });
 
         selectedPluginProperty.setValue(_plugins.get(0));
+        this.sidebar.select(_plugins.get(0));
         JEVisHelp.getInstance().setActivePlugin(_plugins.getClass().getSimpleName());
 
-        return tabPane;
+        this.view.setLeft(this.sidebar);
+        this.view.setCenter(this.tabPane);
+        return this.view;
+    }
+
+    /** shows the module (sidebar and search) */
+    public void selectPlugin(Plugin plugin) {
+        this.tabPane.getTabs().forEach(tab -> {
+            if (tab instanceof DraggableTab && ((DraggableTab) tab).getPlugin() == plugin) {
+                this.tabPane.getSelectionModel().select(tab);
+            }
+        });
+    }
+
+    /**
+     * Opens a dashboard or an analysis found by the search: dashboards through the dashboard module, analyses by
+     * selecting them in the analysis list of the analysis module (with its current time frame and aggregation).
+     */
+    public void openNavigationObject(JEVisObject object) {
+        try {
+            if (QuickSearch.CLASS_DASHBOARD.equals(object.getJEVisClassName())) {
+                openInPlugin(DashBordPlugIn.PLUGIN_NAME, object);
+                return;
+            }
+            for (Plugin plugin : this._plugins) {
+                if (plugin instanceof ChartPlugin) {
+                    ChartPlugin chartPlugin = (ChartPlugin) plugin;
+                    selectPlugin(plugin);
+                    AnalysesComboBox box = chartPlugin.getToolBarView().getAnalysesComboBox();
+                    Thread waiter = new Thread(() -> {
+                        /* the module fills its list when it is shown for the first time */
+                        for (int i = 0; i < 50; i++) {
+                            if (box.getItems().contains(object)) break;
+                            try {
+                                Thread.sleep(200);
+                            } catch (InterruptedException e) {
+                                return;
+                            }
+                        }
+                        Platform.runLater(() -> box.getSelectionModel().select(object));
+                    }, "open-analysis");
+                    waiter.setDaemon(true);
+                    waiter.start();
+                    return;
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Could not open {}", object, ex);
+        }
+    }
+
+    /** the main area (sidebar and modules) as returned by {@link #getView()} */
+    public Node getViewNode() {
+        return this.view;
     }
 
     Plugin getSelectedPlugin() {

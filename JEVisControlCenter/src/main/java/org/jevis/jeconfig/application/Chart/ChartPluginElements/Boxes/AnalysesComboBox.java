@@ -61,6 +61,15 @@ public class AnalysesComboBox extends ComboBox<JEVisObject> {
         this.objectRelations = new ObjectRelations(ds);
         this.setTooltip(new Tooltip(I18n.getInstance().getString("plugin.graph.toolbar.tooltip.list")));
         this.setId("Graph Analysis List");
+        /* recently opened analyses for the search (J25.5) */
+        valueProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (newValue != null && ANALYSIS_CLASS_NAME.equals(newValue.getJEVisClassName())) {
+                    org.jevis.jeconfig.application.navigation.NavigationStore.recordOpened(newValue);
+                }
+            } catch (Exception ignored) {
+            }
+        });
 
         JEVisHelp.getInstance().addHelpControl(ChartPlugin.class.getSimpleName(), "", JEVisHelp.LAYOUT.VERTICAL_BOT_CENTER, this);
 

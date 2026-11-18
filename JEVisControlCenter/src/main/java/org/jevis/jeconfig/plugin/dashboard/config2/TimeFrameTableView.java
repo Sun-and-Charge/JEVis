@@ -56,13 +56,13 @@ public class TimeFrameTableView extends TableView<TimeFrameWidgetObject> {
         TableColumn<TimeFrameWidgetObject, String> idCol = new TableColumn(I18n.getInstance().getString("plugin.dashboard.timeframe.table.id"));
         idCol.setCellValueFactory(param -> new SimpleStringProperty(String.valueOf(param.getValue().getConfig().getUuid())));
         idCol.setCellFactory(new ShortColumnCell<TimeFrameWidgetObject>());
-        idCol.setStyle("-fx-alignment: LEFT;");
+        idCol.setStyle("-fx-alignment: CENTER_LEFT;");
         // nrCol.setMinWidth(SMALL_WIDTH)
 
         TableColumn<TimeFrameWidgetObject, String> titleCol = new TableColumn(I18n.getInstance().getString("plugin.dashboard.timeframe.table.title"));
         titleCol.setCellValueFactory(param -> new SimpleStringProperty(String.valueOf(param.getValue().getConfig().getTitle())));
         titleCol.setCellFactory(new ShortColumnCell<TimeFrameWidgetObject>());
-        titleCol.setStyle("-fx-alignment: LEFT;");
+        titleCol.setStyle("-fx-alignment: CENTER_LEFT;");
 
 
         TableColumn<TimeFrameWidgetObject, Boolean> selectedCol = new TableColumn(I18n.getInstance().getString("plugin.dashboard.timeframe.table.selected"));

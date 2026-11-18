@@ -110,13 +110,13 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
         TableColumn<NonconformityData, String> fromUserCol = new TableColumn(fakeForName.creatorProperty().getName());
         fromUserCol.setCellValueFactory(param -> param.getValue().creatorProperty());
         fromUserCol.setCellFactory(new ShortColumnCell<NonconformityData>());
-        fromUserCol.setStyle("-fx-alignment: LEFT;");
+        fromUserCol.setStyle("-fx-alignment: CENTER_LEFT;");
         fromUserCol.setMinWidth(BIG_WIDTH);
         fromUserCol.setId("FromUser");
 
         TableColumn<NonconformityData, String> responsiblePropertyCol = new TableColumn(fakeForName.responsiblePersonProperty().getName());
         responsiblePropertyCol.setCellValueFactory(param -> param.getValue().responsiblePersonProperty());
-        responsiblePropertyCol.setStyle("-fx-alignment: LEFT;");
+        responsiblePropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         responsiblePropertyCol.setMinWidth(BIG_WIDTH);
         responsiblePropertyCol.setId("Responsible");
 
@@ -128,25 +128,25 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
 
         TableColumn<NonconformityData, String> descriptionPropertyCol = new TableColumn(fakeForName.descriptionProperty().getName());
         descriptionPropertyCol.setCellValueFactory(param -> param.getValue().descriptionProperty());
-        descriptionPropertyCol.setStyle("-fx-alignment: LEFT;");
+        descriptionPropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         descriptionPropertyCol.setCellFactory(new ShortColumnCell<NonconformityData>());
         descriptionPropertyCol.setId("Description");
 
         TableColumn<NonconformityData, String> causePropertyCol = new TableColumn(fakeForName.causeProperty().getName());
         causePropertyCol.setCellValueFactory(param -> param.getValue().causeProperty());
-        causePropertyCol.setStyle("-fx-alignment: LEFT;");
+        causePropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         causePropertyCol.setCellFactory(new ShortColumnCell<NonconformityData>());
         causePropertyCol.setId("Cause");
 
         TableColumn<NonconformityData, String> immediateMeasuresPropertyCol = new TableColumn(fakeForName.immediateMeasuresProperty().getName());
         immediateMeasuresPropertyCol.setCellValueFactory(param -> param.getValue().immediateMeasuresProperty());
-        immediateMeasuresPropertyCol.setStyle("-fx-alignment: LEFT;");
+        immediateMeasuresPropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         immediateMeasuresPropertyCol.setCellFactory(new ShortColumnCell<NonconformityData>());
         immediateMeasuresPropertyCol.setId("ImmediateMeasures");
 
         TableColumn<NonconformityData, String> correctiveActionsCol = new TableColumn(fakeForName.correctiveActionsProperty().getName());
         correctiveActionsCol.setCellValueFactory(param -> param.getValue().correctiveActionsProperty());
-        correctiveActionsCol.setStyle("-fx-alignment: LEFT;");
+        correctiveActionsCol.setStyle("-fx-alignment: CENTER_LEFT;");
         correctiveActionsCol.setCellFactory(new ShortColumnCell<NonconformityData>());
         correctiveActionsCol.setId("CorrectiveActions");
 
@@ -181,34 +181,34 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
         TableColumn<NonconformityData, String> planNameCol = new TableColumn(I18n.getInstance().getString("plugin.nonconformities.location"));
         planNameCol.setCellValueFactory(param -> param.getValue().getNonconformityPlan().getName());
         planNameCol.setCellFactory(new ShortColumnCell<NonconformityData>());
-        planNameCol.setStyle("-fx-alignment: LEFT;");
+        planNameCol.setStyle("-fx-alignment: CENTER_LEFT;");
         planNameCol.setMinWidth(BIG_WIDTH);
         planNameCol.setId("PlanName");
 
         TableColumn<NonconformityData, DateTime> doneDatePropertyCol = new TableColumn(fakeForName.doneDateProperty().getName());
         doneDatePropertyCol.setCellValueFactory(param -> param.getValue().doneDateProperty());
         doneDatePropertyCol.setCellFactory(new DateTimeColumnCell<NonconformityData>());
-        doneDatePropertyCol.setStyle("-fx-alignment: LEFT;");
+        doneDatePropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         doneDatePropertyCol.setMinWidth(DATE_TIME_WIDTH);
         doneDatePropertyCol.setId("DoneDate");
 
         TableColumn<NonconformityData, DateTime> createDatePropertyCol = new TableColumn(fakeForName.createDateProperty().getName());
         createDatePropertyCol.setCellValueFactory(param -> param.getValue().createDateProperty());
         createDatePropertyCol.setCellFactory(new DateTimeColumnCell<NonconformityData>());
-        createDatePropertyCol.setStyle("-fx-alignment: LEFT;");
+        createDatePropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         createDatePropertyCol.setMinWidth(DATE_TIME_WIDTH);
         createDatePropertyCol.setId("CreateDate");
 
         TableColumn<NonconformityData, DateTime> plannedDatePropertyCol = new TableColumn(fakeForName.deadLineProperty().getName());
         plannedDatePropertyCol.setCellValueFactory(param -> param.getValue().deadLineProperty());
         plannedDatePropertyCol.setCellFactory(new DateTimeColumnCell<NonconformityData>());
-        plannedDatePropertyCol.setStyle("-fx-alignment: LEFT;");
+        plannedDatePropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         plannedDatePropertyCol.setMinWidth(DATE_TIME_WIDTH);
         plannedDatePropertyCol.setId("PlannedDate");
 
         TableColumn<NonconformityData, String> titlePropertyCol = new TableColumn(fakeForName.titleProperty().getName());
         titlePropertyCol.setCellValueFactory(param -> param.getValue().titleProperty());
-        titlePropertyCol.setStyle("-fx-alignment: LEFT;");
+        titlePropertyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         titlePropertyCol.setCellFactory(new ShortColumnCell<NonconformityData>());
         titlePropertyCol.setMinWidth(BIG_WIDTH);
         titlePropertyCol.setId("TitleProperty");

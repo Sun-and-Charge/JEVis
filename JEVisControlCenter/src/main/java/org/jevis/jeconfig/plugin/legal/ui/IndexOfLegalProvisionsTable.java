@@ -48,7 +48,6 @@ import org.jevis.jeconfig.application.table.DateTimeColumnCell;
 import org.jevis.jeconfig.application.table.HyperlinkCell;
 import org.jevis.jeconfig.application.table.ShortColumnCell;
 import org.jevis.jeconfig.application.table.SummeryData;
-import org.jevis.jeconfig.plugin.dashboard.config2.SankeyDataRow;
 import org.jevis.jeconfig.plugin.legal.data.IndexOfLegalProvisions;
 import org.jevis.jeconfig.plugin.legal.data.ObligationData;
 import org.joda.time.DateTime;
@@ -122,27 +121,27 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
         TableColumn<ObligationData, String> nrCol = new TableColumn(fakeForName.nrProperty().getName());
         nrCol.setCellValueFactory(param -> param.getValue().getNrAsStringProperty());
         nrCol.setCellFactory(new ShortColumnCell<ObligationData>());
-        nrCol.setStyle("-fx-alignment: LEFT;");
+        nrCol.setStyle("-fx-alignment: CENTER_LEFT;");
         nrCol.setMinWidth(SMALL_WIDTH);
 
 
         TableColumn<ObligationData, String> legislationCol = new TableColumn(fakeForName.titleProperty().getName());
         legislationCol.setCellValueFactory(param -> param.getValue().titleProperty());
         legislationCol.setCellFactory(new ShortColumnCell<ObligationData>());
-        legislationCol.setStyle("-fx-alignment: LEFT;");
+        legislationCol.setStyle("-fx-alignment: CENTER_LEFT;");
         legislationCol.setMinWidth(BIG_WIDTH);
 
 
         TableColumn<ObligationData, String> designationCol = new TableColumn(fakeForName.designationProperty().getName());
         designationCol.setCellValueFactory(param -> param.getValue().designationProperty());
         designationCol.setCellFactory(new ShortColumnCell<ObligationData>());
-        designationCol.setStyle("-fx-alignment: LEFT;");
+        designationCol.setStyle("-fx-alignment: CENTER_LEFT;");
         designationCol.setMinWidth(VERY_BIG_WIDTH);
 
         TableColumn<ObligationData, String> descriptionCol = new TableColumn(fakeForName.descriptionProperty().getName());
         descriptionCol.setCellValueFactory(param -> param.getValue().descriptionProperty());
         descriptionCol.setCellFactory(new ShortColumnCell<ObligationData>());
-        descriptionCol.setStyle("-fx-alignment: LEFT;");
+        descriptionCol.setStyle("-fx-alignment: CENTER_LEFT;");
         descriptionCol.setMinWidth(VERY_BIG_WIDTH);
 
 
@@ -174,7 +173,7 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
         TableColumn<ObligationData, String> importanceForTheCompanyCol = new TableColumn(fakeForName.importanceForTheCompanyProperty().getName());
         importanceForTheCompanyCol.setCellValueFactory(param -> param.getValue().importanceForTheCompanyProperty());
         importanceForTheCompanyCol.setCellFactory(new ShortColumnCell<ObligationData>());
-        importanceForTheCompanyCol.setStyle("-fx-alignment: LEFT;");
+        importanceForTheCompanyCol.setStyle("-fx-alignment: CENTER_LEFT;");
         importanceForTheCompanyCol.setMinWidth(BIG_WIDTH);
 
 
@@ -528,9 +527,10 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
             }
         };
 
-        Callback valueFactory = new Callback<TableColumn.CellDataFeatures<SankeyDataRow, SankeyDataRow>, ObservableValue<SankeyDataRow>>() {
+        /* typed as ObligationData: with the copied SankeyDataRow types newer javac casts each row to SankeyDataRow */
+        Callback<TableColumn.CellDataFeatures<ObligationData, ObligationData>, ObservableValue<ObligationData>> valueFactory = new Callback<TableColumn.CellDataFeatures<ObligationData, ObligationData>, ObservableValue<ObligationData>>() {
             @Override
-            public ObservableValue<SankeyDataRow> call(TableColumn.CellDataFeatures<SankeyDataRow, SankeyDataRow> param) {
+            public ObservableValue<ObligationData> call(TableColumn.CellDataFeatures<ObligationData, ObligationData> param) {
                 try {
                     return new SimpleObjectProperty<>(param.getValue());
                 } catch (Exception ex) {

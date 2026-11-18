@@ -218,37 +218,9 @@
 /*---------------------------------------------------------------------------------------------------------------
                                          Buttons and inputs
 ---------------------------------------------------------------------------------------------------------------*/
-.button:default {
-    -fx-background-color: -fx-default-button-background;
-    -fx-text-fill: -fx-default-button-text-fill;
-}
-
-.button:default:hover {
-    -fx-background-color: derive(-fx-default-button-background, -8%);
-}
-
-/* Buttons in the corporate look (until J25 the JFoenix buttons, class jfx-button; since J25 every button). No text
-   colour here: it would override colours set in code (e.g. the green "check" button of the formula editor). Buttons
-   in tool bars stay flat. */
-.button {
-    -fx-background-color: -suc-surface-alt;
-    -fx-background-radius: 3;
-    -fx-border-color: -suc-border;
-    -fx-border-radius: 3;
-}
-
-.button:hover {
-    -fx-background-color: -suc-hover;
-}
-
-.button:pressed {
-    -fx-background-color: derive(-suc-surface-alt, -10%);
-}
-
-.button:disabled {
-    -fx-opacity: 0.5;
-}
-
+/* Buttons: AtlantaFX draws them from its -color-button-* tokens (theme stylesheets and the J25.5 block at the end);
+   no -fx-text-fill here, it would override colours set in code (e.g. the green "check" button of the formula editor).
+   Buttons in tool bars stay flat. */
 .tool-bar .button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -601,4 +573,197 @@
 .date-picker-popup > * > .spinner > .button > .left-arrow,
 .date-picker-popup > * > .spinner > .button > .right-arrow {
     -fx-background-color: #313131;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         AtlantaFX (J25.5)
+   Exactly one primary button per dialog in Sun (docs/DESIGN-CC.md); AtlantaFX colours it with the accent tokens.
+---------------------------------------------------------------------------------------------------------------*/
+.button:default {
+    -color-button-bg: -suc-accent;
+    -color-button-fg: -suc-on-accent;
+    -color-button-border: -suc-accent;
+    -color-button-bg-hover: #f5d000;
+    -color-button-fg-hover: -suc-on-accent;
+    -color-button-border-hover: #f5d000;
+    -color-button-bg-focused: -suc-accent;
+    -color-button-fg-focused: -suc-on-accent;
+    -color-button-bg-pressed: #e6c400;
+    -color-button-fg-pressed: -suc-on-accent;
+}
+
+/* density as before J25 (AtlantaFX sizes rows at 3em, its "dense" variant at 2em): many rows stay visible in the
+   editors */
+.table-view .table-row-cell,
+.tree-table-view .tree-table-row-cell,
+.list-view .list-cell {
+    -fx-cell-size: 2em;
+}
+
+.table-view .table-cell,
+.tree-table-view .tree-table-cell {
+    -fx-padding: 0 8px 0 8px;
+}
+
+.table-view .column-header .label,
+.tree-table-view .column-header .label {
+    -fx-padding: 4px 8px 4px 8px;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Module navigation (J25.5 stage 2)
+   Grouped sidebar instead of the vertical module tabs; the tab pane only switches the content.
+---------------------------------------------------------------------------------------------------------------*/
+.tab-pane.plugin-tab-pane.nav-sidebar > .tab-header-area {
+    visibility: hidden;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-padding: 0;
+}
+
+.plugin-sidebar {
+    -fx-background-color: -suc-primary;
+    -fx-padding: 6 0 0 0;
+}
+
+.plugin-sidebar-scroll,
+.plugin-sidebar-scroll > .viewport,
+.plugin-sidebar-items {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.plugin-sidebar-group {
+    -fx-text-fill: derive(-suc-on-primary, -35%);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 12 4 12;
+    -fx-cursor: hand;
+}
+
+.plugin-sidebar-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-color: transparent;
+    -fx-text-fill: -suc-on-primary;
+    -fx-padding: 7 12 7 9;
+    -fx-graphic-text-gap: 10;
+    -pluginSVG-background-color: -suc-on-primary;
+    -color-button-bg: transparent;
+    -color-button-border: transparent;
+}
+
+.plugin-sidebar-item:hover {
+    -fx-background-color: derive(-suc-primary, 15%);
+}
+
+.plugin-sidebar-item:selected {
+    -fx-background-color: -suc-accent;
+    -fx-border-color: -suc-accent;
+    -fx-text-fill: -suc-on-accent;
+    -pluginSVG-background-color: -suc-on-accent;
+}
+
+.plugin-sidebar-item:attention {
+    -fx-border-color: -suc-error;
+    -fx-text-fill: -suc-error;
+    -pluginSVG-background-color: -suc-error;
+}
+
+.plugin-sidebar:compact .plugin-sidebar-item {
+    -fx-alignment: center;
+    -fx-padding: 9 0 9 0;
+}
+
+.plugin-sidebar-toggle {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-color: derive(-suc-primary, 20%);
+    -fx-text-fill: derive(-suc-on-primary, -30%);
+    -fx-padding: 8;
+    -color-button-bg: transparent;
+}
+
+/* ControlsFX ToggleSwitch in the brand colour (its Modena lookups are defined in the theme stylesheets) */
+.toggle-switch:selected .thumb-area {
+    -fx-background-color: -suc-primary;
+    -fx-background-insets: 0;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Top bar and search (J25.5 stage 3)
+---------------------------------------------------------------------------------------------------------------*/
+.navigation-bar {
+    -fx-background-color: -suc-primary;
+    -fx-spacing: 8;
+    -fx-padding: 0 8 0 0;
+}
+
+.navigation-site,
+.navigation-search {
+    -fx-background-color: derive(-suc-primary, 18%);
+    -fx-background-radius: 4;
+    -fx-border-width: 0;
+    -fx-text-fill: -suc-on-primary;
+    -fx-padding: 2 10 2 10;
+    -color-button-bg: derive(-suc-primary, 18%);
+    -color-button-fg: -suc-on-primary;
+}
+
+.navigation-site > .list-cell {
+    -fx-text-fill: -suc-on-primary;
+    -fx-background-color: transparent;
+}
+
+.navigation-site > .arrow-button > .arrow {
+    -fx-background-color: -suc-on-primary;
+}
+
+.navigation-search {
+    -fx-min-width: 180;
+    -fx-alignment: center-left;
+    -fx-text-fill: derive(-suc-on-primary, -25%);
+}
+
+.navigation-site:hover,
+.navigation-search:hover {
+    -fx-background-color: derive(-suc-primary, 30%);
+}
+
+.quick-search {
+    -fx-background-color: -suc-surface;
+    -fx-border-color: -suc-border;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 18, 0, 0, 4);
+}
+
+.quick-search-field {
+    -fx-font-size: 15px;
+    -fx-padding: 8 10 8 10;
+}
+
+.quick-search-list .list-cell {
+    -fx-cell-size: 2.4em;
+}
+
+.quick-search-detail,
+.quick-search-hint {
+    -fx-text-fill: -suc-text-muted;
+    -fx-font-size: 11px;
+}
+
+.quick-search-list .list-cell:selected .quick-search-detail {
+    -fx-text-fill: -suc-selection-text;
+}
+
+.quick-search-star {
+    -fx-padding: 0 4 0 4;
+    -fx-text-fill: #d4a800;
+    -fx-font-size: 15px;
 }

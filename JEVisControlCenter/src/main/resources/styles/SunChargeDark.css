@@ -33,6 +33,53 @@
     -fx-selection-bar: #254174;
     -fx-selection-bar-non-focused: #2a4068;
     -fx-text-color: -suc-text;
+
+    /* AtlantaFX Primer dark tokens (J25.5) */
+    -color-accent-0: #0c1422;
+    -color-accent-1: #131f33;
+    -color-accent-2: #1a2a45;
+    -color-accent-3: #22365a;
+    -color-accent-4: #2f4875;
+    -color-accent-5: #3a64b0;
+    -color-accent-6: #5a80c4;
+    -color-accent-7: #8aa4d4;
+    -color-accent-8: #b9c9e6;
+    -color-accent-9: #e2e9f5;
+    -color-accent-fg: #8aa4d4;
+    -color-accent-emphasis: #3a64b0;
+    -color-accent-muted: #3a64b066;
+    -color-accent-subtle: #22365a;
+    -color-fg-default: #e9edf4;
+    -color-fg-muted: #9ba7bc;
+    -color-fg-subtle: #7d899e;
+    -color-bg-default: #1a2a45;
+    -color-bg-overlay: #1e3050;
+    -color-bg-subtle: #22365a;
+    -color-bg-inset: #131f33;
+    -color-border-default: #33496f;
+    -color-border-muted: #2a3f62;
+    -color-border-subtle: #2a3f62;
+    -color-danger-fg: #ff8a4c;
+    -color-cell-bg-selected: #2a4068;
+    -color-cell-fg-selected: #ffffff;
+    -color-cell-bg-selected-focused: #254174;
+    -color-cell-fg-selected-focused: #ffffff;
+    -fx-font-size: 13px;
+
+    /* Modena colours still used by ControlsFX and older JEVis stylesheets; AtlantaFX does not define them */
+    -fx-text-base-color: #e9edf4;
+    -fx-text-background-color: #e9edf4;
+    -fx-dark-text-color: #1f2a3c;
+    -fx-mid-text-color: #c3cad6;
+    -fx-light-text-color: #ffffff;
+    -fx-mark-color: #e9edf4;
+    -fx-text-box-border: #33496f;
+    -fx-box-border: #33496f;
+    -fx-outer-border: #33496f;
+    -fx-inner-border: #22365a;
+    -fx-body-color: #22365a;
+    -fx-shadow-highlight-color: transparent;
+    -fx-color: #22365a;
 }
 
 .text-field,

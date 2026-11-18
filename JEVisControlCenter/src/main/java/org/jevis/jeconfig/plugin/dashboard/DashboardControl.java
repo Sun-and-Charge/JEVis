@@ -532,6 +532,8 @@ public class DashboardControl {
      */
     public void selectDashboard(JEVisObject object) {
         logger.debug("selectDashboard: {}", object);
+        /* recently opened dashboards for the search (J25.5) */
+        org.jevis.jeconfig.application.navigation.NavigationStore.recordOpened(object);
         stopAllUpdates();
         try {
             /* check if the last dashboard was saved and if not ask user */

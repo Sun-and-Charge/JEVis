@@ -19,6 +19,9 @@
  */
 package org.jevis.jeconfig;
 
+import org.jevis.jeconfig.application.navigation.QuickSearch;
+import org.jevis.jeconfig.application.navigation.NavigationStore;
+import org.jevis.jeconfig.application.navigation.NavigationBar;
 import de.jollyday.HolidayManager;
 import de.jollyday.ManagerParameters;
 import javafx.application.Application;
@@ -459,8 +462,8 @@ public class JEConfig extends Application {
                 fullScreenTab.setContent(fullScreenNode);
 
                 mainBorderPane.setTop(topMenuBox);
+                mainBorderPane.setCenter(pluginManager.getViewNode());
                 mainBorderPane.setBottom(statusBar);
-                mainBorderPane.setBottom(pluginManager.getTabPane());
             }
         });
 
@@ -536,6 +539,7 @@ public class JEConfig extends Application {
                 final KeyCombination hiddenSettings = new KeyCodeCombination(KeyCode.H, KeyCombination.CONTROL_DOWN);
 //                final KeyCombination mergePeriods = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN);
                 final KeyCombination help = new KeyCodeCombination(KeyCode.F1);
+                final KeyCombination searchCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN);
                 scene.setOnKeyPressed(ke -> {
 //                    Platform.runLater(() -> pluginManager.getToolbar().requestFocus());//the most attribute will validate if the lose focus so we do
                     if (saveCombo.match(ke)) {
@@ -549,6 +553,10 @@ public class JEConfig extends Application {
                         ke.consume();
                     } else if (newCombo.match(ke)) {
                         pluginManager.getSelectedPlugin().handleRequest(Constants.Plugin.Command.NEW);
+                        ke.consume();
+                    } else if (searchCombo.match(ke)) {
+                        new QuickSearch(_mainDS, pluginManager.getPlugins(), pluginManager::selectPlugin,
+                                pluginManager::openNavigationObject).show(_primaryStage);
                         ke.consume();
                     } else if (help.match(ke)) {
                         JEVisHelp.getInstance().toggleHelp();
@@ -580,9 +588,14 @@ public class JEConfig extends Application {
                 }
 
 
+                NavigationStore.init(_mainDS, _mainDS instanceof JEVisDataSourceWS ? ((JEVisDataSourceWS) _mainDS).getHost() : "");
                 Platform.runLater(() -> {
                     mainBorderPane.setCenter(pluginManager.getView());
-                    topMenuBox.getChildren().addAll(menu, pluginManager.getToolbar());
+                    /* J25.5 stage 3: site picker and search (Strg+K) next to the menu */
+                    QuickSearch quickSearch = new QuickSearch(_mainDS, pluginManager.getPlugins(), pluginManager::selectPlugin,
+                            pluginManager::openNavigationObject);
+                    topMenuBox.getChildren().addAll(new NavigationBar(menu, quickSearch, () -> quickSearch.show(_primaryStage)),
+                            pluginManager.getToolbar());
                 });
 
                 statusBar.setDataSource(_mainDS);
@@ -746,6 +759,7 @@ public class JEConfig extends Application {
         /* certificates accepted earlier by this user, before the first connection to the server */
         UserTrustStore.install();
         loadFonts();
+        TopMenu.applyUserAgentStylesheet();
         initGUI(primaryStage);
     }
 

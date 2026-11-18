@@ -48,7 +48,7 @@ public class GaugeSectionTableView extends TableView<GaugeSectionPojo> {
         TableColumn<GaugeSectionPojo, String> startCol = new TableColumn(I18n.getInstance().getString("plugin.dashboard.gaugewidget.start"));
         startCol.setCellValueFactory(param -> param.getValue().getStartasStringProperty());
         startCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        startCol.setStyle("-fx-alignment: LEFT;");
+        startCol.setStyle("-fx-alignment: CENTER_LEFT;");
 
 
 
@@ -56,7 +56,7 @@ public class GaugeSectionTableView extends TableView<GaugeSectionPojo> {
         TableColumn<GaugeSectionPojo, String> endCol = new TableColumn(I18n.getInstance().getString("plugin.dashboard.gaugewidget.end"));
         endCol.setCellValueFactory(param -> param.getValue().getEndAsStringProperty());
         endCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        endCol.setStyle("-fx-alignment: LEFT;");
+        endCol.setStyle("-fx-alignment: CENTER_LEFT;");
         startCol.setEditable(true);
         endCol.setEditable(true);
 

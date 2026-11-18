@@ -20,6 +20,9 @@
 package org.jevis.jeconfig;
 
 import javafx.scene.control.TextField;
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
@@ -109,6 +112,22 @@ public class TopMenu extends MenuBar {
     }
 
     private static String activeTheme = THEMES.get(selectedThemeKey());
+
+    /**
+     * Base stylesheet of all windows (J25.5, docs/DESIGN-CC.md): AtlantaFX Primer light/dark, coloured by the
+     * Sun and Charge tokens of the theme stylesheet; the Bridge theme keeps Modena.
+     */
+    public static void applyUserAgentStylesheet() {
+        String userAgent;
+        if (THEMES.get("sunchargedark").equals(activeTheme)) {
+            userAgent = new PrimerDark().getUserAgentStylesheet();
+        } else if (THEMES.get(BRIDGE_THEME).equals(activeTheme)) {
+            userAgent = Application.STYLESHEET_MODENA;
+        } else {
+            userAgent = new PrimerLight().getUserAgentStylesheet();
+        }
+        if (!userAgent.equals(Application.getUserAgentStylesheet())) Application.setUserAgentStylesheet(userAgent);
+    }
     private final List<MenuItem> items = new ArrayList<>();
     private final SimpleObjectProperty<Plugin> activePlugin = new SimpleObjectProperty<>();
 
@@ -856,11 +875,13 @@ public class TopMenu extends MenuBar {
     }
 
     private void applyTheme(String themeString) {
+        activeTheme = themeString;
         Platform.runLater(() -> {
             JEConfig.getStage().getScene().getStylesheets().removeAll(allThemes);
             JEConfig.getStage().getScene().getStylesheets().add(stylesString);
             JEConfig.getStage().getScene().getStylesheets().add(chartString);
             JEConfig.getStage().getScene().getStylesheets().add(themeString);
+            applyUserAgentStylesheet();
             /* JavaFX 8 keeps the font that the label inside a menu bar button inherited from the old theme (e.g. the
                Bridge theme's condensed font after switching back), so the menu bar builds its buttons again */
             List<Menu> menus = new ArrayList<>(getMenus());
@@ -868,7 +889,6 @@ public class TopMenu extends MenuBar {
             getMenus().addAll(menus);
         });
 
-        activeTheme = themeString;
     }
 
     public Plugin getActivePlugin() {
