@@ -1,0 +1,35 @@
+{
+  "jevisclass": "Energy Management Link",
+  "names": {
+    "de": "Energiemanagement-Verknüpfung",
+    "en": "Energy Management Link"
+  },
+  "descriptions": {
+    "de": "Liefert die Maßnahmen der Aktionspläne und die Abweichungen unterhalb des Ziels (Organisation oder Standort) für den Berichtszeitraum an die Vorlage, unter dem Vorlagennamen.",
+    "en": "Provides the actions of the action plans and the nonconformities below the target (organisation or building) for the report period to the template, under the template name."
+  },
+  "types": [
+    {
+      "type": "Target",
+      "names": {
+        "de": "Ziel",
+        "en": "Target"
+      },
+      "descriptions": {
+        "de": "Organisation oder Standort, dessen Aktionspläne und Abweichungen ausgewertet werden",
+        "en": "Organisation or building whose action plans and nonconformities are evaluated"
+      }
+    },
+    {
+      "type": "Template Name",
+      "names": {
+        "de": "Vorlagenname",
+        "en": "Template Name"
+      },
+      "descriptions": {
+        "de": "Name der Variablen in der Vorlage, z. B. enms",
+        "en": "Name of the variable in the template, e.g. enms"
+      }
+    }
+  ]
+}

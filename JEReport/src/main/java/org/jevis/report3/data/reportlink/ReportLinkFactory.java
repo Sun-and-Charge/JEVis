@@ -45,9 +45,14 @@ public class ReportLinkFactory {
 
         logger.info("Found {} alarm links", alarmLinkObjects.size());
 
+        List<JEVisObject> energyManagementLinkObjects = new ArrayList<>(getChildrenFromDir(new ArrayList<>(), reportObject,
+                ReportLinkDir.NAME, EnergyManagementFunction.CLASS_NAME));
+        logger.info("Found {} energy management links", energyManagementLinkObjects.size());
+
         List<JEVisObject> listLinks = new ArrayList<>();
         listLinks.addAll(reportLinkObjects);
         listLinks.addAll(alarmLinkObjects);
+        listLinks.addAll(energyManagementLinkObjects);
 
         List<ReportData> reportLinks = new ArrayList<>();
         //if this is a generic report -> collect all children and iterate over this children
@@ -68,6 +73,8 @@ public class ReportLinkFactory {
             } else if (reportName.equals("Alarm Link")) {
                 AlarmFunction alarmFunction = new AlarmFunction(reportLinkObject);
                 reportLinks.add(alarmFunction);
+            } else if (reportName.equals(EnergyManagementFunction.CLASS_NAME)) {
+                reportLinks.add(new EnergyManagementFunction(reportLinkObject));
             }
 
         }

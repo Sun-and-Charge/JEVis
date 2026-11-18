@@ -1,0 +1,42 @@
+{
+  "name": "Energy Management Link",
+  "description": "",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Energy Management Link",
+      "end": "Periodic Report",
+      "type": 3
+    },
+    {
+      "start": "Energy Management Link",
+      "end": "Report",
+      "type": 3
+    },
+    {
+      "start": "Energy Management Link",
+      "end": "Report Link Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Target",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Management Link"
+    },
+    {
+      "name": "Template Name",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Management Link"
+    }
+  ]
+}

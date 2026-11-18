@@ -16,10 +16,6 @@
         <version>3.4</version>
     </parent>
 
-    <properties>
-        <skipTests>true</skipTests>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -46,6 +42,11 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jevis.commons</groupId>
             <artifactId>JECommons</artifactId>
