@@ -303,7 +303,8 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         for (JEVisRelationship rel : jeVisRelationships) {
             try {
                 //group to root
-                if (rel.isType(JEVisConstants.ObjectRelationship.ROOT) && groupIds.contains(rel.getStartID())) {
+                if (rel.isType(JEVisConstants.ObjectRelationship.ROOT) && groupIds.contains(rel.getStartID())
+                        && objs.stream().noneMatch(o -> o.getID().equals(rel.getEndID()))) {
                     objs.add(rel.getEndObject());
                 }
             } catch (Exception ex) {
@@ -312,6 +313,7 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         }
 
 
+        /* each root once: a user in several groups with a root relationship to the same object would get it more than once */
         return objs.stream().filter(jeVisObject -> !parentIsInList(objs, jeVisObject)).collect(Collectors.toList());
 
         //return objs;
