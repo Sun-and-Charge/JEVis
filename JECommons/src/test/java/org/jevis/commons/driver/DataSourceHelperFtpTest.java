@@ -102,6 +102,9 @@ public class DataSourceHelperFtpTest {
         ftp.add("/ext/Log/2026/11/", "Meter_20261111014530.csv", false);
         ftp.add("/ext/Log/2026/11/", "Event_20261111014530.csv", false);
         ftp.add("/ext/Log/2026/11/", "Meter_backup.csv", false);
+        /* a database file of the logger in the same folder (the date part cannot be parsed) */
+        ftp.add("/ext/Log/2026/11/", "Meter_61111014530.db", false);
+        ftp.add("/ext/Log/2026/11/", "Meter_2026111101.db", false);
         return ftp;
     }
 
