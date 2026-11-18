@@ -21,6 +21,8 @@ package org.jevis.report3.templates;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xddf.usermodel.*;
+import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
 
 import java.io.File;
@@ -120,7 +122,8 @@ public final class ReportTemplates {
         r++;
         st.note(s, r, "Veränderung: Berichtsmonat gegenüber Vormonat. Der Verlauf der letzten 12 Monate steht im Blatt „Verlauf“, "
                 + "der Baseline-Vergleich für Strom Produktion im Blatt „Baseline“.", 6);
-        int lastRow = r;
+        int chartRow = r + 2;
+        int lastRow = chartRow + 2 * CHART_ROWS + 1;
         st.widths(s, 30, 12, 16, 16, 14, 18);
         st.area(s, "F" + (lastRow + 1));
 
@@ -135,15 +138,17 @@ public final class ReportTemplates {
             st.expr(t, tr, 0, "${s.timestamp}", st.monthCell);
             st.expr(t, tr, 1, "${s.value}", st.number2);
             st.expr(t, tr, 2, "${s.unit}", st.cell);
-            st.each(t, tr, 0, var + ".value", "s", null, "C" + (tr + 1));
+            st.formula(t, tr, 3, label("A" + (tr + 1)), st.cell);
+            st.each(t, tr, 0, var + ".value", "s", null, "D" + (tr + 1));
             tr++;
             st.text(t, tr, 0, "Mittel", st.bold);
             st.formula(t, tr, 1, "AVERAGE(B" + (each + 1) + ")", st.boldNumber2);
             meanRows[i] = tr;
             tr += 2;
         }
-        st.widths(t, 22, 14, 12);
-        st.area(t, "C" + tr);
+        st.widths(t, 22, 14, 12, 8);
+        t.setColumnHidden(3, true);
+        st.area(t, "D" + tr);
         /* the overview refers to the means (JXLS moves the references with the expanded blocks) */
         for (int i = 0; i < ENPIS.length; i++) {
             st.formula(s, firstEnpiRow + i, 5, "Verlauf!B" + (meanRows[i] + 1), st.number2);
@@ -186,6 +191,17 @@ public final class ReportTemplates {
                 + "R² nahe 1: die Produktionsmenge erklärt den Verbrauch gut.", 4);
         st.widths(b, 26, 18, 18, 18);
         st.area(b, "D" + (br + 1));
+
+        /* charts on the overview; the ranges are the rows after JXLS expanded the 12 months (block i of "Verlauf":
+           0-based rows 4 + 15·i … 15 + 15·i; "Baseline": rows 4 … 15) */
+        XSSFSheet verlauf = wb.getSheet("Verlauf");
+        st.lineChart((XSSFSheet) s, chartRow, 6, "EnPI gesamt – letzte 12 Monate", rows(4, 12, 3),
+                new String[]{"Strom gesamt", "Gas gesamt"}, new CellRangeAddress[]{rows(4, 12, 1), rows(4 + 15 * 3, 12, 1)},
+                verlauf, new byte[][]{BLUEBERRY, SUN});
+        XSSFSheet base = wb.getSheet("Baseline");
+        s.setRowBreak(chartRow - 1);
+        st.scatterChart((XSSFSheet) s, chartRow + CHART_ROWS + 1, 6, "Baseline Strom Produktion",
+                base, rows(4, 12, 1), rows(4, 12, 2), rows(4, 12, 3));
         return wb;
     }
 
@@ -240,8 +256,9 @@ public final class ReportTemplates {
         r++;
         st.note(s, r, "Verbrauch und Kosten je Monat: Blätter „Verbrauch“ und „Kosten“. Einzelne Maßnahmen und Abweichungen: "
                 + "Blätter „Maßnahmen“ und „Abweichungen“.", 5);
+        int chartRow = r + 2;
         st.widths(s, 44, 10, 16, 16, 14);
-        st.area(s, "E" + (r + 1));
+        st.area(s, "E" + (chartRow + 3 * (CHART_ROWS + 1) + 1));
 
         /* sheet 2: consumption per month, current year against the previous year */
         Sheet c = wb.createSheet("Verbrauch");
@@ -260,15 +277,17 @@ public final class ReportTemplates {
         }
         st.expr(c, cr, 1 + ENMS_CONSUMPTIONS.length, "${" + v("Strom_Gesamt", "LAST") + ".value[i].value}", st.number0);
         st.expr(c, cr, 2 + ENMS_CONSUMPTIONS.length, "${" + v("Gas_Hauptzaehler_Energie", "LAST") + ".value[i].value}", st.number0);
-        st.each(c, cr, 0, months + ".value", "m", "i", col(2 + ENMS_CONSUMPTIONS.length) + (cr + 1));
+        st.formula(c, cr, 3 + ENMS_CONSUMPTIONS.length, label("A" + (cr + 1)), st.cell);
+        st.each(c, cr, 0, months + ".value", "m", "i", col(3 + ENMS_CONSUMPTIONS.length) + (cr + 1));
         cr++;
         st.text(c, cr, 0, "Summe", st.bold);
         for (int i = 1; i <= 2 + ENMS_CONSUMPTIONS.length; i++) {
             st.formula(c, cr, i, "SUM(" + col(i) + (cEach + 1) + ")", st.boldNumber0);
         }
         int cSum = cr;
-        st.widths(c, 12, 14, 18, 18, 12, 20, 12, 22, 20);
-        st.area(c, col(2 + ENMS_CONSUMPTIONS.length) + (cr + 1));
+        st.widths(c, 12, 14, 18, 18, 12, 20, 12, 22, 20, 8);
+        c.setColumnHidden(3 + ENMS_CONSUMPTIONS.length, true);
+        st.area(c, col(3 + ENMS_CONSUMPTIONS.length) + (cr + 1));
 
         /* sheet 3: costs per month from the energy invoices, and the EnPIs */
         Sheet k = wb.createSheet("Kosten");
@@ -282,7 +301,8 @@ public final class ReportTemplates {
         st.expr(k, kr, 4, "${" + v("Kosten_Gas_Netto", "LAST") + ".value[i].value}", st.number0);
         st.expr(k, kr, 5, "${" + v("EnPI_Strom_Gesamt", "CURRENT") + ".value[i].value}", st.number2);
         st.expr(k, kr, 6, "${" + v("EnPI_Gas_Gesamt", "CURRENT") + ".value[i].value}", st.number2);
-        st.each(k, kr, 0, months + ".value", "m", "i", "G" + (kr + 1));
+        st.formula(k, kr, 7, label("A" + (kr + 1)), st.cell);
+        st.each(k, kr, 0, months + ".value", "m", "i", "H" + (kr + 1));
         kr++;
         st.text(k, kr, 0, "Summe / Mittel", st.bold);
         for (int i = 1; i <= 4; i++) st.formula(k, kr, i, "SUM(" + col(i) + (kEach + 1) + ")", st.boldNumber0);
@@ -301,8 +321,9 @@ public final class ReportTemplates {
         st.formula(k, kr, 1, "AVERAGE(B" + (kLast + 1) + ")", st.boldNumber2);
         st.formula(k, kr, 2, "AVERAGE(C" + (kLast + 1) + ")", st.boldNumber2);
         int kLastMean = kr;
-        st.widths(k, 16, 13, 13, 19, 17, 13, 13);
-        st.area(k, "G" + (kr + 1));
+        st.widths(k, 16, 13, 13, 19, 17, 13, 13, 8);
+        k.setColumnHidden(7, true);
+        st.area(k, "H" + (kr + 1));
 
         /* overview values (references into the sheets; JXLS moves them with the expanded rows) */
         int sg = 1 + indexOf(ENMS_CONSUMPTIONS, "Strom_Gesamt"), gg = 1 + indexOf(ENMS_CONSUMPTIONS, "Gas_Hauptzaehler_Energie");
@@ -351,7 +372,39 @@ public final class ReportTemplates {
         nr++;
         st.widths(n, 10, 44, 20, 12, 12, 14, 11);
         st.area(n, "G" + nr);
+
+        /* charts on the overview (0-based rows 4 … 15 of "Verbrauch"/"Kosten" after JXLS expanded the 12 months) */
+        XSSFSheet verbrauch = wb.getSheet("Verbrauch"), kosten = wb.getSheet("Kosten");
+        int sCol = 1 + indexOf(ENMS_CONSUMPTIONS, "Strom_Gesamt"), gCol = 1 + indexOf(ENMS_CONSUMPTIONS, "Gas_Hauptzaehler_Energie");
+        CellRangeAddress months12 = rows(4, 12, 3 + ENMS_CONSUMPTIONS.length);
+        s.setRowBreak(chartRow - 1);
+        s.setRowBreak(chartRow + 2 * (CHART_ROWS + 1) - 1);
+        st.barChart((XSSFSheet) s, chartRow, 5, "Stromverbrauch je Monat (kWh)", verbrauch, months12,
+                new String[]{"Berichtsjahr", "Vorjahr"}, new CellRangeAddress[]{rows(4, 12, sCol), rows(4, 12, 1 + ENMS_CONSUMPTIONS.length)},
+                new byte[][]{BLUEBERRY, GREY});
+        st.barChart((XSSFSheet) s, chartRow + CHART_ROWS + 1, 5, "Gasverbrauch je Monat (kWh)", verbrauch, months12,
+                new String[]{"Berichtsjahr", "Vorjahr"}, new CellRangeAddress[]{rows(4, 12, gCol), rows(4, 12, 2 + ENMS_CONSUMPTIONS.length)},
+                new byte[][]{SUN, GREY});
+        st.barChart((XSSFSheet) s, chartRow + 2 * (CHART_ROWS + 1), 5, "Energiekosten je Monat (€, netto)", kosten, rows(4, 12, 7),
+                new String[]{"Strom", "Gas"}, new CellRangeAddress[]{rows(4, 12, 1), rows(4, 12, 2)}, new byte[][]{BLUEBERRY, SUN});
         return wb;
+    }
+
+    static final int CHART_ROWS = 18;
+    static final byte[] BLUEBERRY = {(byte) 0x1a, (byte) 0x2a, (byte) 0x45};
+    static final byte[] SUN = {(byte) 0xff, (byte) 0xde, (byte) 0x00};
+    static final byte[] GREY = {(byte) 0x9a, (byte) 0xa3, (byte) 0xb2};
+
+    /** month label of a timestamp cell for the chart axes (hidden helper column) */
+    static String label(String cell) {
+        /* MONTH/YEAR instead of TEXT: LibreOffice recalculates TEXT with the format codes of its language */
+        return "IF(ISNUMBER(" + cell + "),IF(MONTH(" + cell + ")<10,\"0\",\"\")&MONTH(" + cell + ")&\".\"&RIGHT(YEAR(" + cell
+                + "),2),\"\")";
+    }
+
+    /** {@code count} rows from the 0-based {@code firstRow} in one column */
+    static CellRangeAddress rows(int firstRow, int count, int column) {
+        return new CellRangeAddress(firstRow, firstRow + count - 1, column, column);
     }
 
     private static int indexOf(String[][] list, String stem) {
@@ -485,6 +538,104 @@ public final class ReportTemplates {
 
         void widths(Sheet sheet, int... chars) {
             for (int i = 0; i < chars.length; i++) sheet.setColumnWidth(i, chars[i] * 256);
+        }
+
+        private XSSFChart chart(XSSFSheet sheet, int row, int columns, String title) {
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, row, columns, row + CHART_ROWS);
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText(title);
+            chart.setTitleOverlay(false);
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+            /* the month labels are in hidden helper columns */
+            if (chart.getCTChart().isSetPlotVisOnly()) chart.getCTChart().getPlotVisOnly().setVal(false);
+            else chart.getCTChart().addNewPlotVisOnly().setVal(false);
+            return chart;
+        }
+
+        private static XDDFShapeProperties fill(byte[] rgb, boolean line) {
+            XDDFShapeProperties props = new XDDFShapeProperties();
+            XDDFSolidFillProperties solid = new XDDFSolidFillProperties(XDDFColor.from(rgb));
+            if (line) {
+                XDDFLineProperties lp = new XDDFLineProperties();
+                lp.setFillProperties(solid);
+                lp.setWidth(2.25);
+                props.setLineProperties(lp);
+            } else {
+                props.setFillProperties(solid);
+            }
+            return props;
+        }
+
+        void barChart(XSSFSheet sheet, int row, int columns, String title, XSSFSheet data, CellRangeAddress categories,
+                      String[] names, CellRangeAddress[] values, byte[][] colors) {
+            XSSFChart chart = chart(sheet, row, columns, title);
+            XDDFCategoryAxis x = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            XDDFValueAxis y = chart.createValueAxis(AxisPosition.LEFT);
+            y.setCrosses(AxisCrosses.AUTO_ZERO);
+            y.setNumberFormat("#,##0");
+            XDDFBarChartData bars = (XDDFBarChartData) chart.createData(ChartTypes.BAR, x, y);
+            bars.setBarDirection(BarDirection.COL);
+            bars.setVaryColors(false);
+            XDDFDataSource<String> cat = XDDFDataSourcesFactory.fromStringCellRange(data, categories);
+            for (int i = 0; i < values.length; i++) {
+                XDDFChartData.Series series = bars.addSeries(cat, XDDFDataSourcesFactory.fromNumericCellRange(data, values[i]));
+                series.setTitle(names[i], null);
+                series.setShapeProperties(fill(colors[i], false));
+            }
+            chart.plot(bars);
+        }
+
+        void lineChart(XSSFSheet sheet, int row, int columns, String title, CellRangeAddress categories, String[] names,
+                       CellRangeAddress[] values, XSSFSheet data, byte[][] colors) {
+            XSSFChart chart = chart(sheet, row, columns, title);
+            XDDFCategoryAxis x = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            XDDFValueAxis y = chart.createValueAxis(AxisPosition.LEFT);
+            y.setCrosses(AxisCrosses.AUTO_ZERO);
+            XDDFLineChartData lines = (XDDFLineChartData) chart.createData(ChartTypes.LINE, x, y);
+            lines.setVaryColors(false);
+            XDDFDataSource<String> cat = XDDFDataSourcesFactory.fromStringCellRange(data, categories);
+            for (int i = 0; i < values.length; i++) {
+                XDDFLineChartData.Series series = (XDDFLineChartData.Series) lines.addSeries(cat, XDDFDataSourcesFactory.fromNumericCellRange(data, values[i]));
+                series.setTitle(names[i], null);
+                series.setSmooth(false);
+                series.setMarkerStyle(MarkerStyle.CIRCLE);
+                series.setMarkerSize((short) 5);
+                series.setShapeProperties(fill(colors[i], true));
+            }
+            chart.plot(lines);
+        }
+
+        /** measured values as points, the model as line */
+        void scatterChart(XSSFSheet sheet, int row, int columns, String title, XSSFSheet data, CellRangeAddress x,
+                          CellRangeAddress measured, CellRangeAddress model) {
+            XSSFChart chart = chart(sheet, row, columns, title);
+            XDDFValueAxis xAxis = chart.createValueAxis(AxisPosition.BOTTOM);
+            xAxis.setTitle("Produktionsmenge");
+            XDDFValueAxis yAxis = chart.createValueAxis(AxisPosition.LEFT);
+            yAxis.setTitle("Strom Produktion (kWh)");
+            yAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+            yAxis.setNumberFormat("#,##0");
+            XDDFScatterChartData scatter = (XDDFScatterChartData) chart.createData(ChartTypes.SCATTER, xAxis, yAxis);
+            scatter.setVaryColors(false);
+            XDDFNumericalDataSource<Double> xs = XDDFDataSourcesFactory.fromNumericCellRange(data, x);
+            XDDFScatterChartData.Series points = (XDDFScatterChartData.Series) scatter.addSeries(xs, XDDFDataSourcesFactory.fromNumericCellRange(data, measured));
+            points.setTitle("Messwerte", null);
+            points.setMarkerStyle(MarkerStyle.CIRCLE);
+            points.setMarkerSize((short) 7);
+            XDDFShapeProperties noLine = new XDDFShapeProperties();
+            XDDFLineProperties none = new XDDFLineProperties();
+            none.setFillProperties(new XDDFNoFillProperties());
+            noLine.setLineProperties(none);
+            points.setShapeProperties(noLine);
+            XDDFScatterChartData.Series line = (XDDFScatterChartData.Series) scatter.addSeries(xs, XDDFDataSourcesFactory.fromNumericCellRange(data, model));
+            line.setTitle("Modell", null);
+            line.setMarkerStyle(MarkerStyle.NONE);
+            line.setShapeProperties(fill(SUN, true));
+            chart.plot(scatter);
+            /* marker colour of the measured values */
+            points.getCTScatterSer().getMarker().addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(BLUEBERRY);
         }
 
         /** JXLS area over the sheet (comment in A1) */

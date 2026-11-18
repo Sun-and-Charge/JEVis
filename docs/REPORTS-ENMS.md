@@ -27,6 +27,17 @@ directory after a change and commit both files); `ReportTemplatesTest` fills the
   - sheets *Verbrauch*, *Kosten*: the months of the year (and of the previous year) with sums/means.
   - sheets *Maßnahmen*, *Abweichungen*: the lists of the energy management link.
 
+### Charts
+
+The overview sheets carry charts in the Sun and Charge colours (Blueberry `#1a2a45`, Sun `#ffde00`, grey for the
+previous year), on their own page: EnPI report – EnPI Strom/Gas gesamt over 12 months (line) and the baseline
+(measured values as points, the model as line); energy management report – electricity and gas per month against
+the previous year and the energy costs per month (columns). JXLS does not move chart ranges, so the series refer to
+the rows after the expansion of the 12 months (the overview rows themselves do not move). The month labels come from
+hidden helper columns (`MONTH`/`YEAR`, not `TEXT`, which LibreOffice recalculates with the format codes of its
+language); the charts show hidden cells. JEReport needs the full OOXML schemas (`poi-ooxml-full` instead of
+`poi-ooxml-lite`) to read such charts.
+
 ### Template variables (report links)
 
 A report link delivers `<variable>.value` = list of `{value, unit, timestamp}` (timestamp = Excel date). The templates
