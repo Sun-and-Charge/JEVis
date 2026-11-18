@@ -126,6 +126,7 @@ public class SankeyTableFactory {
                 TableCell<SankeyDataRow, SankeyDataRow> cell = new TableCell<SankeyDataRow, SankeyDataRow>() {
                     @Override
                     protected void updateItem(SankeyDataRow item, boolean empty) {
+                        super.updateItem(item, empty);
 
 
                         if (empty || item == null) {
@@ -188,6 +189,7 @@ public class SankeyTableFactory {
                 TableCell<SankeyDataRow, SankeyDataRow> cell = new TableCell<SankeyDataRow, SankeyDataRow>() {
                     @Override
                     protected void updateItem(SankeyDataRow item, boolean empty) {
+                        super.updateItem(item, empty);
 
 
                         if (empty || item == null) {

@@ -75,6 +75,7 @@ public class GaugeSectionTableView extends TableView<GaugeSectionPojo> {
                 TableCell<GaugeSectionPojo, Color> cell = new TableCell<GaugeSectionPojo, Color>() {
                     @Override
                     protected void updateItem(Color item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             ColorPickerAdv colorPicker = new ColorPickerAdv();
                             colorPicker.setMaxWidth(100d);

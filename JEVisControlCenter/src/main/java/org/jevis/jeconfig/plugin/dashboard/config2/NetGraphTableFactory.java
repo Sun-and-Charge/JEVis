@@ -74,6 +74,7 @@ public class NetGraphTableFactory {
                 TableCell<NetGraphDataRow, Double> cell = new TableCell<NetGraphDataRow, Double>() {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             TextField textField = buildTextField(item.toString());
                             textField.setDisable(disable.getValue());
@@ -161,6 +162,7 @@ public class NetGraphTableFactory {
                 TableCell<NetGraphDataRow, Double> cell = new TableCell<NetGraphDataRow, Double>() {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             TextField textField = buildTextField(item.toString());
                             textField.setDisable(disable.getValue());

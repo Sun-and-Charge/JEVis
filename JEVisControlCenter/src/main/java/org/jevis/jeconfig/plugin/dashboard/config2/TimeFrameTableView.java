@@ -174,6 +174,7 @@ public class TimeFrameTableView extends TableView<TimeFrameWidgetObject> {
                 TableCell<TimeFrameWidgetObject, String> cell = new TableCell<TimeFrameWidgetObject, String>() {
                     @Override
                     protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             try {
                                 ImageView icon = ((TimeFrameWidgetObject) getTableRow().getItem()).getImagePreview();

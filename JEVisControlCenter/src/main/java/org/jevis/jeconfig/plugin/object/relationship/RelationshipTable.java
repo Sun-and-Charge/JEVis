@@ -96,6 +96,7 @@ public class RelationshipTable extends TableView {
                 TableCell<TableSample, JEVisObject> cell = new TableCell<TableSample, JEVisObject>() {
                     @Override
                     public void updateItem(JEVisObject item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null) {
                             HBox box = new HBox(10);
                             box.setAlignment(Pos.BASELINE_LEFT);
@@ -126,6 +127,7 @@ public class RelationshipTable extends TableView {
                 TableCell<TableSample, JEVisObject> cell = new TableCell<TableSample, JEVisObject>() {
                     @Override
                     public void updateItem(JEVisObject item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null) {
                             HBox box = new HBox(10);
                             box.setAlignment(Pos.BASELINE_LEFT);
@@ -156,6 +158,7 @@ public class RelationshipTable extends TableView {
                 TableCell<TableSample, Integer> cell = new TableCell<TableSample, Integer>() {
                     @Override
                     public void updateItem(Integer item, boolean empty) {
+                        super.updateItem(item, empty);
                         try {
                             if (item != null) {
                                 HBox box = new HBox();
@@ -190,6 +193,7 @@ public class RelationshipTable extends TableView {
                 TableCell<TableSample, Integer> cell = new TableCell<TableSample, Integer>() {
                     @Override
                     public void updateItem(Integer item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null) {
 
                             HBox box = new HBox();

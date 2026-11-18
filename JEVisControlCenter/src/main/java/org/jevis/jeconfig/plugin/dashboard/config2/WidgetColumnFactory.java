@@ -187,6 +187,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Widget> cell = new TableCell<Widget, Widget>() {
                     @Override
                     protected void updateItem(Widget item, boolean empty) {
+                        super.updateItem(item, empty);
 
 
                         if (empty || item == null) {
@@ -265,6 +266,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Integer> cell = new TableCell<Widget, Integer>() {
                     @Override
                     protected void updateItem(Integer item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             setText(item.toString());
                         } else {
@@ -309,6 +311,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Widget> cell = new TableCell<Widget, Widget>() {
                     @Override
                     protected void updateItem(Widget item, boolean empty) {
+                        super.updateItem(item, empty);
 
 
                         if (empty || item == null) {
@@ -366,6 +369,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, String> cell = new TableCell<Widget, String>() {
                     @Override
                     protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             try {
                                 ImageView icon = ((Widget) getTableRow().getItem()).getImagePreview();
@@ -432,6 +436,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, String> cell = new TableCell<Widget, String>() {
                     @Override
                     protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             TextField textField = new TextField(item);
 
@@ -493,6 +498,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Color> cell = new TableCell<Widget, Color>() {
                     @Override
                     protected void updateItem(Color item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             ColorPickerAdv colorPicker = new ColorPickerAdv();
                             colorPicker.setMaxWidth(100d);
@@ -546,6 +552,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Color> cell = new TableCell<Widget, Color>() {
                     @Override
                     protected void updateItem(Color item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
 //                            ColorPicker colorPicker = new ColorPicker(item);
 //                            colorPicker.setMaxWidth(100d);
@@ -606,6 +613,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Double> cell = new TableCell<Widget, Double>() {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             TextField textField = buildDoubleTextField(item.toString());
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -659,6 +667,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Double> cell = new TableCell<Widget, Double>() {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
+                        super.updateItem(item, empty);
                         setGraphic(null);
                         if (item != null && !empty) {
                             TextField textField = buildDoubleTextField(item.toString());
@@ -709,6 +718,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Double> cell = new TableCell<Widget, Double>() {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
+                        super.updateItem(item, empty);
 
                         if (item != null && !empty) {
                             TextField textField = buildDoubleTextField(item.toString());
@@ -887,6 +897,7 @@ public class WidgetColumnFactory {
                 TableCell<Widget, Double> cell = new TableCell<Widget, Double>() {
                     @Override
                     protected void updateItem(Double item, boolean empty) {
+                        super.updateItem(item, empty);
                         if (item != null && !empty) {
                             TextField textField = buildDoubleTextField(item.toString());
 

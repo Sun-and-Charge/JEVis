@@ -462,6 +462,7 @@ public class IndexOfLegalProvisionsTable extends TableView<ObligationData> {
                 TableCell<ObligationData, ObligationData> cell = new TableCell<ObligationData, ObligationData>() {
                     @Override
                     protected void updateItem(ObligationData item, boolean empty) {
+                        super.updateItem(item, empty);
 
 
                         if (empty || item == null) {
