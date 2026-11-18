@@ -149,11 +149,44 @@ public class CSVParser {
     }
 
     private void parseRows(String[][] table) {
+        parseRows(table, true);
+    }
+
+    /**
+     * A data point with both Mapping Identifier and Value Index reads its Value Index only from the records (rows)
+     * that contain its identifier in one of their cells, e.g. a file with one row per meter ("DeviceId" column): each
+     * data point takes the row of its meter. This is how the parser read such configurations until 2026-10 (then called
+     * COLUMN); with only one of the two settings the data point is resolved as documented for ROW/COLUMN.
+     */
+    static boolean filtersRows(DataPoint dataPoint) {
+        return dataPoint.getValueIndex() != null && dataPoint.getMappingIdentifier() != null
+                && !dataPoint.getMappingIdentifier().trim().isEmpty();
+    }
+
+    private static boolean rowContains(String[] row, String identifier) {
+        String wanted = identifier.trim();
+        for (String cell : row) {
+            if (cell != null && wanted.equals(cell.trim())) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param skipDatapointRow skip the row of the Datapoint Index (ROW alignment: the row with the identifiers);
+     *                         false for the record layout, where the Datapoint Index names a column
+     */
+    private void parseRows(String[][] table, boolean skipDatapointRow) {
         logger.debug("Traversing ROW alignment (time axis from top to bottom)");
         Map<DataPoint, Integer> valueIndexes = resolveValueIndexes(table, true);
+        boolean anyFilter = false;
+        for (DataPoint dataPoint : _dataPoints) anyFilter |= filtersRows(dataPoint);
         int firstRow = headerLines == null ? 0 : Math.max(0, headerLines);
         for (int row = firstRow; row < table.length; row++) {
-            if (dpIndex != null && row == dpIndex) {
+            if (skipDatapointRow && dpIndex != null && row == dpIndex) {
+                continue;
+            }
+            if (anyFilter && !anyDataPointFor(table[row])) {
+                /* a record of another meter: not an error (the file may hold meters that are not configured) */
                 continue;
             }
             DateTime dateTime = getDateTime(getCell(table, row, dateIndex), getCell(table, row, timeIndex), row);
@@ -163,11 +196,33 @@ public class CSVParser {
             }
             for (DataPoint dataPoint : _dataPoints) {
                 Integer valueIndex = valueIndexes.get(dataPoint);
-                if (valueIndex != null) {
-                    addDataPointValue(dataPoint, getCell(table, row, valueIndex), dateTime, row, valueIndex);
-                }
+                if (valueIndex == null) continue;
+                if (filtersRows(dataPoint) && !rowContains(table[row], dataPoint.getMappingIdentifier())) continue;
+                addDataPointValue(dataPoint, getCell(table, row, valueIndex), dateTime, row, valueIndex);
             }
         }
+    }
+
+    /** the row is read for at least one data point (one without row filter, or one whose identifier it contains) */
+    private boolean anyDataPointFor(String[] row) {
+        for (DataPoint dataPoint : _dataPoints) {
+            if (!filtersRows(dataPoint) || rowContains(row, dataPoint.getMappingIdentifier())) return true;
+        }
+        return false;
+    }
+
+    /**
+     * COLUMN configurations whose data points all have Mapping Identifier and Value Index are files with one record per
+     * row, as the parser read COLUMN until 2026-10: read row by row with the identifier as row filter (Date/Time Index
+     * are columns). Since 2026-10 COLUMN means a time axis from left to right, where such data points would ignore
+     * their identifier.
+     */
+    boolean isRecordLayout() {
+        if (!"COLUMN".equals(dpType) || _dataPoints.isEmpty()) return false;
+        for (DataPoint dataPoint : _dataPoints) {
+            if (!filtersRows(dataPoint)) return false;
+        }
+        return true;
     }
 
     private void parseColumns(String[][] table) {
@@ -257,7 +312,11 @@ public class CSVParser {
             logger.info("CSV dimensions: rows={}, columns={}, alignment={}",
                     table.length, getMaximumColumnCount(table), dpType);
 
-            if ("COLUMN".equals(dpType)) {
+            if (isRecordLayout()) {
+                logger.info("COLUMN with Mapping Identifier and Value Index on every data point: one record per row, "
+                        + "the identifier selects the rows (layout as read until 2026-10)");
+                parseRows(table, false);
+            } else if ("COLUMN".equals(dpType)) {
                 parseColumns(table);
             } else {
                 parseRows(table);

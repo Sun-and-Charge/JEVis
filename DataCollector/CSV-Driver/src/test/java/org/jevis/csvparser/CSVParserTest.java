@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CSVParserTest {
 
@@ -80,6 +82,95 @@ class CSVParserTest {
         assertEquals(10.0d, results.get(0).getValue());
         assertEquals("2026-10-03", results.get(1).getDate().toString("yyyy-MM-dd"));
         assertEquals(11.0d, results.get(1).getValue());
+    }
+
+    /* one record per meter as the M-Bus gateways write it (neutral device ids): Index;Timestamp;DeviceId;…;Value0 */
+    private static final String HEADER = "Index;Timestamp;DeviceId;Link;User;Index0;Value0;Unit0\n";
+
+    private static String meterRow(int index, String time, String device, String value) {
+        return index + ";" + time + ";" + device + ";0;;0;" + value + ";Wh\n";
+    }
+
+    private static DataPoint meter(String device, String target) {
+        DataPoint dataPoint = new DataPoint();
+        dataPoint.setMappingIdentifier(device);
+        dataPoint.setValueIndex(6);
+        dataPoint.setTarget(target);
+        return dataPoint;
+    }
+
+    private CSVParser recordParser(String alignment, DataPoint... dataPoints) {
+        CSVParser parser = createParser(alignment, 2, 1, "yyyy-MM-dd HH:mm:ss");
+        parser.setHeaderLines(1);
+        parser.setDecimalSeparator(",");
+        parser.setDataPoints(Arrays.asList(dataPoints));
+        return parser;
+    }
+
+    @Test
+    void columnWithIdentifierAndValueIndexReadsOneRecordPerRowAsBefore2026_10() {
+        CSVParser parser = recordParser("COLUMN", meter("DME-00000001-64-4", "1:Value"), meter("DME-00000002-64-4", "2:Value"));
+        assertTrue(parser.isRecordLayout());
+
+        parser.parse(Collections.singletonList(csv(HEADER
+                + meterRow(0, "2026-09-01 01:44:49", "DME-00000001-64-4", "23863000")
+                + meterRow(1, "2026-09-01 01:44:49", "DME-00000002-64-4", "35674000"))), DateTimeZone.UTC);
+
+        List<Result> results = parser.getResult();
+        assertEquals(2, results.size());
+        assertEquals("1:Value", results.get(0).getTargetStr());
+        assertEquals(23863000d, results.get(0).getValue());
+        assertEquals("2:Value", results.get(1).getTargetStr());
+        assertEquals(35674000d, results.get(1).getValue());
+        assertTrue(parser.getReport().errors().isEmpty());
+    }
+
+    @Test
+    void aFileWithOnlyOneOfTheMetersIsNoError() {
+        CSVParser parser = recordParser("COLUMN", meter("DME-00000001-64-4", "1:Value"), meter("DME-00000002-64-4", "2:Value"));
+
+        parser.parse(Collections.singletonList(csv(HEADER
+                + meterRow(0, "2026-09-01 01:44:49", "DME-00000002-64-4", "35674000")
+                + meterRow(1, "2026-09-01 01:44:49", "DME-99999999-64-4", "1"))), DateTimeZone.UTC);
+
+        List<Result> results = parser.getResult();
+        assertEquals(1, results.size());
+        assertEquals("2:Value", results.get(0).getTargetStr());
+        /* "delete after successful parsing" depends on this: a missing or unknown meter is no error */
+        assertTrue(parser.getReport().errors().isEmpty());
+    }
+
+    @Test
+    void theSameMeterInTwoFilesKeepsTheNewerValue() {
+        CSVParser parser = recordParser("COLUMN", meter("DME-00000001-64-4", "1:Value"));
+
+        parser.parse(Arrays.asList(
+                csv(HEADER + meterRow(0, "2026-09-01 01:44:49", "DME-00000001-64-4", "100")),
+                csv(HEADER + meterRow(0, "2026-09-01 01:44:49", "DME-00000001-64-4", "101"))), DateTimeZone.UTC);
+
+        List<Result> results = parser.getResult();
+        assertEquals(1, results.size());
+        assertEquals(101d, results.get(0).getValue());
+        assertTrue(parser.getReport().errors().isEmpty());
+    }
+
+    @Test
+    void rowWithIdentifierAndValueIndexFiltersTheRowsToo() {
+        CSVParser parser = recordParser("ROW", meter("DME-00000001-64-4", "1:Value"), meter("DME-00000002-64-4", "2:Value"));
+        /* ROW: the Datapoint Index is a row; here row 3 (index 2) is a record and must not be skipped as header */
+        parser.setDpIndex(0);
+        assertFalse(parser.isRecordLayout());
+
+        parser.parse(Collections.singletonList(csv(HEADER
+                + meterRow(0, "2026-09-01 01:44:49", "DME-00000001-64-4", "5")
+                + meterRow(1, "2026-09-01 01:44:49", "DME-00000002-64-4", "7"))), DateTimeZone.UTC);
+
+        List<Result> results = parser.getResult();
+        assertEquals(2, results.size());
+        assertEquals(5d, results.get(0).getValue());
+        assertEquals("1:Value", results.get(0).getTargetStr());
+        assertEquals(7d, results.get(1).getValue());
+        assertEquals("2:Value", results.get(1).getTargetStr());
     }
 
     private CSVParser createParser(String alignment, int datapointIndex, int dateIndex, String dateFormat) {

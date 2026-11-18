@@ -70,52 +70,53 @@ public class FTPDataSource implements DataSource {
         for (JEVisObject channel : channels) {
             logger.debug("Start Channel: [{}] {}", channel.getID(), channel.getName());
             try {
-                result = new ArrayList<Result>();
-
                 JEVisClass parserJevisClass = channel.getDataSource().getJEVisClass(DataCollectorTypes.Parser.NAME);
-                logger.debug("parser.class: {}", parserJevisClass.getName());
                 List<JEVisObject> parserList = channel.getChildren(parserJevisClass, true);
+                if (parserList.isEmpty()) {
+                    logger.warn("Channel {}:{} has no parser", channel.getID(), channel.getName());
+                    continue;
+                }
+
+                /* the files are downloaded once per channel and parsed by every parser of the channel (before, each
+                   parser downloaded them again: n parsers = n times the data volume) */
+                List<byte[]> files;
+                try {
+                    files = downloadFiles(channel);
+                } catch (Exception ex) {
+                    logger.error("Download failed for channel {}:{}. {}", channel.getID(), channel.getName(), ex.getMessage());
+                    logger.debug("Download failed for channel {}:{}", channel.getID(), channel.getName(), ex);
+                    continue;
+                }
 
                 boolean successful = true;
-                for (JEVisObject parser : parserList) {
-                    logger.debug("parser.object: {}", parser.getID());
-
-                    this.parser = ParserFactory.getParser(parser);
-                    this.parser.initialize(parser);
-
-                    logger.debug("Parser.initialize");
-
-                    logger.debug("sending request");
-
+                for (JEVisObject parserObject : parserList) {
+                    logger.debug("parser.object: {}", parserObject.getID());
                     try {
-                        List<InputStream> input = this.sendSampleRequest(channel);
-
-                        logger.debug("sending request - done");
-                        if (!input.isEmpty()) {
-                            logger.debug("input is not empty: {}, start parsing", input.size());
-                            this.parse(input);
-                            logger.debug("parsing - done");
+                        this.parser = ParserFactory.getParser(parserObject);
+                        this.parser.initialize(parserObject);
+                        result = new ArrayList<Result>();
+                        if (!files.isEmpty()) {
+                            this.parse(streams(files));
                         }
-
                         if (!result.isEmpty()) {
-                            logger.debug("result is not empty {}, start import", result.size());
-//                    this.importResult();
-//
-//                    DataSourceHelper.setLastReadout(channel, _importer.getLatestDatapoint());
                             JEVisImporterAdapter.importResults(result, importer, channel);
-                            logger.debug("import done");
+                        }
+                        /* every parser must have parsed the files without errors before they are deleted */
+                        if (!this.parser.getReport().errors().isEmpty()) {
+                            successful = false;
                         }
                     } catch (Exception ex) {
-                        logger.error("MalformedURLException. For channel {}:{}. {}", channel.getID(), channel.getName(), ex.getMessage());
-                        logger.debug("MalformedURLException. For channel {}:{}", channel.getID(), channel.getName(), ex);
+                        logger.error("Parsing failed for channel {}:{}, parser {}. {}", channel.getID(), channel.getName(),
+                                parserObject.getID(), ex.getMessage());
+                        logger.debug("Parsing failed for channel {}:{}", channel.getID(), channel.getName(), ex);
                         successful = false;
                     }
                 }
 
-                if (successful && deleteOnSuccess && parser.getReport().errors().isEmpty()) {
+                if (successful && deleteOnSuccess && !downloadedFileNames.isEmpty()) {
                     FTPClient ftpClient = initFTPClient();
                     try {
-                        for (String fileName : fileNames) {
+                        for (String fileName : downloadedFileNames) {
                             logger.debug("Deleting file {} from ftp server", fileName);
                             ftpClient.deleteFile(fileName);
                         }
@@ -130,6 +131,84 @@ public class FTPDataSource implements DataSource {
                 ex.printStackTrace();
             }
         }
+    }
+
+    /** a fresh stream per file for each parser */
+    private static List<InputStream> streams(List<byte[]> files) {
+        List<InputStream> streams = new ArrayList<>();
+        for (byte[] file : files) streams.add(new BufferedInputStream(new ByteArrayInputStream(file)));
+        return streams;
+    }
+
+    /** files of the last download that were retrieved completely (only these may be deleted) */
+    private final List<String> downloadedFileNames = new ArrayList<>();
+
+    /**
+     * Downloads the matching files of the channel in one FTP session.
+     *
+     * @return the content of every completely retrieved file, oldest first
+     */
+    private List<byte[]> downloadFiles(JEVisObject channel) throws JEVisException, IOException {
+        List<byte[]> files = new ArrayList<>();
+        downloadedFileNames.clear();
+        FTPClient _fc = initFTPClient();
+        try {
+            JEVisClass channelClass = channel.getJEVisClass();
+            JEVisType pathType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.PATH);
+            String filePath = DatabaseHelper.getObjectAsString(channel, pathType);
+            JEVisType lastReadoutType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.LAST_READOUT);
+            DateTime lastReadout = DatabaseHelper.getObjectAsDate(channel, lastReadoutType);
+
+            JEVisType readoutOffsetType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.READOUT_OFFSET);
+            Long readoutOffset = DatabaseHelper.getObjectAsLong(channel, readoutOffsetType);
+            if (readoutOffset != null && lastReadout != null) {
+                lastReadout = lastReadout.minus(readoutOffset);
+            }
+
+            JEVisType maxReadoutType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.MAX_READOUT);
+            Long maxReadout = DatabaseHelper.getObjectAsLong(channel, maxReadoutType);
+
+            fileNames.clear();
+            fileNames.addAll(DataSourceHelper.getFTPMatchedFileNames(_fc, lastReadout, maxReadout, timezone, filePath, importer.getOverwrite()));
+            logger.info("Nr of Matched Files {}", fileNames.size());
+            for (String fileName : fileNames) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                boolean retrieveFile = false;
+                int retries = 5;
+                ConnectException connectException = null;
+                for (int i = 0; i < retries; i++) {
+                    try {
+                        out.reset();
+                        retrieveFile = _fc.retrieveFile(fileName, out);
+                    } catch (ConnectException e) {
+                        logger.error("ConnectionException. {} / {}", i, retries, e);
+                        if (i == retries - 1) {
+                            connectException = e;
+                        }
+                    }
+                    if (retrieveFile) {
+                        break;
+                    }
+                }
+                if (connectException != null) {
+                    throw connectException;
+                }
+                logger.info("FTP file {}: retrieved {}, {} bytes", fileName, retrieveFile, out.size());
+                if (retrieveFile) {
+                    files.add(out.toByteArray());
+                    downloadedFileNames.add(fileName);
+                } else {
+                    logger.warn("FTP file {} could not be retrieved; it is not parsed and not deleted", fileName);
+                }
+            }
+        } finally {
+            try {
+                _fc.disconnect();
+            } catch (Exception e) {
+                logger.debug("Could not disconnect", e);
+            }
+        }
+        return files;
     }
 
     @Override
@@ -150,66 +229,7 @@ public class FTPDataSource implements DataSource {
 
     @Override
     public List<InputStream> sendSampleRequest(JEVisObject channel) throws JEVisException, IOException {
-        List<InputStream> answerList = new ArrayList<InputStream>();
-        FTPClient _fc = initFTPClient();
-
-        InputStream answer = null;
-        JEVisClass channelClass = channel.getJEVisClass();
-        JEVisType pathType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.PATH);
-        String filePath = DatabaseHelper.getObjectAsString(channel, pathType);
-        JEVisType lastReadoutType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.LAST_READOUT);
-        DateTime lastReadout = DatabaseHelper.getObjectAsDate(channel, lastReadoutType);
-
-        JEVisType readoutOffsetType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.READOUT_OFFSET);
-        Long readoutOffset = DatabaseHelper.getObjectAsLong(channel, readoutOffsetType);
-
-        if (readoutOffset != null && lastReadout != null) {
-            lastReadout = lastReadout.minus(readoutOffset);
-        }
-
-        JEVisType maxReadoutType = channelClass.getType(DataCollectorTypes.Channel.FTPChannel.MAX_READOUT);
-        Long maxReadout = DatabaseHelper.getObjectAsLong(channel, maxReadoutType);
-
-//            String filePath = dp.getFilePath();
-        logger.info("SendSampleRequest2");
-        fileNames.clear();
-        fileNames.addAll(DataSourceHelper.getFTPMatchedFileNames(_fc, lastReadout, maxReadout, timezone, filePath, importer.getOverwrite()));
-//        String currentFilePath = Paths.get(filePath).getParent().toString();
-        logger.info("Nr of Matched Files {}", fileNames.size());
-        for (String fileName : fileNames) {
-            logger.info("FileInputName: {}", fileName);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-//                String query = Paths.get(fileName);
-            logger.info("FTPQuery {}", fileName);
-            boolean retrieveFile = false;
-            int retries = 5;
-            ConnectException connectException = null;
-            for (int i = 0; i < retries; i++) {
-                try {
-                    retrieveFile = _fc.retrieveFile(fileName, out);
-                } catch (ConnectException e) {
-                    logger.error("ConnectionException. {} / {}", i, retries, e);
-                    if (i == 4) {
-                        connectException = e;
-                    }
-                }
-                if (retrieveFile) {
-                    break;
-                }
-            }
-            if (connectException != null) {
-                throw connectException;
-            }
-            logger.info("Request status: {}", retrieveFile);
-            InputStream inputStream = new ByteArrayInputStream(out.toByteArray());
-            answer = new BufferedInputStream(inputStream);
-//                InputHandler inputConverter = InputHandlerFactory.getInputConverter(answer);
-//                inputConverter.setFilePath(fileName);
-            answerList.add(answer);
-        }
-
-        return answerList;
+        return streams(downloadFiles(channel));
     }
 
     private FTPClient initFTPClient() throws IOException {

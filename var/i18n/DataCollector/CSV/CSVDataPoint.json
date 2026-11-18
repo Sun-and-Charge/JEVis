@@ -16,9 +16,9 @@
     {
       "type": "Mapping Identifier",
       "descriptions": {
-        "de": "Die Erkennungs-ID wird bei ROW in der durch Datenpunkt Index festgelegten Zeile und bei COLUMN in der festgelegten Spalte gesucht. Alternativ kann der Werte Index verwendet werden.",
+        "de": "Die Erkennungs-ID wird bei ROW in der durch Datenpunkt Index festgelegten Zeile und bei COLUMN in der festgelegten Spalte gesucht. Alternativ kann der Werte Index verwendet werden. Sind Erkennungs-ID und Werte Index beide gesetzt, wählt die Erkennungs-ID die Zeilen aus: gelesen wird der Werte Index nur aus Zeilen, in denen die ID in einer Zelle steht (z. B. eine Zeile je Zähler mit Geräte-ID). Fehlt die ID in einer Datei, ist das kein Fehler.",
         "ru": "Mapping Identifier description",
-        "en": "For ROW the Mapping ID is searched in the configured datapoint row; for COLUMN it is searched in the configured datapoint column. Alternatively use Value Index.",
+        "en": "For ROW the Mapping ID is searched in the configured datapoint row; for COLUMN it is searched in the configured datapoint column. Alternatively use Value Index. If both Mapping ID and Value Index are set, the Mapping ID selects the rows: the Value Index is read only from rows that contain the ID in one of their cells (e.g. one row per meter with a device id). A file without the ID is no error.",
         "ar": "يسمح معرّف التعيين بتعيين نقطة بيانات CSV إلى العمود أو الصف الصحيح لملف CSV. بدلاً من ذلك ، يمكن إجراء التعيين عبر مؤشر القيمة."
       },
       "names": {
