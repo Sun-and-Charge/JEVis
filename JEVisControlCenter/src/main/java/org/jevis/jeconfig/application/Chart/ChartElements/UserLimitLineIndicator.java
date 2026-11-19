@@ -71,7 +71,9 @@ public class UserLimitLineIndicator extends ChartPlugin {
         label.setMouseTransparent(true);
         label.setText(limitLine.getLabel());
         label.setTextFill(color);
-        label.setStyle("-fx-font-size: 11px;");
+        /* small label on a light chip so it stays readable above the data (J25.5) */
+        label.getStyleClass().add("suc-limit-label");
+        line.getStrokeDashArray().setAll(6d, 4d);
 
         chartProperty().addListener((obs, oldChart, newChart) -> {
             if (oldChart != null) {

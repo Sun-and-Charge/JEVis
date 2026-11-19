@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -118,7 +119,42 @@ public class CustomTimeFormatter extends AbstractFormatter {
         final LocalDateTime dateTime = LocalDateTime.ofEpochSecond(longUTCSeconds, nanoSeconds,
                 getTimeZoneOffset(longUTCSeconds));
 
-        return dateTime.format(dateFormat[formatterIndex]).replaceAll(" ", System.lineSeparator());
+        return oneLineLabel(dateTime);
+    }
+
+    /*
+     * One-line labels after the Grafana guidelines (J25.5) instead of the two-line chartfx defaults ("19-Nov." over
+     * "00:00"): the time within a day and the date at midnight, the date for day ticks, month and year above that.
+     */
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter TIME_SECONDS = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.");
+    private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("MMM yy", I18n.getInstance().getLocale());
+    private static final DateTimeFormatter YEAR = DateTimeFormatter.ofPattern("yyyy");
+
+    /* spacing of the major ticks in seconds, from the tick values of the last axis layout */
+    private double tickSpacing = 3600;
+
+    @Override
+    public void updateFormatter(final java.util.List<Double> newMajorTickMarks, final double unitScaling) {
+        super.updateFormatter(newMajorTickMarks, unitScaling);
+        if (newMajorTickMarks != null && newMajorTickMarks.size() > 1) {
+            double spacing = Math.abs(newMajorTickMarks.get(1) - newMajorTickMarks.get(0));
+            if (spacing > 0 && spacing != tickSpacing) {
+                tickSpacing = spacing;
+                labelCache.clear();
+            }
+        }
+    }
+
+    private String oneLineLabel(LocalDateTime dateTime) {
+        double unit = tickSpacing;
+        boolean midnight = dateTime.getHour() == 0 && dateTime.getMinute() == 0 && dateTime.getSecond() == 0;
+        if (unit < 60) return dateTime.format(TIME_SECONDS);
+        if (unit < 86400) return midnight ? dateTime.format(DAY) : dateTime.format(TIME);
+        if (unit < 28 * 86400) return dateTime.format(DAY);
+        if (unit < 365 * 86400) return dateTime.format(MONTH);
+        return dateTime.format(YEAR);
     }
 
     /**

@@ -45,6 +45,7 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.unit.ChartUnits.ChartUnits;
 import org.jevis.commons.unit.ChartUnits.QuantityUnits;
 import org.jevis.jeconfig.JEConfig;
+import org.jevis.jeconfig.application.Chart.ChartType;
 import org.jevis.jeconfig.application.Chart.Charts.XYChart;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
@@ -103,6 +104,27 @@ public class XYChartSerie {
         generateSeriesFromSamples();
     }
 
+    /**
+     * Fill of the row after the Grafana guidelines (J25.5): areas translucent so the grid and other rows stay visible,
+     * stacked areas and columns a little stronger, everything else (lines, markers) in the full row colour.
+     */
+    private Color fillColor(Color rowColor) {
+        ChartType type = singleRow.getChartType();
+        if ((type == null || type == ChartType.DEFAULT) && chartModel != null) type = chartModel.getChartType();
+        if (type == null) return rowColor;
+        switch (type) {
+            case AREA:
+                return rowColor.deriveColor(0, 1, 1, 0.25);
+            case STACKED_AREA:
+                return rowColor.deriveColor(0, 1, 1, 0.6);
+            case COLUMN:
+            case STACKED_COLUMN:
+                return rowColor.deriveColor(0, 1, 1, 0.85);
+            default:
+                return rowColor.deriveColor(0, 1, 1, 0.9);
+        }
+    }
+
     public void generateSeriesFromSamples() throws JEVisException {
         minValue = new ValueWithDateTime(Double.MAX_VALUE, nf);
         maxValue = new ValueWithDateTime(-Double.MAX_VALUE, nf);
@@ -127,7 +149,7 @@ public class XYChartSerie {
             this.tableEntry = new TableEntry(getTableEntryName());
             this.valueDataSet.setName(getTableEntryName());
             this.tableEntry.setColor(color);
-            this.valueDataSet.setStyle("strokeColor=" + color + "; fillColor=" + color);
+            this.valueDataSet.setStyle("strokeColor=" + color + "; fillColor=" + fillColor(singleRow.getColor()));
 
             samples = singleRow.getSamples();
         } else {

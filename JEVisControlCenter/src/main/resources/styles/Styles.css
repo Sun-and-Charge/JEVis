@@ -553,6 +553,152 @@
     -fx-background-color: transparent;
 }
 
+/* Grafana-like plot (J25.5): muted axis labels; the grid is styled in XYChart (its style lines are not in the scene) */
+.chart .axis {
+    -fx-tick-label-fill: #6b768a;
+}
+
+.chart .axis-label {
+    -fx-fill: #6b768a;
+    -fx-font-size: 11px;
+}
+
+.chart-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2a3c;
+}
+
+/* one chart of an analysis as a panel: card with header (title, period) and the legend table below */
+.suc-analysis-charts {
+    -fx-background-color: -suc-background;
+    -fx-padding: 12;
+    -fx-spacing: 0;
+}
+
+.suc-chart-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #d3d9e3;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 8 12 8 12;
+}
+
+.suc-chart-gap {
+    -fx-opacity: 0;
+    -fx-padding: 5 0 5 0;
+}
+
+.suc-chart-header {
+    -fx-padding: 0 0 4 0;
+    -fx-spacing: 8;
+    -fx-alignment: baseline-left;
+}
+
+.suc-chart-header .suc-chart-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2a3c;
+}
+
+.suc-chart-header .suc-chart-period {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b768a;
+}
+
+/* legend table under the chart: no grid, small muted header, plain rows */
+.suc-legend-table,
+.suc-legend-table:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 4 0 0 0;
+    -fx-border-width: 0;
+    -fx-font-size: 12px;
+}
+
+.suc-legend-table .column-header-background,
+.suc-legend-table .column-header-background .filler {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #d5dae3;
+}
+
+.suc-legend-table .column-header,
+.suc-legend-table .column-header .label {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-text-fill: #6b768a;
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+}
+
+.suc-legend-table .table-row-cell,
+.suc-legend-table .table-row-cell:odd {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.suc-legend-table .table-row-cell:hover {
+    -fx-background-color: #f4f6f9;
+}
+
+.suc-legend-table .table-row-cell .table-cell {
+    -fx-border-width: 0;
+    -fx-text-fill: #1f2a3c;
+}
+
+.suc-legend-table .suc-legend-marker {
+    -fx-background-radius: 2;
+    -fx-cursor: hand;
+}
+
+.suc-legend-table .suc-legend-marker.hidden-series {
+    -fx-opacity: 0.25;
+}
+
+.suc-legend-table .table-row-cell.hidden-series .table-cell {
+    -fx-text-fill: #9aa3b2;
+}
+
+/* shared crosshair over all charts of an analysis, with the values of all rows next to the mouse */
+.suc-crosshair {
+    -fx-stroke: #8a94a6;
+    -fx-stroke-width: 1;
+    -fx-stroke-dash-array: 4 3;
+}
+
+.suc-crosshair-tip {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 4;
+    -fx-border-color: #d3d9e3;
+    -fx-border-radius: 4;
+    -fx-padding: 6 8 6 8;
+    -fx-spacing: 2;
+    -fx-effect: dropshadow(gaussian, rgba(16, 24, 40, 0.16), 8, 0, 0, 2);
+}
+
+.suc-crosshair-tip .label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #1f2a3c;
+}
+
+.suc-crosshair-tip .suc-crosshair-time {
+    -fx-text-fill: #6b768a;
+}
+
+.suc-crosshair-tip .suc-crosshair-value {
+    -fx-font-weight: bold;
+}
+
+/* user limit lines: dashed with a small label */
+.suc-limit-label {
+    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-background-radius: 3;
+    -fx-padding: 0 4 0 4;
+    -fx-font-size: 11px;
+}
+
 /*---------------------------------------------------------------------------------------------------------------
                                          Calendar (date picker)
    The calendar popup stays light in every theme.

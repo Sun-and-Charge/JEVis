@@ -57,6 +57,9 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
     private DateTime timestampOfFirstSample = null;
     private boolean asDuration = false;
     private WorkDays workDays;
+    /* shared crosshair (J25.5): a vertical line in every chart of the analysis, the values of all rows in the hovered one */
+    private final javafx.scene.shape.Line crosshair = new javafx.scene.shape.Line();
+    private final javafx.scene.layout.VBox crosshairTip = new javafx.scene.layout.VBox();
 
     public DataPointTableViewPointer(org.jevis.jeconfig.application.Chart.Charts.Chart chart, List<org.jevis.jeconfig.application.Chart.Charts.Chart> notActive) {
         super();
@@ -81,6 +84,16 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
             }
         };
         registerInputEventHandler(MouseEvent.MOUSE_MOVED, mouseMoveHandler);
+        this.currentChart.getChart().addEventHandler(MouseEvent.MOUSE_EXITED, event -> hideCrosshairs());
+
+        crosshair.getStyleClass().add("suc-crosshair");
+        crosshair.setMouseTransparent(true);
+        crosshair.setVisible(false);
+        crosshairTip.getStyleClass().add("suc-crosshair-tip");
+        crosshairTip.setMouseTransparent(true);
+        crosshairTip.setVisible(false);
+        crosshairTip.setManaged(false);
+        getChartChildren().addAll(crosshair, crosshairTip);
 
         this.currentChart.getChart().setOnMouseMoved(event -> {
             try {
@@ -113,8 +126,9 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
                 final double x = xAxis.getDisplayPosition(dataPoint.x);
                 final double y = xyChart.getYAxis().getDisplayPosition(dataPoint.y);
                 final Point2D displayPoint = new Point2D(x, y);
-                dataPoint.distanceFromMouse = displayPoint.distance(mouseLocation);
-                if (displayPoint.distance(mouseLocation) <= 10000 && (nearestDataPoint == null
+                /* nearest point in time only (J25.5), so the table shows the same time as the crosshair tooltip */
+                dataPoint.distanceFromMouse = Math.abs(displayPoint.getX() - mouseLocation.getX());
+                if (dataPoint.distanceFromMouse <= 10000 && (nearestDataPoint == null
                         || dataPoint.distanceFromMouse < nearestDataPoint.distanceFromMouse)) {
                     nearestDataPoint = dataPoint;
                 }
@@ -215,6 +229,13 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
 
                 updateTable(mouseLocation);
 
+                double xValue = getChart() instanceof XYChart ? ((XYChart) getChart()).getXAxis().getValueForDisplay(mouseLocation.getX()) : Double.NaN;
+                /* only the plot area handler moves the crosshair; the chart handler (plotArea false) fires as well
+                   for the same mouse move and must not hide it again */
+                if (plotArea && !Double.isNaN(xValue)) {
+                    showCrosshair(xValue, mouseLocation);
+                }
+
                 if (!notActiveCharts.isEmpty()) {
                     for (org.jevis.jeconfig.application.Chart.Charts.Chart chart : notActiveCharts) {
                         if (chart.getChart() != null && !chart.getChartType().equals(ChartType.PIE)
@@ -222,7 +243,9 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
                                 && !chart.getChartType().equals(ChartType.TABLE)) {
                             chart.getChart().getPlugins().forEach(chartPlugin -> {
                                 if (chartPlugin instanceof DataPointTableViewPointer) {
-                                    ((DataPointTableViewPointer) chartPlugin).updateTable(mouseLocation);
+                                    DataPointTableViewPointer other = (DataPointTableViewPointer) chartPlugin;
+                                    other.updateTable(mouseLocation);
+                                    if (plotArea && !Double.isNaN(xValue)) other.showCrosshair(xValue, null);
                                 }
                             });
                         } else if (chart.getChartType().equals(ChartType.TABLE)) {
@@ -254,6 +277,118 @@ public class DataPointTableViewPointer extends AbstractDataFormattingPlugin {
         } catch (Exception e) {
             logger.error("Error while updating table", e);
         }
+    }
+
+    /**
+     * Shows the vertical crosshair line at the given x value (seconds); with a mouse location also the tooltip with the
+     * time and the values of all rows of this chart next to the mouse.
+     */
+    public void showCrosshair(double xValue, Point2D mouseLocation) {
+        if (!(getChart() instanceof XYChart)) return;
+        XYChart xyChart = (XYChart) getChart();
+        double x = xyChart.getXAxis().getDisplayPosition(xValue);
+        Bounds plot = xyChart.getPlotArea().getBoundsInLocal();
+        if (Double.isNaN(x) || x < 0 || x > plot.getWidth()) {
+            hideCrosshair();
+            return;
+        }
+        crosshair.setStartX(x);
+        crosshair.setEndX(x);
+        crosshair.setStartY(0);
+        crosshair.setEndY(plot.getHeight());
+        crosshair.setVisible(true);
+        crosshair.toFront();
+
+        if (mouseLocation == null || xyChartSerieList.isEmpty()) {
+            crosshairTip.setVisible(false);
+            return;
+        }
+
+        DateTime at = new DateTime((long) (xValue * 1000d));
+        List<javafx.scene.Node> lines = new LinkedList<>();
+        DateTime shownTime = null;
+        for (XYChartSerie serie : xyChartSerieList) {
+            try {
+                if (!serie.isShownInRenderer()) continue;
+                TreeMap<DateTime, JEVisSample> samples = serie.getSampleMap();
+                if (samples == null || samples.isEmpty()) continue;
+                Map.Entry<DateTime, JEVisSample> floor = samples.floorEntry(at);
+                Map.Entry<DateTime, JEVisSample> ceiling = samples.ceilingEntry(at);
+                Map.Entry<DateTime, JEVisSample> nearest = floor == null ? ceiling : ceiling == null ? floor
+                        : (at.getMillis() - floor.getKey().getMillis() <= ceiling.getKey().getMillis() - at.getMillis() ? floor : ceiling);
+                if (nearest == null) continue;
+                if (shownTime == null) shownTime = nearest.getKey();
+
+                String value = serie.getSingleRow().isStringData()
+                        ? nearest.getValue().getValueAsString()
+                        : serie.getNf().format(nearest.getValue().getValueAsDouble());
+
+                javafx.scene.layout.Region marker = new javafx.scene.layout.Region();
+                marker.setMinSize(10, 3);
+                marker.setMaxSize(10, 3);
+                marker.setStyle("-fx-background-radius: 2; -fx-background-color: " + toWeb(serie.getTableEntry().getColor()) + ";");
+                javafx.scene.control.Label name = new javafx.scene.control.Label(serie.getTableEntryName());
+                javafx.scene.control.Label val = new javafx.scene.control.Label(value + " " + serie.getUnit());
+                val.getStyleClass().add("suc-crosshair-value");
+                javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+                javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                javafx.scene.layout.HBox line = new javafx.scene.layout.HBox(6, marker, name, spacer, val);
+                line.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                lines.add(line);
+            } catch (Exception e) {
+                logger.debug("No crosshair value for {}", serie.getTableEntryName(), e);
+            }
+        }
+        if (lines.isEmpty()) {
+            crosshairTip.setVisible(false);
+            return;
+        }
+
+        /* the row format (PeriodHelper), but for minute and hour values shorter than its ISO pattern: "Do. 19.11.2026 09:15" */
+        String pattern = xyChartSerieList.get(0).getSingleRow().getFormatString();
+        if ("yyyy-MM-dd HH:mm:ss".equals(pattern)) pattern = "EE dd.MM.yyyy HH:mm";
+        javafx.scene.control.Label time = new javafx.scene.control.Label(shownTime == null ? ""
+                : org.joda.time.format.DateTimeFormat.forPattern(pattern).withLocale(org.jevis.commons.i18n.I18n.getInstance().getLocale()).print(shownTime));
+        time.getStyleClass().add("suc-crosshair-time");
+        crosshairTip.getChildren().setAll(time);
+        crosshairTip.getChildren().addAll(lines);
+        /* the tip is unmanaged: size and lay out its new rows now, otherwise they stay empty until another layout pass */
+        crosshairTip.applyCss();
+        crosshairTip.autosize();
+        crosshairTip.layout();
+
+        /* right of the mouse, or left of it near the right edge; kept inside the plot area */
+        double w = crosshairTip.getWidth();
+        double h = crosshairTip.getHeight();
+        double tx = x + 14 + w > plot.getWidth() ? x - 14 - w : x + 14;
+        double ty = Math.min(Math.max(0, mouseLocation.getY() - h / 2), Math.max(0, plot.getHeight() - h));
+        crosshairTip.relocate(Math.max(0, tx), ty);
+        crosshairTip.setVisible(true);
+        crosshairTip.toFront();
+    }
+
+    public void hideCrosshair() {
+        crosshair.setVisible(false);
+        crosshairTip.setVisible(false);
+    }
+
+    /* hides the crosshair in this and all linked charts when the mouse leaves the plot */
+    private void hideCrosshairs() {
+        hideCrosshair();
+        for (org.jevis.jeconfig.application.Chart.Charts.Chart chart : notActiveCharts) {
+            if (chart.getChart() == null) continue;
+            chart.getChart().getPlugins().forEach(chartPlugin -> {
+                if (chartPlugin instanceof DataPointTableViewPointer) {
+                    ((DataPointTableViewPointer) chartPlugin).hideCrosshair();
+                }
+            });
+        }
+    }
+
+    private static String toWeb(javafx.scene.paint.Color c) {
+        if (c == null) return "#888888";
+        return String.format("#%02x%02x%02x", (int) Math.round(c.getRed() * 255), (int) Math.round(c.getGreen() * 255),
+                (int) Math.round(c.getBlue() * 255));
     }
 
     public void updateTable(final Point2D mouseLocation) {

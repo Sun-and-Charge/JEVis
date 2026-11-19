@@ -132,10 +132,12 @@ public class XYChart implements Chart {
     List<XYChartSerie> xyChartSerieList = new ArrayList<>();
     private Region areaChartRegion;
     private Period period;
-    private DateTimeFormatter dtfOutLegend = DateTimeFormat.forPattern("EE. dd.MM.yyyy HH:mm");
+    private DateTimeFormatter dtfOutLegend = DateTimeFormat.forPattern("EE dd.MM.yyyy HH:mm");
     private XYChartSerie y1SumSerie;
     private XYChartSerie y2SumSerie;
     private List<UserLimitLine> userLimitLines = new ArrayList<>();
+    /* shown in the panel header of the chart instead of a "[Zeitbereich: ...]" label under the date axis (J25.5) */
+    private final javafx.beans.property.StringProperty periodText = new javafx.beans.property.SimpleStringProperty("");
 
     public XYChart(JEVisDataSource ds, ChartModel chartModel) {
         this.ds = ds;
@@ -832,6 +834,9 @@ public class XYChart implements Chart {
         getChart().setAnimated(false);
 
         getChart().setLegendVisible(false);
+
+        /* lines 1.5 px instead of 1 px (J25.5, Grafana default); a global chartfx setting */
+        de.gsi.chart.renderer.spi.utils.DefaultRenderColorScheme.defaultStrokeLineWidthProperty().set(1.5);
     }
 
     public void addSeriesToChart() {
@@ -1451,6 +1456,24 @@ public class XYChart implements Chart {
         y2Axis.setSide(Side.RIGHT);
         y2Axis.setName("");
 
+        /* Grafana-like plot (J25.5): horizontal grid only, no tick marks, small muted tick labels */
+        xyChart.setVerticalGridLinesVisible(false);
+        /* the grid style line is not reached by Styles.css (the chartfx user agent sheet wins): set its values directly */
+        xyChart.getGridRenderer().setDrawOnTop(false);
+        javafx.scene.shape.Line grid = xyChart.getGridRenderer().getHorizontalMajorGrid();
+        grid.setStroke(Color.web("#d5dae3"));
+        grid.setStrokeWidth(1);
+        grid.getStrokeDashArray().clear();
+        for (de.gsi.chart.axes.spi.AbstractAxis axis : java.util.Arrays.asList(primaryDateAxis, secondaryDateAxis, y1Axis, y2Axis)) {
+            /* hidden tick marks or length 0 also hide the tick labels in chartfx 11.2: keep a short transparent mark */
+            axis.setTickLength(4);
+            axis.getMajorTickStyle().setStroke(Color.TRANSPARENT);
+            axis.setMaxMajorTickLabelCount(10);
+            axis.setMinorTickVisible(false);
+            axis.setTickLabelFont(javafx.scene.text.Font.font(11));
+            axis.setTickLabelFill(Color.web("#6b768a"));
+        }
+
         secondaryDateAxis.setName("");
         secondaryDateAxis.setAnimated(false);
         secondaryDateAxis.setSide(Side.TOP);
@@ -1570,7 +1593,7 @@ public class XYChart implements Chart {
                     case NONE:
                     case MINUTELY:
                     case QUARTER_HOURLY:
-                        dtfOutLegend = DateTimeFormat.forPattern("EE. dd.MM.yyyy HH:mm");
+                        dtfOutLegend = DateTimeFormat.forPattern("EE dd.MM.yyyy HH:mm");
                         break;
                     case HOURLY:
                     case DAILY:
@@ -1583,7 +1606,7 @@ public class XYChart implements Chart {
                     case TENYEARS:
                         start = start.plusDays(1).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0);
                         end = end.plusDays(1).withHourOfDay(23).withMinuteOfHour(23).withSecondOfMinute(59);
-                        dtfOutLegend = DateTimeFormat.forPattern("EE. dd.MM.yyyy");
+                        dtfOutLegend = DateTimeFormat.forPattern("EE dd.MM.yyyy");
                         break;
                 }
             }
@@ -1596,7 +1619,23 @@ public class XYChart implements Chart {
                 I18n.getInstance().getString("plugin.graph.chart.valueaxis.until"),
                 dtfOutLegend.print(end));
 
-        Platform.runLater(() -> primaryDateAxis.setUnit(I18n.getInstance().getString("plugin.graph.chart.dateaxis.title") + " " + overall));
+        if (start.toLocalDate().equals(end.toLocalDate()) && dtfOutLegend.print(end).contains(end.toString("HH:mm"))) {
+            /* same day: the date only once, e.g. "Do. 19.11.2026 00:00 bis 15:30" */
+            overall = String.format("%s %s %s", dtfOutLegend.print(start),
+                    I18n.getInstance().getString("plugin.graph.chart.valueaxis.until"), end.toString("HH:mm"));
+        }
+        String finalOverall = overall;
+        Platform.runLater(() -> {
+            primaryDateAxis.setUnit(null);
+            periodText.set(finalOverall);
+        });
+    }
+
+    /**
+     * @return the shown period of the chart, e.g. "Do. 19.11.2026 00:00 bis 15:30", for the panel header
+     */
+    public javafx.beans.property.StringProperty periodTextProperty() {
+        return periodText;
     }
 
     @Override

@@ -194,6 +194,8 @@ public class ChartPlugin implements Plugin {
         getToolbar();
 
         this.vBox.setStyle("-fx-faint-focus-color: transparent; -fx-focus-color: transparent;");
+        /* charts as panels on the page background (J25.5) */
+        this.vBox.getStyleClass().add("suc-analysis-charts");
         this.sp.setStyle("-fx-faint-focus-color: transparent; -fx-focus-color: transparent;");
         this.sp.setFitToWidth(true);
         this.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -798,9 +800,8 @@ public class ChartPlugin implements Plugin {
                 }
 
                 BorderPane bp = new BorderPane();
-//                bp.setStyle("-fx-faint-focus-color: transparent; -fx-focus-color: transparent;");
-                bp.setBorder(new Border(new BorderStroke(Color.TRANSPARENT,
-                        BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2))));
+                /* card with border and radius from Styles.css (J25.5) */
+                bp.getStyleClass().add("suc-chart-panel");
 
 //                    bp.setMinHeight(autoMinSize.get());
 
@@ -858,7 +859,10 @@ public class ChartPlugin implements Plugin {
 
                     if (chartModel.getChartType() != ChartType.TABLE && chartModel.getChartType() != ChartType.TABLE_V
                             && chartModel.getChartType() != ChartType.TABLE_H) {
-                        bp.setTop(tableHeader);
+                        /* Grafana-like panel (J25.5): header with title and period, legend table under the chart */
+                        bp.setTop(createPanelHeader(chart));
+                        tableHeader.getStyleClass().add("suc-legend-table");
+                        bp.setBottom(tableHeader);
                         registerPeriodInfo(tableHeader);
                     } else if (chartModel.getChartType() == ChartType.TABLE) {
                         TableChart tableChart = (TableChart) chart;
@@ -900,9 +904,8 @@ public class ChartPlugin implements Plugin {
                     }
                 } else if (chartModel.getChartType() != ChartType.LOGICAL) {
                     bp.setTop(null);
+                    bp.setBottom(null);
                 }
-
-                bp.setBottom(null);
 
                 DragResizerXY.makeResizable(bp);
 
@@ -917,6 +920,8 @@ public class ChartPlugin implements Plugin {
 
                 Separator sep = new Separator();
                 sep.setOrientation(Orientation.HORIZONTAL);
+                /* invisible gap between the panels; autoSize still counts one separator per chart */
+                sep.getStyleClass().add("suc-chart-gap");
                 if (chartModel.getChartType() == ChartType.PIE) {
 
                     if (pieFrames.isEmpty()) {
@@ -1066,8 +1071,11 @@ public class ChartPlugin implements Plugin {
                         }
 
                         if (!isLogical && !isTableV) {
-                            TableHeader top = (TableHeader) borderPane.getTop();
-                            double heightTop = top.getHeight();
+                            /* XY panels: header on top, legend table at the bottom (J25.5); logical charts: table on top */
+                            TableHeader top = borderPane.getBottom() instanceof TableHeader
+                                    ? (TableHeader) borderPane.getBottom() : (TableHeader) borderPane.getTop();
+                            double headerHeight = borderPane.getTop() instanceof HBox ? ((HBox) borderPane.getTop()).getHeight() : 0;
+                            double heightTop = top.getHeight() + headerHeight + borderPane.getInsets().getTop() + borderPane.getInsets().getBottom();
 
                             if (top.getItems().size() == 0) {
                                 Chart chart = allCharts.get(top.getChartId());
@@ -1390,6 +1398,31 @@ public class ChartPlugin implements Plugin {
      * Registers the info tooltip of the period column only for the first visible table header
      * of a chart update, instead of once for every (re)built table header.
      */
+    /**
+     * Panel header of an XY chart (J25.5): the chart title left, the shown period small and muted next to it. The
+     * chartfx title above the plot is hidden, its text is shown here.
+     */
+    private HBox createPanelHeader(Chart chart) {
+        Label title = new Label();
+        title.getStyleClass().add("suc-chart-title");
+        Label period = new Label();
+        period.getStyleClass().add("suc-chart-period");
+
+        if (chart.getChart() != null) {
+            title.textProperty().bind(chart.getChart().titleProperty());
+            Pane chartTitlePane = chart.getChart().getTitleLegendPane(de.gsi.chart.ui.geometry.Side.TOP);
+            chartTitlePane.setVisible(false);
+            chartTitlePane.setManaged(false);
+        }
+        if (chart instanceof XYChart) {
+            period.textProperty().bind(((XYChart) chart).periodTextProperty());
+        }
+
+        HBox header = new HBox(title, period);
+        header.getStyleClass().add("suc-chart-header");
+        return header;
+    }
+
     private void registerPeriodInfo(TableHeader tableHeader) {
         if (periodInfoRegistered || tableHeader.getPeriodLabel() == null) return;
 

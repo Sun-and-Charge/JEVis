@@ -388,11 +388,17 @@ public class TableHeader extends TableView<TableEntry> {
                         setGraphic(null);
 
                         if (!empty && item != null) {
+                            /* legend marker (J25.5): a short rounded bar in the row colour; a click hides/shows the row */
                             StackPane stackPane = new StackPane();
-                            stackPane.setBackground(new Background(new BackgroundFill(item, CornerRadii.EMPTY, Insets.EMPTY)));
+                            stackPane.getStyleClass().add("suc-legend-marker");
+                            stackPane.setMinSize(16, 4);
+                            stackPane.setPrefSize(16, 4);
+                            stackPane.setMaxSize(16, 4);
+                            stackPane.setBackground(new Background(new BackgroundFill(item, new CornerRadii(2), Insets.EMPTY)));
+                            Tooltip.install(stackPane, new Tooltip(I18n.getInstance().getString("plugin.graph.table.toggle")));
 
                             stackPane.setOnMouseClicked(mouseEvent -> {
-                                if (mouseEvent.getClickCount() == 2 && xyChartSerieList != null) {
+                                if (mouseEvent.getClickCount() == 1 && xyChartSerieList != null) {
                                     TableEntry tableEntry = (TableEntry) getTableRow().getItem();
                                     if (!xyChartSerieList.isEmpty()) {
                                         XYChartSerie serie = xyChartSerieList.stream().filter(xyChartSerie -> xyChartSerie.getTableEntry().equals(tableEntry)).findFirst().orElse(null);
@@ -402,11 +408,11 @@ public class TableHeader extends TableView<TableEntry> {
                                             serie.setShownInRenderer(isShown);
 
                                             if (!isShown) {
-                                                stackPane.setBackground(new Background(new BackgroundFill(
-                                                        item.deriveColor(item.getRed(), item.getBlue(), item.getGreen(), 0.4)
-                                                        , CornerRadii.EMPTY, Insets.EMPTY)));
+                                                stackPane.getStyleClass().add("hidden-series");
+                                                getTableRow().getStyleClass().add("hidden-series");
                                             } else {
-                                                stackPane.setBackground(new Background(new BackgroundFill(item, CornerRadii.EMPTY, Insets.EMPTY)));
+                                                stackPane.getStyleClass().removeAll("hidden-series");
+                                                getTableRow().getStyleClass().removeAll("hidden-series");
                                             }
 
                                             serie.getValueDataSetRenderer().getAxes().forEach(axis -> axis.requestAxisLayout());

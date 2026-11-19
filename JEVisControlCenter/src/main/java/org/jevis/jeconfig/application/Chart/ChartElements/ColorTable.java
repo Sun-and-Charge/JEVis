@@ -1,5 +1,6 @@
 /**
  * Copyright (C) JEVis contributors
+ * Copyright (C) 2026 Sun and Charge Germany GmbH
  * <p>
  * This file is part of JEVisControlCenter.
  * <p>
@@ -24,28 +25,31 @@ import javafx.scene.paint.Color;
 import java.util.List;
 
 public class ColorTable {
+    /*
+     * Default colours for new rows (J25.5): the Grafana classic palette (blue, orange, green, red, purple, yellow
+     * and their dark and light variants), readable on the white plot. Rows of existing analyses keep their colour.
+     */
     public static final Color[] color_list = {
-            Color.web("0x803E75"),    // Strong Purple
-            Color.web("0xFF6800"),    // Vivid Orange
-            Color.web("0xA6BDD7"),    // Very Light Blue
-            Color.web("0xC10020"),    // Vivid Red
-            Color.web("0xCEA262"),    // Grayish Yellow
-            Color.web("0x817066"),    // Medium Gray
-
-            Color.web("0x007D34"),    // Vivid Green
-            Color.web("0xF6768E"),    // Strong Purplish Pink
-            Color.web("0x00538A"),    // Strong Blue
-            Color.web("0xFF7A5C"),    // Strong Yellowish Pink
-            Color.web("0x53377A"),    // Strong Violet
-            Color.web("0xFF8E00"),    // Vivid Orange Yellow
-            Color.web("0xB32851"),    // Strong Purplish Red
-            Color.web("0xF4C800"),    // Vivid Greenish Yellow
-            Color.web("0x7F180D"),    // Strong Reddish Brown
-            Color.web("0x93AA00"),    // Vivid Yellowish Green
-            Color.web("0x593315"),    // Deep Yellowish Brown
-            Color.web("0xF13A13"),    // Vivid Reddish Orange
-            Color.web("0x232C16"),    // Dark Olive Green
-            Color.web("0xFFB300"),    // Vivid Yellow
+            Color.web("0x5794F2"),    // blue
+            Color.web("0xFF9830"),    // orange
+            Color.web("0x73BF69"),    // green
+            Color.web("0xF2495C"),    // red
+            Color.web("0xB877D9"),    // purple
+            Color.web("0xE0B400"),    // dark yellow
+            Color.web("0x1F60C4"),    // dark blue
+            Color.web("0xFA6400"),    // dark orange
+            Color.web("0x37872D"),    // dark green
+            Color.web("0xC4162A"),    // dark red
+            Color.web("0x8F3BB8"),    // dark purple
+            Color.web("0x8AB8FF"),    // light blue
+            Color.web("0xFFB357"),    // light orange
+            Color.web("0x96D98D"),    // light green
+            Color.web("0xFF7383"),    // light red
+            Color.web("0xCA95E5"),    // light purple
+            Color.web("0x6B768A"),    // grey
+            Color.web("0x1A2A45"),    // blueberry
+            Color.web("0x0891B2"),    // cyan
+            Color.web("0xD97706"),    // amber
     };
     public static Color STANDARD_COLOR = Color.LIGHTBLUE;
 
