@@ -53,19 +53,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TemplateCalculationInputDialog extends Dialog {
+public class TemplateCalculationInputDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(TemplateCalculationInputDialog.class);
     private final AlphanumComparator ac = new AlphanumComparator();
     private Response response = Response.CANCEL;
 
     public TemplateCalculationInputDialog(JEVisDataSource ds, RCTemplate rcTemplate, TemplateInput templateInput, List<TimeFrame> allowedTimeFrames) {
-        super();
+        super(I18n.getInstance().getString("plugin.trc.inputdialog.title"), I18n.getInstance().getString("plugin.trc.inputdialog.header"), Size.M);
 
-        setTitle(I18n.getInstance().getString("plugin.trc.inputdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.trc.inputdialog.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

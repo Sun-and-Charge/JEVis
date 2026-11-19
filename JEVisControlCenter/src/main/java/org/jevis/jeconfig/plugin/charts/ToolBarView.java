@@ -694,14 +694,23 @@ public class ToolBarView {
         if ((oldValue == null) || (Objects.nonNull(newValue))) {
 
             if (changed) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setResizable(true);
+                /* J25.5: question with "Speichern" / "Nicht speichern" instead of OK / Abbrechen (docs/DESIGN-CC.md) */
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = new org.jevis.jeconfig.application.ui.SucDialog<>(
+                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.graph.dialog.changed.title",
+                                "Änderungen an der Analyse speichern?", "Save the changes to the analysis?"),
+                        null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                 Label text = new Label(I18n.getInstance().getString("plugin.graph.dialog.changed.text"));
                 text.setWrapText(true);
                 alert.getDialogPane().setContent(text);
+                ButtonType saveType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text(
+                        "dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OK_DONE);
+                ButtonType dontSaveType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text(
+                        "dialog.ui.dontsave", "Nicht speichern", "Don't save"), ButtonBar.ButtonData.CANCEL_CLOSE);
+                alert.addPrimary(saveType);
+                alert.getDialogPane().getButtonTypes().add(dontSaveType);
 
                 alert.showAndWait().ifPresent(buttonType -> {
-                    if (buttonType.equals(ButtonType.OK)) {
+                    if (buttonType.equals(saveType)) {
                         changed = false;
 
                         SaveAnalysisDialog saveAnalysisDialog = new SaveAnalysisDialog(getDs(), chartPlugin.getDataSettings(), chartPlugin, this);

@@ -350,21 +350,13 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
         Row row = table.getSelectionModel().getSelectedItem();
         if (row == null) return;
         if (row.entry.getRecipients().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("plugin.maintenance.norecipients"));
-            alert.initOwner(JEConfig.getStage());
-            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-            alert.setHeaderText(null);
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.maintenance.norecipients"));
             return;
         }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.initOwner(JEConfig.getStage());
-        TopMenu.applyActiveTheme(confirm.getDialogPane().getScene());
-        confirm.setHeaderText(String.format(I18n.getInstance().getString("plugin.maintenance.inform.confirm"),
-                row.entry.getTitle(), names.names(row.entry.getRecipients())));
-        confirm.setContentText(I18n.getInstance().getString("plugin.maintenance.hint"));
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (!result.isPresent() || result.get() != ButtonType.OK) {
+        if (!org.jevis.jeconfig.application.ui.Confirm.ask(String.format(I18n.getInstance().getString("plugin.maintenance.inform.confirm"),
+                        row.entry.getTitle(), names.names(row.entry.getRecipients())),
+                I18n.getInstance().getString("plugin.maintenance.hint"),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.maintenance.inform.action", "Benachrichtigen", "Notify"), false)) {
             return;
         }
         MaintenanceEntry entry = EntryFormat.fromJson(EntryFormat.toJson(row.entry), MaintenanceEntry.class);
@@ -387,24 +379,15 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
     }
 
     private void showInformQueued() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.initOwner(JEConfig.getStage());
-        TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-        alert.setHeaderText(null);
-        alert.setContentText(I18n.getInstance().getString("plugin.maintenance.inform.queued"));
-        alert.showAndWait();
+        org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("plugin.maintenance.inform.queued"));
     }
 
     private void deleteSelected() {
         Row row = table.getSelectionModel().getSelectedItem();
         if (row == null) return;
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initOwner(JEConfig.getStage());
-        TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-        alert.setHeaderText(I18n.getInstance().getString("plugin.maintenance.delete"));
-        alert.setContentText(row.entry.getTitle());
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.maintenance.delete.question", "Wartungseintrag „%s“ löschen?", "Delete maintenance entry “%s”?"), row.entry.getTitle()),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.maintenance.delete.consequence", "Der Eintrag kommt in den Papierkorb und lässt sich von dort wiederherstellen.",
+                        "The entry moves to the recycle bin and can be restored from there."), org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 ds.deleteObject(row.object.getID(), false);
                 reload();

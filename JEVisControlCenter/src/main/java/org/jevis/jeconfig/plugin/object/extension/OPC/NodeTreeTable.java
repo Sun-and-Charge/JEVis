@@ -340,13 +340,8 @@ public class NodeTreeTable {
             String dataType = opcClient.getDataType(nodeId);
 
 
-            setValueDialog = new Dialog<>();
-            setValueDialog.setResizable(true);
-            setValueDialog.initOwner(JEConfig.getStage());
-            setValueDialog.initModality(Modality.APPLICATION_MODAL);
+            setValueDialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.opcua.setvalue.title", "Wert setzen", "Set value"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
             Stage stage = (Stage) setValueDialog.getDialogPane().getScene().getWindow();
-            TopMenu.applyActiveTheme(stage.getScene());
-            stage.setAlwaysOnTop(true);
 
             GridPane gridPane = new GridPane();
             gridPane.setPadding(new Insets(10));
@@ -398,10 +393,7 @@ public class NodeTreeTable {
                         opcClient.writeValue(Long.valueOf(valueField.getText().trim()), nodeId, dataType);
                     } else {
                         logger.info("Datatype Mismatch");
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle(I18n.getInstance().getString("plugin.object.opcua.error.datatype.title"));
-                        alert.setHeaderText(I18n.getInstance().getString("plugin.object.opcua.error.datatype.message"));
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.opcua.error.datatype.message"));
                     }
 
                     opcUATreeTableView.getSelectionModel().getSelectedItem().getValue().setDataValue(opcClient.readValue(nodeId));
@@ -409,11 +401,7 @@ public class NodeTreeTable {
                 } catch (OpcException | NumberFormatException e) {
                     e.printStackTrace();
                     logger.info("Datatype Mismatch");
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(I18n.getInstance().getString("plugin.object.opcua.error.datatype.title"));
-                    alert.setHeaderText(I18n.getInstance().getString("plugin.object.opcua.error.datatype.message"));
-                    alert.setContentText(e.getMessage());
-                    alert.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.opcua.error.datatype.message") + " (" + e.getMessage() + ")");
                 } finally {
                     setValueDialog.close();
                 }
@@ -749,12 +737,7 @@ public class NodeTreeTable {
 
                             } catch (Exception ex) {
                                 logger.catching(ex);
-                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                alert.setTitle(I18n.getInstance().getString("csv.target.error.title"));
-                                alert.setHeaderText(I18n.getInstance().getString("csv.target.error.message"));
-                                alert.setContentText(ex.getMessage());
-
-                                alert.showAndWait();
+                                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("csv.target.error.message") + " (" + ex.getMessage() + ")");
                             }
                         }
                     }
@@ -818,21 +801,13 @@ public class NodeTreeTable {
             JEConfig.getStatusBar().addTask(DashBordPlugIn.class.getName(), task, taskIcon, true);
 
             task.setOnFailed(workerStateEvent -> {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(I18n.getInstance().getString("plugin.object.attribute.target.error"));
-                alert.setHeaderText("");
-                alert.setContentText(I18n.getInstance().getString("plugin.object.attribute.target.error.message"));
                 jevisObjectcount = 0;
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.attribute.target.error.message"));
             });
 
             task.setOnSucceeded(event1 -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle(I18n.getInstance().getString("plugin.object.opcua.import.finish.title"));
-                alert.setHeaderText("");
-                alert.setContentText(I18n.getInstance().getString("plugin.object.opcua.import.finish.message") + jevisObjectcount);
+                org.jevis.jeconfig.application.ui.Notify.success(I18n.getInstance().getString("plugin.object.opcua.import.finish.message") + jevisObjectcount);
                 jevisObjectcount = 0;
-                alert.showAndWait();
             });
 
 

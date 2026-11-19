@@ -53,16 +53,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BaseLoadDialog extends Dialog {
+public class BaseLoadDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(BaseLoadDialog.class);
     final NumberFormat nf = NumberFormat.getNumberInstance();
 
     public BaseLoadDialog(JEVisDataSource ds, BaseLoadSetting settings, HashMap<Integer, Chart> model) {
-        setTitle(I18n.getInstance().getString("plugin.graph.baseloaddialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.graph.baseloaddialog.header"));
+        super(I18n.getInstance().getString("plugin.graph.baseloaddialog.title"), I18n.getInstance().getString("plugin.graph.baseloaddialog.header"), Size.L);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

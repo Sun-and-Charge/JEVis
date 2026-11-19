@@ -20,6 +20,7 @@
  */
 package org.jevis.jeconfig.plugin.dashboard;
 
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterables;
 import javafx.animation.PauseTransition;
@@ -40,7 +41,9 @@ import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -465,13 +468,16 @@ public class DashboardControl {
     }
 
     public void deleteDashboard() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.dashboard.dia.delete.title"));
-        alert.setContentText(I18n.getInstance().getString("plugin.dashboard.dia.delete.content"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.dashboard.dia.delete.header"));
+        /* J25.5: question naming the dashboard, consequence, red "Löschen" (docs/DESIGN-CC.md) */
+        JEVisObject current = this.activeDashboard == null ? null : this.activeDashboard.getDashboardObject();
+        if (current == null) return;
+        boolean confirmed = org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(PluginSidebar.text("plugin.dashboard.delete.confirm", "Dashboard „%s“ löschen?", "Delete dashboard “%s”?"), current.getName()),
+                PluginSidebar.text("plugin.dashboard.delete.consequence", "Das Dashboard kommt in den Papierkorb und lässt sich von dort wiederherstellen.",
+                        "The dashboard moves to the recycle bin and can be restored from there."),
+                PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true);
 
-        alert.showAndWait().ifPresent(buttonType -> {
-            if (buttonType == ButtonType.OK) {
+        if (confirmed) {
                 try {
                     JEVisObject toDeleteObj = this.activeDashboard.getDashboardObject();
                     if (toDeleteObj == null) {
@@ -480,11 +486,9 @@ public class DashboardControl {
                     /* into the recycle bin (restorable), like deleting objects in the object tree without "delete forever" */
                     if (!this.getDataSource().deleteObject(toDeleteObj.getID(), false)) {
                         logger.error("Failed to move dashboard {} to the recycle bin", toDeleteObj.getID());
-                        Alert error = new Alert(Alert.AlertType.ERROR);
-                        error.setTitle(I18n.getInstance().getString("dialog.error.title"));
-                        error.setHeaderText(I18n.getInstance().getString("dialog.error.servercommit"));
-                        error.initOwner(JEConfig.getStage());
-                        error.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(PluginSidebar.text("plugin.dashboard.delete.failed",
+                                "Das Dashboard konnte nicht gelöscht werden. Verbindung prüfen und erneut versuchen.",
+                                "The dashboard could not be deleted. Check the connection and try again."));
                         return;
                     }
                     /* the deleted dashboard has no unsaved changes to ask for */
@@ -498,8 +502,7 @@ public class DashboardControl {
                 } catch (Exception e) {
                     logger.error("Failed to delete dashboard", e);
                 }
-            }
-        });
+        }
 
     }
 
@@ -549,15 +552,21 @@ public class DashboardControl {
             if (firstLoadedConfigHash != null) {
                 String newConfigHash = computeDashboardHash();
                 if (!firstLoadedConfigHash.equals(newConfigHash)) {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setContentText(I18n.getInstance().getString("plugin.dashboard.dialog.changed.text"));
-                    alert.setResizable(true);
+                    /* J25.5: "Speichern" / "Nicht speichern" instead of OK / Abbrechen */
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = new org.jevis.jeconfig.application.ui.SucDialog<>(
+                            PluginSidebar.text("plugin.dashboard.changed.title", "Änderungen am Dashboard speichern?", "Save the changes to the dashboard?"),
+                            null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
+                    Label changedText = new Label(PluginSidebar.text("plugin.dashboard.changed.text",
+                            "Sonst gehen die Änderungen beim Wechsel des Dashboards verloren.",
+                            "Otherwise the changes are lost when switching the dashboard."));
+                    changedText.setWrapText(true);
+                    alert.getDialogPane().setContent(changedText);
+                    ButtonType saveType = new ButtonType(PluginSidebar.text("dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OK_DONE);
+                    alert.addPrimary(saveType);
+                    alert.getDialogPane().getButtonTypes().add(new ButtonType(PluginSidebar.text("dialog.ui.dontsave", "Nicht speichern", "Don't save"),
+                            ButtonBar.ButtonData.CANCEL_CLOSE));
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
-                            save();
-                        } else {
-
-                        }
+                        if (buttonType == saveType) save();
                     });
                 }
             }

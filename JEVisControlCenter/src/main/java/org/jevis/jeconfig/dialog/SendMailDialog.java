@@ -132,9 +132,7 @@ public class SendMailDialog {
 
     public void show() {
         if (!(ds instanceof JEVisDataSourceWS)) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, t("dialog.sendmail.notsupported"), ButtonType.OK);
-            alert.initOwner(JEConfig.getStage());
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.info(t("dialog.sendmail.notsupported"));
             return;
         }
 
@@ -194,13 +192,8 @@ public class SendMailDialog {
         content.setPadding(new Insets(10));
         content.setPrefWidth(600);
 
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.initOwner(JEConfig.getStage());
-        dialog.setTitle(t("dialog.sendmail.title"));
-        dialog.setHeaderText(t("dialog.sendmail.title"));
-        dialog.setResizable(true);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(t("dialog.sendmail.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
         ButtonType send = new ButtonType(t("dialog.sendmail.send"), ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().setAll(send, ButtonType.CANCEL);
         dialog.getDialogPane().setContent(content);
@@ -257,11 +250,7 @@ public class SendMailDialog {
                     Platform.runLater(() -> {
                         dialog.setResult(send);
                         dialog.close();
-                        Alert info = new Alert(Alert.AlertType.INFORMATION, I18n.getInstance().getString("dialog.sendmail.success", recipients), ButtonType.OK);
-                        info.initOwner(JEConfig.getStage());
-                        info.setHeaderText(null);
-                        info.setTitle(t("dialog.sendmail.title"));
-                        info.show();
+                        org.jevis.jeconfig.application.ui.Notify.success(I18n.getInstance().getString("dialog.sendmail.success", recipients));
                     });
                 } catch (Exception ex) {
                     logger.error("Sending mail failed", ex);

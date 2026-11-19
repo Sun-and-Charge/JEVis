@@ -117,14 +117,12 @@ public class LegalCadastreController {
     public void deletePlan() {
         LegalCadastreTab tab = getActiveTab();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.indexoflegalprovisions.delete.deletetitle"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.indexoflegalprovisions.delete.delete"));
-        Label text = new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.delete.content") + "\n" + getActivePlan().getName());
-        text.setWrapText(true);
-        alert.getDialogPane().setContent(text);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        /* J25.5: question naming the entry, consequence, red action button (docs/DESIGN-CC.md) */
+        String entryName = getActivePlan().getName().get();
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.plan.confirm.question", "Rechtskataster „%s“ löschen?", "Delete legal register “%s”?"), entryName),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.plan.confirm.consequence", "Das Rechtskataster kommt mit allen Rechtsvorschriften in den Papierkorb und lässt sich von dort wiederherstellen.", "The register and all its provisions move to the recycle bin and can be restored from there."),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 getActivePlan().delete();
                 indexOfLegalProvisions.remove(tab.getLegalCadastre());
@@ -168,14 +166,12 @@ public class LegalCadastreController {
     public void deleteItem() {
         LegalCadastreTab tab = getActiveTab();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.indexoflegalprovisions.delete.obligation.deletetitle"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.indexoflegalprovisions.delete.obligation.delete"));
-        Label text = new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.delete.obligation.content") + "\n" + getSelectedData().nrProperty().get() + " " + getSelectedData().titleProperty().get());
-        text.setWrapText(true);
-        alert.getDialogPane().setContent(text);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        /* J25.5: question naming the entry, consequence, red action button (docs/DESIGN-CC.md) */
+        String entryName = getSelectedData().nrProperty().get() + " " + getSelectedData().titleProperty().get();
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.obligation.confirm.question", "Rechtsvorschrift „%s“ entfernen?", "Remove provision “%s”?"), entryName),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.obligation.confirm.consequence", "Die Rechtsvorschrift wird aus dem Rechtskataster entfernt.", "The provision is removed from the legal register."),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.remove", "Entfernen", "Remove"), true)) {
             try {
                 getSelectedData().setDeleted(true);
                 getSelectedData().commit();
@@ -220,7 +216,7 @@ public class LegalCadastreController {
     public void openPlanSettings() {
         LegalCadastreForm cadastreForm = new LegalCadastreForm(getActiveTab().getLegalCadastre());
         Optional<ButtonType> result = cadastreForm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OTHER) {
             getActiveTab().getLegalCadastre().commit();
         }
 
@@ -280,12 +276,14 @@ public class LegalCadastreController {
         obligationForm.setData(data);
         obligationForm.setNew(isNew);
         obligationForm.setTitle(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.title"));
-        obligationForm.setHeaderText(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.header"));
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.APPLY);
+        obligationForm.setDescription(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.header"));
+        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.OTHER);
         ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
         obligationForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
+        /* J25.5: Sun-coloured primary button, but no default button: Enter in a text field of the form must not save */
+        obligationForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
         final Button btOk = (Button) obligationForm.getDialogPane().lookupButton(buttonTypeOne);
         final Button btCancel = (Button) obligationForm.getDialogPane().lookupButton(buttonTypeTwo);
         btOk.setOnAction(actionEvent -> {

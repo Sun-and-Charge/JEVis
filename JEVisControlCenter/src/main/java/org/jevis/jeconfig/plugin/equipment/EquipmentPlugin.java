@@ -399,8 +399,7 @@ public class EquipmentPlugin extends TablePlugin {
 
                 JEVisObject object = tableView.getSelectionModel().getSelectedItem().getObject();
 
-                Dialog<ButtonType> reallyDelete = new Dialog<>();
-                reallyDelete.setTitle(I18n.getInstance().getString("plugin.graph.dialog.delete.title"));
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> reallyDelete = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.graph.dialog.delete.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                 final ButtonType ok = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.delete.ok"), ButtonBar.ButtonData.YES);
                 final ButtonType cancel = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.delete.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
@@ -413,8 +412,7 @@ public class EquipmentPlugin extends TablePlugin {
                                 ds.deleteObject(object.getID(), false);
                                 handleRequest(Constants.Plugin.Command.RELOAD);
                             } else {
-                                Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.meters.dialog.delete.error"), cancel);
-                                alert.showAndWait();
+                                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.meters.dialog.delete.error"));
                             }
                         } catch (JEVisException e) {
                             logger.error("Error: could not delete current meter", e);

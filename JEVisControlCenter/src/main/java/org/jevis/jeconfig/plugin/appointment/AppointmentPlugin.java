@@ -386,24 +386,15 @@ public class AppointmentPlugin extends AbstractEntryPlugin {
 
     private void showNextDue(LocalDateTime next) {
         if (next == null) return;
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.initOwner(JEConfig.getStage());
-        TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-        alert.setHeaderText(null);
-        alert.setContentText(String.format(I18n.getInstance().getString("plugin.appointments.nextdue"), EntryFormat.display(next)));
-        alert.showAndWait();
+        org.jevis.jeconfig.application.ui.Notify.info(String.format(I18n.getInstance().getString("plugin.appointments.nextdue"), EntryFormat.display(next)));
     }
 
     private void deleteSelected() {
         Row row = table.getSelectionModel().getSelectedItem();
         if (row == null) return;
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initOwner(JEConfig.getStage());
-        TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-        alert.setHeaderText(I18n.getInstance().getString("plugin.appointments.delete"));
-        alert.setContentText(row.appointment.getTitle());
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.appointments.delete.question", "Termin „%s“ löschen?", "Delete appointment “%s”?"), row.appointment.getTitle()),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.appointments.delete.consequence", "Der Termin kommt in den Papierkorb und lässt sich von dort wiederherstellen.",
+                        "The appointment moves to the recycle bin and can be restored from there."), org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 ds.deleteObject(row.object.getID(), false);
                 reload();

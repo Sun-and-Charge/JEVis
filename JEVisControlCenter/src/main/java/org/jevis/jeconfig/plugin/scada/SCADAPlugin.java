@@ -449,14 +449,9 @@ public class SCADAPlugin implements Plugin {
         delete.setOnAction(event -> {
             try {
                 JEVisObject obj = analyses.getObject();
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle(I18n.getInstance().getString("plugin.dashboard.delete.title"));
-                String s = String.format(I18n.getInstance().getString("plugin.dashboard.delete.question"), obj.getName());
-                alert.setContentText(s);
-
-                Optional<ButtonType> result = alert.showAndWait();
-
-                if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+                if (org.jevis.jeconfig.application.ui.Confirm.ask(String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.scada.delete.question", "Ansicht „%s“ löschen?", "Delete view “%s”?"), obj.getName()),
+                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.scada.delete.consequence", "Die Ansicht kommt in den Papierkorb und lässt sich von dort wiederherstellen.",
+                                "The view moves to the recycle bin and can be restored from there."), org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
                     obj.delete();
                     viewArea.getChildren().clear();
                     updateToolbar(toolBar, null);

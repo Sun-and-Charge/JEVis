@@ -269,11 +269,7 @@ public class PermissionCheckDialog {
         }
         int count = plan.getActions().size();
         if (count == 0) return;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, get("permission.check.reapply.confirm", count), ButtonType.OK, ButtonType.CANCEL);
-        confirm.initOwner(stage);
-        confirm.setHeaderText(get("permission.check.reapply"));
-        confirm.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+        if (!org.jevis.jeconfig.application.ui.Confirm.ask(get("permission.check.reapply"), get("permission.check.reapply.confirm", count), org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.apply", "Anwenden", "Apply"), false)) return;
 
         setBusy(true, get("permission.template.running"));
         Task<RightsPlanExecutor.Result> task = new Task<RightsPlanExecutor.Result>() {

@@ -436,12 +436,10 @@ public class ConfigManager {
      */
     private static void showSaveError(Exception ex) {
         Runnable show = () -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(I18n.getInstance().getString("dialog.error.title"));
-            alert.setHeaderText(I18n.getInstance().getString("dialog.error.servercommit"));
-            alert.setContentText(ex.getMessage());
-            alert.initOwner(JEConfig.getStage());
-            alert.showAndWait();
+            String reason = ex.getMessage() == null ? "" : " (" + ex.getMessage() + ")";
+            org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.save.failed",
+                    "Das Dashboard konnte nicht gespeichert werden. Verbindung prüfen und erneut versuchen.",
+                    "The dashboard could not be saved. Check the connection and try again.") + reason);
         };
         if (Platform.isFxApplicationThread()) {
             show.run();

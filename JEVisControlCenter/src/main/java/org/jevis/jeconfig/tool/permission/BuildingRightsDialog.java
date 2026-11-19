@@ -356,10 +356,7 @@ public class BuildingRightsDialog {
     private void applyPlan() {
         if (plan == null || plan.isEmpty()) return;
         RightsPlan toApply = plan;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, get("permission.template.apply.confirm", toApply.getActions().size()), ButtonType.OK, ButtonType.CANCEL);
-        confirm.initOwner(stage);
-        confirm.setHeaderText(get("permission.template.title"));
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+        if (!org.jevis.jeconfig.application.ui.Confirm.ask(get("permission.template.title"), get("permission.template.apply.confirm", toApply.getActions().size()), org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.apply", "Anwenden", "Apply"), false)) return;
 
         busy.set(true);
         status.setText(get("permission.template.running"));

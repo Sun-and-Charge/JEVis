@@ -129,9 +129,9 @@ public class ReportLinkWidget extends Widget {
         if (linkedReportObj != null) {
             JEConfig.openObjectInPlugin(ReportPlugin.PLUGIN_NAME, linkedReportObj);
         } else {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setContentText(I18n.getInstance().getString("plugin.dashboard.linker.error.message"));
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.linker.report.missing",
+                    "Der verknüpfte Bericht wurde nicht gefunden. In den Widget-Einstellungen einen Bericht wählen.",
+                    "The linked report was not found. Choose a report in the widget settings."));
         }
     }
 

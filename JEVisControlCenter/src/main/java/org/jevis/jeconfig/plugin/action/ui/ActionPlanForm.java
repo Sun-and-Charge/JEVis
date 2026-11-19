@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ActionPlanForm extends Alert {
+public class ActionPlanForm extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
     private static final Logger logger = LogManager.getLogger(ActionPlanForm.class);
     private final ActionPlanData actionPlan;
     private final double iconSize = 12;
@@ -115,19 +115,11 @@ public class ActionPlanForm extends Alert {
     };
 
     public ActionPlanForm(ActionPlanData actionPlan) {
-        super(AlertType.INFORMATION);
+        super(I18n.getInstance().getString("planform.editor.title"), I18n.getInstance().getString("planform.editor.header"), Size.L);
         this.actionPlan = actionPlan;
-        this.initOwner(JEConfig.getStage());
-
-        setTitle(I18n.getInstance().getString("planform.editor.title"));
-        setHeaderText(I18n.getInstance().getString("planform.editor.header"));
-        setResizable(true);
-        setWidth(ScreenSize.fitScreenWidth(800));
-        setHeight(ScreenSize.fitScreenHeight(600));
-
-        Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(false);
+        /* J25.5: "Speichern" and "Abbrechen" instead of a single OK */
+        addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
+        addCancel();
 
         GridPane statusPane = buildMediumView(statusListView, STATUS_RENAME);
         GridPane mediumPane = buildMediumView(mediumListView);

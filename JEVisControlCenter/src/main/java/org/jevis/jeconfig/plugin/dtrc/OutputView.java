@@ -395,13 +395,8 @@ public class OutputView extends Tab {
 
                                         HBox content = new HBox(6, editorLabelVBox, editor.getEditor());
 
-                                        Dialog dialog = new Dialog();
-                                        dialog.setResizable(true);
-                                        dialog.initOwner(JEConfig.getStage());
-                                        dialog.initModality(Modality.APPLICATION_MODAL);
+                                        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18nWS.getInstance().getAttributeName(attribute), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                                         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-                                        TopMenu.applyActiveTheme(stage.getScene());
-                                        stage.setAlwaysOnTop(true);
                                         ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
                                         ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 

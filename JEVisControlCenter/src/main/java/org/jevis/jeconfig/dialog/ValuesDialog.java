@@ -55,16 +55,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ValuesDialog extends Dialog {
+public class ValuesDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(ValuesDialog.class);
     final NumberFormat nf = NumberFormat.getNumberInstance();
 
     public ValuesDialog(JEVisDataSource ds, ValuesSetting settings, HashMap<Integer, Chart> model) {
-        setTitle(I18n.getInstance().getString("plugin.graph.valuesdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.graph.valuesdialog.header"));
+        super(I18n.getInstance().getString("plugin.graph.valuesdialog.title"), I18n.getInstance().getString("plugin.graph.valuesdialog.header"), Size.L);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

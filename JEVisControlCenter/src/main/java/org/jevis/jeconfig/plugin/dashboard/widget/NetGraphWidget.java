@@ -358,14 +358,16 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
                     && event.getClickCount() == 1 && !event.isShiftDown()) {
                 int row = 0;
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result(
+                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.calc.title", "Werte der Berechnung", "Calculation inputs"),
+                        null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
                 GridPane gp = new GridPane();
                 gp.setHgap(4);
                 gp.setVgap(8);
                 for (ChartDataRow chartDataRow : sampleHandler.getChartDataRows()) {
                     if (chartDataRow.isCalculation()) {
                         try {
-                            alert.setHeaderText(CalcMethods.getTranslatedFormula(chartDataRow.getCalculationObject()));
+                            alert.setDescription(CalcMethods.getTranslatedFormula(chartDataRow.getCalculationObject()));
 
                             CalcJobFactory calcJobCreator = new CalcJobFactory();
 
@@ -411,8 +413,7 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
 
                 }
                 if (!gp.getChildren().isEmpty()) {
-                    alert.getDialogPane().setContent(gp);
-                    TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
+                    alert.getDialogPane().setContent(gp);
                     alert.showAndWait();
                 }
 

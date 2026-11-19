@@ -52,19 +52,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class KPIWizard extends Dialog {
+public class KPIWizard extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(KPIWizard.class);
     private final List<KPIVariable> variables = new ArrayList<>();
     private ObjectRelations objectRelations;
     private int index = 0;
 
     public KPIWizard(JEVisObject object) {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.configuration.kpiwizard.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.configuration.kpiwizard.header"));
+        super(I18n.getInstance().getString("plugin.configuration.kpiwizard.title"), I18n.getInstance().getString("plugin.configuration.kpiwizard.header"), Size.L);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -223,12 +219,10 @@ public class KPIWizard extends Dialog {
 
                             }
                         } else {
-                            Alert alert = new Alert(Alert.AlertType.WARNING, "Not enough objects in " + "Var" + notForAll.getIndex());
-                            alert.showAndWait();
+                            org.jevis.jeconfig.application.ui.Notify.error(String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.kpiwizard.notenough", "Für Var%s gibt es nicht genug Objekte.", "There are not enough objects for Var%s."), notForAll.getIndex()));
                         }
                     } else {
-                        Alert alert = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("dialog.warning.notallowed"));
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     }
 
                 } catch (JEVisException e) {
@@ -236,8 +230,7 @@ public class KPIWizard extends Dialog {
                 }
                 close();
             } else {
-                Alert alert = new Alert(Alert.AlertType.WARNING, "Input Lists aren't matching");
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.kpiwizard.mismatch", "Die Eingabelisten passen nicht zusammen: Jede Variable braucht gleich viele Objekte.", "The input lists do not match: every variable needs the same number of objects."));
             }
 
         });

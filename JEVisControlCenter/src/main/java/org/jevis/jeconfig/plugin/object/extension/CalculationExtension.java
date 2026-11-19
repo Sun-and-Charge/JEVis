@@ -199,11 +199,13 @@ public class CalculationExtension implements ObjectEditorExtension {
 
             Button calcNowButton = new Button(I18n.getInstance().getString("plugin.object.calc.recalc"));
             calcNowButton.setOnAction(bEvent -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.initOwner(getOwnerWindow());
-                alert.setTitle(I18n.getInstance().getString("plugin.object.calc.recalc"));
-                alert.setHeaderText(I18n.getInstance().getString("plugin.object.calc.recalc.question"));
-                TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
+                /* J25.5: question with consequence, the button names the action */
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.calc.recalc.dialog.title", "Berechnung neu ausführen?", "Run the calculation again?"),
+                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.calc.recalc.dialog.text", "Die Ergebnisse im gewählten Zeitraum werden gelöscht und neu berechnet.",
+                                "The results in the chosen period are deleted and calculated again."), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+                ButtonType recalcType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.calc.recalc.dialog.action", "Neu berechnen", "Recalculate"), ButtonBar.ButtonData.OK_DONE);
+                alert.addPrimary(recalcType);
+                alert.addCancel();
 
                 GridPane gp = new GridPane();
                 gp.setHgap(6);
@@ -238,7 +240,7 @@ public class CalculationExtension implements ObjectEditorExtension {
                 alert.getDialogPane().setContent(gp);
 
                 alert.showAndWait().ifPresent(buttonType -> {
-                    if (buttonType.equals(ButtonType.OK)) {
+                    if (buttonType == recalcType) {
                         final ProgressForm pForm = new ProgressForm(I18n.getInstance().getString("plugin.object.cleandata.reclean.title") + "...");
                         boolean all = allRadioButton.isSelected();
                         boolean now = nowRadioButton.isSelected();
@@ -335,12 +337,7 @@ public class CalculationExtension implements ObjectEditorExtension {
                             pForm.getDialogStage().hide();
 
                             restoreTimeZone(defaultTimeZone, defaultDateTimeZone);
-                            Alert error = new Alert(Alert.AlertType.ERROR);
-                            error.initOwner(getOwnerWindow());
-                            error.setHeaderText(I18n.getInstance().getString("plugin.object.calc.recalc.title"));
-                            TopMenu.applyActiveTheme(error.getDialogPane().getScene());
-                            error.setContentText(errorMsg.get());
-                            error.showAndWait();
+                            org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.calc.recalc.title") + ": " + errorMsg.get());
                         });
 
                         pForm.activateProgressBar(set);

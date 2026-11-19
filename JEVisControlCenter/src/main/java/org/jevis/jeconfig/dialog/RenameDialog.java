@@ -35,15 +35,11 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 
 
-public class RenameDialog extends Dialog {
+public class RenameDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     public RenameDialog(JEVisObject selectedItem) {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.accounting.renamedialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.accounting.renamedialog.header"));
+        super(I18n.getInstance().getString("plugin.accounting.renamedialog.title"), I18n.getInstance().getString("plugin.accounting.renamedialog.header"), Size.S);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -72,8 +68,7 @@ public class RenameDialog extends Dialog {
                     selectedItem.setName(nameField.getText());
                     selectedItem.commit();
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("jevistree.dialog.rename.permission.denied.message"));
-                    alert.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("jevistree.dialog.rename.permission.denied.message"));
                 }
             } catch (JEVisException e) {
                 e.printStackTrace();

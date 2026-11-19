@@ -258,9 +258,13 @@ public class CleanDataExtension implements ObjectEditorExtension {
         Button calcCow = new Button(I18n.getInstance().getString("plugin.object.cleandata.reclean"));
         calcCow.setOnAction(buttonEvent -> {
 
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(I18n.getInstance().getString("plugin.object.cleandata.reclean"));
-            alert.setHeaderText(I18n.getInstance().getString("plugin.object.cleandata.reclean.question"));
+            /* J25.5: question with consequence, the button names the action */
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.cleandata.reclean.dialog.title", "Bereinigte Daten neu berechnen?", "Recalculate the clean data?"),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.cleandata.reclean.dialog.text", "Die bereinigten Daten im gewählten Zeitraum werden gelöscht und aus den Rohdaten neu berechnet.",
+                            "The clean data in the chosen period are deleted and calculated again from the raw data."), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+            ButtonType recleanType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.calc.recalc.dialog.action", "Neu berechnen", "Recalculate"), ButtonBar.ButtonData.OK_DONE);
+            alert.addPrimary(recleanType);
+            alert.addCancel();
             GridPane gp = new GridPane();
             gp.setHgap(6);
             gp.setVgap(6);
@@ -292,8 +296,8 @@ public class CleanDataExtension implements ObjectEditorExtension {
             alert.getDialogPane().setContent(gp);
 
             Optional<ButtonType> option = alert.showAndWait();
-            if (option.get() == null) {
-            } else if (option.get() == ButtonType.OK) {
+            if (!option.isPresent()) {
+            } else if (option.get() == recleanType) {
                 try {
                     recleanCleanData(allRadioButton, nowRadioButton, fromRadioButton, fromDatePicker, fromTimePicker, cleanDataObject.getCleanObject());
                 } catch (Exception ex) {

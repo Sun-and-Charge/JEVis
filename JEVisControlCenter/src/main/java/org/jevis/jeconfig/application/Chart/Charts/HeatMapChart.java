@@ -262,8 +262,7 @@ public class HeatMapChart implements Chart {
         }
 
         if (!errorMsg.toString().isEmpty()) {
-            Alert warning = new Alert(Alert.AlertType.WARNING, errorMsg.toString(), ButtonType.OK);
-            Platform.runLater(warning::showAndWait);
+            org.jevis.jeconfig.application.ui.Notify.info(errorMsg.toString());
         }
 
         HeatMapXY heatMapXY = getHeatMapXY(interval, inputSampleRate);

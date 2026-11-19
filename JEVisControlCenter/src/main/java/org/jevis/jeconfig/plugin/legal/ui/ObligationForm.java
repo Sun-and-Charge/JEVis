@@ -30,11 +30,12 @@ import org.jevis.jeconfig.plugin.legal.data.ObligationData;
 import org.jevis.jeconfig.plugin.legal.ui.tab.GeneralTab;
 import org.jevis.jeconfig.tool.ScreenSize;
 
-public class ObligationForm extends Dialog {
+public class ObligationForm extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
     private boolean isNew;
 
     public ObligationForm() {
+        super("", null, Size.L);
     }
 
 
@@ -50,14 +51,10 @@ public class ObligationForm extends Dialog {
 
     public ObligationForm(IndexOfLegalProvisions indexOfLegalProvisions) {
 
-        super();
-        this.initOwner(JEConfig.getStage());
+        super(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.title"), null, Size.L);
         this.indexOfLegalProvisions = indexOfLegalProvisions;
 
 
-        setTitle(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.title"));
-        setHeaderText(null);
-        setResizable(true);
         this.getDialogPane().setPrefWidth(ScreenSize.fitScreenWidth(1000));
         this.getDialogPane().setPrefHeight(ScreenSize.fitScreenHeight(950));
 

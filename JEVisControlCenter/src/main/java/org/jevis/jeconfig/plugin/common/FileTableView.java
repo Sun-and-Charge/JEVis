@@ -78,13 +78,9 @@ public class FileTableView extends TableView<FileData> {
         if (getSelectionModel().getSelectedItem() != null) {
             try {
 
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle(I18n.getInstance().getString("plugin.action.attachment.dialog.title"));
-                //alert.setHeaderText("Look, a Confirmation Dialog");
-                alert.setContentText(I18n.getInstance().getString("plugin.action.attachment.dialog.content"));
-
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.get() == ButtonType.OK) {
+                if (org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.attachment.delete.question", "Anhang löschen?", "Delete the attachment?"),
+                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.attachment.delete.consequence", "Die Datei wird aus dem Eintrag entfernt.", "The file is removed from the entry."),
+                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
                     getSelectionModel().getSelectedItem().getFileObj().delete();
                     getItems().remove(getSelectionModel().getSelectedItem());
                 } else {

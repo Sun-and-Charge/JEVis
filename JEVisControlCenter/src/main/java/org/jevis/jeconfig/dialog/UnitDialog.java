@@ -40,16 +40,12 @@ import org.jevis.jeconfig.JEConfig;
 import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.plugin.unit.UnitSelectUI;
 
-public class UnitDialog extends Dialog {
+public class UnitDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(UnitDialog.class);
 
     public UnitDialog(JEVisAttribute attribute, TextField ubutton) throws JEVisException {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.configuration.unitdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.configuration.unitdialog.header"));
+        super(I18n.getInstance().getString("plugin.configuration.unitdialog.title"), I18n.getInstance().getString("plugin.configuration.unitdialog.header"), Size.M);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -109,12 +105,10 @@ public class UnitDialog extends Dialog {
     }
 
     public UnitDialog(JEVisAttribute attribute, ComboBox<JEVisUnit> unitListView) throws JEVisException {
-        super();
+        super(I18n.getInstance().getString("plugin.configuration.unitdialog.title"), I18n.getInstance().getString("plugin.configuration.unitdialog.header"), Size.M);
         setTitle(I18n.getInstance().getString("plugin.configuration.unitdialog.title"));
         setHeaderText(I18n.getInstance().getString("plugin.configuration.unitdialog.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

@@ -657,10 +657,9 @@ public class ChartPlugin implements Plugin {
         alignChartAxes();
 
         if (toolBarView.getToolBarSettings().isCalculateRegression()) {
-            Alert infoBox = new Alert(Alert.AlertType.INFORMATION);
-            infoBox.setResizable(true);
-            infoBox.setTitle(I18n.getInstance().getString("dialog.regression.title"));
-            infoBox.setHeaderText(I18n.getInstance().getString("dialog.regression.headertext"));
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> infoBox = org.jevis.jeconfig.application.ui.SucDialog.result(
+                    I18n.getInstance().getString("dialog.regression.title"), I18n.getInstance().getString("dialog.regression.headertext"),
+                    org.jevis.jeconfig.application.ui.SucDialog.Size.M);
             TextArea textArea = new TextArea(allFormulas.toString());
             textArea.setWrapText(true);
             textArea.setPrefWidth(450);
@@ -1568,9 +1567,8 @@ public class ChartPlugin implements Plugin {
             }
             if (seconds == null) seconds = 60L;
 
-            Alert warning = new Alert(Alert.AlertType.INFORMATION, I18n.getInstance().getString("plugin.graph.toolbar.timer.settimer")
-                    + " " + seconds + " " + I18n.getInstance().getString("plugin.graph.toolbar.timer.settimer2"), ButtonType.OK);
-            warning.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("plugin.graph.toolbar.timer.settimer")
+                    + " " + seconds + " " + I18n.getInstance().getString("plugin.graph.toolbar.timer.settimer2"));
 
             finalSeconds = seconds;
         }

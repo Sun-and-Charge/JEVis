@@ -778,12 +778,7 @@ public class CSVColumnHeader {
 
                             } catch (Exception ex) {
                                 logger.catching(ex);
-                                Alert alert = new Alert(AlertType.ERROR);
-                                alert.setTitle(I18n.getInstance().getString("csv.target.error.title"));
-                                alert.setHeaderText(I18n.getInstance().getString("csv.target.error.message"));
-                                alert.setContentText(ex.getMessage());
-
-                                alert.showAndWait();
+                                org.jevis.jeconfig.application.ui.Notify.error((I18n.getInstance().getString("csv.target.error.message")) + ": " + (ex.getMessage()));
                             }
                         }
                     }

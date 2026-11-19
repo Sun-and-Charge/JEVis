@@ -31,16 +31,12 @@ import org.jevis.jeconfig.plugin.meters.data.MeterData;
 /**
  * Dialog with the QR code of one meter.
  */
-public class MeterQrDialog extends Dialog<ButtonType> {
-
+public class MeterQrDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     public MeterQrDialog(MeterData meterData, JEVisDataSource ds) {
-        initOwner(JEConfig.getStage());
-        setTitle(I18n.getInstance().getString("plugin.meters.qr.title"));
-        setHeaderText(null);
-        setResizable(true);
-        TopMenu.applyActiveTheme(((Stage) getDialogPane().getScene().getWindow()).getScene());
-
+        super(I18n.getInstance().getString("plugin.meters.qr.title") + " – " + meterData.getName(), null, Size.M);
         getDialogPane().setContent(new MeterQrPane(meterData, ds));
-        getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        ButtonType close = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.close", "Schließen", "Close"), javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        getDialogPane().getButtonTypes().add(close);
+        ((javafx.scene.control.Button) getDialogPane().lookupButton(close)).setDefaultButton(true);
     }
 }

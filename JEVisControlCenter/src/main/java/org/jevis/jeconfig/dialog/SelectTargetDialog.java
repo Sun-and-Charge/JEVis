@@ -49,7 +49,7 @@ import java.util.List;
 /**
  * @author Florian Simon <florian.simon@envidatec.com>
  */
-public class SelectTargetDialog extends Dialog {
+public class SelectTargetDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     public static final String VALUE = "Value";
     private final SelectionMode selectionMode;
@@ -70,12 +70,8 @@ public class SelectTargetDialog extends Dialog {
      * @param selected Filter who should selected by default, if null the first will be taken.
      */
     public SelectTargetDialog(List<JEVisTreeFilter> filters, JEVisTreeFilter basicFilter, JEVisTreeFilter selected, SelectionMode selectionMode, JEVisDataSource ds, List<UserSelection> userSelections) {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.configuration.selecttarget.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.configuration.selecttarget.header"));
+        super(I18n.getInstance().getString("plugin.configuration.selecttarget.title"), I18n.getInstance().getString("plugin.configuration.selecttarget.header"), Size.L);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

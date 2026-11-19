@@ -239,15 +239,7 @@ public class AlarmEditor implements AttributeEditor {
         tabPane.setPrefWidth(480);
         tabPane.setPrefHeight(350);
 
-        Dialog dialog = new Dialog();
-        dialog.setTitle(I18n.getInstance().getString("plugin.configuration.alarmeditor.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("plugin.configuration.alarmeditor.header"));
-        dialog.setResizable(true);
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.alarmeditor.title"), I18n.getInstance().getString("plugin.configuration.alarmeditor.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
 
         for (JsonAlarmConfig config : _listConfig) {
             Tab newTab = new Tab(config.getName());
@@ -256,16 +248,10 @@ public class AlarmEditor implements AttributeEditor {
 
         }
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("newobject.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("newobject.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        dialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
+        /* J25.5: "Speichern" in Sun, no default button (Enter in a field must not save), "Abbrechen" */
+        ButtonType okType = dialog.addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
         Button okButton = (Button) dialog.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
-
-        Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
+        Button cancelButton = dialog.addCancel();
 
         Separator separator = new Separator(Orientation.HORIZONTAL);
         separator.setPadding(new Insets(8, 0, 8, 0));

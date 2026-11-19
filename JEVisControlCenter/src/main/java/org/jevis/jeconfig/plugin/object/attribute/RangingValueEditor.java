@@ -142,19 +142,9 @@ public class RangingValueEditor implements AttributeEditor {
 
         TabPane tabPane = new TabPane();
 
-        Dialog dialog = new Dialog();
-        dialog.setTitle(I18n.getInstance().getString("plugin.configuration.rangingvalueeditor.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("plugin.configuration.rangingvalueeditor.header"));
-        dialog.setResizable(true);
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.rangingvalueeditor.title"), I18n.getInstance().getString("plugin.configuration.rangingvalueeditor.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         dialog.setHeight(WindowSize.fitHeight(JEConfig.getStage(), 450));
         dialog.setWidth(WindowSize.fitWidth(JEConfig.getStage(), 620));
-        stage.setMinWidth(WindowSize.fitWidth(JEConfig.getStage(), 400));
-        stage.setMinHeight(WindowSize.fitHeight(JEConfig.getStage(), 300));
 
         for (RangingValue rangingValue : rangingValues.get().getRangingValues()) {
             Tab newTab = new Tab(String.valueOf(rangingValues.get().getRangingValues().indexOf(rangingValue)));
@@ -182,16 +172,10 @@ public class RangingValueEditor implements AttributeEditor {
 
         tabPane.getTabs().add(addTab);
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("newobject.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("newobject.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        dialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
+        /* J25.5: "Speichern" in Sun, no default button (Enter in a field must not save), "Abbrechen" */
+        ButtonType okType = dialog.addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
         Button okButton = (Button) dialog.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
-
-        Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
+        Button cancelButton = dialog.addCancel();
 
         Separator separator = new Separator(Orientation.HORIZONTAL);
         separator.setPadding(new Insets(8, 0, 8, 0));

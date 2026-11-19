@@ -20,6 +20,8 @@
  */
 package org.jevis.jeconfig.dialog;
 
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import org.jevis.jeconfig.application.control.TimePicker;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -72,7 +74,7 @@ import static org.jevis.jeconfig.application.Chart.ChartPluginElements.Boxes.Ana
 /**
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
-public class LoadAnalysisDialog extends Dialog {
+public class LoadAnalysisDialog extends SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(LoadAnalysisDialog.class);
     private final ObjectRelations objectRelations;
     private final ChartPlugin chartPlugin;
@@ -118,18 +120,12 @@ public class LoadAnalysisDialog extends Dialog {
     private ComboBox<String> comboBoxCustomPeriods = null;
 
     public LoadAnalysisDialog(ChartPlugin chartPlugin, JEVisDataSource ds, ObservableList<JEVisObject> analyses) {
+        super(PluginSidebar.text("plugin.graph.load.title", "Analyse mit Zeitraum laden", "Load analysis with time frame"),
+                PluginSidebar.text("plugin.graph.load.description", "Analyse, Zeitraum, Aggregation und Berechnung wählen.",
+                        "Choose the analysis, time frame, aggregation and calculation."), Size.L);
         this.ds = ds;
         this.objectRelations = new ObjectRelations(ds);
         this.chartPlugin = chartPlugin;
-
-        setTitle(I18n.getInstance().getString("plugin.graph.loadanalyisdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.graph.loadanalyisdialog.header"));
-        setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
 
         filteredData = new FilteredList<>(analyses, s -> true);
 
@@ -679,14 +675,13 @@ public class LoadAnalysisDialog extends Dialog {
         pickerDateEnd = pickerCombo.getEndDatePicker();
         pickerTimeEnd = pickerCombo.getEndTimePicker();
         filterInput.setPromptText(I18n.getInstance().getString("searchbar.filterinput.prompttext"));
-        filterInput.setStyle("-fx-font-weight: bold;");
 
         Region freeSpace = new Region();
-        freeSpace.setPrefWidth(40);
+        freeSpace.setPrefWidth(16);
 
         GridPane gridLayout = new GridPane();
-        gridLayout.setPadding(new Insets(10, 10, 10, 10));
         gridLayout.setVgap(10);
+        gridLayout.setHgap(6);
 //            GridPane.setFillWidth(freeSpace, true);
 
         /** Column 0 */
@@ -730,8 +725,8 @@ public class LoadAnalysisDialog extends Dialog {
 
         GridPane.setFillWidth(analysisListView, true);
         GridPane.setFillHeight(analysisListView, true);
-        if (!ChartTools.isMultiSite(ds) && !ChartTools.isMultiDir(ds)) analysisListView.setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 600d, 450d));
-        else analysisListView.setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 900d, 450d));
+        /* J25.5: the dialog has size L (960px); the list leaves room for the time frame column on the right */
+        analysisListView.setPrefWidth(520d);
         analysisListView.setMinWidth(300d);
 //            analysisListView.setMaxWidth(600d);
         GridPane.setHgrow(analysisListView, Priority.ALWAYS);

@@ -89,10 +89,7 @@ public class NewObjectDialog {
      */
     public Response show(final JEVisClass jclass, final JEVisObject parent, boolean fixClass, Type type, String objName) {
 
-        Dialog<ButtonType> dialog = new Dialog();
-        dialog.initOwner(JEConfig.getStage());
-        dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.new.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.new.header"));
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("jevistree.dialog.new.title"), org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.new.description", "Name, Typ und Anzahl wählen. Mit einer Vorlage werden deren Einstellungen übernommen.", "Choose the name, type and number. A template copies its settings."), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         dialog.getDialogPane().getButtonTypes().setAll();
         dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         dialog.setResizable(true);
@@ -377,7 +374,7 @@ public class NewObjectDialog {
         }
 
 
-        final ButtonType ok = new ButtonType(I18n.getInstance().getString("jevistree.dialog.new.ok"), ButtonBar.ButtonData.FINISH);
+        final ButtonType ok = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.create", "Anlegen", "Create"), ButtonBar.ButtonData.FINISH);
         final ButtonType cancel = new ButtonType(I18n.getInstance().getString("jevistree.dialog.new.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
         dialog.getDialogPane().getButtonTypes().addAll(cancel, ok);

@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class NewMeterDialog extends Dialog {
+public class NewMeterDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(NewMeterDialog.class);
     private final MeterList meterList;
@@ -72,13 +72,10 @@ public class NewMeterDialog extends Dialog {
     private Label parentPath;
 
     public NewMeterDialog(JEVisDataSource jeVisDataSource, MeterList meterList, JEVisObject jeVisObject) {
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.meters.newdialog.title", "Neue Messstelle", "New measurement point"),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.meters.newdialog.description", "Name und Medium wählen; optional, wovon die Messstelle ein Unterzähler ist.", "Choose the name and medium; optionally the meter this one is a sub-meter of."), Size.M);
         this.jeVisDataSource = jeVisDataSource;
         this.meterList = meterList;
-
-
-        Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(false);
 
         GridPane gridPane = new GridPane();
         gridPane.setPrefWidth(600);
@@ -159,8 +156,7 @@ public class NewMeterDialog extends Dialog {
 
                 } catch (Exception e) {
                     logger.error(e);
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis Exception", ButtonType.OK);
-                    alert.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
                 }
             });
             selectTargetDialog.showAndWait();

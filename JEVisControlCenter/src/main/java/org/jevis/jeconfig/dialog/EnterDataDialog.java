@@ -79,7 +79,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class EnterDataDialog extends Dialog implements EventTarget {
+public class EnterDataDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> implements EventTarget  {
     public static final String CONVERSION_TO_DIFFERENTIAL_ATTRIBUTE_NAME = "Conversion to Differential";
     private static final Logger logger = LogManager.getLogger(EnterDataDialog.class);
     private final JEVisDataSource ds;
@@ -126,12 +126,8 @@ public class EnterDataDialog extends Dialog implements EventTarget {
     private WorkDays workDays;
 
     public EnterDataDialog(JEVisDataSource dataSource) {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.object.dialog.data.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.object.dialog.data.header"));
+        super(I18n.getInstance().getString("plugin.object.dialog.data.title"), I18n.getInstance().getString("plugin.object.dialog.data.header"), Size.M);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -350,12 +346,12 @@ public class EnterDataDialog extends Dialog implements EventTarget {
 
                                     if (isDiff) {
                                         if (lastValue != null && lastValue > newVal) {
-                                            Alert warning = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.object.dialog.data.differror"));
-                                            warning.setResizable(true);
                                             JEVisAttribute finalValueAttribute = valueAttribute;
                                             DateTime finalTs = ts;
-                                            warning.showAndWait().ifPresent(response -> {
-                                                if (response.getButtonData().getTypeCode().equals(ButtonType.OK.getButtonData().getTypeCode())) {
+                                            java.util.Optional.of(org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.question", "Wert trotzdem speichern?", "Save the value anyway?"),
+                                                    I18n.getInstance().getString("plugin.object.dialog.data.differror"),
+                                                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.action", "Trotzdem speichern", "Save anyway"), false)).ifPresent(response -> {
+                                                if (response) {
                                                     buildSample(finalValueAttribute, finalTs, newVal);
                                                     close();
                                                 } else {
@@ -379,13 +375,13 @@ public class EnterDataDialog extends Dialog implements EventTarget {
                                                 if (newDiff < Double.parseDouble(c.getKey().getMin())) {
                                                     hasError = true;
 
-                                                    Alert warning = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.object.dialog.data.diff.smaller") + " " +
-                                                            newDiff + " < " + Double.parseDouble(c.getKey().getMin()));
-                                                    warning.setResizable(true);
                                                     JEVisAttribute finalValueAttribute = valueAttribute;
                                                     DateTime finalTs1 = ts;
-                                                    warning.showAndWait().ifPresent(response -> {
-                                                        if (response.getButtonData().getTypeCode().equals(ButtonType.OK.getButtonData().getTypeCode())) {
+                                                    java.util.Optional.of(org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.question", "Wert trotzdem speichern?", "Save the value anyway?"),
+                                                            I18n.getInstance().getString("plugin.object.dialog.data.diff.smaller") + " " +
+                                                            newDiff + " < " + Double.parseDouble(c.getKey().getMin()),
+                                                            org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.action", "Trotzdem speichern", "Save anyway"), false)).ifPresent(response -> {
+                                                        if (response) {
                                                             buildSample(finalValueAttribute, finalTs1, newVal);
                                                         } else {
 
@@ -394,13 +390,13 @@ public class EnterDataDialog extends Dialog implements EventTarget {
                                                 } else if (newDiff > Double.parseDouble(c.getKey().getMax())) {
                                                     hasError = true;
 
-                                                    Alert warning = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.object.dialog.data.diff.bigger") + " " +
-                                                            newDiff + " > " + Double.parseDouble(c.getKey().getMax()));
-                                                    warning.setResizable(true);
                                                     JEVisAttribute finalValueAttribute = valueAttribute;
                                                     DateTime finalTs2 = ts;
-                                                    warning.showAndWait().ifPresent(response -> {
-                                                        if (response.getButtonData().getTypeCode().equals(ButtonType.OK.getButtonData().getTypeCode())) {
+                                                    java.util.Optional.of(org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.question", "Wert trotzdem speichern?", "Save the value anyway?"),
+                                                            I18n.getInstance().getString("plugin.object.dialog.data.diff.bigger") + " " +
+                                                            newDiff + " > " + Double.parseDouble(c.getKey().getMax()),
+                                                            org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.action", "Trotzdem speichern", "Save anyway"), false)).ifPresent(response -> {
+                                                        if (response) {
                                                             buildSample(finalValueAttribute, finalTs2, newVal);
                                                         } else {
 
@@ -420,13 +416,13 @@ public class EnterDataDialog extends Dialog implements EventTarget {
                                             if (newVal < Double.parseDouble(c.getKey().getMin())) {
                                                 hasError = true;
 
-                                                Alert warning = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.object.dialog.data.nodiff.smaller") + " " +
-                                                        newVal + " < " + Double.parseDouble(c.getKey().getMin()));
-                                                warning.setResizable(true);
                                                 JEVisAttribute finalValueAttribute = valueAttribute;
                                                 DateTime finalTs3 = ts;
-                                                warning.showAndWait().ifPresent(response -> {
-                                                    if (response.getButtonData().getTypeCode().equals(ButtonType.OK.getButtonData().getTypeCode())) {
+                                                java.util.Optional.of(org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.question", "Wert trotzdem speichern?", "Save the value anyway?"),
+                                                        I18n.getInstance().getString("plugin.object.dialog.data.nodiff.smaller") + " " +
+                                                        newVal + " < " + Double.parseDouble(c.getKey().getMin()),
+                                                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.action", "Trotzdem speichern", "Save anyway"), false)).ifPresent(response -> {
+                                                    if (response) {
                                                         buildSample(finalValueAttribute, finalTs3, newVal);
                                                     } else {
 
@@ -435,13 +431,13 @@ public class EnterDataDialog extends Dialog implements EventTarget {
                                             } else if (newVal > Double.parseDouble(c.getKey().getMax())) {
                                                 hasError = true;
 
-                                                Alert warning = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.object.dialog.data.nodiff.bigger") + " " +
-                                                        newVal + " > " + Double.parseDouble(c.getKey().getMax()));
-                                                warning.setResizable(true);
                                                 JEVisAttribute finalValueAttribute = valueAttribute;
                                                 DateTime finalTs4 = ts;
-                                                warning.showAndWait().ifPresent(response -> {
-                                                    if (response.getButtonData().getTypeCode().equals(ButtonType.OK.getButtonData().getTypeCode())) {
+                                                java.util.Optional.of(org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.question", "Wert trotzdem speichern?", "Save the value anyway?"),
+                                                        I18n.getInstance().getString("plugin.object.dialog.data.nodiff.bigger") + " " +
+                                                        newVal + " > " + Double.parseDouble(c.getKey().getMax()),
+                                                        org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.implausible.action", "Trotzdem speichern", "Save anyway"), false)).ifPresent(response -> {
+                                                    if (response) {
                                                         buildSample(finalValueAttribute, finalTs4, newVal);
                                                     } else {
 
@@ -463,14 +459,12 @@ public class EnterDataDialog extends Dialog implements EventTarget {
 
 
                         } else {
-                            Alert warning = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("plugin.object.dialog.data.error.number"));
-                            warning.setResizable(true);
-                            warning.showAndWait();
+                            org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.number", "Bitte eine Zahl eingeben, z. B. 12,5.", "Please enter a number, e.g. 12.5."));
                         }
                     } else {
-                        Alert warning = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("dialog.warning.notallowed"));
-                        warning.setResizable(true);
-                        warning.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed",
+                                "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.",
+                                "You do not have permission for this. Ask an administrator for write access."));
                     }
                 } catch (Exception e) {
                     logger.error("Could not get current User", e);
@@ -785,19 +779,18 @@ public class EnterDataDialog extends Dialog implements EventTarget {
             try {
                 sample.commit();
                 String message = sample.getTimestamp() + " : " + sample.getValueAsDouble() + " " + I18n.getInstance().getString("plugin.object.dialog.data.import");
-                Alert ok = new Alert(Alert.AlertType.INFORMATION, message);
-                ok.setResizable(true);
-                Platform.runLater(ok::showAndWait);
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.object.dialog.data.resetdependencies"));
-                confirm.setOnCloseRequest(dialogEvent -> {
-                    if (confirm.getResult() == ButtonType.OK) {
+                /* J25.5: success as a notification, then the question with its consequence */
+                org.jevis.jeconfig.application.ui.Notify.success(message);
+                Platform.runLater(() -> {
+                    if (org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.dependencies.question", "Abhängige Datenreihen neu berechnen?", "Recalculate the dependent rows?"),
+                            org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.dialog.data.dependencies.consequence",
+                                    "Bereinigte Daten und Berechnungen, die auf dieser Datenreihe aufbauen, werden ab dem Zeitpunkt des Werts zurückgesetzt und neu berechnet.",
+                                    "Clean data and calculations based on this row are reset from the time of the value and calculated again."),
+                            org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.object.calc.recalc.dialog.action", "Neu berechnen", "Recalculate"), false)) {
                         List<JEVisObject> parentObject = new ArrayList<>();
                         parentObject.add(valueAttribute.getObject());
                         CommonMethods.cleanDependentObjects(parentObject, ts);
                     }
-                });
-                ok.setOnCloseRequest(dialogEvent -> {
-                    confirm.show();
                 });
 
                 Platform.runLater(() -> doubleField.setText(""));

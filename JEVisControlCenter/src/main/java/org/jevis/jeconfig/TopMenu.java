@@ -203,16 +203,9 @@ public class TopMenu extends MenuBar {
                 DataSettings dataSettings = chartPlugin.getDataSettings();
 
                 if (selectedAnalysis != null) {
-                    Dialog confirmationDialog = new Dialog();
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> confirmationDialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("menu.confirmationdialog.title"), I18n.getInstance().getString("menu.confirmationdialog.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.S);
 
-                    confirmationDialog.setTitle(I18n.getInstance().getString("menu.confirmationdialog.title"));
-                    confirmationDialog.setHeaderText(I18n.getInstance().getString("menu.confirmationdialog.header"));
-                    confirmationDialog.setResizable(true);
-                    confirmationDialog.initOwner(JEConfig.getStage());
-                    confirmationDialog.initModality(Modality.APPLICATION_MODAL);
                     Stage stage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
-                    TopMenu.applyActiveTheme(stage.getScene());
-                    stage.setAlwaysOnTop(true);
 
                     ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
                     ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -380,12 +373,7 @@ public class TopMenu extends MenuBar {
                 }
 
                 if (success) {
-                    Alert finish = new Alert(Alert.AlertType.INFORMATION);
-                    finish.setTitle(I18n.getInstance().getString("menu.system.driver.success.title"));
-                    finish.setHeaderText(null);
-                    finish.setContentText(I18n.getInstance().getString("menu.system.driver.success.message"));
-
-                    finish.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("menu.system.driver.success.message"));
                 }
 
             }
@@ -504,16 +492,9 @@ public class TopMenu extends MenuBar {
                         if (loginPref.get("JEVisRefreshToken", null) != null && ws.getRefreshToken() != null) {
                             loginPref.put("JEVisRefreshToken", ws.getRefreshToken());
                         }
-                        Alert info = new Alert(Alert.AlertType.INFORMATION, I18n.getInstance().getString("tool.dialog.passworddialog.title"), ButtonType.OK);
-                        info.initOwner(JEConfig.getStage());
-                        info.setHeaderText(null);
-                        info.setContentText("OK");
-                        info.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.success(org.jevis.jeconfig.application.navigation.PluginSidebar.text("menu.password.changed", "Passwort geändert. Andere Anmeldungen wurden abgemeldet.", "Password changed. Other sessions were signed out."));
                     } else {
-                        Alert error = new Alert(Alert.AlertType.ERROR, result.getMessage(), ButtonType.OK);
-                        error.initOwner(JEConfig.getStage());
-                        error.setHeaderText(null);
-                        error.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(result.getMessage());
                     }
                 } else {
                     /* legacy webservice with Basic auth */
@@ -541,15 +522,8 @@ public class TopMenu extends MenuBar {
         CheckMenuItem expertMode = new CheckMenuItem(I18n.getInstance().getString("menu.options.expert"));
         expertMode.setSelected(prefExpert.getBoolean("show", false));
         expertMode.setOnAction(e -> {
-            Dialog<ButtonType> pinDialog = new Dialog<>();
-            pinDialog.setTitle("Security Question");
-            pinDialog.setHeaderText("Enter PIN");
-            pinDialog.setResizable(true);
-            pinDialog.initOwner(JEConfig.getStage());
-            pinDialog.initModality(Modality.APPLICATION_MODAL);
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> pinDialog = new org.jevis.jeconfig.application.ui.SucDialog<>("Security Question", "Enter PIN", org.jevis.jeconfig.application.ui.SucDialog.Size.S);
             Stage stage = (Stage) pinDialog.getDialogPane().getScene().getWindow();
-            TopMenu.applyActiveTheme(stage.getScene());
-            stage.setAlwaysOnTop(true);
 
             ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);

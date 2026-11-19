@@ -118,19 +118,13 @@ public class SampleExportExtension implements SampleEditorExtension {
             try {
                 if (doExport()) {
                     Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setHeaderText(I18n.getInstance().getString("csv.export.dialog.success.header"));
-                        alert.setContentText(I18n.getInstance().getString("csv.export.dialog.success.message"));
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.info((I18n.getInstance().getString("csv.export.dialog.success.header")) + ": " + (I18n.getInstance().getString("csv.export.dialog.success.message")));
                     });
 
                     return true;
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setHeaderText(I18n.getInstance().getString("csv.export.dialog.failed.header"));
-                        alert.setContentText(I18n.getInstance().getString("csv.export.dialog.failed.message"));
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error((I18n.getInstance().getString("csv.export.dialog.failed.header")) + ": " + (I18n.getInstance().getString("csv.export.dialog.failed.message")));
                     });
 
                     return false;

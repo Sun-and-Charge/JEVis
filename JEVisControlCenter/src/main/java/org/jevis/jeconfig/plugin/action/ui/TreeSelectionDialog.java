@@ -52,7 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class TreeSelectionDialog extends Dialog {
+public class TreeSelectionDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(TreeSelectionDialog.class);
     public static List<String> allData = new ArrayList<>(Arrays.asList("Data", "Base Data"));
     public static List<String> allCleanData = new ArrayList<>(Arrays.asList("Data", "Clean Data", "Base Data", "Math Data", "Forecast Data"));
@@ -83,8 +83,7 @@ public class TreeSelectionDialog extends Dialog {
     private final Response response = Response.CANCEL;
 
     public TreeSelectionDialog(JEVisDataSource ds, List<JEVisClass> classFilter, SelectionMode selectionMode, List<UserSelection> selection, boolean showAttributes) {
-        super();
-        initOwner(JEConfig.getStage());
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.graph.treeselection.title", "Objekte auswählen", "Select objects"), null, Size.L);
         setResizable(true);
         buildClasses(ds);
         setOnCloseRequest(event -> {
@@ -178,8 +177,7 @@ public class TreeSelectionDialog extends Dialog {
                     for (JEVisObject object : incorrectObjects) {
                         stringBuilder.append("\n").append(object.getName());
                     }
-                    Alert selectionShow = new Alert(Alert.AlertType.ERROR, "Error: " + stringBuilder);
-                    selectionShow.show();
+                    org.jevis.jeconfig.application.ui.Notify.error(org.jevis.commons.i18n.I18n.getInstance().getString("plugin.graph.treeselectiondialog.wrongclass") + stringBuilder);
                     setResult(buttonCancel);
                 }
 

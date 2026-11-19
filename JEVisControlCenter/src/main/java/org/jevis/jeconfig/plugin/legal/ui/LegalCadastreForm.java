@@ -33,7 +33,7 @@ import org.jevis.jeconfig.tool.ScreenSize;
 
 import java.util.Optional;
 
-public class LegalCadastreForm extends Alert {
+public class LegalCadastreForm extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
     Label nameLabel = new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.planname"));
 
@@ -52,19 +52,11 @@ public class LegalCadastreForm extends Alert {
     private double iconSize = 12;
 
     public LegalCadastreForm(IndexOfLegalProvisions indexOfLegalProvisions) {
-        super(AlertType.INFORMATION);
+        super(I18n.getInstance().getString("plugin.indexoflegalprovisions.indexoflegalprovisions.dialog.title"), I18n.getInstance().getString("plugin.indexoflegalprovisions.indexoflegalprovisions.dialog.header"), Size.L);
         this.indexOfLegalProvisions = indexOfLegalProvisions;
-        this.initOwner(JEConfig.getStage());
-
-        setTitle(I18n.getInstance().getString("plugin.indexoflegalprovisions.indexoflegalprovisions.dialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.indexoflegalprovisions.indexoflegalprovisions.dialog.header"));
-        setResizable(true);
-        setWidth(ScreenSize.fitScreenWidth(800));
-        setHeight(ScreenSize.fitScreenHeight(400));
-
-        Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(false);
+        /* J25.5: "Speichern" and "Abbrechen" instead of a single OK */
+        addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
+        addCancel();
 
 
         GridPane gridPane = new GridPane();

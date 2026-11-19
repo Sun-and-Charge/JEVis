@@ -132,12 +132,7 @@ public final class EntryStore {
             logger.error("Could not load directories of class {}", directoryClassName, e);
         }
         if (directories.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.initOwner(JEConfig.getStage());
-            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-            alert.setHeaderText(null);
-            alert.setContentText(String.format(I18n.getInstance().getString("plugin.scheduledentries.nodirectory"), directoryClassName));
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.info(String.format(I18n.getInstance().getString("plugin.scheduledentries.nodirectory"), directoryClassName));
             return null;
         }
         if (directories.size() == 1) {
@@ -215,15 +210,7 @@ public final class EntryStore {
 
     public static void showError(String message, Exception e) {
         logger.error(message, e);
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.initOwner(JEConfig.getStage());
-        TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-        alert.setHeaderText(message);
-        alert.setContentText(e != null && e.getMessage() != null ? e.getMessage() : "");
-        if (alert.getDialogPane().getScene().getWindow() instanceof Stage) {
-            ((Stage) alert.getDialogPane().getScene().getWindow()).setAlwaysOnTop(false);
-        }
-        alert.showAndWait();
+        org.jevis.jeconfig.application.ui.Notify.error(message + (e != null && e.getMessage() != null ? " (" + e.getMessage() + ")" : ""));
     }
 
     /**

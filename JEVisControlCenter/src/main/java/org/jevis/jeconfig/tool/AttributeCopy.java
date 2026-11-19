@@ -139,13 +139,8 @@ public class AttributeCopy {
     }
 
     public void startPaste(List<JEVisAttribute> jeVisAttributes, List<JEVisTreeItem> objectsTargets) {
-        Dialog dialog = new Dialog();
-        dialog.setResizable(true);
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("tool.attributecopy.paste.title", "Attribute einfügen", "Paste attributes"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
 
         ButtonType okType = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.new.ok"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.new.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -216,13 +211,8 @@ public class AttributeCopy {
 
 
     public void showAttributeSelection(JEVisObject object) {
-        Dialog dialog = new Dialog();
-        dialog.setResizable(true);
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("tool.attributecopy.select.title", "Attribute auswählen", "Select attributes"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
 
         ButtonType okType = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.new.ok"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.new.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);

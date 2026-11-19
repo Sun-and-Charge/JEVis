@@ -20,6 +20,8 @@
  */
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import javafx.scene.control.TextField;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
@@ -58,7 +60,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class TreeSelectionDialog extends Dialog {
+public class TreeSelectionDialog extends SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(TreeSelectionDialog.class);
     public static List<String> allData = new ArrayList<>(Arrays.asList("Data", "Base Data", "String Data"));
     public static List<String> allCleanData = new ArrayList<>(Arrays.asList("Data", "Clean Data", "Base Data", "Math Data", "Forecast Data"));
@@ -96,18 +98,9 @@ public class TreeSelectionDialog extends Dialog {
     }
 
     public TreeSelectionDialog(JEVisDataSource ds, List<JEVisClass> classFilter, SelectionMode selectionMode, List<UserSelection> selection, boolean showAttributes) {
-        super();
+        super(PluginSidebar.text("plugin.graph.treeselection.title", "Objekte auswählen", "Select objects"), null, Size.L);
         this.classFilter = classFilter;
         this.requiredClasses = new ArrayList<>(classFilter);
-
-        setTitle(I18n.getInstance().getString("plugin.graph.treeselectiondialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.graph.treeselectiondialog.header"));
-        setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
 
         buildClasses(ds);
 
@@ -208,13 +201,7 @@ public class TreeSelectionDialog extends Dialog {
             filterBox.getSelectionModel().select(10);
         }
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        this.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-        Button okButton = (Button) this.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
+        Button okButton = addPrimary(PluginSidebar.text("plugin.graph.treeselection.select", "Auswählen", "Select"));
         okButton.setOnAction(event -> {
             try {
                 boolean correctChoice = true;
@@ -236,17 +223,14 @@ public class TreeSelectionDialog extends Dialog {
                     for (JEVisObject object : incorrectObjects) {
                         stringBuilder.append("\n").append(object.getName());
                     }
-                    Alert selectionShow = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.graph.treeselectiondialog.wrongclass") + stringBuilder);
-                    selectionShow.initOwner(this.getDialogPane().getScene().getWindow());
-                    selectionShow.show();
+                    org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.graph.treeselectiondialog.wrongclass") + stringBuilder);
                 }
             } catch (Exception e) {
                 logger.error(e);
             }
         });
 
-        Button cancelButton = (Button) this.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
+        Button cancelButton = addCancel();
         cancelButton.setOnAction(event -> this.close());
 
         Region spacer = new Region();

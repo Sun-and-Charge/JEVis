@@ -56,7 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class NotePane extends Dialog {
+public class NotePane extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(NotePane.class);
     Label targetLabel = new Label(I18n.getInstance().getString("plugin.note.pane.target"));
@@ -84,6 +84,7 @@ public class NotePane extends Dialog {
    private final Optional<NotesRow> notesRow;
 
     public NotePane(ObservableList<String> allTags, JEVisDataSource dataSource, Optional<NotesRow> notesRow) {
+        super(notesRow.isPresent() ? org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.notes.edit.title", "Notiz bearbeiten", "Edit note") : org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.notes.new.title", "Neue Notiz", "New note"), null, Size.M);
         this.notesRow = notesRow;
         GridPane gridPane = new GridPane();
         this.dataSource = dataSource;

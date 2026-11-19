@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * @author Florian Simon <florian.simon@envidatec.com>
  */
-public class SCADASelectionDialog extends Dialog {
+public class SCADASelectionDialog extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
     //    private VBox root = new VBox();
     private final Button ok = new Button("OK");
@@ -63,8 +63,7 @@ public class SCADASelectionDialog extends Dialog {
     private MODE mode = MODE.OBJECT;
 
     public SCADASelectionDialog(JEVisDataSource ds, String title, List<UserSelection> uselection, MODE mode) {
-        setTitle(I18n.getInstance().getString("plugin.scada.selectiondialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.scada.selectiondialog.header"));
+        super(I18n.getInstance().getString("plugin.scada.selectiondialog.title"), I18n.getInstance().getString("plugin.scada.selectiondialog.header"), Size.L);
         setResizable(true);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());

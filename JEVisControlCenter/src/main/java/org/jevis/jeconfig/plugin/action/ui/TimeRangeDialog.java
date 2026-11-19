@@ -29,21 +29,18 @@ import org.joda.time.DateTime;
 
 import java.time.LocalDate;
 
-public class TimeRangeDialog extends Alert {
+public class TimeRangeDialog extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
     DatePicker fromDatePicker = new DatePicker();
     DatePicker untilDatePicker = new DatePicker();
 
     public TimeRangeDialog(DateTime from, DateTime until) {
-        super(AlertType.CONFIRMATION);
-        setHeaderText("Zeitbereich auswählen");
-        setTitle("Zeitbereich auswählen");
-        initOwner(JEConfig.getStage());
-        setResizable(true);
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.timerange.title", "Zeitraum wählen", "Choose the time frame"), null, Size.S);
+        addPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.graph.selection.apply", "Übernehmen", "Apply"));
+        addCancel();
 
         GridPane gridPane = new GridPane();
 
-        gridPane.setPadding(new Insets(20));
         gridPane.setVgap(15);
         gridPane.setHgap(15);
 
@@ -56,10 +53,10 @@ public class TimeRangeDialog extends Alert {
             LocalDate date = LocalDate.of(until.getYear(), until.getMonthOfYear(), until.getDayOfMonth());
             untilDatePicker.valueProperty().set(date);
         }
-        gridPane.add(new Label("Ab: "), 0, 0);
+        gridPane.add(new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.timerange.from", "Von", "From")), 0, 0);
         gridPane.add(fromDatePicker, 1, 0);
 
-        gridPane.add(new Label("Ais: "), 0, 1);
+        gridPane.add(new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.timerange.until", "Bis", "Until")), 0, 1);
         gridPane.add(untilDatePicker, 1, 1);
 
         getDialogPane().setContent(gridPane);

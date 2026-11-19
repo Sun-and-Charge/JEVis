@@ -25,13 +25,11 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.jevis.commons.i18n.I18n;
-import org.jevis.jeconfig.JEConfig;
-import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.data.UserLimitLine;
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -58,14 +56,10 @@ public class UserLimitLinesDialog {
      * @return the new limit lines if the user confirmed the dialog, otherwise empty
      */
     public Optional<List<UserLimitLine>> show(List<UserLimitLine> limitLines) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle(I18n.getInstance().getString("plugin.graph.userlimits.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("plugin.graph.userlimits.title"));
-        dialog.setResizable(true);
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
+        SucDialog<ButtonType> dialog = new SucDialog<>(I18n.getInstance().getString("plugin.graph.userlimits.title"),
+                PluginSidebar.text("plugin.graph.userlimits.description",
+                        "Waagerechte Linien mit Wert und Beschriftung. Sie werden mit der Analyse gespeichert.",
+                        "Horizontal lines with value and label. They are saved with the analysis."), SucDialog.Size.L);
 
         if (limitLines != null) {
             for (UserLimitLine limitLine : limitLines) {
@@ -93,12 +87,8 @@ public class UserLimitLinesDialog {
         content.setPadding(new Insets(8));
         dialog.getDialogPane().setContent(content);
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-        Button okButton = (Button) dialog.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
+        ButtonType okType = new ButtonType(PluginSidebar.text("plugin.graph.selection.apply", "Übernehmen", "Apply"), ButtonBar.ButtonData.OK_DONE);
+        Button okButton = dialog.addPrimary(okType);
         okButton.addEventFilter(ActionEvent.ACTION, event -> {
             boolean valid = true;
             for (RowEditor row : rows) {
@@ -109,8 +99,7 @@ public class UserLimitLinesDialog {
             }
         });
 
-        Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
+        dialog.addCancel();
 
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == okType) {

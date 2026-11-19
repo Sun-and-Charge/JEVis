@@ -126,8 +126,7 @@ public class EditingCell extends TableCell<CSVExportTableSample, String> {
                     TableRow<CSVExportTableSample> row = getTableRow();
                     JEVisSample sample = row.getItem().getSample();
 
-                    Dialog<ButtonType> dialogSaveValue = new Dialog<>();
-                    dialogSaveValue.setTitle(I18n.getInstance().getString("sampleeditor.sampletable.confirmationdialog.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialogSaveValue = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("sampleeditor.sampletable.confirmationdialog.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                     dialogSaveValue.getDialogPane().setContentText(I18n.getInstance().getString("sampleeditor.sampletable.confirmationdialog.message"));
                     final ButtonType overwrite_ok = new ButtonType(I18n.getInstance().getString("sampleeditor.sampletable.confirmationdialog.yes"), ButtonBar.ButtonData.OK_DONE);
                     final ButtonType overwrite_cancel = new ButtonType(I18n.getInstance().getString("sampleeditor.sampletable.confirmationdialog.no"), ButtonBar.ButtonData.CANCEL_CLOSE);

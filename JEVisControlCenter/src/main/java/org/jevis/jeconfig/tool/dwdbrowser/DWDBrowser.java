@@ -66,7 +66,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class DWDBrowser extends Dialog<ButtonType> {
+public class DWDBrowser extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(DWDBrowser.class);
 
     private final String initialPath = "climate_environment/CDC/observations_germany/climate/";
@@ -92,12 +92,9 @@ public class DWDBrowser extends Dialog<ButtonType> {
     private DateTime lastDate = new DateTime("1970-01-01T00:00:00Z");
 
     public DWDBrowser(JEVisDataSource ds, JEVisObject targetObject) {
+        super(I18n.getInstance().getString("plugin.object.dwd.title"), I18n.getInstance().getString("plugin.object.dwd.subtitle"), Size.L);
         this.targetObject = targetObject;
-        setTitle(I18n.getInstance().getString("plugin.object.dwd.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.object.dwd.subtitle"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

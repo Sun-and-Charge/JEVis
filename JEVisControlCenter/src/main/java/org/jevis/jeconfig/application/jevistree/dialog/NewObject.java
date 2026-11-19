@@ -116,9 +116,9 @@ public class NewObject {
                 }
             } else {
                 Platform.runLater(() -> {
-                    Alert alert1 = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                    alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                    alert1.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed",
+                            "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.",
+                            "You do not have permission for this. Ask an administrator for write access."));
                 });
             }
         } catch (Exception e) {

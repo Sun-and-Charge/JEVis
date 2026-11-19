@@ -523,20 +523,12 @@ public class ClassEditor {
 
             if (!name.matches("^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$")) {
                 //no specail chars allowed, will this be a problem is some countries?
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle(I18n.getInstance().getString("plugin.classes.editor.type.alert.name.title"));
-                alert.setHeaderText(I18n.getInstance().getString("plugin.classes.editor.type.alert.name.header"));
-                alert.setContentText(I18n.getInstance().getString("plugin.classes.editor.type.alert.name.message"));
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error((I18n.getInstance().getString("plugin.classes.editor.type.alert.name.header")) + ": " + (I18n.getInstance().getString("plugin.classes.editor.type.alert.name.message")));
                 return;
             }
 
             if (_class.getType(name) != null) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle(I18n.getInstance().getString("plugin.classes.editor.type.alert.exist.title"));
-                alert.setHeaderText(I18n.getInstance().getString("plugin.classes.editor.type.alert.exist.header"));
-                alert.setContentText(I18n.getInstance().getString("plugin.classes.editor.type.error.exist.messagetype"));
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error((I18n.getInstance().getString("plugin.classes.editor.type.alert.exist.header")) + ": " + (I18n.getInstance().getString("plugin.classes.editor.type.error.exist.messagetype")));
                 return;
             }
 
@@ -653,11 +645,7 @@ public class ClassEditor {
             logger.trace("commitAll() old: '{}' new: '{}'", _class.getName(), fName.getText());
             logger.trace("Type.count: {}", _class.getTypes().size());
             if (!fName.getText().equals(_class.getName())) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle(I18n.getInstance().getString("plugin.classes.editor.type.alert.save.title"));
-                alert.setHeaderText(I18n.getInstance().getString("plugin.classes.editor.type.alert.save.message"));
-                alert.setContentText(I18n.getInstance().getString("plugin.classes.editor.rename.notsupported"));
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error((I18n.getInstance().getString("plugin.classes.editor.type.alert.save.message")) + ": " + (I18n.getInstance().getString("plugin.classes.editor.rename.notsupported")));
                 fName.setText(_class.getName());
                 return;
             }

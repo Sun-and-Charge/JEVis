@@ -30,11 +30,12 @@ import org.jevis.jeconfig.plugin.nonconformities.ui.tab.CheckListTab;
 import org.jevis.jeconfig.plugin.nonconformities.ui.tab.GeneralTab;
 import org.jevis.jeconfig.tool.ScreenSize;
 
-public class NonconformityForm extends Dialog {
+public class NonconformityForm extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
     private boolean isNew;
 
     public NonconformityForm() {
+        super("", null, Size.L);
     }
 
 
@@ -52,14 +53,10 @@ public class NonconformityForm extends Dialog {
 
     public NonconformityForm(NonconformityPlan nonconformityPlan) {
 
-        super();
-        this.initOwner(JEConfig.getStage());
+        super(I18n.getInstance().getString("plugin.nonconformities.nonconfromityform.editor.title"), null, Size.L);
         this.nonconformityPlan = nonconformityPlan;
 
 
-        setTitle(I18n.getInstance().getString("plugin.nonconformities.nonconfromityform.editor.title"));
-        setHeaderText(null);
-        setResizable(true);
         this.getDialogPane().setPrefWidth(ScreenSize.fitScreenWidth(1000));
         this.getDialogPane().setPrefHeight(ScreenSize.fitScreenHeight(950));
 

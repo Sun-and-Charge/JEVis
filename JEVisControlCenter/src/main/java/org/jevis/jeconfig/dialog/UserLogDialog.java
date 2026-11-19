@@ -170,10 +170,7 @@ public class UserLogDialog {
         VBox content = new VBox(10, filter, table, paging);
         content.setPadding(new Insets(10));
 
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.initOwner(owner);
-        dialog.setTitle(t("app.userlog.title"));
-        dialog.setResizable(true);
+        org.jevis.jeconfig.application.ui.SucDialog<Void> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(t("app.userlog.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         load();
@@ -231,10 +228,7 @@ public class UserLogDialog {
         task.setOnFailed(event -> {
             logger.error("Could not load the user log", task.getException());
             previous.setDisable(page == 0);
-            Alert alert = new Alert(Alert.AlertType.ERROR, task.getException() != null ? task.getException().getMessage() : "", ButtonType.OK);
-            alert.initOwner(owner);
-            alert.setHeaderText(t("app.userlog.error"));
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(t("app.userlog.error") + (task.getException() != null ? " (" + task.getException().getMessage() + ")" : ""));
         });
         Thread thread = new Thread(task, "user-log-load");
         thread.setDaemon(true);

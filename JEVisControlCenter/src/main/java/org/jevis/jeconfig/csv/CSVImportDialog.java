@@ -425,9 +425,7 @@ public class CSVImportDialog {
 
         ok.setOnAction(t -> {
             if (!table.hasTargetsForAllValueColumns()) {
-                Alert alert = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("csv.import.dialog.notarget"));
-                alert.initOwner(stage);
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("csv.import.dialog.notarget"));
                 return;
             }
             table.setCustomNote(customNoteString);

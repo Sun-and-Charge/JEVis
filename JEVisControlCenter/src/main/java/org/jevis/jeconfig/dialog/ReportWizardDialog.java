@@ -119,11 +119,7 @@ public class ReportWizardDialog {
             }
         } catch (Exception ex) {
             logger.error(ex);
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.template"));
-            alert.setHeaderText(I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.template.header"));
-            alert.setContentText(ex.getMessage());
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.template.header") + " (" + ex.getMessage() + ")");
             return;
         }
 
@@ -191,11 +187,7 @@ public class ReportWizardDialog {
                         reportLink.update();
                     } catch (Exception e) {
                         logger.error(e);
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle(I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.update.title"));
-                        alert.setHeaderText("JEVis Object: " + reportLink.getName() + " : " + I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.update.header"));
-                        alert.setContentText(e.getMessage());
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(reportLink.getName() + ": " + I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.update.header") + " (" + e.getMessage() + ")");
                     } finally {
                         JEConfig.getStatusBar().progressProgressJob("reportlinks", 1, I18n.getInstance().getString("plugin.object.report.message.finishedlink") + " " + reportLink.getName());
                         succeeded();
@@ -451,15 +443,8 @@ public class ReportWizardDialog {
 
 
     private void init() {
-        reportWizardDialog = new Dialog();
-        reportWizardDialog.setTitle(I18n.getInstance().getString("plugin.configuration.reportwizard.title"));
-        reportWizardDialog.setHeaderText(I18n.getInstance().getString("plugin.configuration.reportwizard.header"));
-        reportWizardDialog.setResizable(true);
-        reportWizardDialog.initOwner(JEConfig.getStage());
-        reportWizardDialog.initModality(Modality.APPLICATION_MODAL);
+        reportWizardDialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.reportwizard.title"), I18n.getInstance().getString("plugin.configuration.reportwizard.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.L);
         Stage stage = (Stage) reportWizardDialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
 
         Node header = DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.WIZARD_HAT, 32, 32), I18n.getInstance().getString("plugin.object.report.dialog.header"));
 

@@ -43,7 +43,7 @@ import java.time.LocalTime;
 /**
  * Edit dialog of a maintenance message (#2663).
  */
-public class MaintenanceDialog extends Dialog<ButtonType> {
+public class MaintenanceDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private final ComboBox<MaintenanceEntry.Type> typeBox = new ComboBox<>();
     private final TextField titleField = new TextField();
@@ -57,11 +57,9 @@ public class MaintenanceDialog extends Dialog<ButtonType> {
     private final CheckBox informBox = new CheckBox(I18n.getInstance().getString("plugin.maintenance.informaftersave"));
 
     public MaintenanceDialog(JEVisDataSource ds, MaintenanceEntry entry, MailState state, boolean isNew) {
-        initOwner(JEConfig.getStage());
+        super(I18n.getInstance().getString(isNew ? "plugin.maintenance.new" : "plugin.maintenance.edit"), null, Size.M);
         TopMenu.applyActiveTheme(getDialogPane().getScene());
         setResizable(true);
-        setTitle(I18n.getInstance().getString(isNew ? "plugin.maintenance.new" : "plugin.maintenance.edit"));
-        setHeaderText(null);
 
         typeBox.getItems().addAll(MaintenanceEntry.Type.values());
         typeBox.setConverter(typeConverter());
@@ -129,10 +127,7 @@ public class MaintenanceDialog extends Dialog<ButtonType> {
         getDialogPane().lookupButton(ok).addEventFilter(ActionEvent.ACTION, event -> {
             if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
                 event.consume();
-                Alert alert = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("plugin.scheduledentries.error.title"));
-                alert.initOwner(getDialogPane().getScene().getWindow());
-                alert.setHeaderText(null);
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.scheduledentries.error.title"));
             }
         });
     }

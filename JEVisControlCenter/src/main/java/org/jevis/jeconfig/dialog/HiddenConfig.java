@@ -64,9 +64,7 @@ public class HiddenConfig {
         ButtonType buttonTypeCancel = new ButtonType(I18n.getInstance().getString("plugin.scada.element.config.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
-        Dialog configDia = new Dialog();
-        configDia.setTitle(I18n.getInstance().getString("plugin.scada.element.config.title"));
-        configDia.setHeaderText(I18n.getInstance().getString("plugin.scada.element.config.header"));
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> configDia = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.scada.element.config.title"), I18n.getInstance().getString("plugin.scada.element.config.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
 
 
         configDia.getDialogPane().setContent(propertySheet);

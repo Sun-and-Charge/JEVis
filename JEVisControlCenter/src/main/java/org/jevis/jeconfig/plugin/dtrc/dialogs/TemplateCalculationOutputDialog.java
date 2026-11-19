@@ -45,7 +45,7 @@ import org.jevis.jeconfig.tool.NumberSpinner;
 
 import java.math.BigDecimal;
 
-public class TemplateCalculationOutputDialog extends Dialog {
+public class TemplateCalculationOutputDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(TemplateCalculationOutputDialog.class);
     private final AlphanumComparator ac = new AlphanumComparator();
     private final JEVisDataSource ds;
@@ -54,15 +54,11 @@ public class TemplateCalculationOutputDialog extends Dialog {
     private Response response = Response.CANCEL;
 
     public TemplateCalculationOutputDialog(JEVisDataSource ds, TemplateOutput templateOutput) {
-        super();
+        super(I18n.getInstance().getString("plugin.trc.outputdialog.title"), I18n.getInstance().getString("plugin.trc.outputdialog.header"), Size.M);
         this.ds = ds;
         this.templateOutput = templateOutput;
 
-        setTitle(I18n.getInstance().getString("plugin.trc.outputdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.trc.outputdialog.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

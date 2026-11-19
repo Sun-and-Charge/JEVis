@@ -218,7 +218,7 @@ public class ColorPickerAdv extends HBox {
             if (owner == null && this.getScene() != null) {
                 owner = this.getScene().getWindow();
             }
-            Dialog<Color> dialog = new Dialog<>();
+            org.jevis.jeconfig.application.ui.SucDialog<Color> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("graph.table.color"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
             if (owner != null) dialog.initOwner(owner);
             dialog.setTitle(I18n.getInstance().getString("graph.table.color"));
             dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);

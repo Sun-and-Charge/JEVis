@@ -11,6 +11,9 @@
 
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.Confirm;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import javafx.scene.control.TextField;
 import de.gsi.chart.Chart;
 import de.gsi.chart.XYChart;
@@ -75,12 +78,11 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
 
     public DataPointNoteDialog(JEVisAttribute att, SampleTable table) {
         this.nf = java.text.NumberFormat.getInstance(I18n.getInstance().getLocale());
-        Dialog<ButtonType> dialog = new Dialog<>();
-
-        final ButtonType ok = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        final ButtonType cancel = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        dialog.getDialogPane().getButtonTypes().addAll(ok, cancel);
+        SucDialog<ButtonType> dialog = new SucDialog<>(PluginSidebar.text("plugin.graph.manualvalue.title", "Wert eintragen", "Enter value"),
+                null, SucDialog.Size.S);
+        final ButtonType ok = new ButtonType(PluginSidebar.text("dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OK_DONE);
+        dialog.addPrimary(ok);
+        dialog.addCancel();
 
         Label timeStampLabel = new Label(I18n.getInstance().getString("alarms.table.captions.timestamp"));
 
@@ -161,12 +163,11 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
 
     public DataPointNoteDialog(JEVisAttribute att, DateTime[] minMax) {
         this.nf = java.text.NumberFormat.getInstance(I18n.getInstance().getLocale());
-        Dialog<ButtonType> dialog = new Dialog<>();
-
-        final ButtonType ok = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        final ButtonType cancel = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        dialog.getDialogPane().getButtonTypes().addAll(ok, cancel);
+        SucDialog<ButtonType> dialog = new SucDialog<>(PluginSidebar.text("plugin.graph.manualvalue.title", "Wert eintragen", "Enter value"),
+                null, SucDialog.Size.S);
+        final ButtonType ok = new ButtonType(PluginSidebar.text("dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OK_DONE);
+        dialog.addPrimary(ok);
+        dialog.addCancel();
 
         Label timeStampLabel = new Label(I18n.getInstance().getString("alarms.table.captions.timestamp") + ": " +
                 minMax[0].toString("yyyy-MM-dd HH:mm:ss") + " - " + minMax[1].toString("yyyy-MM-dd HH:mm:ss"));
@@ -468,18 +469,14 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
             nd.showAndWait().ifPresent(response -> {
                 if (response.getButtonData().getTypeCode().equals(ButtonType.OK.getButtonData().getTypeCode())) {
                     if (saveUserEntries(nd.getNoteMap())) {
-                        Dialog<ButtonType> wantToReload = new Dialog<>();
-                        wantToReload.setTitle(I18n.getInstance().getString("plugin.graph.dialog.reload.title"));
-                        final ButtonType ok = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.reload.ok"), ButtonBar.ButtonData.YES);
-                        final ButtonType cancel = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.reload.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-                        wantToReload.setContentText(I18n.getInstance().getString("plugin.graph.dialog.reload.message"));
-                        wantToReload.getDialogPane().getButtonTypes().addAll(ok, cancel);
-                        Platform.runLater(() -> wantToReload.showAndWait().ifPresent(response2 -> {
-                            if (response2.getButtonData().getTypeCode().equals(ButtonType.YES.getButtonData().getTypeCode())) {
+                        Platform.runLater(() -> {
+                            if (Confirm.ask(PluginSidebar.text("plugin.graph.reload.question", "Analyse neu laden?", "Reload the analysis?"),
+                                    PluginSidebar.text("plugin.graph.reload.consequence", "Die eingetragenen Werte erscheinen erst nach dem Neuladen.",
+                                            "The entered values appear after reloading."),
+                                    PluginSidebar.text("plugin.graph.reload.action", "Neu laden", "Reload"), false)) {
                                 chartPlugin.handleRequest(Constants.Plugin.Command.RELOAD);
                             }
-                        }));
+                        });
                     }
 
                     if (isBubbleChart) {
@@ -869,11 +866,7 @@ public class DataPointNoteDialog extends AbstractDataFormattingPlugin {
     }
 
     private void warningNotAllowed() {
-        Platform.runLater(() -> {
-            Alert alert1 = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-            alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-            alert1.showAndWait();
-        });
+        org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("dialog.warning.notallowed"));
     }
 
     private void saveUserEntry(JEVisAttribute att, JEVisSample sample, Double value) {

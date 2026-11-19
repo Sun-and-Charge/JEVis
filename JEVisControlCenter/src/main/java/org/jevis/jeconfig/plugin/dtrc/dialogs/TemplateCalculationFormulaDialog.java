@@ -49,20 +49,16 @@ import org.jevis.commons.trc.TemplateOutput;
 
 import java.util.List;
 
-public class TemplateCalculationFormulaDialog extends Dialog {
+public class TemplateCalculationFormulaDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(TemplateCalculationFormulaDialog.class);
     private final AlphanumComparator ac = new AlphanumComparator();
     private FilteredList<JEVisObject> filteredList;
     private Response response = Response.CANCEL;
 
     public TemplateCalculationFormulaDialog(JEVisDataSource ds, RCTemplate rcTemplate, TemplateFormula templateFormula, List<TimeFrame> allowedTimeFrames) {
-        super();
+        super(I18n.getInstance().getString("plugin.trc.formuladialog.title"), I18n.getInstance().getString("plugin.trc.formuladialog.header"), Size.L);
 
-        setTitle(I18n.getInstance().getString("plugin.trc.formuladialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.trc.formuladialog.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

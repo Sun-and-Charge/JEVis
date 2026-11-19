@@ -24,6 +24,8 @@ package org.jevis.jeconfig.dialog;
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -56,13 +58,14 @@ import org.joda.time.format.DateTimeFormatter;
 import java.text.NumberFormat;
 import java.util.Map;
 
-public class NoteDialog extends Dialog<ButtonType> {
+public class NoteDialog extends SucDialog<ButtonType> {
     private final Image imgExpand = ResourceLoader.getImage(Icon.PNG_EXPAND_MORE);
     private final Map<String, RowNote> noteMap;
     private final ObservableList<RowNote> observableList = FXCollections.observableArrayList();
     private final NumberFormat nf;
 
     public NoteDialog(NumberFormat nf, Map<String, RowNote> map) {
+        super(I18n.getInstance().getString("graph.dialog.note"), null, Size.L);
         this.noteMap = map;
         this.nf = nf;
         init();
@@ -305,14 +308,9 @@ public class NoteDialog extends Dialog<ButtonType> {
         hbox.getChildren().add(tv);
         HBox.setHgrow(tv, Priority.ALWAYS);
 
-        final ButtonType ok = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        final ButtonType cancel = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        this.getDialogPane().getButtonTypes().addAll(ok, cancel);
+        addPrimary(new ButtonType(PluginSidebar.text("dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OK_DONE));
+        addCancel();
         this.getDialogPane().setContent(hbox);
-
-        this.setResizable(true);
-        this.initOwner(JEConfig.getStage());
 
         this.getDialogPane().setPrefWidth(WindowSize.fitWidth(JEConfig.getStage(), 1220));
         WindowSize.keepOnScreen(this);

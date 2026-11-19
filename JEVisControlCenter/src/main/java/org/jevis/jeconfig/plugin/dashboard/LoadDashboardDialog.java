@@ -63,7 +63,7 @@ import org.joda.time.Interval;
 /**
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
-public class LoadDashboardDialog extends Dialog {
+public class LoadDashboardDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(LoadDashboardDialog.class);
     private final ObjectRelations objectRelations;
     private final TextField filterInput = new TextField();
@@ -81,18 +81,14 @@ public class LoadDashboardDialog extends Dialog {
     private TimeFrame selectedTimeFactory = null;
 
     public LoadDashboardDialog(JEVisDataSource ds, DashboardControl control) {
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.load.title",
+                        "Dashboard mit Zeitraum laden", "Load dashboard with time frame"),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.load.description",
+                        "Dashboard und Zeitraum wählen.", "Choose the dashboard and the time frame."), Size.L);
         this.control = control;
         this.ds = ds;
         this.objectRelations = new ObjectRelations(ds);
-
-        setTitle(I18n.getInstance().getString("plugin.dashboards.loaddashboard.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.dashboards.loaddashboard.header"));
-        initOwner(JEConfig.getStage());
         WindowSize.applyMin(this, 800, 600);
-        initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
 
         toolBarIntervalSelector = new ToolBarIntervalSelector(control);
 
@@ -285,11 +281,11 @@ public class LoadDashboardDialog extends Dialog {
 
 
             Region freeSpace = new Region();
-            freeSpace.setPrefWidth(40);
+            freeSpace.setPrefWidth(16);
 
             GridPane gridLayout = new GridPane();
-            gridLayout.setPadding(new Insets(10, 10, 10, 10));
             gridLayout.setVgap(10);
+            gridLayout.setHgap(6);
 //            GridPane.setFillWidth(freeSpace, true);
 
             gridLayout.add(filterInput, 0, 0, 1, 1);

@@ -1012,20 +1012,16 @@ public class AccountingPlugin extends TablePlugin {
 
                     Label really = new Label(I18n.getInstance().getString("jevistree.dialog.delete.message"));
 
-                    Dialog dialog = new Dialog();
-                    dialog.setResizable(true);
-                    dialog.initOwner(JEConfig.getStage());
-                    dialog.initModality(Modality.APPLICATION_MODAL);
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.accounting.delete.title", "Eintrag löschen?", "Delete the entry?"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                     Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-                    TopMenu.applyActiveTheme(stage.getScene());
-                    stage.setAlwaysOnTop(true);
 
-                    ButtonType okType = new ButtonType(I18n.getInstance().getString("newobject.ok"), ButtonBar.ButtonData.OK_DONE);
+                    ButtonType okType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), ButtonBar.ButtonData.OTHER);
                     ButtonType cancelType = new ButtonType(I18n.getInstance().getString("newobject.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
                     dialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);
 
                     Button okButton = (Button) dialog.getDialogPane().lookupButton(okType);
+                    okButton.getStyleClass().add("danger");
                     okButton.setDefaultButton(true);
 
                     Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelType);
@@ -1100,15 +1096,10 @@ public class AccountingPlugin extends TablePlugin {
                     VBox vBox = new VBox(12, nameField, box);
                     vBox.setPadding(INSETS);
 
-                    Dialog dialog = new Dialog();
-                    dialog.setResizable(true);
-                    dialog.initOwner(JEConfig.getStage());
-                    dialog.initModality(Modality.APPLICATION_MODAL);
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.accounting.new.title", "Neuer Eintrag", "New entry"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                     Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-                    TopMenu.applyActiveTheme(stage.getScene());
-                    stage.setAlwaysOnTop(true);
 
-                    ButtonType okType = new ButtonType(I18n.getInstance().getString("newobject.ok"), ButtonBar.ButtonData.OK_DONE);
+                    ButtonType okType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.create", "Anlegen", "Create"), ButtonBar.ButtonData.OK_DONE);
                     ButtonType cancelType = new ButtonType(I18n.getInstance().getString("newobject.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
                     dialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);
@@ -1534,15 +1525,10 @@ public class AccountingPlugin extends TablePlugin {
             VBox vBox = new VBox(6, saved, separator);
             vBox.setPadding(INSETS);
 
-            Dialog dialog = new Dialog();
-            dialog.setResizable(true);
-            dialog.initOwner(JEConfig.getStage());
-            dialog.initModality(Modality.APPLICATION_MODAL);
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.accounting.changed.title", "Änderungen speichern?", "Save the changes?"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
             Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-            TopMenu.applyActiveTheme(stage.getScene());
-            stage.setAlwaysOnTop(true);
 
-            ButtonType okType = new ButtonType(I18n.getInstance().getString("newobject.ok"), ButtonBar.ButtonData.OK_DONE);
+            ButtonType okType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelType = new ButtonType(I18n.getInstance().getString("newobject.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
             dialog.getDialogPane().getButtonTypes().addAll(cancelType, okType);

@@ -128,8 +128,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
                 }
             } catch (JEVisException e) {
                 logger.error(e);
-                Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis error", ButtonType.OK);
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
             }
         }
 
@@ -229,8 +228,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
             });
         } catch (JEVisException e) {
             logger.error(e);
-            Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis error", ButtonType.OK);
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
         }
 
         Region region = new Region();
@@ -268,8 +266,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
                             jeVisType).buildSample(commitDateTime, toDateTime(t1)));
                 } catch (JEVisException e) {
                     logger.error(e);
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not create Sample", ButtonType.OK);
-                    alert.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.save", "Der Wert konnte nicht gespeichert werden. Verbindung prüfen und erneut versuchen.", "The value could not be saved. Check the connection and try again."));
 
                 }
             });
@@ -359,8 +356,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
 
                     } catch (JEVisException e) {
                         logger.error(e);
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis Exception", ButtonType.OK);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
                     }
                 });
                 selectTargetDialog.showAndWait();
@@ -368,8 +364,7 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
 
         } catch (Exception e) {
             logger.error(e);
-            Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis Exception", ButtonType.OK);
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
         }
 
         Region region = new Region();
@@ -427,12 +422,10 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
                         }
                     } catch (NumberFormatException e) {
                         logger.error(e);
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "Number Format Mismatch", ButtonType.OK);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.number", "Bitte eine Zahl eingeben, z. B. 12,5.", "Please enter a number, e.g. 12.5."));
                     } catch (JEVisException e) {
                         logger.error(e);
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis error", ButtonType.OK);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
                     }
 
             });
@@ -496,12 +489,10 @@ public class MeterFormAttributeTab extends Tab implements MeterFormTab {
                         }
                     } catch (NumberFormatException e) {
                         logger.error(e);
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "Number Format Mismatch", ButtonType.OK);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.number", "Bitte eine Zahl eingeben, z. B. 12,5.", "Please enter a number, e.g. 12.5."));
                     } catch (Exception e) {
                         logger.error(e);
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "Exception: ", ButtonType.OK);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
                     }
             });
 

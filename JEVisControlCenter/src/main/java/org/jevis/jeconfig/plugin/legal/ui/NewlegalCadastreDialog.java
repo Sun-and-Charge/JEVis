@@ -80,18 +80,14 @@ public class NewlegalCadastreDialog {
         }
 
 
-        Dialog<ButtonType> dialog = new Dialog();
-        dialog.setTitle(I18n.getInstance().getString("dialog.indexoflegalprovisions.dialog.new.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("dialog.indexoflegalprovisions.dialog.new.header"));
-        dialog.getDialogPane().getButtonTypes().setAll();
-        dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.new.title", "Neues Rechtskataster", "New legal register"),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.new.description", "Name und Ordner wählen.", "Choose the name and the folder."), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         VBox root = new VBox();
 
         dialog.getDialogPane().setContent(root);
 
 
         GridPane gp = new GridPane();
-        gp.setPadding(new Insets(10));
         gp.setHgap(10);
         gp.setVgap(5);
         int x = 0;
@@ -183,9 +179,10 @@ public class NewlegalCadastreDialog {
             this.createName = fName.getText();
         });
 
-        final ButtonType ok = new ButtonType(I18n.getInstance().getString("jevistree.dialog.new.ok"), ButtonBar.ButtonData.FINISH);
+        final ButtonType ok = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.create", "Anlegen", "Create"), ButtonBar.ButtonData.FINISH);
         final ButtonType cancel = new ButtonType(I18n.getInstance().getString("jevistree.dialog.new.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(ok, cancel);
+        dialog.addPrimary(ok);
+        dialog.getDialogPane().getButtonTypes().add(cancel);
 
         Platform.runLater(() -> fName.requestFocus());
         dialog.showAndWait()

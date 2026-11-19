@@ -363,10 +363,7 @@ public class SiteSharingDialog {
     private void applyPlan() {
         if (plan == null || plan.isEmpty()) return;
         RightsPlan toApply = plan;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, get("permission.template.apply.confirm", toApply.getActions().size()), ButtonType.OK, ButtonType.CANCEL);
-        confirm.initOwner(stage);
-        confirm.setHeaderText(get("permission.share.title"));
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+        if (!org.jevis.jeconfig.application.ui.Confirm.ask(get("permission.share.title"), get("permission.template.apply.confirm", toApply.getActions().size()), org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.apply", "Anwenden", "Apply"), false)) return;
 
         busy.set(true);
         status.setText(get("permission.template.running"));

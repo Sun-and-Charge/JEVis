@@ -34,17 +34,12 @@ import org.jevis.jeconfig.plugin.action.data.ActionPlanData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExportDialog extends Dialog {
+public class ExportDialog extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
     List<Selection> userSelection = new ArrayList<>();
 
     public ExportDialog(ObservableList<ActionPlanData> actionPlanData) {
-        super();
-        this.initOwner(JEConfig.getStage());
-
-        setTitle(I18n.getInstance().getString("action.export.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.action.export.message"));
-        setResizable(true);
-        setHeight(200);
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.export.title", "Aktionspläne exportieren", "Export action plans"),
+                I18n.getInstance().getString("plugin.action.export.message"), Size.M);
 
         jfxtras.scene.layout.GridPane gridPane = new jfxtras.scene.layout.GridPane();
         gridPane.setVgap(8);

@@ -73,14 +73,8 @@ public class LocalNameDialog{
     }
 
     public Response show() {
-        Dialog<ButtonType> dialog = new Dialog();
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("jevistree.dialog.translate.title"), I18n.getInstance().getString("jevistree.dialog.translate.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
-        dialog.setTitle(I18n.getInstance().getString("jevistree.dialog.translate.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("jevistree.dialog.translate.header"));
         dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         dialog.getDialogPane().setPrefWidth(500);
         dialog.getDialogPane().setPrefHeight(300);

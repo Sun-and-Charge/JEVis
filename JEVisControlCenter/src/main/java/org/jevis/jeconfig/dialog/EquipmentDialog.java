@@ -45,7 +45,7 @@ import org.jevis.jeconfig.plugin.object.extension.GenericAttributeExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EquipmentDialog extends Dialog {
+public class EquipmentDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(EquipmentDialog.class);
     private final JEVisClass jeVisClass;
     private final List<JEVisClass> possibleParents = new ArrayList<>();
@@ -57,14 +57,10 @@ public class EquipmentDialog extends Dialog {
     private String name;
 
     public EquipmentDialog(JEVisDataSource ds, JEVisClass jeVisClass) {
-        super();
+        super(I18n.getInstance().getString("plugin.equipment.equipmentdialog.title"), I18n.getInstance().getString("plugin.equipment.equipmentdialog.header"), Size.M);
         this.ds = ds;
         this.jeVisClass = jeVisClass;
-        setTitle(I18n.getInstance().getString("plugin.equipment.equipmentdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.equipment.equipmentdialog.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);

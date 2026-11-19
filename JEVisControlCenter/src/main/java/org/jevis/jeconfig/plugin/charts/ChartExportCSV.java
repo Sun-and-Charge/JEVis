@@ -20,6 +20,8 @@
  */
 package org.jevis.jeconfig.plugin.charts;
 
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
@@ -173,32 +175,34 @@ public class ChartExportCSV {
             }
         });
 
-        ButtonType buttonOk = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.export.decimalseparator.button.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancel = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.export.decimalseparator.button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        /* J25.5: SucDialog with the verb "Exportieren …" (the file dialog follows) */
+        ButtonType buttonOk = new ButtonType(PluginSidebar.text("plugin.graph.export.action", "Exportieren …", "Export …"), ButtonBar.ButtonData.OK_DONE);
+        SucDialog<ButtonType> selectDecimalSeparators = new SucDialog<>(
+                PluginSidebar.text("plugin.graph.export.title", "Analyse exportieren", "Export analysis"),
+                PluginSidebar.text("plugin.graph.export.description", "Als CSV- oder Excel-Datei; das Format wählen Sie im nächsten Schritt.",
+                        "As a CSV or Excel file; you choose the format in the next step."), SucDialog.Size.S);
 
-        Dialog<ButtonType> selectDecimalSeparators = new Dialog<>();
-        selectDecimalSeparators.setTitle(I18n.getInstance().getString("plugin.graph.dialog.export.decimalseparator.title"));
-        selectDecimalSeparators.getDialogPane().setPrefWidth(400);
-
-        VBox vBox = new VBox();
+        VBox vBox = new VBox(6);
+        vBox.getStyleClass().add("suc-form");
 
         Label selection = new Label(I18n.getInstance().getString("plugin.graph.dialog.export.decimalseparator.selection"));
         Label withUserNotesLabel = new Label(I18n.getInstance().getString("plugin.graph.dialog.export.withusernotes"));
         CheckBox withUserNotes = new CheckBox();
-        Label emptyLine1 = new Label("");
-        Label emptyLine2 = new Label("");
 
         withUserNotes.selectedProperty().addListener((observable, oldValue, newValue) -> this.withUserNotes = newValue);
 
         HBox hBox = new HBox();
         hBox.setSpacing(4);
-        hBox.getChildren().setAll(withUserNotesLabel, withUserNotes);
+        hBox.getChildren().setAll(withUserNotes, withUserNotesLabel);
+        hBox.setPadding(new javafx.geometry.Insets(10, 0, 0, 0));
+        withUserNotesLabel.setOnMouseClicked(event -> withUserNotes.setSelected(!withUserNotes.isSelected()));
 
-        vBox.getChildren().setAll(selection, emptyLine1, decimalSeparatorChoiceBox, emptyLine2, hBox);
+        vBox.getChildren().setAll(selection, decimalSeparatorChoiceBox, hBox);
 
         selectDecimalSeparators.getDialogPane().setContent(vBox);
 
-        selectDecimalSeparators.getDialogPane().getButtonTypes().addAll(buttonOk, cancel);
+        selectDecimalSeparators.addPrimary(buttonOk);
+        selectDecimalSeparators.addCancel();
 
         selectDecimalSeparators.showAndWait().ifPresent(response -> {
             if (response.getButtonData().getTypeCode().equals(buttonOk.getButtonData().getTypeCode())) {

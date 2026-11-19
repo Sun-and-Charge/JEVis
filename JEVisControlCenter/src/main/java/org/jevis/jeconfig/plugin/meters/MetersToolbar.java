@@ -138,12 +138,12 @@ public class MetersToolbar extends ToolBar {
 
         deleteItem.setOnAction(actionEvent -> {
             MeterData meterData = meterController.getSelectedItem();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, I18n.getInstance().getString("plugin.meters.delete.title"), ButtonType.OK, ButtonType.CANCEL);
-
-            alert.setTitle(I18n.getInstance().getString("plugin.meters.delete.title"));
-            alert.setContentText(String.format(I18n.getInstance().getString("plugin.meters.delete.body"), meterData.getName()));
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+            /* J25.5: question naming the meter, consequence, red "Löschen" */
+            if (meterData == null || !org.jevis.jeconfig.application.ui.Confirm.ask(
+                    String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.meters.delete.question", "Messstelle „%s“ löschen?", "Delete measurement point “%s”?"), meterData.getName()),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.meters.delete.consequence", "Die Messstelle kommt mit ihren Daten in den Papierkorb und lässt sich von dort wiederherstellen.",
+                            "The measurement point and its data move to the recycle bin and can be restored from there."),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) return;
             try {
                 meterController.getActiveTable().removeItem(meterData);
                 meterData.getJeVisObject().delete();
@@ -181,7 +181,7 @@ public class MetersToolbar extends ToolBar {
         MeterTable table = meterController.getActiveTable();
         List<MeterData> meters = new ArrayList<>(table.getSelectedItems().isEmpty() ? table.getItems() : table.getSelectedItems());
         if (meters.isEmpty()) {
-            new Alert(Alert.AlertType.INFORMATION, I18n.getInstance().getString("plugin.meters.qr.empty"), ButtonType.OK).showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("plugin.meters.qr.empty"));
             return;
         }
 
@@ -210,7 +210,7 @@ public class MetersToolbar extends ToolBar {
         };
         task.setOnFailed(event -> {
             logger.error("Could not create QR labels", task.getException());
-            new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.meters.qr.error"), ButtonType.OK).showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.meters.qr.error"));
         });
         JEConfig.getStatusBar().addTask(MetersToolbar.class.getName(), task, null, true);
     }

@@ -307,8 +307,9 @@ public class AnalysisHandler {
      *
      * @param analysisObject the target JEVis object to write to; no-op if {@code null}
      * @param dataModel      the model to persist
+     * @return true when the analysis file was written
      */
-    public void saveDataModel(JEVisObject analysisObject, DataModel dataModel) {
+    public boolean saveDataModel(JEVisObject analysisObject, DataModel dataModel) {
 
         try {
             JsonNode analysisNode = toJsonNode(dataModel);
@@ -321,8 +322,10 @@ public class AnalysisHandler {
                 JEVisSample newSample = analysisFileAttribute.buildSample(new DateTime(), jsonFile);
                 newSample.commit();
             }
+            return analysisObject != null;
         } catch (Exception e) {
-            logger.error("Could not write template file to object {}", analysisObject);
+            logger.error("Could not write template file to object {}", analysisObject, e);
+            return false;
         }
     }
 

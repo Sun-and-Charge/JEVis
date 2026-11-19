@@ -579,7 +579,9 @@
                                          AtlantaFX (J25.5)
    Exactly one primary button per dialog in Sun (docs/DESIGN-CC.md); AtlantaFX colours it with the accent tokens.
 ---------------------------------------------------------------------------------------------------------------*/
-.button:default {
+/* .primary: same look without Enter, for long forms where Enter in a text field must not save */
+.button:default,
+.button.primary {
     -color-button-bg: -suc-accent;
     -color-button-fg: -suc-on-accent;
     -color-button-border: -suc-accent;
@@ -812,4 +814,92 @@
 .overview-empty {
     -fx-text-fill: -suc-text-muted;
     -fx-font-size: 11px;
+}
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Dialogs and notifications (J25.5 stage 5)
+---------------------------------------------------------------------------------------------------------------*/
+/* AtlantaFX caps every dialog at 600px; our dialogs set their own width (SucDialog sizes, wide tables) */
+.dialog-pane {
+    -fx-max-width: 100000;
+}
+
+.dialog-pane.suc-dialog > .suc-dialog-header {
+    -fx-background-color: -suc-surface;
+    -fx-padding: 18 20 8 20;
+}
+
+.suc-dialog-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -suc-text;
+}
+
+.suc-dialog-description,
+.suc-dialog-text {
+    -fx-text-fill: -suc-text-muted;
+}
+
+.dialog-pane.suc-dialog > .content {
+    -fx-padding: 8 20 12 20;
+}
+
+.dialog-pane.suc-dialog > .button-bar > .container {
+    -fx-padding: 10 20 16 20;
+}
+
+/* forms: label above the field, a hint below it */
+.suc-form > .label {
+    -fx-font-weight: bold;
+}
+
+.suc-form > .label.suc-field-hint {
+    -fx-font-weight: normal;
+    -fx-text-fill: -color-warning-fg;
+    -fx-font-size: 12px;
+}
+
+.suc-dialog-body,
+.suc-dialog-body > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.button.danger {
+    -color-button-bg: -color-danger-emphasis;
+    -color-button-fg: -color-fg-emphasis;
+    -color-button-border: -color-danger-emphasis;
+    -color-button-bg-hover: -color-danger-6;
+    -color-button-fg-hover: -color-fg-emphasis;
+}
+
+.suc-toast {
+    -fx-background-color: -suc-primary;
+    -fx-background-radius: 6;
+    -fx-border-width: 0 0 0 4;
+    -fx-border-color: -suc-accent;
+    -fx-padding: 10 14 10 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 14, 0, 0, 3);
+    -fx-cursor: hand;
+}
+
+.suc-toast .label {
+    -fx-text-fill: -suc-on-primary;
+}
+
+.suc-toast-success {
+    -fx-border-color: #2da44e;
+}
+
+.suc-toast-error {
+    -fx-border-color: -suc-error;
+}
+
+.button.danger:default {
+    -color-button-bg: -color-danger-emphasis;
+    -color-button-fg: -color-fg-emphasis;
+    -color-button-border: -color-danger-emphasis;
+    -color-button-bg-focused: -color-danger-emphasis;
+    -color-button-fg-focused: -color-fg-emphasis;
 }

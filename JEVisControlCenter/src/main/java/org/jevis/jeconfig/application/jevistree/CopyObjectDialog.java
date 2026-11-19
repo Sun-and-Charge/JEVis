@@ -55,7 +55,7 @@ import java.util.List;
  *
  * @author fs
  */
-public class CopyObjectDialog extends Dialog {
+public class CopyObjectDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(CopyObjectDialog.class);
 
     public static String ICON = Icon.PNG_MOVE;
@@ -81,7 +81,9 @@ public class CopyObjectDialog extends Dialog {
      * @param newParent
      */
     public CopyObjectDialog(final List<JEVisObject> objects, final JEVisObject newParent, DefaultAction defaultAction) {
-        super();
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.copy.title", "Kopieren, verschieben oder verknüpfen", "Copy, move or link"),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.copy.description", "Wählen Sie, was mit den gezogenen Objekten am Ziel geschehen soll.",
+                        "Choose what happens with the dragged objects at the target."), Size.M);
 
         try {
 
@@ -127,15 +129,11 @@ public class CopyObjectDialog extends Dialog {
         }
 
 
-        setTitle(I18n.getInstance().getString("jevistree.dialog.copy.title"));
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
 
         VBox root = new VBox();
 
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+
 
         getDialogPane().setMinWidth(450);
         getDialogPane().setMinHeight(400);
@@ -164,7 +162,7 @@ public class CopyObjectDialog extends Dialog {
 
         header.setRight(vboxRight);
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("jevistree.dialog.copy.ok"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType okType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.run", "Ausführen", "Run"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18n.getInstance().getString("jevistree.dialog.copy.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
         this.getDialogPane().getButtonTypes().addAll(cancelType, okType);
@@ -433,12 +431,7 @@ public class CopyObjectDialog extends Dialog {
     }
 
     private void showError(String titleLong, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(I18n.getInstance().getString("jevistree.dialog.copy.recursion.alert.title"));
-        alert.setHeaderText(titleLong);
-        alert.setContentText(message);
-        alert.setResizable(true);
-        alert.show();
+        org.jevis.jeconfig.application.ui.Notify.error(titleLong + (message == null ? "" : ": " + message));
     }
 
     public boolean parentCheck(JEVisObject obj, JEVisObject target) {

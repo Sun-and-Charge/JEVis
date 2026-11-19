@@ -414,9 +414,7 @@ public class LabelElement extends MoveableNode implements SCADAElement {
 
     @Override
     public void openConfig() {
-        Dialog configDia = new Dialog();
-        configDia.setTitle(I18n.getInstance().getString("plugin.scada.element.config.title"));
-        configDia.setHeaderText(I18n.getInstance().getString("plugin.scada.element.config.header"));
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> configDia = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.scada.element.config.title"), I18n.getInstance().getString("plugin.scada.element.config.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
 
 
         ConfigSheet ct = new ConfigSheet();

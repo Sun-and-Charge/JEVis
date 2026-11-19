@@ -438,16 +438,13 @@ public class NotesPlugin implements Plugin {
 
     private void restartExecutor() {
         try {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText(I18n.getInstance().getString("plugin.alarms.info.wait"));
-            alert.show();
+            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("plugin.alarms.info.wait"));
             JEConfig.getStatusBar().startProgressJob("stoppingAlarms", runningUpdateTaskList.size(), I18n.getInstance().getString("plugin.alarms.message.stoppingthreads"));
 
             JEConfig.getStatusBar().stopTasks(NotesPlugin.class.getName());
             this.runningUpdateTaskList.clear();
             JEConfig.getStatusBar().finishProgressJob("stoppingAlarms", I18n.getInstance().getString("plugin.alarms.message.stoppedall"));
 
-            alert.close();
         } catch (Exception ex) {
             logger.error(ex);
         }
@@ -851,20 +848,11 @@ public class NotesPlugin implements Plugin {
 
         delete.setOnAction(event ->
         {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(I18n.getInstance().getString("plugin.note.delete.title"));
-            alert.setHeaderText(I18n.getInstance().getString("plugin.note.delete.message"));
-            //alert.setContentText("Before : ");
-
-            ButtonType buttonYes = new ButtonType(I18n.getInstance().getString("plugin.note.delete.delete"));
-            alert.getButtonTypes().clear();
-            alert.getButtonTypes().addAll(buttonYes, ButtonType.CANCEL);
-
-            Button noButton = (Button) alert.getDialogPane().lookupButton(ButtonType.CANCEL);
-            noButton.setDefaultButton(true);
-
-            final Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() == buttonYes) {
+            int count = tableView.getSelectionModel().getSelectedItems().size();
+            if (count > 0 && org.jevis.jeconfig.application.ui.Confirm.ask(count == 1 ? org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.note.delete.question.one", "Notiz löschen?", "Delete the note?")
+                            : String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.note.delete.question.many", "%s Notizen löschen?", "Delete %s notes?"), count),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.note.delete.consequence", "Die Notizen werden aus den Datenreihen entfernt.", "The notes are removed from the rows."),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
                 tableView.getSelectionModel().getSelectedItems().forEach(notesRow -> {
                     notesRow.delete();
                     data.remove(notesRow);

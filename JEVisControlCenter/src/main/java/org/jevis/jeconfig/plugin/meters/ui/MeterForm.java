@@ -36,7 +36,7 @@ import org.jevis.jeconfig.plugin.meters.data.MeterData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeterForm extends Dialog {
+public class MeterForm extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(MeterForm.class);
 
@@ -47,6 +47,7 @@ public class MeterForm extends Dialog {
     List<Tab> tabs;
 
     public MeterForm(MeterData meterData, JEVisDataSource ds, boolean switchMeter) {
+        super(meterData.getName(), null, Size.L);
         this.meterData = meterData;
         this.ds = ds;
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -54,11 +55,7 @@ public class MeterForm extends Dialog {
         scrollPane.setFitToWidth(true);
 
         Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(false);
-        stage.setResizable(true);
         stage.getIcons().add(JEConfig.getImage(Icon.PNG_CONFIG_TOOLS));
-        stage.setTitle(I18n.getInstance().getString("jevistree.widget.column.settings"));
 
         tabs = new ArrayList<>();
         try {
@@ -70,14 +67,12 @@ public class MeterForm extends Dialog {
             }
         } catch (JEVisException jeVisException) {
             logger.error(jeVisException);
-            Alert alert = new Alert(Alert.AlertType.ERROR, "JEVis error", ButtonType.OK);
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
             close();
         }
 
 
         tabPane.getTabs().addAll(tabs);
-        setHeaderText(meterData.getName());
 
         getDialogPane().setContent(scrollPane);
 

@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SaveUnderDialog extends Dialog {
+public class SaveUnderDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(SaveUnderDialog.class);
     private JEVisObject target;
@@ -57,12 +57,8 @@ public class SaveUnderDialog extends Dialog {
     }
 
     public SaveUnderDialog(JEVisDataSource jeVisDataSource, String directoryClass, JEVisObject selectedObj, JEVisClass analysisClass, String promptName, Saver saver) {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.trc.saveunderdialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.dashboard.saveunderdialog.header"));
+        super(I18n.getInstance().getString("plugin.trc.saveunderdialog.title"), I18n.getInstance().getString("plugin.dashboard.saveunderdialog.header"), Size.M);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -185,14 +181,8 @@ public class SaveUnderDialog extends Dialog {
 
 
             if (toOverwriteObj != null) {
-                Dialog dialogOverwrite = new Dialog();
-                dialogOverwrite.initOwner(JEConfig.getStage());
-                dialogOverwrite.initModality(Modality.APPLICATION_MODAL);
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialogOverwrite = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.dashboard.dialog.overwrite.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
                 Stage overwriteStage = (Stage) dialogOverwrite.getDialogPane().getScene().getWindow();
-                TopMenu.applyActiveTheme(overwriteStage.getScene());
-                overwriteStage.setAlwaysOnTop(true);
-                dialogOverwrite.setTitle(I18n.getInstance().getString("plugin.dashboard.dialog.overwrite.title"));
-                dialogOverwrite.setResizable(true);
                 Label message = new Label(I18n.getInstance().getString("plugin.dashboard.dialog.overwrite.message"));
 
                 ButtonType overwriteOkType = new ButtonType(I18n.getInstance().getString("plugin.graph.dialog.overwrite.ok"), ButtonBar.ButtonData.OK_DONE);
@@ -235,13 +225,7 @@ public class SaveUnderDialog extends Dialog {
                 try {
                     writeOk = jeVisDataSource.getCurrentUser().canWrite(toOverwriteObj.getID());
                     if (!writeOk) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.object.permission.write.denied"));
-                        alert.initOwner(JEConfig.getStage());
-                        alert.initModality(Modality.APPLICATION_MODAL);
-                        Stage stageAlert = (Stage) alert.getDialogPane().getScene().getWindow();
-                        TopMenu.applyActiveTheme(stageAlert.getScene());
-                        stageAlert.setAlwaysOnTop(true);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.permission.write.denied"));
                         this.close();
                     }
                 } catch (Exception e) {
@@ -258,13 +242,7 @@ public class SaveUnderDialog extends Dialog {
                 try {
                     writeOk = jeVisDataSource.getCurrentUser().canWrite(target.getID());
                     if (!writeOk) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.object.permission.write.denied"));
-                        alert.initOwner(JEConfig.getStage());
-                        alert.initModality(Modality.APPLICATION_MODAL);
-                        Stage stageAlert = (Stage) alert.getDialogPane().getScene().getWindow();
-                        TopMenu.applyActiveTheme(stageAlert.getScene());
-                        stageAlert.setAlwaysOnTop(true);
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.permission.write.denied"));
                         this.close();
                     }
                 } catch (Exception e) {
@@ -284,13 +262,7 @@ public class SaveUnderDialog extends Dialog {
                     try {
                         createOk = jeVisDataSource.getCurrentUser().canCreate(currentSaveDirectory.get().getID());
                         if (!createOk) {
-                            Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.object.permission.write.denied"));
-                            alert.initOwner(JEConfig.getStage());
-                            alert.initModality(Modality.APPLICATION_MODAL);
-                            Stage stageAlert = (Stage) alert.getDialogPane().getScene().getWindow();
-                            TopMenu.applyActiveTheme(stageAlert.getScene());
-                            stageAlert.setAlwaysOnTop(true);
-                            alert.showAndWait();
+                            org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.permission.write.denied"));
                             this.close();
                         }
                     } catch (Exception e) {

@@ -133,9 +133,11 @@ public class MeterController {
 
         MeterForm meterForm = new MeterForm(meterData, ds, switchMeter);
 
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.APPLY);
+        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.OTHER);
         ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         meterForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
+        /* J25.5: Sun-coloured, no default button (Enter in a field must not save) */
+        meterForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
         final Button btOk = (Button) meterForm.getDialogPane().lookupButton(buttonTypeOne);
 
         disableSaveIfUserCannotWrite(meterData, btOk);
@@ -167,16 +169,17 @@ public class MeterController {
 
     public void addMeter() {
         NewMeterDialog newMeterDialog = new NewMeterDialog(ds, getActiveTab().getPlan(), getSelectedItem() != null ? getSelectedItem().getJeVisObject(): null);
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.APPLY);
+        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.OTHER);
         ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         newMeterDialog.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
+        /* J25.5: Sun-coloured, no default button (Enter in a field must not save) */
+        newMeterDialog.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
         final Button btOk = (Button) newMeterDialog.getDialogPane().lookupButton(buttonTypeOne);
 
         btOk.setOnAction(actionEvent -> {
             JEVisObject jeVisObject = newMeterDialog.commit();
             if (jeVisObject == null) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("plugin.object.permission.create.denied"));
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.permission.create.denied"));
             } else {
                 MeterData meterData = new MeterData(jeVisObject);
                 openDataForm(meterData, false, true);

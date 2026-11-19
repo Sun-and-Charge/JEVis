@@ -279,15 +279,8 @@ public class SampleTableExtension implements SampleEditorExtension {
             DateTime firstDate = minMax[0];
             DateTime endDate = minMax[1];
             try {
-                Dialog dialog = new Dialog();
-                dialog.setTitle(I18n.getInstance().getString("plugin.configuration.addvaluesinbetween.title"));
-                dialog.setHeaderText(I18n.getInstance().getString("plugin.configuration.addvaluesinbetween.header"));
-                dialog.setResizable(true);
-                dialog.initOwner(JEConfig.getStage());
-                dialog.initModality(Modality.APPLICATION_MODAL);
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.addvaluesinbetween.title"), I18n.getInstance().getString("plugin.configuration.addvaluesinbetween.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
                 Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-                TopMenu.applyActiveTheme(stage.getScene());
-                stage.setAlwaysOnTop(true);
 
                 Label valueLabel = new Label(I18n.getInstance().getString("plugin.graph.table.value"));
                 TextField valueField = new TextField();

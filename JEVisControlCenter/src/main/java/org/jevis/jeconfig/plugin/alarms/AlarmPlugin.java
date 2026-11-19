@@ -271,9 +271,7 @@ public class AlarmPlugin implements Plugin {
             }
             if (!allowed) {
                 Platform.runLater(() -> {
-                    Alert alert1 = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                    alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                    alert1.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("dialog.warning.notallowed"));
                 });
             }
             reload.fire();
@@ -429,16 +427,13 @@ public class AlarmPlugin implements Plugin {
 
     private void restartExecutor() {
         try {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText(I18n.getInstance().getString("plugin.alarms.info.wait"));
-            alert.show();
+            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("plugin.alarms.info.wait"));
             JEConfig.getStatusBar().startProgressJob("stoppingAlarms", runningUpdateTaskList.size(), I18n.getInstance().getString("plugin.alarms.message.stoppingthreads"));
 
             JEConfig.getStatusBar().stopTasks(AlarmPlugin.class.getName());
             this.runningUpdateTaskList.clear();
             JEConfig.getStatusBar().finishProgressJob("stoppingAlarms", I18n.getInstance().getString("plugin.alarms.message.stoppedall"));
 
-            alert.close();
         } catch (Exception ex) {
             logger.error(ex);
         }

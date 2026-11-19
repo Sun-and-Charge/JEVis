@@ -136,36 +136,8 @@ public class JEVisTreeContextMenu extends ContextMenu {
 
             if (!foundTarget.get()) {
 
-                GridPane gridPane = new GridPane();
-                gridPane.setPadding(new Insets(8));
-                gridPane.setHgap(8);
-                gridPane.setVgap(8);
 
-                gridPane.add(new Label(I18n.getInstance().getString("jevistree.menu.gotosrc.error")), 0, 0);
-                gridPane.add(new Separator(), 0, 1);
-
-                Dialog dialog = new Dialog();
-                dialog.setResizable(true);
-                dialog.initOwner(JEConfig.getStage());
-                dialog.initModality(Modality.APPLICATION_MODAL);
-                Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-                TopMenu.applyActiveTheme(stage.getScene());
-                stage.setAlwaysOnTop(true);
-
-                ButtonType okType = new ButtonType(I18n.getInstance().getString("jevistree.menu.gotosrc.close"), ButtonBar.ButtonData.OK_DONE);
-
-                dialog.getDialogPane().getButtonTypes().addAll(okType);
-
-                Button okButton = (Button) dialog.getDialogPane().lookupButton(okType);
-                okButton.setDefaultButton(true);
-
-                dialog.getDialogPane().setContent(gridPane);
-
-                okButton.setOnAction(event -> {
-                    dialog.close();
-                });
-
-                dialog.show();
+                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("jevistree.menu.gotosrc.error"));
             }
 
 

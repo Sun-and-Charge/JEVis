@@ -243,7 +243,7 @@ public class DetailsTab extends Tab {
                     data.EnPIProperty().get().beforeUntilDate.get());
 
             Optional<ButtonType> result = timeRangeDialog.showAndWait();
-            if (result.get() == ButtonType.OK) {
+            if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
                 data.EnPIProperty().get().beforeFromDate.set(timeRangeDialog.getFromDate());
                 data.EnPIProperty().get().beforeUntilDate.set(timeRangeDialog.getUntilDate());
                 data.EnPIProperty().get().updateEnPIData();
@@ -252,11 +252,12 @@ public class DetailsTab extends Tab {
         afterDateButton.setOnAction(event -> {
             TimeRangeDialog timeRangeDialog = new TimeRangeDialog(
                     data.EnPIProperty().get().afterFromDate.get(),
-                    data.EnPIProperty().get().afterFromDate.get());
+                    data.EnPIProperty().get().afterUntilDate.get());
             Optional<ButtonType> result = timeRangeDialog.showAndWait();
-            if (result.get() == ButtonType.OK) {
+            if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                /* the end of the "after" period went into afterFromDate before (J25.5 fix) */
                 data.EnPIProperty().get().afterFromDate.set(timeRangeDialog.getFromDate());
-                data.EnPIProperty().get().afterFromDate.set(timeRangeDialog.getUntilDate());
+                data.EnPIProperty().get().afterUntilDate.set(timeRangeDialog.getUntilDate());
                 data.EnPIProperty().get().updateEnPIData();
             }
 

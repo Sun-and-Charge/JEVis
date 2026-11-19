@@ -21,42 +21,49 @@
 package org.jevis.jeconfig.application.Chart.ChartPluginElements;
 
 import javafx.scene.control.*;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisDataSource;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
-import org.jevis.jeconfig.TopMenu;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.ChartTab;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.CommonSettingTab;
 import org.jevis.jeconfig.application.Chart.ChartPluginElements.tabs.DayFilterTab;
 import org.jevis.jeconfig.application.Chart.data.ChartModel;
 import org.jevis.jeconfig.application.Chart.data.DataModel;
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import org.jevis.jeconfig.dialog.Response;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewSelectionDialog extends Dialog {
+/**
+ * Rows, charts, common settings and day filter of an analysis (J25.5 stage 5: SucDialog, size L, one primary button).
+ * The model is edited in place, as before.
+ */
+public class NewSelectionDialog extends SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(NewSelectionDialog.class);
     private final JEVisDataSource ds;
     private final DataModel dataModel;
     private Response response = Response.CANCEL;
 
     public NewSelectionDialog(JEVisDataSource ds, DataModel dataModel) {
-        super();
+        this(ds, dataModel, false);
+    }
 
-        setTitle(I18n.getInstance().getString("plugin.graph.newselectiondialog.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.graph.newselectiondialog.header"));
-        setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+    /**
+     * @param newAnalysis true for "Neue Analyse": the primary button is "Weiter" (the save dialog follows),
+     *                    otherwise "Übernehmen"
+     */
+    public NewSelectionDialog(JEVisDataSource ds, DataModel dataModel, boolean newAnalysis) {
+        super(newAnalysis
+                        ? PluginSidebar.text("plugin.graph.selection.new.title", "Neue Analyse", "New analysis")
+                        : PluginSidebar.text("plugin.graph.selection.edit.title", "Analyse bearbeiten", "Edit analysis"),
+                PluginSidebar.text("plugin.graph.selection.description",
+                        "Datenreihen je Diagramm wählen. + fügt ein Diagramm hinzu.",
+                        "Choose the rows per chart. + adds a chart."), Size.L);
 
         this.ds = ds;
         this.dataModel = dataModel;
@@ -103,30 +110,16 @@ public class NewSelectionDialog extends Dialog {
         tabPane.getTabs().add(commonSettingTab);
         tabPane.getTabs().add(dayFilterTab);
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        this.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-        Button okButton = (Button) this.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
-
-        Button cancelButton = (Button) this.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
-
-        okButton.setOnAction(event -> {
-            try {
-                response = Response.OK;
-                this.close();
-            } catch (Exception e) {
-
-            }
+        ButtonType okType = new ButtonType(newAnalysis
+                ? PluginSidebar.text("plugin.graph.selection.next", "Weiter", "Next")
+                : PluginSidebar.text("plugin.graph.selection.apply", "Übernehmen", "Apply"), ButtonBar.ButtonData.OK_DONE);
+        addPrimary(okType);
+        addCancel();
+        setResultConverter(type -> {
+            response = type == okType ? Response.OK : Response.CANCEL;
+            return type;
         });
-
-        cancelButton.setOnAction(event -> {
-            response = Response.CANCEL;
-            this.close();
-        });
+        tabPane.setPrefHeight(560);
 
         this.getDialogPane().setContent(tabPane);
     }

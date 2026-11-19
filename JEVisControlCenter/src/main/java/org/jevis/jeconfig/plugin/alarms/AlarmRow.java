@@ -235,9 +235,7 @@ public class AlarmRow {
     public void setChecked(Boolean checked) {
         if (!this.alarmConfiguration.setChecked(checked)) {
             Platform.runLater(() -> {
-                Alert alert1 = new Alert(Alert.AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                alert1.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("dialog.warning.notallowed"));
             });
         }
     }

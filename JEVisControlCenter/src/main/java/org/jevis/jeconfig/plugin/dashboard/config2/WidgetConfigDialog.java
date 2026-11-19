@@ -43,7 +43,7 @@ import org.jevis.jeconfig.plugin.dashboard.widget.GenericConfigNode;
 import org.jevis.jeconfig.plugin.dashboard.widget.ValueWidget;
 import org.jevis.jeconfig.plugin.dashboard.widget.Widget;
 
-public class WidgetConfigDialog extends Alert {
+public class WidgetConfigDialog extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(WidgetConfigDialog.class);
     private final TabPane tabPane = new TabPane();
@@ -55,14 +55,16 @@ public class WidgetConfigDialog extends Alert {
      * Create a new Widget Config Dialog.
      */
     public WidgetConfigDialog(Widget widget) {
-        super(AlertType.INFORMATION);
+        super(I18n.getInstance().getString("dashboard.widget.editor.title"), I18n.getInstance().getString("dashboard.widget.editor.header"), Size.L);
+        /* the widgets check for ButtonType.OK; the button is labelled with the verb (J25.5) */
+        getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
+        javafx.scene.control.Button applyButton = (javafx.scene.control.Button) getDialogPane().lookupButton(javafx.scene.control.ButtonType.OK);
+        applyButton.setText(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.graph.selection.apply", "Übernehmen", "Apply"));
+        applyButton.setDefaultButton(true);
+        addCancel();
 
         this.widget = widget;
-        setTitle(I18n.getInstance().getString("dashboard.widget.editor.title"));
-        setHeaderText(I18n.getInstance().getString("dashboard.widget.editor.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(this.tabPane);

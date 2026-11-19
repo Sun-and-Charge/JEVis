@@ -237,11 +237,7 @@ public class InvoiceImportDialog {
     }
 
     private void showTable(JEVisObject directory, List<InvoiceImportRow> rows, Runnable onImported) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.initOwner(JEConfig.getStage());
-        dialog.setTitle(t("plugin.accounting.invoices.title"));
-        dialog.setHeaderText(t("plugin.accounting.invoices.table.header", objectRelations.getObjectPath(directory) + directory.getName()));
-        dialog.setResizable(true);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(t("plugin.accounting.invoices.title"), t("plugin.accounting.invoices.table.header", objectRelations.getObjectPath(directory) + directory.getName()), org.jevis.jeconfig.application.ui.SucDialog.Size.L);
 
         TableView<InvoiceImportRow> table = new TableView<>(FXCollections.observableArrayList(rows));
         table.setEditable(true);
@@ -460,11 +456,7 @@ public class InvoiceImportDialog {
     }
 
     private void error(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-        alert.initOwner(JEConfig.getStage());
-        alert.setTitle(t("plugin.accounting.invoices.title"));
-        alert.setHeaderText(null);
-        alert.show();
+        org.jevis.jeconfig.application.ui.Notify.error(message);
     }
 
     private static class DirectoryChoice {

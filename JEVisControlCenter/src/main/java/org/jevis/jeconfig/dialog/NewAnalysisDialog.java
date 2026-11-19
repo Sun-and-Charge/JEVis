@@ -46,7 +46,7 @@ public class NewAnalysisDialog {
 
         model.reset();
 
-        NewSelectionDialog newSelectionDialog = new NewSelectionDialog(ds, model);
+        NewSelectionDialog newSelectionDialog = new NewSelectionDialog(ds, model, true);
         newSelectionDialog.setOnCloseRequest(event -> {
             if (newSelectionDialog.getResponse() == Response.OK) {
 

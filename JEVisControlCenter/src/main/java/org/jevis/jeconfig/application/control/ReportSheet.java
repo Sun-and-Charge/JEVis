@@ -545,11 +545,7 @@ public class ReportSheet extends Tab {
             reportLink.setLinkStatus(ReportLink.Status.FALSE);
         } catch (Exception e) {
             logger.error(jeVisObject, e);
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.parse.title"));
-            alert.setHeaderText("JEVis Object: " + jeVisObject.getName() + ": " + jeVisObject.getID() + ": " + I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.parse.header"));
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(("JEVis Object: " + jeVisObject.getName() + ": " + jeVisObject.getID() + ": " + I18n.getInstance().getString("plugin.object.report.dialog.wizard.error.parse.header")) + ": " + (e.getMessage()));
         }
 
         return reportLink;

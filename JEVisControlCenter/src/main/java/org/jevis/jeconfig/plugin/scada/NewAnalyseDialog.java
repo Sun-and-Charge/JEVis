@@ -79,9 +79,7 @@ public class NewAnalyseDialog {
         }
 
 
-        Dialog<ButtonType> dialog = new Dialog();
-        dialog.setTitle(I18n.getInstance().getString("dialog.analyses.title"));
-        dialog.setHeaderText(I18n.getInstance().getString("dialog.analyses.header"));
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("dialog.analyses.title"), I18n.getInstance().getString("dialog.analyses.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         dialog.getDialogPane().getButtonTypes().setAll();
         dialog.setGraphic(JEConfig.getSVGImage(ICON, 50, 50));
         VBox root = new VBox();

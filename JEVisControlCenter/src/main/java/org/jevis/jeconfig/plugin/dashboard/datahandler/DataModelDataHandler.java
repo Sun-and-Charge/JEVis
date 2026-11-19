@@ -224,18 +224,16 @@ public class DataModelDataHandler {
         logger.debug("----");
 
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result(
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.values.title", "Werte der Datenreihen", "Values of the rows"),
+                null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
         TabPane tabPane = new TabPane();
         chartDataRows.forEach(chartDataRow -> {
             SampleTable sampleTable = new SampleTable(chartDataRow.getAttribute(), DateTimeZone.getDefault(), chartDataRow.getSamples());
             Tab tab = new Tab(chartDataRow.getObject().getName() + ":" + chartDataRow.getAttribute().getName(), sampleTable);
             tabPane.getTabs().add(tab);
         });
-        alert.setGraphic(null);
-        alert.setHeaderText(null);
         alert.getDialogPane().setContent(tabPane);
-        TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-        alert.setResizable(true);
         alert.show();
 
     }

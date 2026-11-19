@@ -123,16 +123,16 @@ public class NonconformitiesController {
     }
 
     public void deletePlan() {
+        /* the overview tab is no plan of its own: nothing to delete or configure (toolbar buttons are disabled there) */
+        if (getActiveNonconformityPlan() == null || getActiveNonconformityPlan() instanceof org.jevis.jeconfig.plugin.nonconformities.data.NonconformtiesOverviewData) return;
         NonconformityPlanTab tab = getActiveTab();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.nonconformities.delete.nonconformityPlan.deletetitle"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.nonconformities.delete.nonconformityPlan.delete"));
-        Label text = new Label(I18n.getInstance().getString("plugin.nonconformities.delete.nonconformityPlan.content") + "\n" + getActiveNonconformityPlan().getName());
-        text.setWrapText(true);
-        alert.getDialogPane().setContent(text);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        /* J25.5: question naming the entry, consequence, red action button (docs/DESIGN-CC.md) */
+        String entryName = getActiveNonconformityPlan().getName().get();
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.plan.confirm.question", "Abweichungsplan „%s“ löschen?", "Delete nonconformity plan “%s”?"), entryName),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.plan.confirm.consequence", "Der Plan kommt mit allen Abweichungen in den Papierkorb und lässt sich von dort wiederherstellen.", "The plan and all its nonconformities move to the recycle bin and can be restored from there."),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 getActiveNonconformityPlan().delete();
                 nonconformityPlanList.remove(tab.getNonconformityPlan());
@@ -176,14 +176,12 @@ public class NonconformitiesController {
     public void deleteNonconformity() {
         NonconformityPlanTab tab = getActiveTab();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.nonconformities.delete.nonconformity.deletetitle"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.nonconformities.delete.nonconformity.delete"));
-        Label text = new Label(I18n.getInstance().getString("plugin.nonconformities.delete.nonconformity.content") + "\n" + getSelectedData().nrProperty().get() + " " + getSelectedData().titleProperty().get());
-        text.setWrapText(true);
-        alert.getDialogPane().setContent(text);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        /* J25.5: question naming the entry, consequence, red action button (docs/DESIGN-CC.md) */
+        String entryName = getSelectedData().nrProperty().get() + " " + getSelectedData().titleProperty().get();
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.item.confirm.question", "Abweichung „%s“ löschen?", "Delete nonconformity “%s”?"), entryName),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.item.confirm.consequence", "Die Abweichung wird aus dem Abweichungsplan entfernt.", "The nonconformity is removed from the plan."),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 getSelectedData().setDeleted(true);
                 getSelectedData().commit();
@@ -227,9 +225,11 @@ public class NonconformitiesController {
     }
 
     public void openPlanSettings() {
+        /* the overview tab is no plan of its own: nothing to delete or configure (toolbar buttons are disabled there) */
+        if (getActiveNonconformityPlan() == null || getActiveNonconformityPlan() instanceof org.jevis.jeconfig.plugin.nonconformities.data.NonconformtiesOverviewData) return;
         NonconfomityPlanForm nonconfomityPlanForm = new NonconfomityPlanForm(getActiveTab().getNonconformityPlan());
         Optional<ButtonType> result = nonconfomityPlanForm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OTHER) {
             getActiveTab().getNonconformityPlan().commit();
         }
 
@@ -294,12 +294,14 @@ public class NonconformitiesController {
         nonconformityForm.setData(data);
         nonconformityForm.setNew(isNew);
         nonconformityForm.setTitle(I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.title"));
-        nonconformityForm.setHeaderText(I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.header"));
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.nonconformities.form.save"), ButtonBar.ButtonData.APPLY);
+        nonconformityForm.setDescription(I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.header"));
+        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.nonconformities.form.save"), ButtonBar.ButtonData.OTHER);
         ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.nonconformities.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
         nonconformityForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
+        /* J25.5: Sun-coloured primary button, but no default button: Enter in a text field of the form must not save */
+        nonconformityForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
         final Button btOk = (Button) nonconformityForm.getDialogPane().lookupButton(buttonTypeOne);
         final Button btCancel = (Button) nonconformityForm.getDialogPane().lookupButton(buttonTypeTwo);
         btOk.addEventFilter(ActionEvent.ACTION,getCloseRequest(data, nonconformityForm));

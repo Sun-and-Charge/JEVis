@@ -112,6 +112,26 @@ public class TreeHelper {
      *
      * @param tree
      */
+    /**
+     * Confirmation before a recursive action (J25.5, docs/DESIGN-CC.md): "Anwenden", or a red "Löschen" for the
+     * delete actions; check the result with {@link #confirmed(ButtonType)}.
+     */
+    private static org.jevis.jeconfig.application.ui.SucDialog<ButtonType> confirmation(String title, boolean destructive) {
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(title, null,
+                org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        if (destructive) {
+            dialog.addDestructive(new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), javafx.scene.control.ButtonBar.ButtonData.OTHER));
+        } else {
+            dialog.addPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.apply", "Anwenden", "Apply"));
+        }
+        dialog.addCancel();
+        return dialog;
+    }
+
+    private static boolean confirmed(ButtonType buttonType) {
+        return buttonType != null && buttonType.getButtonData() != javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE;
+    }
+
     public static void EventDelete(JEVisTree tree, boolean deleteforever) {
         logger.debug("EventDelete");
         if (!tree.getSelectionModel().getSelectedItems().isEmpty()) {
@@ -124,14 +144,27 @@ public class TreeHelper {
             try {
 
 
-                Alert alert = new Alert(AlertType.CONFIRMATION);
-                alert.setTitle(I18n.getInstance().getString("jevistree.dialog.delete.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(question);
-                TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-
-                alert.showAndWait().ifPresent(buttonType -> {
-                    if (buttonType.equals(ButtonType.OK)) {
+                /* J25.5: the question names the object (or the number), the text says where it goes */
+                String deleteQuestion = items.size() == 1
+                        ? String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.question.one", "„%s“ löschen?", "Delete “%s”?"), items.get(0).getValue().getJEVisObject().getName())
+                        : String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.question.many", "%s Objekte löschen?", "Delete %s objects?"), items.size());
+                String deleteConsequence = items.size() == 1
+                        ? (deleteforever
+                        ? org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.forever.one", "Das Objekt und alle Unterobjekte werden mit ihren Daten endgültig gelöscht. Das kann nicht rückgängig gemacht werden.",
+                        "The object and all objects below it are deleted with their data for good. This cannot be undone.")
+                        : org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.recyclebin.one", "Das Objekt kommt mit allen Unterobjekten in den Papierkorb und lässt sich von dort wiederherstellen.",
+                        "The object and all objects below it move to the recycle bin and can be restored from there."))
+                        : (deleteforever
+                        ? org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.forever", "Die Objekte und alle Unterobjekte werden mit ihren Daten endgültig gelöscht. Das kann nicht rückgängig gemacht werden.",
+                        "The objects and all objects below them are deleted with their data for good. This cannot be undone.")
+                        : org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.recyclebin", "Die Objekte kommen mit allen Unterobjekten in den Papierkorb und lassen sich von dort wiederherstellen.",
+                        "The objects and all objects below them move to the recycle bin and can be restored from there."))
+                        + (items.size() > 1 ? "\n\n" + question.substring(question.indexOf("\n\n") + 2).trim() : "");
+                boolean deleteConfirmed = org.jevis.jeconfig.application.ui.Confirm.ask(deleteQuestion, deleteConsequence,
+                        deleteforever ? org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.forever.action", "Endgültig löschen", "Delete for good")
+                                : org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true);
+                java.util.Optional.of(deleteConfirmed).ifPresent(confirmed -> {
+                    if (confirmed) {
                         Task<Void> delete = new Task<Void>() {
                             @Override
                             protected Void call() throws Exception {
@@ -148,10 +181,7 @@ public class TreeHelper {
                                             object.getDataSource().deleteObject(id, deleteforever);
                                         } else {
                                             Platform.runLater(() -> {
-                                                Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                                                alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                                                TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                                                alert1.showAndWait();
+                                                org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                                             });
                                         }
                                     }
@@ -221,12 +251,8 @@ public class TreeHelper {
                     } catch (Exception ex) {
                         logger.error("Could not restore {}", object, ex);
                         Platform.runLater(() -> {
-                            Alert alert = new Alert(AlertType.WARNING);
-                            alert.setTitle(I18n.getInstance().getString("jevistree.dialog.restore.error.title"));
-                            alert.setHeaderText(object.getName());
-                            alert.setContentText(I18n.getInstance().getString("jevistree.dialog.restore.error.message"));
-                            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-                            alert.showAndWait();
+                            org.jevis.jeconfig.application.ui.Notify.error(object.getName() + ": "
+                                    + I18n.getInstance().getString("jevistree.dialog.restore.error.message"));
                         });
                     }
                 }
@@ -246,12 +272,9 @@ public class TreeHelper {
             if (count == 0) {
                 return;
             }
-            Alert alert = new Alert(AlertType.CONFIRMATION);
-            alert.setTitle(I18n.getInstance().getString("jevistree.dialog.emptybin.title"));
-            alert.setHeaderText(null);
-            alert.setContentText(I18n.getInstance().getString("jevistree.dialog.emptybin.message", count));
-            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-            if (!alert.showAndWait().filter(ButtonType.OK::equals).isPresent()) {
+            if (!org.jevis.jeconfig.application.ui.Confirm.ask(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.emptybin.question", "Papierkorb leeren?", "Empty the recycle bin?"),
+                    I18n.getInstance().getString("jevistree.dialog.emptybin.message", count),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.delete.forever.action", "Endgültig löschen", "Delete for good"), true)) {
                 return;
             }
 
@@ -290,8 +313,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.deleteCleanAndRaw.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.deleteCleanAndRaw.title"), true);
                     alert.setHeaderText(null);
                     alert.setContentText(question);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
@@ -357,7 +379,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(gp);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
                                 Task<Void> reload = new Task<Void>() {
                                     @Override
@@ -438,10 +460,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -548,26 +567,13 @@ public class TreeHelper {
 
                         tableView.setItems(FXCollections.observableArrayList(objects));
 
-                        Dialog<ButtonType> confirm = new Dialog<>();
-                        confirm.setTitle(I18n.getInstance().getString("plugin.objects.dialog.deletedependencies.title"));
-                        confirm.setHeaderText(I18n.getInstance().getString("plugin.objects.dialog.deletedependencies.header"));
-                        confirm.setResizable(true);
-                        confirm.initOwner(JEConfig.getStage());
-                        confirm.initModality(Modality.APPLICATION_MODAL);
-                        Stage stage = (Stage) confirm.getDialogPane().getScene().getWindow();
-                        TopMenu.applyActiveTheme(stage.getScene());
-                        stage.setAlwaysOnTop(true);
-
-                        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-                        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-                        confirm.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-                        Button okButton = (Button) confirm.getDialogPane().lookupButton(okType);
-                        okButton.setDefaultButton(true);
-
-                        Button cancelButton = (Button) confirm.getDialogPane().lookupButton(cancelType);
-                        cancelButton.setCancelButton(true);
+                        /* J25.5: deleting data is destructive, so a red "Löschen" that is no default button */
+                        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> confirm = new org.jevis.jeconfig.application.ui.SucDialog<>(
+                                I18n.getInstance().getString("plugin.objects.dialog.deletedependencies.title"),
+                                I18n.getInstance().getString("plugin.objects.dialog.deletedependencies.header"),
+                                org.jevis.jeconfig.application.ui.SucDialog.Size.L);
+                        Button okButton = confirm.addDestructive(new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), ButtonBar.ButtonData.OTHER));
+                        Button cancelButton = confirm.addCancel();
 
                         Label dateLabelFrom = new Label(I18n.getInstance().getString("tree.treehelper.from"));
                         DatePicker datePickerFrom = new DatePicker();
@@ -666,8 +672,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.deleteCalculations.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.deleteCalculations.title"), true);
                     alert.setHeaderText(null);
                     alert.setContentText(question);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
@@ -724,7 +729,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(gp);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
                                 Task<Void> reload = new Task<Void>() {
                                     @Override
@@ -797,10 +802,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -819,8 +821,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.setMultiplierAndDifferential.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.setMultiplierAndDifferential.title"), false);
                     alert.setHeaderText(null);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
                     GridPane gp = new GridPane();
@@ -848,7 +849,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(gp);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
                                 BigDecimal multiplierValue = new BigDecimal(multiplier.getText());
                                 Boolean differentialValue = differential.isSelected();
@@ -886,10 +887,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -907,8 +905,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.setUnitAndPeriodRecursive.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.setUnitAndPeriodRecursive.title"), false);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
                     alert.setHeaderText(null);
                     alert.setResizable(true);
@@ -967,7 +964,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(gp);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
                                 boolean unit = setUnit.isSelected();
                                 boolean period = setPeriod.isSelected();
@@ -1012,10 +1009,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -1034,8 +1028,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.setLimitsRecursive.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.setLimitsRecursive.title"), false);
                     alert.setHeaderText(null);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
                     GridPane gp = new GridPane();
@@ -1191,7 +1184,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(gp);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
                                 if (!auto.isSelected()) {
                                     BigDecimal limit1MinValue = new BigDecimal(limit1Min.getText());
@@ -1260,10 +1253,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -1282,8 +1272,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.setSubstitutionSettingsRecursive.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.setSubstitutionSettingsRecursive.title"), false);
                     alert.setHeaderText(null);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
 
@@ -1301,7 +1290,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(tabPane);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
 
                                 Task<Void> set = new Task<Void>() {
@@ -1329,10 +1318,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -1424,13 +1410,7 @@ public class TreeHelper {
                                 }
                             }
                         } catch (Exception e) {
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle(I18n.getInstance().getString("jevistree.dialog.find.error.title"));
-                            alert.setHeaderText("");
-                            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-                            String s = I18n.getInstance().getString("jevistree.dialog.find.error.message");
-                            alert.setContentText(s);
-                            alert.show();
+                            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("jevistree.dialog.find.error.message"));
                         }
                     }
 
@@ -1452,24 +1432,12 @@ public class TreeHelper {
                         }
                     }
                 } catch (Exception e) {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.find.error.title"));
-                    alert.setHeaderText("");
-                    TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-                    String s = I18n.getInstance().getString("jevistree.dialog.find.error.message");
-                    alert.setContentText(s);
-                    alert.show();
+                    org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("jevistree.dialog.find.error.message"));
                 }
             }
 
         } catch (Exception ex) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle(I18n.getInstance().getString("jevistree.dialog.find.error.title"));
-            alert.setHeaderText("");
-            TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
-            String s = I18n.getInstance().getString("jevistree.dialog.find.error.message");
-            alert.setContentText(s);
-            alert.show();
+            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("jevistree.dialog.find.error.message"));
             ex.printStackTrace();
         }
     }
@@ -1606,10 +1574,7 @@ public class TreeHelper {
                 dia.showAndWait();
             } else {
                 Platform.runLater(() -> {
-                    Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                    alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                    TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                    alert1.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                 });
             }
 
@@ -1644,10 +1609,7 @@ public class TreeHelper {
                 }
             } else {
                 Platform.runLater(() -> {
-                    Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                    alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                    TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                    alert1.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                 });
             }
 
@@ -2003,8 +1965,7 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.enable.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.enable.title"), false);
                     alert.setHeaderText(null);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
                     VBox vBox = new VBox();
@@ -2031,7 +1992,7 @@ public class TreeHelper {
                     alert.getDialogPane().setContent(vBox);
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
 
                                 Task<Void> reload = new Task<Void>() {
@@ -2059,10 +2020,9 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed",
+                                "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.",
+                                "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -2086,14 +2046,13 @@ public class TreeHelper {
 
                 if (tree.getJEVisDataSource().getCurrentUser().canWrite(items.get(0).getValue().getJEVisObject().getID())) {
 
-                    Alert alert = new Alert(AlertType.CONFIRMATION);
-                    alert.setTitle(I18n.getInstance().getString("jevistree.dialog.deleteCleanAndRaw.title"));
+                    org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = confirmation(I18n.getInstance().getString("jevistree.dialog.deleteCleanAndRaw.title"), true);
                     alert.setHeaderText(null);
                     alert.setContentText(question);
                     TopMenu.applyActiveTheme(alert.getDialogPane().getScene());
 
                     alert.showAndWait().ifPresent(buttonType -> {
-                        if (buttonType.equals(ButtonType.OK)) {
+                        if (confirmed(buttonType)) {
                             try {
 
                                 Task<Void> reload = new Task<Void>() {
@@ -2121,10 +2080,7 @@ public class TreeHelper {
                     });
                 } else {
                     Platform.runLater(() -> {
-                        Alert alert1 = new Alert(AlertType.WARNING, I18n.getInstance().getString("dialog.warning.title"));
-                        alert1.setContentText(I18n.getInstance().getString("dialog.warning.notallowed"));
-                        TopMenu.applyActiveTheme(alert1.getDialogPane().getScene());
-                        alert1.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.notallowed", "Dafür fehlt die Berechtigung. Eine Administratorin oder einen Administrator um Schreibrechte bitten.", "You do not have permission for this. Ask an administrator for write access."));
                     });
 
                 }
@@ -2242,7 +2198,7 @@ public class TreeHelper {
         ObservableList<TreeItem<JEVisTreeRow>> items = tree.getSelectionModel().getSelectedItems();
 
         warning.showAndWait().ifPresent(buttonType -> {
-            if (buttonType.equals(ButtonType.OK)) {
+            if (confirmed(buttonType)) {
                 JEVisDataSource ds = tree.getJEVisDataSource();
                 TextArea textArea = new TextArea();
                 textArea.setPrefRowCount(20);

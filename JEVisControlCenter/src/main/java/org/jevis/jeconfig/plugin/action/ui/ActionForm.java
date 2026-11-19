@@ -30,7 +30,7 @@ import org.jevis.jeconfig.plugin.action.ui.tab.*;
 import org.jevis.jeconfig.plugin.common.AttachmentPane;
 import org.jevis.jeconfig.tool.ScreenSize;
 
-public class ActionForm extends Dialog {
+public class ActionForm extends org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> {
 
 
     private TabPane tabPane = new TabPane();
@@ -42,15 +42,11 @@ public class ActionForm extends Dialog {
     private CheckListTab checkListTab;
 
     public ActionForm(ActionPlanData actionPlan, ActionData action) {
-        super();
-        this.initOwner(JEConfig.getStage());
+        super(I18n.getInstance().getString("actionform.editor.title"), null, Size.L);
         this.actionPlan = actionPlan;
         //System.out.println("Open Form for: ");
         //System.out.println(GsonBuilder.createDefaultBuilder().create().toJson(action));
 
-        setTitle(I18n.getInstance().getString("actionform.editor.title"));
-        setHeaderText(null);
-        setResizable(true);
         this.getDialogPane().setPrefWidth(ScreenSize.fitScreenWidth(1050));
         this.getDialogPane().setPrefHeight(ScreenSize.fitScreenHeight(950));
 

@@ -309,11 +309,8 @@ public class FormulaBox extends HBox {
                     tableView
             );
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.initOwner(getOwnerWindow());
-            alert.setTitle(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.title"));
-            alert.setHeaderText(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.header"));
-            alert.setResizable(true);
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.title"),
+                    I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.L);
             alert.getDialogPane().setPrefWidth(WindowSize.fitWidth(getOwnerWindow(), 1350));
             WindowSize.keepOnScreen(alert);
             //alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -324,12 +321,7 @@ public class FormulaBox extends HBox {
             alert.showAndWait();
 
         } catch (Exception ex) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.initOwner(getOwnerWindow());
-            alert.setTitle(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.fail"));
-            alert.setHeaderText(null);
-            alert.setContentText(getErrorMessage(ex));
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.object.extension.calculation.formulabox.eval.fail") + ": " + getErrorMessage(ex));
 
 
             logger.error("Formula evaluation error", ex);

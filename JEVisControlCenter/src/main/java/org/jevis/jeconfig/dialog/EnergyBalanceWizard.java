@@ -67,7 +67,7 @@ import java.util.function.Consumer;
  * Energy balance wizard (OpenJEVis #2368): creates a normal Calculation "main meter minus sub-meters"
  * with an output data object (and optionally a second calculation for the difference in percent).
  */
-public class EnergyBalanceWizard extends Dialog<ButtonType> {
+public class EnergyBalanceWizard extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(EnergyBalanceWizard.class);
     private static final String BUILDING_CLASS = "Building";
     private static final String CALCULATION_DIRECTORY_CLASS = "Calculation Directory";
@@ -93,16 +93,12 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
      * @param tree   tree in which the new calculation is selected afterwards, may be null
      */
     public EnergyBalanceWizard(JEVisObject object, JEVisTree tree) {
-        super();
+        super(I18n.getInstance().getString("plugin.energybalance.title"), I18n.getInstance().getString("plugin.energybalance.header"), Size.L);
         this.object = object;
         this.tree = tree;
         this.ds = dataSourceOf(object);
 
-        setTitle(I18n.getInstance().getString("plugin.energybalance.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.energybalance.header"));
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -332,9 +328,7 @@ public class EnergyBalanceWizard extends Dialog<ButtonType> {
     }
 
     private void showWarning(String text) {
-        Alert alert = new Alert(Alert.AlertType.WARNING, text);
-        alert.initOwner(getDialogPane().getScene().getWindow());
-        alert.showAndWait();
+        org.jevis.jeconfig.application.ui.Notify.error(text);
     }
 
     /**

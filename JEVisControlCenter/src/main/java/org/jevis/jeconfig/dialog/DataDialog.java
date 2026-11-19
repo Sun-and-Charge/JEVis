@@ -65,7 +65,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataDialog extends Dialog {
+public class DataDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
     private static final Logger logger = LogManager.getLogger(DataDialog.class);
     private final AlphanumComparator ac = new AlphanumComparator();
     private final JEVisAttribute attribute;
@@ -89,12 +89,8 @@ public class DataDialog extends Dialog {
     private int ROWS_PER_PAGE = 25;
 
     public DataDialog(JEVisAttribute attribute) {
-        super();
-        setTitle(I18n.getInstance().getString("plugin.enterdata.history.title"));
-        setHeaderText(I18n.getInstance().getString("plugin.enterdata.history.header"));
+        super(I18n.getInstance().getString("plugin.enterdata.history.title"), I18n.getInstance().getString("plugin.enterdata.history.header"), Size.L);
         setResizable(true);
-        initOwner(JEConfig.getStage());
-        initModality(Modality.APPLICATION_MODAL);
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
         TopMenu.applyActiveTheme(stage.getScene());
         stage.setAlwaysOnTop(true);
@@ -246,8 +242,7 @@ public class DataDialog extends Dialog {
                 sample.setNote("");
                 DataSample nextSample = new DataSample(sample, nextTS, 0d, "");
                 if (data.contains(nextSample)) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("sampleeditor.confirmationdialog.error.exists") + ": " + nextTS.toString(dateTimeFormat));
-                    alert.showAndWait();
+                    org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("sampleeditor.confirmationdialog.error.exists") + ": " + nextTS.toString(dateTimeFormat));
                 } else {
                     data.add(i + 1, nextSample);
                     changedSamples.add(nextSample);
@@ -327,15 +322,8 @@ public class DataDialog extends Dialog {
         deleteView.getColumns().setAll(deleteColumn, commitDeleteColumn);
         deleteView.getItems().setAll(deleteList);
 
-        Dialog confirmationDialog = new Dialog();
-        confirmationDialog.setTitle(I18n.getInstance().getString("plugin.enterdata.history.confirmation.title"));
-        confirmationDialog.setHeaderText(I18n.getInstance().getString("plugin.enterdata.history.confirmation.header"));
-        confirmationDialog.setResizable(true);
-        confirmationDialog.initOwner(JEConfig.getStage());
-        confirmationDialog.initModality(Modality.APPLICATION_MODAL);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> confirmationDialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.enterdata.history.confirmation.title"), I18n.getInstance().getString("plugin.enterdata.history.confirmation.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
         Stage stage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
         WindowSize.keepOnScreen(stage);
 
         Label headerText = new Label(I18n.getInstance().getString("dialog.data.confirm.message"));
@@ -384,8 +372,7 @@ public class DataDialog extends Dialog {
                 saved.set(true);
             } catch (Exception e) {
                 logger.error("Error while saving samples", e);
-                Alert noSave = new Alert(Alert.AlertType.ERROR, I18n.getInstance().getString("dashboard.save.error") + e.getMessage());
-                noSave.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.save", "Der Wert konnte nicht gespeichert werden. Verbindung prüfen und erneut versuchen.", "The value could not be saved. Check the connection and try again."));
             }
         });
 

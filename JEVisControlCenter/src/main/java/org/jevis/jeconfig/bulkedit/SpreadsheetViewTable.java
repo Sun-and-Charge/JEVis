@@ -154,12 +154,7 @@ public class SpreadsheetViewTable extends SpreadsheetView {
                 for (String word : words) {
                     String[] parseWord = word.split("\t");
                     if (!rows.get(currentRow).get(0).getText().equals(parseWord[0])) {
-                        Alert alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Error Dialog");
-                        alert.setHeaderText("Matching Error : Incorrect object ID !");
-                        alert.setContentText("Please check your object ID on row " + (currentRow + 1) + " !");
-
-                        alert.showAndWait();
+                        org.jevis.jeconfig.application.ui.Notify.error(("Matching Error : Incorrect object ID !") + ": " + ("Please check your object ID on row " + (currentRow + 1) + " !"));
                         return;
                     }
                     int col = currentColumn;

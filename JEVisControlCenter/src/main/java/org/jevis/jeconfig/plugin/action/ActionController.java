@@ -146,17 +146,16 @@ public class ActionController {
     }
 
     public void deletePlan() {
+        /* the overview tab is no plan of its own: nothing to delete or configure (toolbar buttons are disabled there) */
+        if (getActiveActionPlan() == null || getActiveActionPlan() instanceof ActionPlanOverviewData) return;
         ActionTab tab = getActiveTab();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.action.plan.deletetitle"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.action.plan.delete"));
-        Label text = new Label(I18n.getInstance().getString("plugin.action.plan.content") + "\n=>" + getActiveActionPlan().getName().get());
-        text.setWrapText(true);
-        text.setTextFill(Color.web("#e45131"));
-        alert.getDialogPane().setContent(text);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        /* J25.5: question naming the entry, consequence, red action button (docs/DESIGN-CC.md) */
+        String entryName = getActiveActionPlan().getName().get();
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.plan.confirm.question", "Aktionsplan „%s“ löschen?", "Delete action plan “%s”?"), entryName),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.plan.confirm.consequence", "Der Plan kommt mit allen Maßnahmen in den Papierkorb und lässt sich von dort wiederherstellen.", "The plan and all its actions move to the recycle bin and can be restored from there."),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 getActiveActionPlan().delete();
                 actionPlans.remove(tab.getActionPlan());
@@ -176,12 +175,13 @@ public class ActionController {
         });
         ExportDialog exportDialog = new ExportDialog(toExport);
 
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.action.form.save"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.action.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-        exportDialog.getDialogPane().getButtonTypes().setAll(buttonTypeTwo, buttonTypeOne);
+        /* J25.5: the button names the action ("Exportieren …", a file dialog follows) */
+        ButtonType buttonTypeOne = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.graph.export.action", "Exportieren …", "Export …"), ButtonBar.ButtonData.OK_DONE);
+        exportDialog.addPrimary(buttonTypeOne);
+        exportDialog.addCancel();
 
         Optional<ButtonType> optional = exportDialog.showAndWait();
-        if (optional.get() == buttonTypeOne) {
+        if (optional.isPresent() && optional.get() == buttonTypeOne) {
             ExcelExporter excelExporter = new ExcelExporter(this, exportDialog.getSelection());
         } else {
 
@@ -221,14 +221,12 @@ public class ActionController {
     public void deleteAction() {
         ActionTab tab = getActiveTab();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.getInstance().getString("plugin.action.action.deletetitle"));
-        alert.setHeaderText(I18n.getInstance().getString("plugin.action.action.delete"));
-        Label text = new Label(I18n.getInstance().getString("plugin.action.action.content") + "\n" + getSelectedData().noProperty().get() + " " + getSelectedData().titleProperty().get());
-        text.setWrapText(true);
-        alert.getDialogPane().setContent(text);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        /* J25.5: question naming the entry, consequence, red action button (docs/DESIGN-CC.md) */
+        String entryName = getSelectedData().noProperty().get() + " " + getSelectedData().titleProperty().get();
+        if (org.jevis.jeconfig.application.ui.Confirm.ask(
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.action.confirm.question", "Maßnahme „%s“ löschen?", "Delete action “%s”?"), entryName),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.action.confirm.consequence", "Die Maßnahme wird aus dem Aktionsplan entfernt.", "The action is removed from the action plan."),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.delete", "Löschen", "Delete"), true)) {
             try {
                 getSelectedData().delete();
                 tab.getActionTable().filter();
@@ -275,9 +273,11 @@ public class ActionController {
     }
 
     public void openPlanSettings() {
+        /* the overview tab is no plan of its own: nothing to delete or configure (toolbar buttons are disabled there) */
+        if (getActiveActionPlan() == null || getActiveActionPlan() instanceof ActionPlanOverviewData) return;
         ActionPlanForm actionPlanForm = new ActionPlanForm(getActiveTab().getActionPlan());
         Optional<ButtonType> result = actionPlanForm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OTHER) {
             actionPlanForm.commitRenames();
             getActiveTab().getActionPlan().commit();
         }
@@ -348,11 +348,13 @@ public class ActionController {
         ActionData data = getSelectedData();
         ActionForm actionForm = new ActionForm(getActiveActionPlan(), data);
 
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.action.form.save"), ButtonBar.ButtonData.APPLY);
+        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.action.form.save"), ButtonBar.ButtonData.OTHER);
         ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.action.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
         actionForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
+        /* J25.5: Sun-coloured primary button, but no default button: Enter in a text field of the form must not save */
+        actionForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
 
 
         Optional<ButtonType> optional = actionForm.showAndWait();

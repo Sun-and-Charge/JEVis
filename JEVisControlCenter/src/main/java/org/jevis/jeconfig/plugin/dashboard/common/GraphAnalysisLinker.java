@@ -77,10 +77,9 @@ public class GraphAnalysisLinker {
 
                 JEConfig.openObjectInPlugin(ChartPlugin.PLUGIN_NAME, analysisRequest);
             } else {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setContentText(I18n.getInstance().getString("plugin.dashboard.linker.error.message"));
-
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.dashboard.linker.analysis.missing",
+                        "Die verknüpfte Analyse wurde nicht gefunden. In den Widget-Einstellungen eine Analyse wählen.",
+                        "The linked analysis was not found. Choose an analysis in the widget settings."));
             }
 
 

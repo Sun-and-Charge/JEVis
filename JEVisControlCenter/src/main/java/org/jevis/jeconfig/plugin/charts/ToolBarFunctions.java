@@ -33,8 +33,6 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.converter.LocalTimeStringConverter;
 import org.apache.commons.validator.routines.DoubleValidator;
@@ -46,10 +44,11 @@ import org.jevis.commons.i18n.I18n;
 import org.jevis.commons.utils.AlphanumComparator;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
-import org.jevis.jeconfig.TopMenu;
 import org.jevis.commons.regression.RegressionType;
 import org.jevis.jeconfig.application.Chart.Charts.*;
 import org.jevis.jeconfig.application.Chart.data.ChartDataRow;
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.SucDialog;
 import org.jevis.jeconfig.dialog.BaseLoadDialog;
 import org.jevis.jeconfig.dialog.ValuesDialog;
 import org.jevis.jeconfig.sample.DaySchedule;
@@ -79,7 +78,10 @@ public class ToolBarFunctions {
 
     protected void calcRegression() {
         if (!toolBarSettings.isCalculateRegression()) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            SucDialog<ButtonType> alert = new SucDialog<>(PluginSidebar.text("plugin.graph.regression.settings.title",
+                    "Regressionslinie anzeigen", "Show regression line"), null, SucDialog.Size.S);
+            alert.addPrimary(PluginSidebar.text("dialog.ui.show", "Anzeigen", "Show"));
+            alert.addCancel();
 
             Label polyDegreeLabel = new Label(I18n.getInstance().getString("plugin.graph.toolbar.regression.degree"));
             NumberSpinner polyDegreeNumberSpinner = new NumberSpinner(new BigDecimal(1), new BigDecimal(1));
@@ -129,10 +131,8 @@ public class ToolBarFunctions {
     }
 
     protected void calcFullLoadHours() {
-        Alert infoBox = new Alert(Alert.AlertType.INFORMATION);
-        infoBox.setResizable(true);
-        infoBox.setTitle(I18n.getInstance().getString("dialog.fullloadhours.title"));
-        infoBox.setHeaderText(I18n.getInstance().getString("dialog.fullloadhours.headertext"));
+        SucDialog<ButtonType> infoBox = SucDialog.result(I18n.getInstance().getString("dialog.fullloadhours.title"),
+                I18n.getInstance().getString("dialog.fullloadhours.headertext"), SucDialog.Size.L);
         TableView<ChartDataRow> fullLoadHours = new TableView<>();
 
         NumberFormat nf = NumberFormat.getInstance(I18n.getInstance().getLocale());
@@ -211,15 +211,8 @@ public class ToolBarFunctions {
     }
 
     protected void calcBaseLoad() {
-        Dialog infoBox = new Dialog();
-        infoBox.setTitle(I18n.getInstance().getString("plugin.graph.baseload.title"));
-        infoBox.setHeaderText(I18n.getInstance().getString("plugin.graph.baseload.header"));
-        infoBox.setResizable(true);
-        infoBox.initOwner(JEConfig.getStage());
-        infoBox.initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) infoBox.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+        SucDialog<ButtonType> infoBox = new SucDialog<>(I18n.getInstance().getString("plugin.graph.baseload.title"),
+                I18n.getInstance().getString("plugin.graph.baseload.header"), SucDialog.Size.L);
 
         Label baseLoadTimeFrame = new Label(I18n.getInstance().getString("dialog.baseload.timeframe"));
 
@@ -331,16 +324,8 @@ public class ToolBarFunctions {
         gp.add(resultEndDate, 2, row);
         gp.add(resultEndTime, 3, row);
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        infoBox.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-        Button okButton = (Button) infoBox.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
-
-        Button cancelButton = (Button) infoBox.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
+        Button okButton = infoBox.addPrimary(PluginSidebar.text("dialog.ui.calculate", "Berechnen", "Calculate"));
+        Button cancelButton = infoBox.addCancel();
 
         Separator separator = new Separator(Orientation.HORIZONTAL);
         separator.setPadding(new Insets(8, 0, 8, 0));
@@ -374,15 +359,8 @@ public class ToolBarFunctions {
     }
 
     protected void calcValues() {
-        Dialog infoBox = new Dialog();
-        infoBox.setTitle(I18n.getInstance().getString("plugin.graph.values.title"));
-        infoBox.setHeaderText(I18n.getInstance().getString("plugin.graph.values.header"));
-        infoBox.setResizable(true);
-        infoBox.initOwner(JEConfig.getStage());
-        infoBox.initModality(Modality.APPLICATION_MODAL);
-        Stage stage = (Stage) infoBox.getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+        SucDialog<ButtonType> infoBox = new SucDialog<>(I18n.getInstance().getString("plugin.graph.values.title"),
+                I18n.getInstance().getString("plugin.graph.values.header"), SucDialog.Size.L);
 
         final ValuesSetting valuesSetting = new ValuesSetting();
 
@@ -501,16 +479,8 @@ public class ToolBarFunctions {
             }
         });
 
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        infoBox.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-        Button okButton = (Button) infoBox.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
-
-        Button cancelButton = (Button) infoBox.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
+        Button okButton = infoBox.addPrimary(PluginSidebar.text("dialog.ui.calculate", "Berechnen", "Calculate"));
+        Button cancelButton = infoBox.addCancel();
 
         Separator separator = new Separator(Orientation.HORIZONTAL);
         separator.setPadding(new Insets(8, 0, 8, 0));
@@ -557,22 +527,15 @@ public class ToolBarFunctions {
         });
 
         if (rows.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.initOwner(JEConfig.getStage());
-            alert.setHeaderText(I18n.getInstance().getString("plugin.graph.forecast.dialog.norow"));
-            alert.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.info(I18n.getInstance().getString("plugin.graph.forecast.dialog.norow"));
             return;
         }
 
         OnTheFlyForecast current = dataSettings.getOnTheFlyForecast();
 
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle(I18n.getInstance().getString("plugin.graph.toolbar.forecast"));
-        dialog.setHeaderText(I18n.getInstance().getString("plugin.graph.forecast.dialog.header"));
-        dialog.initOwner(JEConfig.getStage());
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setResizable(true);
-        TopMenu.applyActiveTheme(dialog.getDialogPane().getScene());
+        SucDialog<ButtonType> dialog = new SucDialog<>(PluginSidebar.text("plugin.graph.forecast.dialog.title",
+                "Prognose berechnen", "Calculate forecast"),
+                I18n.getInstance().getString("plugin.graph.forecast.dialog.header"), SucDialog.Size.M);
 
         ComboBox<ChartDataRow> rowBox = new ComboBox<>(FXCollections.observableArrayList(rows));
         Callback<ListView<ChartDataRow>, ListCell<ChartDataRow>> rowCellFactory = param -> new ListCell<ChartDataRow>() {
@@ -626,13 +589,15 @@ public class ToolBarFunctions {
         dialog.getDialogPane().setContent(gridPane);
 
         ButtonType removeType = new ButtonType(I18n.getInstance().getString("plugin.graph.forecast.dialog.remove"), ButtonBar.ButtonData.OTHER);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ButtonType calculateType = new ButtonType(PluginSidebar.text("dialog.ui.calculate", "Berechnen", "Calculate"), ButtonBar.ButtonData.OK_DONE);
+        dialog.addPrimary(calculateType);
         if (current != null) {
             dialog.getDialogPane().getButtonTypes().add(removeType);
         }
+        dialog.addCancel();
 
         dialog.showAndWait().ifPresent(buttonType -> {
-            if (buttonType == ButtonType.OK) {
+            if (buttonType == calculateType) {
                 // commit a value typed into the spinner without pressing enter
                 try {
                     horizonSpinner.getValueFactory().setValue(Integer.parseInt(horizonSpinner.getEditor().getText().trim()));
@@ -653,8 +618,10 @@ public class ToolBarFunctions {
     }
 
     protected void calcSumAboveBelow() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setHeaderText(I18n.getInstance().getString("dialog.calchoursabovebelow.entervalue"));
+        SucDialog<ButtonType> alert = new SucDialog<>(I18n.getInstance().getString("dialog.calchoursabovebelow.entervalue"),
+                null, SucDialog.Size.S);
+        alert.addPrimary(PluginSidebar.text("dialog.ui.calculate", "Berechnen", "Calculate"));
+        alert.addCancel();
 
         Label limitLabel = new Label(I18n.getInstance().getString("plugin.scada.element.setting.label.lowerlimit.limitvalue"));
         TextField limitField = new TextField();
@@ -826,10 +793,10 @@ public class ToolBarFunctions {
                             fullLoadHours.getItems().addAll(hoursAbove);
 
                             Platform.runLater(() -> {
-                                Alert infoBox = new Alert(Alert.AlertType.INFORMATION);
-                                infoBox.setResizable(true);
-                                infoBox.setTitle(I18n.getInstance().getString("dialog.calcsumabovebelow.title") + "\n" + I18n.getInstance().getString("dialog.calchoursabovebelow.title"));
-                                infoBox.setHeaderText(I18n.getInstance().getString("dialog.calcsumabovebelow.headertext") + " " + limit + "\n" + I18n.getInstance().getString("dialog.calchoursabovebelow.headertext") + " " + limit);
+                                SucDialog<ButtonType> infoBox = SucDialog.result(
+                                        I18n.getInstance().getString("dialog.calcsumabovebelow.title") + " / " + I18n.getInstance().getString("dialog.calchoursabovebelow.title"),
+                                        PluginSidebar.text("plugin.graph.abovebelow.description", "Grenze: %s", "Limit: %s").replace("%s",
+                                                NumberFormat.getInstance(I18n.getInstance().getLocale()).format(limit)), SucDialog.Size.L);
                                 infoBox.getDialogPane().setContent(fullLoadHours);
                                 infoBox.show();
                             });

@@ -46,7 +46,7 @@ import java.util.ArrayList;
 /**
  * Edit dialog of an appointment (#1855).
  */
-public class AppointmentDialog extends Dialog<ButtonType> {
+public class AppointmentDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(AppointmentDialog.class);
 
@@ -61,11 +61,9 @@ public class AppointmentDialog extends Dialog<ButtonType> {
     private Long linkedObject;
 
     public AppointmentDialog(JEVisDataSource ds, Appointment appointment, MailState state, boolean isNew) {
-        initOwner(JEConfig.getStage());
+        super(I18n.getInstance().getString(isNew ? "plugin.appointments.new" : "plugin.appointments.edit"), null, Size.M);
         TopMenu.applyActiveTheme(getDialogPane().getScene());
         setResizable(true);
-        setTitle(I18n.getInstance().getString(isNew ? "plugin.appointments.new" : "plugin.appointments.edit"));
-        setHeaderText(null);
 
         titleField.setText(appointment.getTitle());
         descriptionArea.setText(appointment.getDescription());
@@ -135,10 +133,7 @@ public class AppointmentDialog extends Dialog<ButtonType> {
             }
             if (error != null) {
                 event.consume();
-                Alert alert = new Alert(Alert.AlertType.WARNING, error);
-                alert.initOwner(getDialogPane().getScene().getWindow());
-                alert.setHeaderText(null);
-                alert.showAndWait();
+                org.jevis.jeconfig.application.ui.Notify.error(error);
             }
         });
     }
