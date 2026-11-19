@@ -580,8 +580,8 @@ public class TreeExporter {
      *       {@code chartData[].calculationId}</li>
      *   <li>Legacy SimpleDataHandler rows: {@code objectID}, {@code cleanObjectID} and
      *       {@code calculationID}</li>
-     *   <li>Dashboard links and image/file references: {@code dashboardObject} and
-     *       {@code objectID}</li>
+     *   <li>Dashboard, analysis and report links and image/file references: {@code dashboardObject},
+     *       {@code graphAnalysisObject}, {@code reportObject} and {@code objectID}</li>
      *   <li>NetGraph and Sankey rows, including Sankey {@code children}</li>
      * </ul>
      * Numeric JSON values remain numeric and string values remain strings.
@@ -635,7 +635,10 @@ public class TreeExporter {
                 || "cleanObjectID".equals(fieldName)
                 || "calculationID".equals(fieldName)
                 || "calculationId".equals(fieldName)
-                || "dashboardObject".equals(fieldName)) {
+                || "dashboardObject".equals(fieldName)
+                /* J25.5: analysis and report links (they kept the ids of the source system) */
+                || "graphAnalysisObject".equals(fieldName)
+                || "reportObject".equals(fieldName)) {
             return true;
         }
 

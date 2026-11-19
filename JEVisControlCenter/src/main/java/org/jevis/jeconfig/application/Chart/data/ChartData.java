@@ -130,7 +130,9 @@ public class ChartData {
     }
 
     public String getUnitLabel() {
-        return unitLabel.get();
+        /* J25.5: a row without unit has the dimensionless unit, whose label is "one"; widgets showed that text */
+        String label = unitLabel.get();
+        return "one".equals(label) ? "" : label;
     }
 
     public void setUnitLabel(String unitLabel) {
