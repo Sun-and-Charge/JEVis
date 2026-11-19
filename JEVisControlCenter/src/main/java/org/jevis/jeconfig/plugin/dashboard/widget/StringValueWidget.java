@@ -160,7 +160,19 @@ public class StringValueWidget extends Widget implements DataModelWidget {
 
                     displayedSample.setValue(Iterables.getLast(results).getValueAsString());
                 } else {
-                    displayedSample.setValue("");
+                    /* J25.5: a text (e.g. a licence plate) is set once and stays valid; without a value inside the
+                       interval show the last one before its end instead of an empty field */
+                    String last = "";
+                    try {
+                        org.jevis.api.JEVisAttribute attribute = dataModel.getAttribute();
+                        org.jevis.api.JEVisSample latest = attribute == null ? null : attribute.getLatestSample();
+                        if (latest != null && !latest.getTimestamp().isAfter(interval.getEnd())) {
+                            last = latest.getValueAsString();
+                        }
+                    } catch (Exception e) {
+                        logger.debug("No earlier text value", e);
+                    }
+                    displayedSample.setValue(last);
                 }
             } else {
                 displayedSample.setValue("");

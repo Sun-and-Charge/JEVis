@@ -145,7 +145,7 @@ public class SankeyWidget extends Widget implements DataModelWidget {
             this.sankeyPlot = SankeyPlotBuilder.create()
                     .items(plotItems)
                     .autoItemWidth(true)
-                    .minSize(configSize.getWidth(), configSize.getHeight())
+                    .prefSize(Math.max(10, configSize.getWidth() - 20), Math.max(10, configSize.getHeight() - 20))
                     .streamFillMode(eu.hansolo.fx.charts.SankeyPlot.StreamFillMode.GRADIENT)
                     .showFlowDirection(true)
                     .textColor(config.getFontColor())
@@ -184,13 +184,26 @@ public class SankeyWidget extends Widget implements DataModelWidget {
                             sankeyPlot.setItemGap(sankeyPojo.getGap());
                         }
                         sankeyPlot.setPadding(new Insets(0, 10, 10, 10));
+                        /* J25.5: the plot is exactly as large as the widget minus the padding and the content is clipped
+                           at the widget frame; before the whole widget size was its minimum and it drew far outside the
+                           frame over its neighbours */
                         this.borderPane.getChildren().setAll(sankeyPlot);
                         if (error) {
                             sankeyPlot.setTextColor(config.getBackgroundColor());
                         } else {
                             sankeyPlot.setTextColor(config.getFontColor());
                         }
-                        sankeyPlot.setMinSize(config.getSize().getWidth(), config.getSize().getHeight());
+                        Insets pad = this.borderPane.getPadding() == null ? Insets.EMPTY : this.borderPane.getPadding();
+                        double plotWidth = Math.max(10, config.getSize().getWidth() - pad.getLeft() - pad.getRight());
+                        double plotHeight = Math.max(10, config.getSize().getHeight() - pad.getTop() - pad.getBottom());
+                        sankeyPlot.setMinSize(0, 0);
+                        sankeyPlot.setPrefSize(plotWidth, plotHeight);
+                        sankeyPlot.setMaxSize(plotWidth, plotHeight);
+                        sankeyPlot.resizeRelocate(pad.getLeft(), pad.getTop(), plotWidth, plotHeight);
+                        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
+                        clip.widthProperty().bind(this.borderPane.widthProperty());
+                        clip.heightProperty().bind(this.borderPane.heightProperty());
+                        this.borderPane.setClip(clip);
                         sankeyPlot.setOffsetMap(sankeyPojo.getOffsetMap());
                     }
 
@@ -476,8 +489,10 @@ public class SankeyWidget extends Widget implements DataModelWidget {
     public void resize(double v, double v1) {
         super.resize(v, v1);
         if (sankeyPlot != null) {
-            sankeyPlot.setMinSize(v - 10, v1 - 10);
-            sankeyPlot.resize(v - 10, v1 - 10);
+            /* same size rule as in updateConfig: widget minus the padding (10 on each side) */
+            sankeyPlot.setPrefSize(Math.max(10, v - 20), Math.max(10, v1 - 20));
+            sankeyPlot.setMaxSize(Math.max(10, v - 20), Math.max(10, v1 - 20));
+            sankeyPlot.resize(Math.max(10, v - 20), Math.max(10, v1 - 20));
         }
     }
 

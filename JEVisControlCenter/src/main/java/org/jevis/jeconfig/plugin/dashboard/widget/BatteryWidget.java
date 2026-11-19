@@ -271,8 +271,10 @@ public class BatteryWidget extends Widget implements DataModelWidget {
             if (batteryGaugePojo != null) {
                 logger.debug("update Skin");
                 battery.setBarColor(batteryGaugePojo.getColorValueIndicator());
-                battery.setMinValue(batteryGaugePojo.getMinimum());
-                battery.setMaxValue(batteryGaugePojo.getMaximum());
+                /* the widget passes the value already as percent of minimum..maximum (Helper.convertToPercent),
+                   so the gauge scale is 0..100; with the configured range it showed 0 % (or NaN for 0..0) */
+                battery.setMinValue(0);
+                battery.setMaxValue(100);
             }
         }
 
@@ -380,7 +382,7 @@ public class BatteryWidget extends Widget implements DataModelWidget {
 
                 }
                 if (!gp.getChildren().isEmpty()) {
-                    alert.getDialogPane().setContent(gp);
+                    alert.getDialogPane().setContent(gp);
                     alert.showAndWait();
                 }
 

@@ -105,7 +105,7 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
                 .prefSize(150, 150)
                 .radarChartMode(RadarChartMode.POLYGON)
                 .startFromZero(false)
-                .minValue(10)
+                .minValue(0)
                 .autoScale(false)
                 .animated(false)
                 .gradientStops(new Stop(0.00000, Color.TRANSPARENT),
@@ -293,12 +293,13 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
         netGraph.setBackgroundColor(this.config.getBackgroundColor());
         netGraph.setTitle("");
         netGraph.setForegroundBaseColor(this.config.getFontColor());
+        /* J25.5: the scale starts at 0; with the fixed minimum 10 smaller values were not drawn */
         if (!netGraphPojo.isInPercent()) {
             netGraph.setMaxValue(netGraphPojo.getMax());
-            netGraph.setMinValue(10);
+            netGraph.setMinValue(0);
         } else {
             netGraph.setMaxValue(100);
-            netGraph.setMinValue(10);
+            netGraph.setMinValue(0);
         }
         switch (netGraphPojo.getSkin()) {
             case SECTOR:
@@ -413,7 +414,7 @@ public class NetGraphWidget extends Widget implements DataModelWidget {
 
                 }
                 if (!gp.getChildren().isEmpty()) {
-                    alert.getDialogPane().setContent(gp);
+                    alert.getDialogPane().setContent(gp);
                     alert.showAndWait();
                 }
 
