@@ -156,14 +156,14 @@ public class TimeFilterSelector extends GridPane {
             fFromMonth.setValue(Month.of(minDate.getMonthOfYear()));
             fFromYear.setValue(minDate.getYear());
 
-            fFromMonth.setValue(Month.of(maxDate.getMonthOfYear()));
+            fToMonth.setValue(Month.of(maxDate.getMonthOfYear()));
             fToYear.setValue(maxDate.getYear());
         } else {
             fFromMonth.setValue(Month.of(1));
-            fFromYear.setValue(2018);
+            fFromYear.setValue(DateTime.now().getYear() - 1);
 
             fToMonth.setValue(Month.of(12));
-            fToYear.setValue(2024);
+            fToYear.setValue(DateTime.now().getYear() + 1);
         }
 
 
@@ -258,14 +258,11 @@ public class TimeFilterSelector extends GridPane {
 
     private ComboBox<Integer> generateYearBox() {
 
+        /* the years were fixed to 2018-2024, so entries from 2025 on could not be shown (J25.5) */
         ObservableList<Integer> months = FXCollections.observableArrayList();
-        months.add(2018);
-        months.add(2019);
-        months.add(2020);
-        months.add(2021);
-        months.add(2022);
-        months.add(2023);
-        months.add(2024);
+        for (int year = 2010; year <= DateTime.now().getYear() + 10; year++) {
+            months.add(year);
+        }
 
         ComboBox<Integer> field = new ComboBox(months);
         field.setConverter(new StringConverter<Integer>() {

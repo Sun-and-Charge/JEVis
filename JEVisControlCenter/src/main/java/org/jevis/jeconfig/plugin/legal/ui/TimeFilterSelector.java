@@ -157,14 +157,14 @@ public class TimeFilterSelector extends GridPane {
             fFromMonth.setValue(Month.of(minDate.getMonthOfYear()));
             fFromYear.setValue(minDate.getYear());
 
-            fFromMonth.setValue(Month.of(maxDate.getMonthOfYear()));
+            fToMonth.setValue(Month.of(maxDate.getMonthOfYear()));
             fToYear.setValue(maxDate.getYear());
         } else {
             fFromMonth.setValue(Month.of(1));
-            fFromYear.setValue(2018);
+            fFromYear.setValue(DateTime.now().getYear() - 1);
 
             fToMonth.setValue(Month.of(12));
-            fToYear.setValue(2024);
+            fToYear.setValue(DateTime.now().getYear() + 1);
         }
 
 
