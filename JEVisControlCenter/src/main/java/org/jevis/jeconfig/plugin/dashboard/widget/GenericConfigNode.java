@@ -235,7 +235,11 @@ public class GenericConfigNode extends Tab implements ConfigTab {
         gridPane.addColumn(1, idField, nameField, tooltipField, bgColorPicker, fColorPicker, yPosField, xPosField,
                 showShadowField, showValueField, borderSizeSpinner, borderColorPicker, cornerRadiusSpinner, precisionBox, fontSizeSpinner, fontWeightBox, fontPostureBox, new Region(), alignmentBox, timeFrameBox, fixedTimeFrame);
 
-        setContent(gridPane);
+        /* J25.5: scrollable, the last fields were cut off in the dialog without a scroll bar */
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(gridPane);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        setContent(scroll);
 
         updateData();
 

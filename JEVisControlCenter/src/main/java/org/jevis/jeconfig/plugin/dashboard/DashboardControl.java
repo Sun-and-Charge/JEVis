@@ -123,6 +123,18 @@ public class DashboardControl {
     public BooleanProperty highlightProperty = new SimpleBooleanProperty(false);
     public BooleanProperty showGridProperty = new SimpleBooleanProperty(false);
     public BooleanProperty editableProperty = new SimpleBooleanProperty(false);
+    /*
+     * J25.5: the "save changes?" question only after the edit mode was used since loading. Widgets write derived
+     * values into their configuration on the first data load (e.g. the chart widget's decimals), so the JSON differs
+     * from the baseline although the user only looked at the dashboard.
+     */
+    private boolean editedSinceLoad = false;
+
+    {
+        editableProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue) editedSinceLoad = true;
+        });
+    }
     public BooleanProperty showSideEditorProperty = new SimpleBooleanProperty(true);
     public BooleanProperty snapToGridProperty = new SimpleBooleanProperty(false);
     public BooleanProperty showWidgetHelpProperty = new SimpleBooleanProperty(false);
@@ -549,7 +561,7 @@ public class DashboardControl {
         stopAllUpdates();
         try {
             /* check if the last dashboard was saved and if not ask user */
-            if (firstLoadedConfigHash != null) {
+            if (firstLoadedConfigHash != null && editedSinceLoad) {
                 String newConfigHash = computeDashboardHash();
                 if (!firstLoadedConfigHash.equals(newConfigHash)) {
                     /* J25.5: "Speichern" / "Nicht speichern" instead of OK / Abbrechen */
@@ -572,6 +584,7 @@ public class DashboardControl {
             }
             /* reset controls */
             this.firstLoadedConfigHash = null;
+            this.editedSinceLoad = false;
             clearUndoHistory(null);
             this.editableProperty.setValue(false);
             this.snapToGridProperty.setValue(true);
@@ -1111,6 +1124,7 @@ public class DashboardControl {
             this.toolBar.updateDashboardList(getAllDashboards(), this.activeDashboard);
             firstLoadedConfigHash = computeDashboardHash();
             clearUndoHistory(firstLoadedConfigHash);
+            editedSinceLoad = editableProperty.get();
         } catch (Exception ex) {
             logger.error("Failed to save dashboard", ex);
         }

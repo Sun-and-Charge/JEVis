@@ -190,29 +190,35 @@
 /*---------------------------------------------------------------------------------------------------------------
                                          Dialogs
 ---------------------------------------------------------------------------------------------------------------*/
+/* J25.5: light header as in the SucDialog windows (docs/DESIGN-CC.md), also for the older windows that still use
+   DialogHeader or a dialog header text; before: a dark Blueberry band with a yellow line */
 .dialog-pane > .header-panel,
 .dialog-header {
-    -fx-background-color: -suc-accent, -suc-primary;
-    -fx-background-insets: 0, 0 0 3 0;
+    -fx-background-color: -suc-surface;
 }
 
 .dialog-pane > .header-panel {
-    -fx-padding: 0.9em 1em 1.1em 1em;
+    -fx-padding: 18 20 8 20;
+}
+
+.dialog-header {
+    -fx-padding: 18 20 8 20;
 }
 
 .dialog-pane > .header-panel .label {
-    -fx-text-fill: -suc-on-primary;
-    -fx-font-size: 15px;
+    -fx-text-fill: -suc-text;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
 }
 
 .dialog-header-title {
-    -fx-text-fill: -suc-on-primary;
-    -fx-font-size: 22px;
+    -fx-text-fill: -suc-text;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
 }
 
 .dialog-header .label {
-    -fx-text-fill: -suc-on-primary;
+    -fx-text-fill: -suc-text;
 }
 
 /*---------------------------------------------------------------------------------------------------------------

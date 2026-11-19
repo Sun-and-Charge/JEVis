@@ -39,7 +39,6 @@ public class DialogHeader {
     public static Node getDialogHeader(String icon, String text) {
         BorderPane header = new BorderPane();
 //        header.setStyle("-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);");
-        header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
 
         Label topTitle = new Label(text);
@@ -61,7 +60,7 @@ public class DialogHeader {
         /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
         header.setCenter(vboxLeft);
 
-        header.setRight(vboxRight);
+        /* J25.5: no large icon in the light header (as in the SucDialog windows) */
 
         return header;
     }
@@ -69,7 +68,6 @@ public class DialogHeader {
     public static Node getDialogHeader(ImageView icon, String text) {
         BorderPane header = new BorderPane();
 //        header.setStyle("-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);");
-        header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
         Label topTitle = new Label(text);
         topTitle.setWrapText(true);
@@ -88,7 +86,7 @@ public class DialogHeader {
         /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
         header.setCenter(vboxLeft);
 
-        header.setRight(vboxRight);
+        /* J25.5: no large icon in the light header (as in the SucDialog windows) */
 
         return header;
     }
@@ -96,7 +94,6 @@ public class DialogHeader {
     public static Node getDialogHeader(Region icon, String text) {
         BorderPane header = new BorderPane();
 //        header.setStyle("-fx-background-color: linear-gradient(#e2e2e2,#eeeeee);");
-        header.setPadding(new Insets(10, 10, 10, 10));
         header.getStyleClass().add("dialog-header");
         Label topTitle = new Label(text);
         topTitle.setWrapText(true);
@@ -115,7 +112,7 @@ public class DialogHeader {
         /* in the center, so that a long title wraps instead of pushing the icon out of the window (#1768) */
         header.setCenter(vboxLeft);
 
-        header.setRight(vboxRight);
+        /* J25.5: no large icon in the light header (as in the SucDialog windows) */
 
         return header;
     }

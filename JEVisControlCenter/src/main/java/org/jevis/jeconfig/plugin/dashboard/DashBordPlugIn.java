@@ -368,8 +368,15 @@ public class DashBordPlugIn implements Plugin {
     /** shows the overview page of the dashboards (search, site, favourites, recently opened, all by site) */
     public void showOverview() {
         if (overview == null) {
+            /* J25.5: "Neues Dashboard" on the overview, as "Neue Analyse" on the analyses overview */
+            javafx.scene.control.Button newDashboard = new javafx.scene.control.Button(
+                    org.jevis.commons.i18n.I18n.getInstance().getString("plugin.dashboard.new"));
+            newDashboard.setOnAction(event -> {
+                hideOverview();
+                dashboardControl.createNewDashboard();
+            });
             overview = new org.jevis.jeconfig.application.navigation.OverviewPane(jeVisDataSource, CLASS_ANALYSIS,
-                    org.jevis.commons.i18n.I18n.getInstance().getString("plugin.dashboard.title"), this::openObject);
+                    org.jevis.commons.i18n.I18n.getInstance().getString("plugin.dashboard.title"), this::openObject, newDashboard);
             overview.getStyleClass().add("overview-layer");
         }
         if (!contentStack.getChildren().contains(overview)) contentStack.getChildren().add(overview);

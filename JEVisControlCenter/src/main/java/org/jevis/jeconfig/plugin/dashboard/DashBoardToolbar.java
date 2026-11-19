@@ -390,6 +390,9 @@ public class DashBoardToolbar extends ToolBar {
         loadDialogButton.setOnAction(event -> {
             dashboardControl.showLoadDialog();
         });
+        /* J25.5: the only toolbar button without a tooltip */
+        loadDialogButton.setTooltip(new Tooltip(org.jevis.jeconfig.application.navigation.PluginSidebar.text(
+                "plugin.dashboard.toolbar.tip.loaddialog", "Dashboard laden oder neu anlegen …", "Load or create a dashboard …")));
 
         //this.dashboardControl.showSideEditorProperty.bindBidirectional(sidebarEditor.selectedProperty());
 
