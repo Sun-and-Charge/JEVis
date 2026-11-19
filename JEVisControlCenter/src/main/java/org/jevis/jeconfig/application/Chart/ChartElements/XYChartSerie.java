@@ -104,25 +104,31 @@ public class XYChartSerie {
         generateSeriesFromSamples();
     }
 
-    /**
-     * Fill of the row after the Grafana guidelines (J25.5): areas translucent so the grid and other rows stay visible,
-     * stacked areas and columns a little stronger, everything else (lines, markers) in the full row colour.
-     */
-    private Color fillColor(Color rowColor) {
+    /** chart type of the row, the chart's type when the row has none of its own */
+    private ChartType effectiveType() {
         ChartType type = singleRow.getChartType();
         if ((type == null || type == ChartType.DEFAULT) && chartModel != null) type = chartModel.getChartType();
-        if (type == null) return rowColor;
-        switch (type) {
-            case AREA:
-                return rowColor.deriveColor(0, 1, 1, 0.25);
-            case STACKED_AREA:
-                return rowColor.deriveColor(0, 1, 1, 0.6);
-            case COLUMN:
-            case STACKED_COLUMN:
-                return rowColor.deriveColor(0, 1, 1, 0.85);
-            default:
-                return rowColor.deriveColor(0, 1, 1, 0.9);
-        }
+        return type;
+    }
+
+    /**
+     * Fill of the row after the Grafana guidelines (J25.5): columns slightly translucent, everything else (lines,
+     * markers) in the row colour.
+     */
+    private Color fillColor(Color rowColor) {
+        ChartType type = effectiveType();
+        if (type == ChartType.COLUMN || type == ChartType.STACKED_COLUMN) return rowColor.deriveColor(0, 1, 1, 0.85);
+        return rowColor.deriveColor(0, 1, 1, 0.9);
+    }
+
+    /**
+     * Stroke of the row. chartfx 11.2 fills areas with the stroke colour (fillColor is ignored), so plain areas get a
+     * translucent stroke (J25.5) and the grid and other rows stay visible; stacked areas stay nearly opaque because
+     * their layers lie on top of each other.
+     */
+    private Color strokeColor(Color rowColor) {
+        if (effectiveType() == ChartType.AREA) return rowColor.deriveColor(0, 1, 1, 0.4);
+        return rowColor.deriveColor(0, 1, 1, 0.9);
     }
 
     public void generateSeriesFromSamples() throws JEVisException {
@@ -149,7 +155,7 @@ public class XYChartSerie {
             this.tableEntry = new TableEntry(getTableEntryName());
             this.valueDataSet.setName(getTableEntryName());
             this.tableEntry.setColor(color);
-            this.valueDataSet.setStyle("strokeColor=" + color + "; fillColor=" + fillColor(singleRow.getColor()));
+            this.valueDataSet.setStyle("strokeColor=" + strokeColor(singleRow.getColor()) + "; fillColor=" + fillColor(singleRow.getColor()));
 
             samples = singleRow.getSamples();
         } else {

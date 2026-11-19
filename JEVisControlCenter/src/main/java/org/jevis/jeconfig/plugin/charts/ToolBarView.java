@@ -191,6 +191,9 @@ public class ToolBarView {
         chartPlugin.setTemporary(false);
         chartPlugin.getDataSettings().setCurrentAnalysis(newValue);
         resetToolbarSettings();
+        /* J25.5: an analysis opened from the overview page (or the quick selection) enables the toolbar; before,
+           only the old load dialog did, so save, settings, reload etc. stayed disabled */
+        disabledIcons.set(newValue == null);
         Platform.runLater(this::updateLayout);
         changed = false;
     }

@@ -117,7 +117,9 @@ public class BarChart implements Chart {
         barChart.setLegendVisible(false);
         barChart.getXAxis().setAutoRanging(true);
         //barChart.getXAxis().setLabel(I18n.getInstance().getString("plugin.graph.chart.dateaxis.title"));
-        barChart.getXAxis().setTickLabelRotation(-90);
+        /* J25.5: horizontal value labels and no category grid lines, as in the other analysis charts */
+        barChart.getXAxis().setTickLabelRotation(0);
+        barChart.setHorizontalGridLinesVisible(false);
         barChart.getXAxis().setLabel(unit);
 
         //initializeZoom();
@@ -128,8 +130,15 @@ public class BarChart implements Chart {
     public void addSeriesToChart() {
         javafx.scene.chart.XYChart.Series<Number, String> serie = new XYChart.Series<>();
         for (BarChartSerie barChartSerie : barChartSerieList) {
+            /* the bar node exists only after the data point is shown: colour it then (applyColors ran too early,
+               all bars had the default colour) */
+            XYChart.Data<Number, String> data = barChartSerie.getData();
+            Color color = barChartSerie.getTableEntry().getColor();
+            data.nodeProperty().addListener((observable, oldNode, newNode) -> {
+                if (newNode != null && color != null) newNode.setStyle("-fx-bar-fill: " + ColorHelper.toRGBCode(color) + ";");
+            });
             Platform.runLater(() -> {
-                serie.getData().add(barChartSerie.getData());
+                serie.getData().add(data);
                 tableData.add(barChartSerie.getTableEntry());
             });
         }

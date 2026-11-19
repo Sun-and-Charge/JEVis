@@ -1624,7 +1624,8 @@ public class XYChart implements Chart {
             overall = String.format("%s %s %s", dtfOutLegend.print(start),
                     I18n.getInstance().getString("plugin.graph.chart.valueaxis.until"), end.toString("HH:mm"));
         }
-        String finalOverall = overall;
+        /* a chart without samples keeps the start values (now / 1990): no period then */
+        String finalOverall = start.isAfter(end) ? "" : overall;
         Platform.runLater(() -> {
             primaryDateAxis.setUnit(null);
             periodText.set(finalOverall);

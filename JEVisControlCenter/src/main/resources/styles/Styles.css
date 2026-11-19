@@ -649,7 +649,6 @@
 }
 
 .suc-legend-table .suc-legend-marker {
-    -fx-background-radius: 2;
     -fx-cursor: hand;
 }
 

@@ -59,6 +59,8 @@ public class DayFilterTab extends Tab {
         Label explanation = new Label(I18n.getInstance().getString("graph.tabs.dayfilter.explanation"));
         explanation.setWrapText(true);
         explanation.setMaxWidth(520);
+        /* keep all lines when the dialog is short, otherwise the text is cut to one line with "..." */
+        explanation.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         /* weekdays */
         Label weekdaysLabel = new Label(I18n.getInstance().getString("graph.tabs.dayfilter.weekdays"));
@@ -130,6 +132,8 @@ public class DayFilterTab extends Tab {
         Label hint = new Label(I18n.getInstance().getString("graph.tabs.dayfilter.hint"));
         hint.setWrapText(true);
         hint.setMaxWidth(520);
+        /* keep all lines when the dialog is short, otherwise the text is cut to one line with "..." */
+        hint.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         hint.setStyle("-fx-font-style: italic;");
 
         VBox vBox = new VBox(8,

@@ -150,12 +150,14 @@
  ******************************************************************************/
 
 .chart-vertical-grid-lines {
-    -fx-stroke: derive(-fx-background,-10%);
-    -fx-stroke-dash-array: 0.25em, 0.25em;
+    /* J25.5: light solid grid as in the analysis charts */
+    -fx-stroke: #d5dae3;
+    -fx-stroke-dash-array: null;
 }
 .chart-horizontal-grid-lines {
-    -fx-stroke: derive(-fx-background,-10%);
-    -fx-stroke-dash-array: 0.25em, 0.25em;
+    /* J25.5: light solid grid as in the analysis charts */
+    -fx-stroke: #d5dae3;
+    -fx-stroke-dash-array: null;
 }
 .chart-alternative-column-fill {
     -fx-fill: null;

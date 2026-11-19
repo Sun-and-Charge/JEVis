@@ -96,7 +96,10 @@ public class OverviewPane extends BorderPane {
         Thread loader = new Thread(() -> {
             List<JEVisObject> loaded = new ArrayList<>();
             try {
-                loaded.addAll(ds.getObjects(ds.getJEVisClass(className), false));
+                /* objects in the recycle bin stay in the cache with a delete date; they are not listed */
+                for (JEVisObject object : ds.getObjects(ds.getJEVisClass(className), false)) {
+                    if (object.getDeleteTS() == null) loaded.add(object);
+                }
                 for (JEVisObject object : loaded) {
                     JEVisObject site = CommonMethods.getFirstParentalObjectOfClass(object, QuickSearch.CLASS_SITE);
                     siteIds.put(object.getID(), site == null ? 0L : site.getID());

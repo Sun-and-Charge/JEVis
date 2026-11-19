@@ -394,7 +394,9 @@ public class TableHeader extends TableView<TableEntry> {
                             stackPane.setMinSize(16, 4);
                             stackPane.setPrefSize(16, 4);
                             stackPane.setMaxSize(16, 4);
-                            stackPane.setBackground(new Background(new BackgroundFill(item, new CornerRadii(2), Insets.EMPTY)));
+                            /* colour inline: a style sheet rule with only a radius would replace a programmatic background */
+                            stackPane.setStyle(String.format("-fx-background-color: #%02x%02x%02x; -fx-background-radius: 2;",
+                                    Math.round(item.getRed() * 255), Math.round(item.getGreen() * 255), Math.round(item.getBlue() * 255)));
                             Tooltip.install(stackPane, new Tooltip(I18n.getInstance().getString("plugin.graph.table.toggle")));
 
                             stackPane.setOnMouseClicked(mouseEvent -> {
