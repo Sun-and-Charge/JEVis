@@ -55,6 +55,11 @@ This document lists what was checked and the issues that still need a decision o
   and, where the code needs a `javafx.scene.image.Image`, the official PNGs in `icons/MaterialDesignPNG/outlined`.
   The language flags in `icons/flags2` are Twemoji 15.1.0 flags (graphics CC BY 4.0). All files are
   unmodified and listed in `bundled-assets.tsv`; paths are constants in `org.jevis.jeconfig.Icon`.
+- **Class icons (`var/classes/**.png`, J25.5):** the old clip-art icons of the JEVis classes were replaced by
+  icons generated with `tools/class-icons`: Material Symbols from `google/material-design-icons` (Apache 2.0),
+  white on a coloured tile or inside a coloured folder silhouette. These are modified works of the symbols;
+  the Apache 2.0 licence is compatible with GPLv3, and the source and the changes are named in
+  `tools/class-icons/README.md`.
 - **iText 5 (AGPLv3):** replaced by OpenPDF 1.3.43 (LGPL 2.1 / MPL 2.0, last version for Java 8) in the
   Control Center (chart and dashboard PDF export, meter labels) and JEReport (PDF splitting). The QR codes of
   the meter labels are drawn from a ZXing matrix, since OpenPDF has no QR code support. JEWebService uses the same

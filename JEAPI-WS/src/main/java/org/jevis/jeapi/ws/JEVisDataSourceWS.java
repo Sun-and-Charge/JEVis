@@ -2891,6 +2891,8 @@ public class JEVisDataSourceWS implements JEVisDataSource {
         return null;
     }
 
+    private static volatile boolean classIconsFetched = false;
+
     public Map<String, BufferedImage> getClassIcon() {
         logger.debug("TMP dir: {}", System.getProperty("java.io.tmpdir"));
         Map<String, BufferedImage> icons = new HashMap<>();
@@ -2904,7 +2906,15 @@ public class JEVisDataSourceWS implements JEVisDataSource {
                 zipDir.mkdirs();
             }
             ClassIconHandler cih = new ClassIconHandler(zipDir);
+            /* the icons were only fetched while the cache folder was empty, so changed icons on the server never
+               reached a client; they are fetched again once per session (J25.5 new class icons) */
+            if (!classIconsFetched) {
+                for (File old : Objects.requireNonNull(zipDir.listFiles())) {
+                    if (old.getName().endsWith(".png")) old.delete();
+                }
+            }
             if (Objects.requireNonNull(zipDir.listFiles()).length == 0) {
+                classIconsFetched = true;
                 InputStream inputStream = this.con.getInputStreamRequest(resource);
                 cih.readStream(inputStream);
                 inputStream.close();

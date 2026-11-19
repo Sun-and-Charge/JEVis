@@ -78,7 +78,12 @@ public class ResourceIcons {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
 
             File tmpZipFile = new File(FileCache.CLASS_ICON_FILE);
-            if (tmpZipFile.exists()) {
+            /* the cached zip is rebuilt when an icon in the class directory is newer (changed icons, J25.5) */
+            long newestIcon = 0;
+            for (File imageFile : listIconFilesRecursive(Config.getClassDir())) {
+                newestIcon = Math.max(newestIcon, imageFile.lastModified());
+            }
+            if (tmpZipFile.exists() && tmpZipFile.lastModified() >= newestIcon) {
                 return Response.ok(new FileInputStream(tmpZipFile), MediaType.valueOf("application/zip")).build();
             } else {
                 tmpZipFile.getParentFile().mkdirs();
