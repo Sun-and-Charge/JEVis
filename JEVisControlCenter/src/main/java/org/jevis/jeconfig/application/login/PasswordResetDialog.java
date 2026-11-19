@@ -135,16 +135,15 @@ public class PasswordResetDialog {
         Platform.runLater(code::requestFocus);
 
         if (dialog.showAndWait().orElse(ButtonType.CANCEL) != set) return null;
-        Alert done = new Alert(Alert.AlertType.INFORMATION, t("app.login.forgot.success"), ButtonType.OK);
-        done.initOwner(owner);
-        done.setTitle(t("app.login.forgot.title"));
-        done.setHeaderText(null);
+        /* shown before the login, so a small window instead of a notification */
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> done = org.jevis.jeconfig.application.ui.SucDialog.result(t("app.login.forgot.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
+        done.setContentText(t("app.login.forgot.success"));
         done.showAndWait();
         return login;
     }
 
     private Dialog<ButtonType> createDialog(VBox content, ButtonType... buttons) {
-        Dialog<ButtonType> dialog = new Dialog<>();
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(t("app.login.forgot.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
         if (owner != null) dialog.initOwner(owner);
         dialog.setTitle(t("app.login.forgot.title"));
         dialog.setHeaderText(t("app.login.forgot.title"));

@@ -313,12 +313,8 @@ public class JEVisTreeContextMenu extends ContextMenu {
             items.forEach(jeVisTreeRowTreeItem -> selectedObjects.add(jeVisTreeRowTreeItem.getValue().getJEVisObject()));
             JEVisDataSource ds = tree.getJEVisDataSource();
 
-            Dialog<ButtonType> buttonTypeDialog = new Dialog<>();
-            buttonTypeDialog.setResizable(true);
-            buttonTypeDialog.initOwner(JEConfig.getStage());
-            buttonTypeDialog.initModality(Modality.APPLICATION_MODAL);
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> buttonTypeDialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.jsonwizard.title", "JSON-Assistent", "JSON wizard"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
             Stage stage = (Stage) buttonTypeDialog.getDialogPane().getScene().getWindow();
-            TopMenu.applyActiveTheme(stage.getScene());
 
             Button selectTemplateButton = new Button();
             AtomicReference<JEVisObject> templateObject = new AtomicReference<>();

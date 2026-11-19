@@ -125,13 +125,15 @@ public class LoadCerts extends Application {
             try {
                 X509Certificate cert = chain[0];
 
-                Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
+                /* J25.5: trusting a certificate is security relevant: "Vertrauen" is no default button, Enter cancels nothing */
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("app.login.certificate.import.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+                ButtonType trustType = dialog.addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("app.login.certificate.trust", "Vertrauen", "Trust"));
+                dialog.addCancel();
                 String message = cert.getSubjectDN().getName() + "\n" +
                         cert.getIssuerDN().getName() + "\n" +
                         "SHA1: " + toHexString(sha1.digest()) + "\n" +
                         "MD5:  " + toHexString(md5.digest());
-                dialog.setTitle(I18n.getInstance().getString("app.login.certificate.import.title"));
-                dialog.setHeaderText(I18n.getInstance().getString("app.login.certificate.import.header")
+                dialog.setDescription(I18n.getInstance().getString("app.login.certificate.import.header")
                         + "\n" +
                         I18n.getInstance().getString("app.login.certificate.import.header2")
                 );
@@ -141,7 +143,7 @@ public class LoadCerts extends Application {
                 dialog.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
                 dialog.getDialogPane().setPrefSize(680, 320);
                 Optional<ButtonType> result = dialog.showAndWait();
-                if (result.get() == ButtonType.OK) {
+                if (result.isPresent() && result.get() == trustType) {
                     userSasYes = true;
                 } else {
                     //

@@ -227,6 +227,9 @@ public class PermissionCheckDialog {
         updateButtons();
     }
 
+    /** result of the last re-apply, shown again after the reload */
+    private String lastResult;
+
     private void load() {
         findings.clear();
         setBusy(true, get("permission.check.loading"));
@@ -240,7 +243,8 @@ public class PermissionCheckDialog {
         task.setOnSucceeded(e -> {
             findings.setAll(task.getValue());
             table.setPlaceholder(new Label(get("permission.check.none")));
-            setBusy(false, null);
+            setBusy(false, lastResult);
+            lastResult = null;
             updateStatus();
         });
         task.setOnFailed(e -> {
@@ -281,12 +285,9 @@ public class PermissionCheckDialog {
         task.messageProperty().addListener((o, a, msg) -> status.setText(msg));
         task.setOnSucceeded(e -> {
             RightsPlanExecutor.Result result = task.getValue();
-            setBusy(false, null);
-            Alert info = new Alert(result.getFailed() == 0 ? Alert.AlertType.INFORMATION : Alert.AlertType.WARNING,
-                    get("permission.common.done", result.getDone(), result.getFailed()), ButtonType.OK);
-            info.initOwner(stage);
-            info.setHeaderText(get("permission.check.reapply"));
-            info.showAndWait();
+            /* J25.5: the result stays in the status line of this window instead of an extra window */
+            lastResult = get("permission.common.done", result.getDone(), result.getFailed());
+            setBusy(false, lastResult);
             load();
         });
         task.setOnFailed(e -> {

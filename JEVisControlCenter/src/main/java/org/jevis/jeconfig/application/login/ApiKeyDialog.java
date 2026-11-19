@@ -92,10 +92,10 @@ public class ApiKeyDialog {
         revoke.setOnAction(event -> {
             KeyRow row = table.getSelectionModel().getSelectedItem();
             if (row == null) return;
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, t("app.login.apikeys.revoke") + ": " + row.getName() + "?", ButtonType.YES, ButtonType.NO);
-            confirm.initOwner(owner);
-            confirm.setHeaderText(null);
-            if (confirm.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+            if (org.jevis.jeconfig.application.ui.Confirm.ask(String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("app.login.apikeys.revoke.question", "API-Schlüssel „%s“ widerrufen?", "Revoke API key “%s”?"), row.getName()),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("app.login.apikeys.revoke.consequence", "Programme, die diesen Schlüssel nutzen, können sich danach nicht mehr anmelden.",
+                            "Programs using this key can no longer sign in."),
+                    org.jevis.jeconfig.application.navigation.PluginSidebar.text("app.login.apikeys.revoke.action", "Widerrufen", "Revoke"), true)) {
                 try {
                     ds.revokeApiKey(row.getId());
                 } catch (JEVisException ex) {
@@ -111,10 +111,7 @@ public class ApiKeyDialog {
         VBox content = new VBox(10, table, buttons);
         content.setPadding(new Insets(10));
 
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.initOwner(owner);
-        dialog.setTitle(t("app.login.apikeys.title"));
-        dialog.setResizable(true);
+        org.jevis.jeconfig.application.ui.SucDialog<Void> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(t("app.login.apikeys.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         reload.run();
@@ -148,10 +145,11 @@ public class ApiKeyDialog {
             area.setWrapText(true);
             area.setPrefRowCount(3);
             ButtonType copy = new ButtonType(t("app.login.mfa.copy"), ButtonBar.ButtonData.LEFT);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, "", copy, ButtonType.OK);
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        alert.getDialogPane().getButtonTypes().add(0, copy);
             alert.initOwner(owner);
             alert.setTitle(t("app.login.apikeys.title"));
-            alert.setHeaderText(t("app.login.apikeys.newkey"));
+            alert.setDescription(t("app.login.apikeys.newkey"));
             alert.getDialogPane().setContent(area);
             alert.getDialogPane().lookupButton(copy).addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
                 ClipboardContent content = new ClipboardContent();

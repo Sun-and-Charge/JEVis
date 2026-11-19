@@ -403,6 +403,11 @@ public class JEConfig extends Application {
     }
 
     public static void showError(String message, Exception ex) {
+        /* J25.5: with the main window an error notification with "Details"; before it (start-up) a window */
+        if (getStage() != null && getStage().isShowing()) {
+            org.jevis.jeconfig.application.ui.Notify.error(message, ex);
+            return;
+        }
         Platform.runLater(() -> {
             String messagePlus = message + "\n" + Exceptions.toString(ex);
             Alert dialog = new Alert(Alert.AlertType.ERROR, messagePlus, ButtonType.OK);

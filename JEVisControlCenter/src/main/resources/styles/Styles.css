@@ -888,6 +888,21 @@
     -fx-text-fill: -suc-on-primary;
 }
 
+/* an error inside a window or form, e.g. a connection that failed */
+.label.suc-inline-error {
+    -fx-text-fill: -color-danger-fg;
+    -fx-background-color: -color-danger-subtle;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+}
+
+.suc-toast .hyperlink.suc-toast-action {
+    -fx-text-fill: -suc-accent;
+    -fx-font-weight: bold;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
 .suc-toast-success {
     -fx-border-color: #2da44e;
 }

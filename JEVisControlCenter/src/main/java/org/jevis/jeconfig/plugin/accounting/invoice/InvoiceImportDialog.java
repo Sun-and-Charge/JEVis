@@ -440,10 +440,11 @@ public class InvoiceImportDialog {
 
         String summary = t("plugin.accounting.invoices.summary", counts[0], counts[1] + notSelected, counts[2] + parseErrors);
         progressLabel.setText(summary);
-        Alert alert = new Alert(counts[2] + parseErrors > 0 ? Alert.AlertType.WARNING : Alert.AlertType.INFORMATION, summary, ButtonType.OK);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        alert.setContentText(summary);
         alert.initOwner(JEConfig.getStage());
         alert.setTitle(t("plugin.accounting.invoices.title"));
-        alert.setHeaderText(t("plugin.accounting.invoices.summary.header"));
+        alert.setDescription(t("plugin.accounting.invoices.summary.header"));
         alert.show();
 
         if (counts[0] > 0 && onImported != null) {

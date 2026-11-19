@@ -98,10 +98,11 @@ public class TwoFactorDialogs {
 
         boolean enabled = Boolean.TRUE.equals(status.getEnabled());
         ButtonType toggle = new ButtonType(enabled ? t("app.login.mfa.disable") : t("app.login.mfa.enable"), ButtonBar.ButtonData.OK_DONE);
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "", toggle, ButtonType.CLOSE);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
+        alert.getDialogPane().getButtonTypes().add(0, toggle);
         alert.initOwner(owner);
         alert.setTitle(t("app.login.mfa.title"));
-        alert.setHeaderText(enabled ? t("app.login.mfa.enabled") : t("app.login.mfa.disabled"));
+        alert.setDescription(enabled ? t("app.login.mfa.enabled") : t("app.login.mfa.disabled"));
         if (enabled && status.getRecoveryCodesLeft() != null) {
             alert.setContentText(t("app.login.mfa.recoveryleft") + " " + status.getRecoveryCodesLeft());
         }
@@ -135,10 +136,7 @@ public class TwoFactorDialogs {
         code.setPromptText("123456");
         if (!showFields(owner, t("app.login.mfa.disable"), t("app.login.mfa.code"), password, code)) return;
         if (ds.disableMfa(password.getText(), code.getText().trim())) {
-            Alert info = new Alert(Alert.AlertType.INFORMATION, t("app.login.mfa.disabled"), ButtonType.OK);
-            info.initOwner(owner);
-            info.setHeaderText(null);
-            info.showAndWait();
+            org.jevis.jeconfig.application.ui.Notify.success(t("app.login.mfa.disabled"));
         } else {
             showError(owner, t("app.login.mfa.wrongcode"));
         }
@@ -164,10 +162,7 @@ public class TwoFactorDialogs {
     }
 
     private static String showSetupDialog(Window owner, JsonMfaStatus setup, String message) {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.initOwner(owner);
-        dialog.setTitle(t("app.login.mfa.title"));
-        dialog.setHeaderText((message != null ? message + "\n" : "") + t("app.login.mfa.setup.header"));
+        org.jevis.jeconfig.application.ui.SucDialog<String> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(t("app.login.mfa.title"), (message != null ? message + "\n" : "") + t("app.login.mfa.setup.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.S);
 
         ImageView qr = new ImageView(QrCodes.image(setup.getOtpAuthUri(), 220));
         TextField secret = new TextField(formatSecret(setup.getSecret()));
@@ -193,10 +188,11 @@ public class TwoFactorDialogs {
         area.setPrefRowCount(Math.max(codes.size(), 4));
         area.setPrefColumnCount(16);
         ButtonType copy = new ButtonType(t("app.login.mfa.copy"), ButtonBar.ButtonData.LEFT);
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "", copy, ButtonType.OK);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        alert.getDialogPane().getButtonTypes().add(0, copy);
         alert.initOwner(owner);
         alert.setTitle(t("app.login.mfa.title"));
-        alert.setHeaderText(t("app.login.mfa.recovery.header"));
+        alert.setDescription(t("app.login.mfa.recovery.header"));
         alert.getDialogPane().setContent(area);
         /* the copy button must not close the dialog */
         alert.getDialogPane().lookupButton(copy).addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
@@ -214,10 +210,7 @@ public class TwoFactorDialogs {
      * @return {@code true} if confirmed with OK
      */
     static boolean showFields(Window owner, String title, String header, Control... fields) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.initOwner(owner);
-        dialog.setTitle(title);
-        dialog.setHeaderText(header);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(title, header, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -235,10 +228,9 @@ public class TwoFactorDialogs {
     }
 
     static void showError(Window owner, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-        alert.initOwner(owner);
-        alert.setTitle(t("app.login.mfa.title"));
-        alert.setHeaderText(null);
+        /* also shown before the main window exists (login), so a small window instead of a notification */
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result(t("app.login.mfa.title"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
+        alert.setContentText(message);
         alert.showAndWait();
     }
 

@@ -118,9 +118,10 @@ public class TreeExporter {
         boolean hasProblems = report.errors > 0 || report.warnings > 0;
         Alert.AlertType type = failed ? Alert.AlertType.ERROR
                 : hasProblems ? Alert.AlertType.WARNING : Alert.AlertType.INFORMATION;
-        Alert alert = new Alert(type);
+        /* J25.5: the report keeps its window (much content), in the new frame */
+        org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
         alert.setTitle("JEVis " + report.operation);
-        alert.setHeaderText(failed
+        alert.setDescription(failed
                 ? report.operation + " fehlgeschlagen"
                 : report.errors > 0 ? report.operation + " mit Fehlern abgeschlossen"
                   : report.warnings > 0 ? report.operation + " mit Warnungen abgeschlossen"

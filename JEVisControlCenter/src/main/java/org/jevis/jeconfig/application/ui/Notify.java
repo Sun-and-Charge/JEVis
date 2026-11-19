@@ -53,12 +53,49 @@ public final class Notify {
 
     /** stays until clicked */
     public static void error(String text) {
-        show(text, "error", null);
+        show(text, "error", null, null, null);
+    }
+
+    /** an error that stays, with a link to the technical details (stack trace) in a window with "Kopieren" */
+    public static void error(String text, Throwable details) {
+        if (details == null) {
+            error(text);
+            return;
+        }
+        java.io.StringWriter sw = new java.io.StringWriter();
+        details.printStackTrace(new java.io.PrintWriter(sw));
+        String trace = sw.toString();
+        show(text, "error", null, SucDialog.text("dialog.ui.details", "Details", "Details"), () -> showDetails(text, trace));
+    }
+
+    /** success with an action link, e.g. "Öffnen" after saving a file; disappears after a few seconds more */
+    public static void success(String text, String actionLabel, Runnable action) {
+        show(text, "success", Duration.seconds(8), actionLabel, action);
+    }
+
+    private static void showDetails(String text, String trace) {
+        SucDialog<javafx.scene.control.ButtonType> dialog = SucDialog.result(SucDialog.text("dialog.ui.details.title", "Technische Details", "Technical details"),
+                text, SucDialog.Size.L);
+        javafx.scene.control.TextArea area = new javafx.scene.control.TextArea(trace);
+        area.setEditable(false);
+        area.setPrefRowCount(18);
+        javafx.scene.control.Button copy = new javafx.scene.control.Button(SucDialog.text("dialog.ui.copy", "Kopieren", "Copy"));
+        copy.setOnAction(event -> {
+            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            content.putString(text + "\n\n" + trace);
+            javafx.scene.input.Clipboard.getSystemClipboard().setContent(content);
+        });
+        dialog.getDialogPane().setContent(new VBox(8, area, copy));
+        dialog.show();
     }
 
     private static void show(String text, String kind, Duration duration) {
+        show(text, kind, duration, null, null);
+    }
+
+    private static void show(String text, String kind, Duration duration, String actionLabel, Runnable action) {
         if (!Platform.isFxApplicationThread()) {
-            Platform.runLater(() -> show(text, kind, duration));
+            Platform.runLater(() -> show(text, kind, duration, actionLabel, action));
             return;
         }
         Window owner = JEConfig.getStage();
@@ -67,7 +104,7 @@ public final class Notify {
         Label label = new Label(text);
         label.setWrapText(true);
         label.setMaxWidth(380);
-        VBox box = new VBox(label);
+        VBox box = new VBox(6, label);
         box.setAlignment(Pos.CENTER_LEFT);
         box.getStyleClass().addAll("suc-toast", "suc-toast-" + kind);
         try {
@@ -79,6 +116,16 @@ public final class Notify {
         popup.getContent().add(box);
         popup.setAutoHide(false);
         box.setOnMouseClicked(event -> close(popup));
+        if (actionLabel != null && action != null) {
+            javafx.scene.control.Hyperlink link = new javafx.scene.control.Hyperlink(actionLabel);
+            link.getStyleClass().add("suc-toast-action");
+            link.setOnAction(event -> {
+                close(popup);
+                action.run();
+                event.consume();
+            });
+            box.getChildren().add(link);
+        }
         OPEN.add(popup);
         popup.show(owner);
         layout(owner);

@@ -236,6 +236,9 @@ public class SiteSharingDialog {
         return model.getPath(userId) + " [" + userId + "]";
     }
 
+    /** result of the last apply, shown again after the reload */
+    private String lastResult;
+
     private void load() {
         busy.set(true);
         status.setText(get("permission.check.loading"));
@@ -266,7 +269,8 @@ public class SiteSharingDialog {
             users.setAll(rows);
             updateGroupsInfo();
             busy.set(false);
-            status.setText("");
+            status.setText(lastResult == null ? "" : lastResult);
+            lastResult = null;
             computePreview();
         });
         task.setOnFailed(e -> {
@@ -394,12 +398,9 @@ public class SiteSharingDialog {
         preview.setAll(applied.getActions());
         String text = result == null ? get("permission.common.error", "-")
                 : get("permission.common.done", result.getDone(), result.getFailed());
-        status.setText(text);
-        Alert info = new Alert(result != null && result.getFailed() == 0 ? Alert.AlertType.INFORMATION : Alert.AlertType.WARNING,
-                text + "\n" + get("permission.template.after"), ButtonType.OK);
-        info.initOwner(stage);
-        info.setHeaderText(get("permission.share.title"));
-        info.showAndWait();
+        /* J25.5: the result stays in the status line of this window instead of an extra window */
+        lastResult = text + " " + get("permission.template.after");
+        status.setText(lastResult);
         load();
     }
 

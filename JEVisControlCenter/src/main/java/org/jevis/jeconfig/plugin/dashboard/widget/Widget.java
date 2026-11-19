@@ -411,7 +411,7 @@ public abstract class Widget extends Region {
                     /* debug help to show json */
                     try {
                         Alert.AlertType alertAlertType;
-                        Alert alert = new Alert(AlertType.INFORMATION);
+                        org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
                         alert.initModality(Modality.NONE);
                         alert.setResizable(true);
                         alert.setTitle("Widget: " + getConfig().getTitle());

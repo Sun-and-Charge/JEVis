@@ -972,26 +972,6 @@ public class ObjectPlugin implements Plugin {
         }
     }
 
-    //@AITBilal - Create a new Wizard-Table!
-    //parent kommt von --> tree.fireEventCreateWizard(tree.getSelectedObject());
-    public void fireEventCreateWizard(final JEVisObject parent) {
-        //TODO:
-
-//        WizardMain wizardmain = new WizardMain(parent, this);
-//        if (parent != null) {
-//            // parent.getJEVisClass().getName().equals("Monitored Object Directory")
-//            if (parent.getName().equals("Monitored Object Directory")) {
-//                wizardmain.showAndWait();
-//            } else {
-//                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//                alert.setTitle("Information Dialog");
-//                alert.setHeaderText(null);
-//                alert.setContentText("This is not a Monitored Object Directory!");
-//                alert.showAndWait();
-//            }
-//        }
-    }
-
     //@AITBilal - Create a new Table!
     public void fireEventCreateTable(final JEVisObject parent) {
         CreateTable table = new CreateTable();

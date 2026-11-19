@@ -42,35 +42,10 @@ public abstract class CommonDialogs {
      * @param ex
      */
     public static void showError(String titel, String header, String message, Exception ex) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.initOwner(JEConfig.getStage());
-        alert.setTitle(titel);
-        alert.setHeaderText(header);
-        alert.setContentText(ex.getMessage());
-
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        String exceptionText = sw.toString();
-
-        Label label = new Label("The exception stacktrace was:");
-
-        TextArea textArea = new TextArea(exceptionText);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-
-        GridPane expContent = new GridPane();
-        expContent.setMaxWidth(Double.MAX_VALUE);
-        expContent.add(label, 0, 0);
-        expContent.add(textArea, 0, 1);
-
-        alert.getDialogPane().setExpandableContent(expContent);
-
-        alert.showAndWait();
+        /* J25.5: an error that stays, with "Details" (stack trace, copyable) instead of an error window */
+        String text = header != null && !header.isEmpty() ? header : titel;
+        if (message != null && !message.isEmpty()) text += ": " + message;
+        else if (ex != null && ex.getMessage() != null) text += " (" + ex.getMessage() + ")";
+        org.jevis.jeconfig.application.ui.Notify.error(text, ex);
     }
 }

@@ -230,28 +230,6 @@ public class GenericAttributeExtension implements ObjectEditorExtension {
             }
         }
 
-        /**
-         * If an extension is not valid ask the user if he wants to save. This is not working for now
-         * because of save progress bar.
-         */
-
-//        if(!allValid){
-//            logger.info("Show warning");
-//            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-//            alert.setTitle("Save Dialog");
-//            alert.setHeaderText("Invalid value");
-//            alert.setContentText("Do you sill want to save?");
-//
-//            Optional<ButtonType> result = alert.showAndWait();
-//            if (result.get() == JFXButtonType.OK){
-//                return saveAll();
-//            } else {
-//                return false;
-//                // ... user chose CANCEL or closed the dialog
-//            }
-//        }else {
-//            return saveAll();
-//        }
         return saveAll();
 
     }

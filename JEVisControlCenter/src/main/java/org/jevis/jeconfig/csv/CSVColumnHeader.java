@@ -799,9 +799,9 @@ public class CSVColumnHeader {
         WebView helpView = new WebView();
         helpView.getEngine().load(getClass().getResource("/html/help_dateformate.html").toExternalForm());
 
-        Alert alert = new Alert(AlertType.INFORMATION);
+        org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> alert = org.jevis.jeconfig.application.ui.SucDialog.result("", null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
         alert.setTitle(I18n.getInstance().getString("csv.help.format.title"));
-        alert.setHeaderText(I18n.getInstance().getString("csv.help.format.header"));
+        alert.setDescription(I18n.getInstance().getString("csv.help.format.header"));
         alert.setContentText("");
         alert.getDialogPane().setContent(helpView);
 

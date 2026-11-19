@@ -2128,11 +2128,15 @@ public class TreeHelper {
     }
 
     public static void EventMoveAllToDiffCleanTS(JEVisTree tree) {
-        Alert warning = new Alert(AlertType.WARNING);
-        TopMenu.applyActiveTheme(warning.getDialogPane().getScene());
+        /* J25.5: expert tool in the new frame */
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> warning = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.movets.title", "Zeitstempel verschieben (Experte)", "Move timestamps (expert)"),
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.movets.description", "Verschiebt alle Roh- und bereinigten Daten der Auswahl. Nur verwenden, wenn Sie wissen, was Sie tun.",
+                        "Moves all raw and clean data of the selection. Only use it if you know what you are doing."), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        warning.addDestructive(new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.movets.action", "Verschieben", "Move"), javafx.scene.control.ButtonBar.ButtonData.OTHER));
+        warning.addCancel();
 
         TextField textField = new TextField();
-        Label message = new Label("You really sure you know what you're doing? Move all data/clean data samples between start and end their period x field");
+        Label message = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.movets.field", "Verschiebung zwischen Start und Ende um Periode × Feld:", "Shift between start and end by period × field:"));
 
         Label dateLabelFrom = new Label(I18n.getInstance().getString("tree.treehelper.from"));
         DatePicker datePickerFrom = new DatePicker();
@@ -2202,7 +2206,7 @@ public class TreeHelper {
                 JEVisDataSource ds = tree.getJEVisDataSource();
                 TextArea textArea = new TextArea();
                 textArea.setPrefRowCount(20);
-                Alert info = new Alert(AlertType.INFORMATION);
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> info = org.jevis.jeconfig.application.ui.SucDialog.result(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.movets.log", "Protokoll", "Log"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.L);
                 info.getDialogPane().setContent(textArea);
                 info.show();
 

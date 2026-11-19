@@ -79,12 +79,8 @@ public class MargeWizard extends MenuItem {
             JEVisObject httpDataSource = ((JEVisTreeItem) tree.getSelectionModel().getSelectedItem()).getValue().getJEVisObject();
 
 
-            Dialog<ButtonType> buttonTypeDialog = new Dialog<>();
-            buttonTypeDialog.setResizable(true);
-            buttonTypeDialog.initOwner(JEConfig.getStage());
-            buttonTypeDialog.initModality(Modality.APPLICATION_MODAL);
+            org.jevis.jeconfig.application.ui.SucDialog<ButtonType> buttonTypeDialog = new org.jevis.jeconfig.application.ui.SucDialog<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("jevistree.mergewizard.title", "Zusammenführen", "Merge"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.M);
             Stage stage = (Stage) buttonTypeDialog.getDialogPane().getScene().getWindow();
-            TopMenu.applyActiveTheme(stage.getScene());
 
             Button selectTemplateButton = new Button();
             selectTemplateButton.setText("Select Target (Thermostat) Data Directory");

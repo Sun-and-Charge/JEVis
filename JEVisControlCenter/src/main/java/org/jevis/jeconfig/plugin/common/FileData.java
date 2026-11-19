@@ -88,22 +88,15 @@ public class FileData {
         File file = fileChooser.showSaveDialog(JEConfig.getStage());
         if (file != null) {
             lastFile.getValueAsFile().saveToFile(file);
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(I18n.getInstance().getString("plugin.action.savefile.title"));
-            //alert.setHeaderText(I18n.getInstance().getString("plugin.action.savefile.header", selectedFile.getName()));
-            alert.setHeaderText(null);
-            alert.setContentText(I18n.getInstance().getString("plugin.action.savefile.message"));
-
-            ButtonType openButton = new ButtonType(I18n.getInstance().getString("plugin.action.savefile.open"));
-            ButtonType okButton = new ButtonType(I18n.getInstance().getString("plugin.action.savefile.ok"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-            alert.getButtonTypes().setAll(openButton, okButton);
-
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() == openButton) {
-                Desktop desktop = Desktop.getDesktop();
-                desktop.open(file);
-            }
+            /* J25.5: a success notification with the action "Öffnen" instead of a window asking */
+            org.jevis.jeconfig.application.ui.Notify.success(I18n.getInstance().getString("plugin.action.savefile.title") + ": " + file.getName(),
+                    I18n.getInstance().getString("plugin.action.savefile.open"), () -> {
+                        try {
+                            Desktop.getDesktop().open(file);
+                        } catch (Exception ex) {
+                            org.jevis.jeconfig.application.ui.Notify.error(ex.getMessage(), ex);
+                        }
+                    });
 
         }
     }

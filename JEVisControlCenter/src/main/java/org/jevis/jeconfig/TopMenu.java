@@ -349,16 +349,17 @@ public class TopMenu extends MenuBar {
                 ClassImporter ci = new ClassImporter(JEConfig.getDataSource());
                 files = ci.unZipIt(tmpdir, selectedFile);
 
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle(I18n.getInstance().getString("menu.system.driver.confirm.title"));
-                alert.setHeaderText(I18n.getInstance().getString("menu.system.driver.confirm.header", selectedFile.getName()));
-                alert.setContentText(I18n.getInstance().getString("menu.system.driver.confirm.message"));
-
-                ButtonType updateButton = new ButtonType(I18n.getInstance().getString("menu.system.driver.confirm.update"));
-                ButtonType overwriteButton = new ButtonType(I18n.getInstance().getString("menu.system.driver.confirm.override"));
-                ButtonType cancelButton = new ButtonType(I18n.getInstance().getString("menu.system.driver.confirm.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-                alert.getButtonTypes().setAll(updateButton, overwriteButton, cancelButton);
+                /* J25.5: "Aktualisieren" as primary action, "Überschreiben" red (replaces the existing drivers) */
+                org.jevis.jeconfig.application.ui.SucDialog<ButtonType> alert = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("menu.system.driver.confirm.title"),
+                        I18n.getInstance().getString("menu.system.driver.confirm.header", selectedFile.getName()), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+                alert.setContentText(org.jevis.jeconfig.application.navigation.PluginSidebar.text("menu.system.driver.confirm.text", "Aktualisieren behält vorhandene Treiber und ergänzt neue. Überschreiben ersetzt die vorhandenen Treiber.",
+                        "Update keeps the existing drivers and adds new ones. Overwrite replaces the existing drivers."));
+                ButtonType updateButton = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("menu.system.driver.confirm.updateaction", "Aktualisieren", "Update"), ButtonBar.ButtonData.OK_DONE);
+                ButtonType overwriteButton = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("menu.system.driver.confirm.overwriteaction", "Überschreiben", "Overwrite"), ButtonBar.ButtonData.OTHER);
+                alert.addPrimary(updateButton);
+                alert.addDestructive(overwriteButton);
+                alert.addCancel();
+                ButtonType cancelButton = alert.getDialogPane().getButtonTypes().get(alert.getDialogPane().getButtonTypes().size() - 1);
 
                 Optional<ButtonType> result = alert.showAndWait();
                 boolean success = true;//dirty solution

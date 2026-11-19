@@ -189,21 +189,14 @@ public class OPCBrowser {
 
 
                 } catch (JEVisException | OpcException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.initOwner(stage);
-
-                    alert.setTitle(I18n.getInstance().getString("plugin.object.opcua.error.server.title"));
-                    alert.setHeaderText(I18n.getInstance().getString("plugin.object.opcua.error.server.message"));
-                    alert.setContentText(I18n.getInstance().getString("plugin.object.opcua.error.server.details"));
-
-                    /* the exception message of the OPC-UA stack can be very long, show it only on demand */
-                    TextArea details = new TextArea(e.getMessage() != null ? e.getMessage() : e.toString());
-                    details.setEditable(false);
-                    details.setWrapText(true);
-                    details.setPrefRowCount(8);
-                    alert.getDialogPane().setExpandableContent(details);
-
-                    alert.showAndWait();
+                    /* J25.5: the error belongs into this window (an own stage): an inline error line above the list,
+                       the long message of the OPC-UA stack in the tooltip */
+                    Label errorLine = new Label(I18n.getInstance().getString("plugin.object.opcua.error.server.message"));
+                    errorLine.getStyleClass().add("suc-inline-error");
+                    errorLine.setWrapText(true);
+                    errorLine.setTooltip(new Tooltip(e.getMessage() != null ? e.getMessage() : e.toString()));
+                    vBox.getChildren().removeIf(node -> node.getStyleClass().contains("suc-inline-error"));
+                    vBox.getChildren().add(0, errorLine);
 
                     logger.error("Could not connect to OPC-UA server", e);
                 }

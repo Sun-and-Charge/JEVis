@@ -99,6 +99,8 @@ public class FXLogin extends AnchorPane {
     private Hyperlink forgotLink;
     private final PasswordField userPassword = new PasswordField();
     private final GridPane authGrid = new GridPane();
+    /** J25.5: a failed login is shown inline in the form instead of an error window */
+    private final javafx.scene.control.Label loginError = new javafx.scene.control.Label();
     private final Preferences jevisPref = Preferences.userRoot().node("JEVis");
     private final TextArea messageBox = new TextArea("");
     private final List<JEVisObject> rootObjects = new ArrayList<>();
@@ -358,12 +360,19 @@ public class FXLogin extends AnchorPane {
                     reason = I18n.getInstance().getString("app.login.error.wronglogin");
                 }
                 Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(I18n.getInstance().getString("app.login.error.title"));
-                    alert.setHeaderText("");
-                    alert.setContentText(ex.getMessage() != null ? ex.getMessage() + ":\n" + reason : reason);
-
-                    alert.showAndWait();
+                    /* the reason first (what to do), the technical message in the tooltip */
+                    this.loginError.setText(reason);
+                    this.loginError.setTooltip(ex.getMessage() != null ? new javafx.scene.control.Tooltip(ex.getMessage()) : null);
+                    this.loginError.setVisible(true);
+                    this.loginError.setManaged(true);
+                    /* started with credentials (launcher): the form is not shown, so the error needs a window */
+                    if (this.loginError.getScene() == null || this.loginError.getScene().getWindow() == null
+                            || !this.loginError.getScene().getWindow().isShowing() || !this.authGrid.isVisible()) {
+                        org.jevis.jeconfig.application.ui.SucDialog<javafx.scene.control.ButtonType> failed = org.jevis.jeconfig.application.ui.SucDialog.result(
+                                org.jevis.jeconfig.application.navigation.PluginSidebar.text("app.login.failed.title", "Anmeldung fehlgeschlagen", "Sign-in failed"), null, org.jevis.jeconfig.application.ui.SucDialog.Size.S);
+                        failed.setContentText(reason);
+                        failed.showAndWait();
+                    }
 
                     this.loginButton.setDisable(false);
                     this.authGrid.setDisable(false);
@@ -816,6 +825,8 @@ public class FXLogin extends AnchorPane {
 
         this.loginButton.setOnAction(event -> {
             this.loginButton.setDisable(true);
+            this.loginError.setVisible(false);
+            this.loginError.setManaged(false);
             doLogin();
 
         });
@@ -848,6 +859,14 @@ public class FXLogin extends AnchorPane {
         row++;
 //        grid.add(serverL, 0, row);
         this.authGrid.add(this.storeConfig, 1, row);
+
+        row++;
+        this.loginError.setWrapText(true);
+        this.loginError.setMaxWidth(Double.MAX_VALUE);
+        this.loginError.setStyle("-fx-text-fill: #b42318; -fx-background-color: #fdecea; -fx-background-radius: 6; -fx-padding: 8 12 8 12;");
+        this.loginError.setVisible(false);
+        this.loginError.setManaged(false);
+        this.authGrid.add(this.loginError, 0, row, 2, 1);
 
         Region cTobSpacer = new Region();
         setDefaultStyle(cTobSpacer, "-fx-background-color: transparent;");
