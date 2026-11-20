@@ -27,6 +27,22 @@ directory after a change and commit both files); `ReportTemplatesTest` fills the
   - sheets *Verbrauch*, *Kosten*: the months of the year (and of the previous year) with sums/means.
   - sheets *Maßnahmen*, *Abweichungen*: the lists of the energy management link.
 
+### Cover sheet and page footer
+
+Both templates start with a sheet *Deckblatt*: title, the facts of the report (variable `report`, see below), the
+table of contents and an approval block (name, function, date, signature) for the management review. Every sheet
+has a page footer with the sheet name and "Seite n von m". Month labels use the format `[$-407]MMMM yyyy`, so
+LibreOffice on the server prints German month names whatever its own language is. The sheet subtitles add
+" – <site>" only when the report has a site.
+
+### Report facts (`report`)
+
+JEReport (`ContextBuilder`, `ReportInfo`) puts the variable `report` into every report (a report link with the same
+variable name wins): `name` (report object), `site` (nearest Building above the report, empty without one),
+`organisation` (nearest Organization), `periodStart`, `periodEnd` (`dd.MM.yyyy`, end = last day of the current
+period), `period` (German text by schedule: "Oktober 2026", "2026", "4. Quartal 2026", "KW 47 2026", a day or a
+range) and `createdAt` (`dd.MM.yyyy HH:mm`). Deploy JEReport with `ReportInfo` before uploading templates that use `report`.
+
 ### Charts
 
 The overview sheets carry charts in the Sun and Charge colours (Blueberry `#1a2a45`, Sun `#ffde00`, grey for the

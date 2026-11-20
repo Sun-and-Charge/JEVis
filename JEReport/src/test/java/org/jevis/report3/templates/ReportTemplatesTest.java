@@ -22,6 +22,7 @@ package org.jevis.report3.templates;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jevis.report3.TemplateTransformator;
+import org.jevis.report3.context.ReportInfo;
 import org.jevis.report3.data.reportlink.EnergyManagementFunction;
 import org.jevis.commons.iso.ActionItem;
 import org.joda.time.DateTime;
@@ -118,6 +119,16 @@ class ReportTemplatesTest {
         return cell.getNumericCellValue();
     }
 
+    private static Map<String, Object> reportInfo(DateTime start, DateTime end, String schedule) {
+        Map<String, Object> info = new HashMap<>();
+        info.put("name", "Testbericht");
+        info.put("site", "Musterstandort");
+        info.put("organisation", "Musterorganisation");
+        info.putAll(ReportInfo.period(start, end, schedule, ZONE));
+        info.put("createdAt", "01.11.2026 06:00");
+        return info;
+    }
+
     @Test
     void enpiReportComputesChangesMeansAndTheBaseline(@TempDir Path dir) throws Exception {
         DateTime month = new DateTime(2026, 10, 1, 0, 0, ZONE);
@@ -144,8 +155,16 @@ class ReportTemplatesTest {
         data.put(ReportTemplates.v("Produktionsmenge", "CURRENT"), link("t", month, 500));
         data.put(ReportTemplates.v("Strom_Produktion", "CURRENT"), link("kWh", month, 2100));
 
+        data.put("report", reportInfo(month, month.plusMonths(1), "MONTHLY"));
         Workbook wb = fill(ReportTemplates.enpiReport(), data, dir, ReportTemplates.ENPI_FILE);
+        /* the cover sheet comes first and shows the facts of the report */
+        Sheet cover = wb.getSheetAt(0);
+        assertEquals("Deckblatt", cover.getSheetName());
+        assertEquals("Oktober 2026", rightOf(cover, "Berichtszeitraum", 1).getStringCellValue());
+        assertEquals("01.10.2026 – 31.10.2026", rightOf(cover, "Von – bis", 1).getStringCellValue());
+        assertEquals("Musterstandort", rightOf(cover, "Standort", 1).getStringCellValue());
         Sheet overview = wb.getSheet("EnPI");
+        assertEquals("Energiekennzahlen (EnPI) nach ISO 50001 – Musterstandort", overview.getRow(1).getCell(0).getStringCellValue());
         assertEquals(110, number(rightOf(overview, "Strom gesamt", 2)), 1e-9);
         assertEquals(0.10, number(rightOf(overview, "Strom gesamt", 4)), 1e-9);
         /* mean of 11 × 90 and 210 */
@@ -194,7 +213,9 @@ class ReportTemplatesTest {
                 Collections.singletonList(new EnergyManagementFunction.Plan<>("Aktionsplan", "MW", Collections.emptyList(), Collections.singletonList(action))),
                 Collections.emptyList(), yearStart, yearStart.plusYears(1), ZONE));
 
+        data.put("report", reportInfo(yearStart, yearStart.plusYears(1), "YEARLY"));
         Workbook wb = fill(ReportTemplates.energyManagementReport(), data, dir, ReportTemplates.ENMS_FILE);
+        assertEquals("2026", rightOf(wb.getSheet("Deckblatt"), "Berichtszeitraum", 1).getStringCellValue());
         Sheet overview = wb.getSheet("Übersicht");
         assertEquals(12000, number(rightOf(overview, "Strom gesamt", 2)), 1e-9);
         assertEquals(15000, number(rightOf(overview, "Strom gesamt", 3)), 1e-9);
