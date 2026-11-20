@@ -50,6 +50,9 @@ public class MeterForm extends org.jevis.jeconfig.application.ui.SucDialog<Butto
         super(meterData.getName(), null, Size.L);
         this.meterData = meterData;
         this.ds = ds;
+        /* J25.5: the attribute tab has four label/field columns (about 1500 px), wider than Size.L, capped to the screen */
+        double screen = javafx.stage.Screen.getPrimary().getVisualBounds().getWidth();
+        this.getDialogPane().setPrefWidth(Math.min(1520, screen - 80));
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         scrollPane.setFitToHeight(true);
         scrollPane.setFitToWidth(true);

@@ -395,6 +395,11 @@ public class PluginManager {
         }));
 
         this.tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            /* an open editor belongs to the module it was opened in; keep the module when the user keeps the changes */
+            if (org.jevis.jeconfig.application.ui.SidePanel.get().isOpen() && !org.jevis.jeconfig.application.ui.SidePanel.get().requestClose()) {
+                javafx.application.Platform.runLater(() -> this.tabPane.getSelectionModel().select(oldValue));
+                return;
+            }
             this.getSelectedPlugin().lostFocus();
             if (newValue instanceof DraggableTab) {
                 this.selectedPluginProperty.setValue(((DraggableTab) newValue).getPlugin());
@@ -408,6 +413,8 @@ public class PluginManager {
 
         this.view.setLeft(this.sidebar);
         this.view.setCenter(this.tabPane);
+        /* editor drawer of the modules (docs/DESIGN-CC.md), hidden until an editor opens */
+        this.view.setRight(org.jevis.jeconfig.application.ui.SidePanel.get());
         return this.view;
     }
 

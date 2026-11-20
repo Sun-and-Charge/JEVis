@@ -57,6 +57,7 @@ public class JumpCell<T> implements Callback<TableColumn<T, SampleData>, TableCe
             protected void updateItem(SampleData item, boolean empty) {
                 super.updateItem(item, empty);
                 hBox.setAlignment(Pos.CENTER);
+                manSampleButton.setTooltip(new javafx.scene.control.Tooltip(org.jevis.commons.i18n.I18n.getInstance().getString("plugin.meters.table.mansample")));
                 hBox.getChildren().setAll(manSampleButton, analysisLinkButton);
 
 

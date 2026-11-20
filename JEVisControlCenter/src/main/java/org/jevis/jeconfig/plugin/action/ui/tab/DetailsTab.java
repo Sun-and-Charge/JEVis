@@ -183,7 +183,7 @@ public class DetailsTab extends Tab {
         f_mediaTags.setConverter(new StringConverter<Medium>() {
             @Override
             public String toString(Medium medium) {
-                return medium.getName();
+                return medium == null ? "" : medium.getName();
             }
 
             @Override

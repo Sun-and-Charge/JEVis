@@ -20,324 +20,124 @@
  */
 package org.jevis.jeconfig.dialog;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
+import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jevis.api.*;
+import org.jevis.api.JEVisClass;
+import org.jevis.api.JEVisClassRelationship;
+import org.jevis.api.JEVisDataSource;
+import org.jevis.api.JEVisObject;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.Icon;
 import org.jevis.jeconfig.JEConfig;
-import org.jevis.jeconfig.TopMenu;
-import org.jevis.jeconfig.application.application.I18nWS;
 import org.jevis.jeconfig.application.jevistree.UserSelection;
 import org.jevis.jeconfig.application.jevistree.filter.JEVisTreeFilter;
-import org.jevis.jeconfig.plugin.object.attribute.AttributeEditor;
-import org.jevis.jeconfig.plugin.object.extension.GenericAttributeExtension;
+import org.jevis.jeconfig.application.navigation.PluginSidebar;
+import org.jevis.jeconfig.application.ui.Notify;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * J25.5: "Neue Anlage" as a short form (folder and name, docs/DESIGN-CC.md). The object is created only with
+ * "Anlegen"; its attributes are filled afterwards in the side panel or in the table. Before, choosing the folder
+ * already created an object "Neu" that stayed behind when the dialog was closed.
+ */
 public class EquipmentDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
+
     private static final Logger logger = LogManager.getLogger(EquipmentDialog.class);
-    private final JEVisClass jeVisClass;
     private final List<JEVisClass> possibleParents = new ArrayList<>();
-    private final JEVisDataSource ds;
-    private final List<AttributeEditor> attributeEditors = new ArrayList<>();
-    private Response response;
-    private GridPane gp;
-    private JEVisObject newObject;
-    private String name;
+    private JEVisObject parent;
+    private JEVisObject created;
 
     public EquipmentDialog(JEVisDataSource ds, JEVisClass jeVisClass) {
-        super(I18n.getInstance().getString("plugin.equipment.equipmentdialog.title"), I18n.getInstance().getString("plugin.equipment.equipmentdialog.header"), Size.M);
-        this.ds = ds;
-        this.jeVisClass = jeVisClass;
-        setResizable(true);
-        Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        TopMenu.applyActiveTheme(stage.getScene());
-        stage.setAlwaysOnTop(true);
+        super(PluginSidebar.text("plugin.equipment.new.title", "Neue Anlage", "New equipment"),
+                PluginSidebar.text("plugin.equipment.new.description", "Ordner und Name wählen; die Angaben füllen Sie danach im Editor.",
+                        "Choose folder and name; fill in the details afterwards in the editor."), Size.M);
 
         try {
             for (JEVisClass aClass : ds.getJEVisClasses()) {
-                List<JEVisClassRelationship> relationships = aClass.getRelationships(3);
-
-                for (JEVisClassRelationship jeVisClassRelationship : relationships) {
-                    if (jeVisClassRelationship.getStart() != null && jeVisClassRelationship.getEnd() != null) {
-                        if (jeVisClassRelationship.getStart().equals(jeVisClass) && jeVisClassRelationship.getEnd().equals(aClass)) {
-                            possibleParents.add(aClass);
-                        }
+                for (JEVisClassRelationship rel : aClass.getRelationships(3)) {
+                    if (rel.getStart() != null && rel.getEnd() != null && rel.getStart().equals(jeVisClass) && rel.getEnd().equals(aClass)) {
+                        possibleParents.add(aClass);
                     }
                 }
             }
-        } catch (JEVisException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.error(e);
         }
-
         possibleParents.remove(jeVisClass);
 
-        response = Response.CANCEL;
-
-
-        VBox vBox = new VBox();
-        vBox.setPadding(new Insets(12));
-        vBox.setSpacing(4);
-
-        gp = new GridPane();
-        gp.setHgap(12);
-        gp.setVgap(12);
-
-        Label parentLabel = new Label(I18n.getInstance().getString("jevis.types.parent"));
-        VBox parentVBox = new VBox(parentLabel);
-        parentVBox.setAlignment(Pos.CENTER);
-
-        Button treeButton = new Button(I18n
-                .getInstance().getString("plugin.object.attribute.target.button"),
-                JEConfig.getSVGImage(Icon.FOLDER_OPEN, 18, 18));
+        Label folderLabel = new Label(I18n.getInstance().getString("jevis.types.parent"));
+        folderLabel.getStyleClass().add("suc-form-label");
+        Label folderName = new Label(PluginSidebar.text("plugin.equipment.new.nofolder", "Kein Ordner gewählt", "No folder chosen"));
+        folderName.getStyleClass().add("suc-form-empty");
+        Button folderButton = new Button(PluginSidebar.text("plugin.equipment.new.choose", "Ordner wählen", "Choose folder"),
+                JEConfig.getSVGImage(Icon.FOLDER_OPEN, 16, 16));
+        HBox folderRow = new HBox(10, folderButton, folderName);
+        folderRow.setAlignment(Pos.CENTER_LEFT);
 
         Label nameLabel = new Label(I18n.getInstance().getString("newobject.name"));
-        VBox nameVBox = new VBox(nameLabel);
-        nameVBox.setAlignment(Pos.CENTER);
+        nameLabel.getStyleClass().add("suc-form-label");
         TextField nameField = new TextField();
+        nameField.setPromptText(PluginSidebar.text("plugin.equipment.new.nameprompt", "z. B. Lüftung 4", "e.g. Ventilation 4"));
 
-        Region targetSpace = new Region();
-        targetSpace.setPrefWidth(20);
+        VBox body = new VBox(6, folderLabel, folderRow, new Label(), nameLabel, nameField);
+        setBody(body);
 
-        HBox targetBox = new HBox(parentVBox, treeButton, targetSpace, nameVBox, nameField);
-        targetBox.setSpacing(4);
-
-        ButtonType okType = new ButtonType(I18n.getInstance().getString("graph.dialog.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType(I18n.getInstance().getString("graph.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        this.getDialogPane().getButtonTypes().addAll(cancelType, okType);
-
-        Button okButton = (Button) this.getDialogPane().lookupButton(okType);
-        okButton.setDefaultButton(true);
-
-        Button cancelButton = (Button) this.getDialogPane().lookupButton(cancelType);
-        cancelButton.setCancelButton(true);
-
-        Separator sep1 = new Separator(Orientation.HORIZONTAL);
-
-        VBox.setVgrow(targetBox, Priority.NEVER);
-        VBox.setVgrow(gp, Priority.ALWAYS);
-        vBox.setFillWidth(true);
-        vBox.getChildren().setAll(DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.EQUIPMENT, 64, 64), I18n.getInstance().getString("plugin.equipment.title")), targetBox, gp, sep1);
-        getDialogPane().setContent(vBox);
-
-        treeButton.setOnAction(event3 -> {
+        folderButton.setOnAction(event -> {
             List<JEVisTreeFilter> allFilter = new ArrayList<>();
-            JEVisClass first = jeVisClass;
-            if (possibleParents.size() > 0) {
-                first = possibleParents.get(0);
-                possibleParents.remove(first);
-            }
-
-            JEVisTreeFilter allCurrentClassFilter = SelectTargetDialog.buildMultiClassFilter(first, possibleParents);
-            allFilter.add(allCurrentClassFilter);
-
-            SelectTargetDialog selectTargetDialog = new SelectTargetDialog(allFilter, allCurrentClassFilter, null, SelectionMode.SINGLE, ds, null);
-
-            List<UserSelection> openList = new ArrayList<>();
-
-            selectTargetDialog.setOnCloseRequest(event1 -> {
-                if (selectTargetDialog.getResponse() == SelectTargetDialog.Response.OK) {
-                    logger.trace("Selection Done");
-
-                    List<UserSelection> selections = selectTargetDialog.getUserSelection();
-                    for (UserSelection us : selections) {
-                        try {
-                            newObject = us.getSelectedObject().buildObject(I18n.getInstance().getString("newobject.new.title"), jeVisClass);
-                            newObject.commit();
-                        } catch (JEVisException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    }
-
-                    treeButton.setText(newObject.getName());
-                    nameField.setText(newObject.getName());
-
-                    nameField.textProperty().addListener((observable, oldValue, newValue) -> {
-                        if (!newValue.equals(oldValue)) {
-                            name = newValue;
-                        }
-                    });
-
-                    updateGrid();
+            List<JEVisClass> others = new ArrayList<>(possibleParents);
+            JEVisClass first = others.isEmpty() ? jeVisClass : others.remove(0);
+            JEVisTreeFilter filter = SelectTargetDialog.buildMultiClassFilter(first, others);
+            allFilter.add(filter);
+            SelectTargetDialog select = new SelectTargetDialog(allFilter, filter, null, SelectionMode.SINGLE, ds, new ArrayList<>());
+            select.setOnCloseRequest(e -> {
+                if (select.getResponse() == SelectTargetDialog.Response.OK && !select.getUserSelection().isEmpty()) {
+                    UserSelection us = select.getUserSelection().get(0);
+                    parent = us.getSelectedObject();
+                    folderName.setText(parent.getName());
+                    folderName.getStyleClass().remove("suc-form-empty");
+                    dirtyProperty().set(true);
                 }
-
             });
+            select.show();
         });
+        nameField.textProperty().addListener((o, a, b) -> dirtyProperty().set(true));
 
-        okButton.setOnAction(event -> {
-            for (AttributeEditor attributeEditor : attributeEditors) {
-                if (attributeEditor.hasChanged()) {
-                    try {
-                        attributeEditor.commit();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+        ButtonType create = addFormPrimary(PluginSidebar.text("plugin.equipment.new.create", "Anlegen", "Create"));
+        addCancel();
+        Button createButton = (Button) getDialogPane().lookupButton(create);
+        createButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String name = nameField.getText() == null ? "" : nameField.getText().trim();
+            if (parent == null || name.isEmpty()) {
+                Notify.error(PluginSidebar.text("plugin.equipment.new.missing", "Bitte Ordner und Name angeben.", "Please choose a folder and enter a name."));
+                event.consume();
+                return;
             }
-
             try {
-                newObject.setName(name);
-                newObject.commit();
-            } catch (JEVisException e) {
-                e.printStackTrace();
+                JEVisObject object = parent.buildObject(name, jeVisClass);
+                object.commit();
+                created = object;
+                dirtyProperty().set(false);
+            } catch (Exception e) {
+                logger.error("Could not create the equipment", e);
+                Notify.error(PluginSidebar.text("dialog.ui.error.generic", "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen.", "That did not work. Check the connection and try again."));
+                event.consume();
             }
-
-            response = Response.OK;
-            close();
-        });
-
-        cancelButton.setOnAction(event -> {
-            response = Response.CANCEL;
-            if (newObject != null) {
-                try {
-                    ds.deleteObject(newObject.getID(), true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            close();
         });
     }
 
-    public void showReplaceWindow(JEVisObject selectedMeter) {
-        response = Response.CANCEL;
-
-        VBox vBox = new VBox();
-        vBox.setPadding(new Insets(12));
-        vBox.setSpacing(4);
-
-        gp = new GridPane();
-        gp.setHgap(12);
-        gp.setVgap(12);
-
-
-        Label nameLabel = new Label(I18n.getInstance().getString("newobject.name"));
-        VBox nameVBox = new VBox(nameLabel);
-        nameVBox.setAlignment(Pos.CENTER);
-        TextField nameField = new TextField(selectedMeter.getName());
-
-        HBox targetBox = new HBox(nameVBox, nameField);
-        targetBox.setSpacing(4);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Button ok = new Button(I18n.getInstance().getString("jevistree.dialog.new.ok"));
-        HBox.setHgrow(ok, Priority.NEVER);
-        Button cancel = new Button(I18n.getInstance().getString("jevistree.dialog.new.cancel"));
-        HBox.setHgrow(cancel, Priority.NEVER);
-
-        Separator sep1 = new Separator(Orientation.HORIZONTAL);
-
-        HBox buttonRow = new HBox(spacer, cancel, ok);
-        buttonRow.setPadding(new Insets(4));
-        buttonRow.setSpacing(10);
-
-        VBox.setVgrow(targetBox, Priority.NEVER);
-        VBox.setVgrow(gp, Priority.ALWAYS);
-        VBox.setVgrow(buttonRow, Priority.NEVER);
-        vBox.setFillWidth(true);
-        vBox.getChildren().setAll(DialogHeader.getDialogHeader(JEConfig.getSVGImage(Icon.EQUIPMENT, 64, 64), I18n.getInstance().getString("plugin.equipment.title")), targetBox, gp, sep1, buttonRow);
-
-        newObject = selectedMeter;
-
-        getDialogPane().setContent(vBox);
-
-        updateGrid();
-
-        ok.setOnAction(event -> {
-            for (AttributeEditor attributeEditor : attributeEditors) {
-                if (attributeEditor.hasChanged()) {
-                    try {
-                        attributeEditor.commit();
-                    } catch (JEVisException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            try {
-                newObject.setName(name);
-                newObject.commit();
-            } catch (JEVisException e) {
-                e.printStackTrace();
-            }
-
-            response = Response.OK;
-            close();
-        });
-
-        cancel.setOnAction(event -> {
-            response = Response.CANCEL;
-            close();
-        });
-
-        show();
-    }
-
-    private void updateGrid() {
-        if (newObject != null) {
-            gp.getChildren().clear();
-            attributeEditors.clear();
-            try {
-                int column = 0;
-                int row = 0;
-                List<JEVisAttribute> attributes = newObject.getAttributes();
-                for (JEVisAttribute attribute : attributes) {
-                    int index = attributes.indexOf(attribute);
-
-                    if (index == 2 || (index > 2 && index % 2 == 0)) {
-                        column = 0;
-                        row++;
-                    }
-
-                    Label typeName = new Label(I18nWS.getInstance().getTypeName(attribute.getType()));
-                    VBox typeBox = new VBox(typeName);
-                    typeBox.setAlignment(Pos.CENTER);
-
-                    AttributeEditor attributeEditor = GenericAttributeExtension.getEditor(attribute.getType(), attribute);
-                    attributeEditor.setReadOnly(false);
-                    attributeEditors.add(attributeEditor);
-                    VBox editorBox = new VBox(attributeEditor.getEditor());
-                    editorBox.setAlignment(Pos.CENTER);
-
-                    if (column < 2) {
-                        gp.add(typeBox, column, row);
-                    } else {
-                        gp.add(typeBox, column + 1, row);
-                    }
-                    column++;
-
-                    if (column < 2) {
-                        gp.add(editorBox, column, row);
-                    } else {
-                        gp.add(editorBox, column + 1, row);
-                    }
-                    column++;
-                }
-
-                Separator separator = new Separator(Orientation.VERTICAL);
-                gp.add(separator, 2, 0, 1, row + 1);
-
-            } catch (JEVisException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public Response getResponse() {
-        return response;
+    /** the new object after "Anlegen", else null */
+    public JEVisObject getCreated() {
+        return created;
     }
 }

@@ -38,7 +38,11 @@ import org.jevis.commons.classes.JC;
 import org.jevis.commons.i18n.I18n;
 import org.jevis.jeconfig.plugin.meters.data.MeterData;
 import org.jevis.jeconfig.plugin.meters.data.MeterList;
+import org.jevis.jeconfig.application.application.I18nWS;
+import org.jevis.jeconfig.application.ui.Notify;
+import org.jevis.jeconfig.application.ui.SidePanel;
 import org.jevis.jeconfig.plugin.meters.ui.MeterForm;
+import org.jevis.jeconfig.plugin.meters.ui.MeterFormAttributeTab;
 import org.jevis.jeconfig.plugin.meters.ui.MeterListTab;
 import org.jevis.jeconfig.plugin.meters.ui.MeterTable;
 import org.jevis.jeconfig.plugin.meters.ui.NewMeterDialog;
@@ -130,6 +134,10 @@ public class MeterController {
     }
 
     public void openDataForm(MeterData meterData, boolean switchMeter, boolean isNew) {
+        if (!switchMeter) {
+            openSidePanel(meterData, isNew);
+            return;
+        }
 
         MeterForm meterForm = new MeterForm(meterData, ds, switchMeter);
 
@@ -156,6 +164,38 @@ public class MeterController {
         });
         meterForm.show();
 
+    }
+
+    /** J25.5: the meter form as side panel (docs/DESIGN-CC.md: editors with more than five fields) */
+    private void openSidePanel(MeterData meterData, boolean isNew) {
+        MeterFormAttributeTab form = new MeterFormAttributeTab(meterData, ds, meterData.getName());
+        String subtitle = "";
+        try {
+            subtitle = I18nWS.getInstance().getClassName(meterData.getJeVisObject().getJEVisClass());
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        SidePanel panel = SidePanel.get();
+        boolean shown = panel.show(meterData.getName(), subtitle, form.getForm(), () -> {
+            form.commit();
+            if (isNew) {
+                getActiveTab().getMeterPlanTable().addItem(meterData);
+            } else {
+                getActiveTab().getMeterPlanTable().replaceItem(meterData);
+            }
+            getActiveTab().getMeterPlanTable().sort();
+            getActiveTab().getMeterPlanTable().refresh();
+            Notify.success(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.meters.form.saved", "Messstelle gespeichert", "Meter saved"));
+            return true;
+        });
+        if (!shown) return;
+        panel.dirtyProperty().bind(form.changedProperty());
+        panel.setOnClosed(() -> panel.dirtyProperty().unbind());
+        try {
+            panel.setReadOnly(!ds.getCurrentUser().canWrite(meterData.getJeVisObject().getID()));
+        } catch (Exception e) {
+            logger.error(e);
+        }
     }
 
     private void disableSaveIfUserCannotWrite(MeterData meterData, Button btOk) {

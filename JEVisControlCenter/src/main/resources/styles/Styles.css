@@ -1069,3 +1069,80 @@
     -color-button-bg-focused: -color-danger-emphasis;
     -color-button-fg-focused: -color-fg-emphasis;
 }
+
+/*---------------------------------------------------------------------------------------------------------------
+                                         Side panel and form layout (editors, docs/DESIGN-CC.md)
+---------------------------------------------------------------------------------------------------------------*/
+.suc-side-panel {
+    -fx-background-color: -suc-surface;
+    -fx-border-color: transparent transparent transparent -suc-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 16, 0, -4, 0);
+}
+
+.suc-side-panel-header {
+    -fx-padding: 18 12 10 20;
+}
+
+.suc-side-panel-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -suc-text;
+}
+
+.suc-side-panel-subtitle {
+    -fx-text-fill: -suc-text-muted;
+}
+
+.suc-side-panel-close {
+    -fx-font-size: 14px;
+    -fx-text-fill: -suc-text-muted;
+}
+
+.suc-side-panel-body,
+.suc-side-panel-body > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.suc-side-panel-footer {
+    -fx-border-color: -suc-border transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.suc-form-section {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -suc-text-muted;
+    -fx-padding: 0 0 4 0;
+    -fx-border-color: transparent transparent -suc-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-max-width: Infinity;
+}
+
+.suc-form-label {
+    -fx-text-fill: -suc-text;
+    -fx-font-size: 12px;
+}
+
+.suc-form-empty {
+    -fx-text-fill: -suc-text-muted;
+    -fx-font-style: italic;
+}
+
+.suc-form-collapsed > .title > .text {
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-fill: -suc-text-muted;
+}
+
+.suc-form-collapsed > .title {
+    -fx-padding: 4 0 4 0;
+    -fx-background-color: transparent;
+}
+
+.suc-file-row {
+    -fx-min-height: 30px;
+}

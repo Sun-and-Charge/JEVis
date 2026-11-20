@@ -60,7 +60,8 @@ public class FileCell<T> implements Callback<TableColumn<T, Optional<JEVisSample
                 super.updateItem(item, empty);
 
                 previewButton.setDisable(true);
-                if (item == null || empty) {
+                /* a meter without this file has an empty Optional */
+                if (item == null || empty || !item.isPresent()) {
                     setText(null);
                     setGraphic(null);
                 } else {

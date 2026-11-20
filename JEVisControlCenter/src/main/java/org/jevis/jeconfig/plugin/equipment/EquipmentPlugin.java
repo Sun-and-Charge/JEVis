@@ -72,7 +72,7 @@ public class EquipmentPlugin extends TablePlugin {
     private final Image taskImage = JEConfig.getImage(Icon.PNG_EQUIPMENT);
     private final BorderPane borderPane = new BorderPane();
     private final ToolBar toolBar = new ToolBar();
-    private final ToggleButton replaceButton = new ToggleButton("", JEConfig.getSVGImage(Icon.SWAP, toolBarIconSize, toolBarIconSize));
+    private final ToggleButton replaceButton = new ToggleButton("", JEConfig.getSVGImage(Icon.EDIT, toolBarIconSize, toolBarIconSize));
     private boolean initialized = false;
 
     public EquipmentPlugin(JEVisDataSource ds, String title) {
@@ -190,13 +190,9 @@ public class EquipmentPlugin extends TablePlugin {
             JEVisClassTab selectedItem = (JEVisClassTab) tabPane.getSelectionModel().getSelectedItem();
             TableView<RegisterTableRow> tableView = (TableView<RegisterTableRow>) selectedItem.getContent();
 
-            EquipmentDialog meterDialog = new EquipmentDialog(ds, selectedItem.getJeVisClass());
-            meterDialog.setOnCloseRequest(event1 -> {
-                if (meterDialog.getResponse() == Response.OK) {
-                    handleRequest(Constants.Plugin.Command.RELOAD);
-                }
-            });
-            meterDialog.showReplaceWindow(tableView.getSelectionModel().getSelectedItem().getObject());
+            /* J25.5: edit the selected equipment in the side panel */
+            RegisterTableRow row = tableView.getSelectionModel().getSelectedItem();
+            if (row != null) openEditor(row.getObject(), selectedItem.getJeVisClass());
         });
         replaceButton.setDisable(true);
 
@@ -423,13 +419,13 @@ public class EquipmentPlugin extends TablePlugin {
             case Constants.Plugin.Command.EXPAND:
                 break;
             case Constants.Plugin.Command.NEW:
-                EquipmentDialog equipmentDialog = new EquipmentDialog(ds, ((JEVisClassTab) tabPane.getSelectionModel().getSelectedItem()).getJeVisClass());
-                equipmentDialog.setOnCloseRequest(event -> {
-                    if (equipmentDialog.getResponse() == Response.OK) {
-                        handleRequest(Constants.Plugin.Command.RELOAD);
-                    }
-                });
-                equipmentDialog.show();
+                JEVisClass equipmentClass = ((JEVisClassTab) tabPane.getSelectionModel().getSelectedItem()).getJeVisClass();
+                EquipmentDialog equipmentDialog = new EquipmentDialog(ds, equipmentClass);
+                equipmentDialog.showAndWait();
+                if (equipmentDialog.getCreated() != null) {
+                    handleRequest(Constants.Plugin.Command.RELOAD);
+                    openEditor(equipmentDialog.getCreated(), equipmentClass);
+                }
                 break;
             case Constants.Plugin.Command.RELOAD:
                 Platform.runLater(() -> replaceButton.setDisable(true));
@@ -708,4 +704,15 @@ public class EquipmentPlugin extends TablePlugin {
         return 6;
     }
 
+
+    /** J25.5: the equipment editor in the side panel (name and all attributes) */
+    private void openEditor(org.jevis.api.JEVisObject object, JEVisClass equipmentClass) {
+        String subtitle = "";
+        try {
+            subtitle = org.jevis.jeconfig.application.application.I18nWS.getInstance().getClassName(equipmentClass);
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        org.jevis.jeconfig.application.ui.ObjectEditorPanel.open(object, subtitle, () -> handleRequest(Constants.Plugin.Command.RELOAD));
+    }
 }

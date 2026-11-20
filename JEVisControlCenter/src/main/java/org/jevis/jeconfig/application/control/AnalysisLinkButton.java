@@ -53,6 +53,8 @@ public class AnalysisLinkButton extends Button {
     private void initStyle() {
         setStyle("-fx-background-color: transparent;");
         setGraphic(JEConfig.getSVGImage(Icon.GRAPH, 20, 20));
+        setTooltip(new javafx.scene.control.Tooltip(org.jevis.jeconfig.application.navigation.PluginSidebar.text(
+                "control.analysislink.tooltip", "Verlauf als Analyse \u00f6ffnen", "Open the history as analysis")));
     }
 
     public void init(JEVisAttribute attribute) {
