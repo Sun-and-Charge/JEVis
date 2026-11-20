@@ -989,7 +989,8 @@ public class AlarmPlugin implements Plugin {
         final String thisYear = I18n.getInstance().getString("plugin.graph.changedate.buttonthisyear");
         final String lastYear = I18n.getInstance().getString("plugin.graph.changedate.buttonlastyear");
         final String custom = I18n.getInstance().getString("plugin.graph.changedate.buttoncustom");
-        final String preview = I18n.getInstance().getString("plugin.graph.changedate.preview");
+        /* PREVIEW = the last 24 hours (DateHelper), not a preview */
+        final String preview = I18n.getInstance().getString("plugin.alarms.timeframe.last24hours");
 
         ObservableList<TimeFrame> timeFrames = FXCollections.observableArrayList(TimeFrame.values());
         timeFrames.remove(TimeFrame.values().length - 2, TimeFrame.values().length - 1);

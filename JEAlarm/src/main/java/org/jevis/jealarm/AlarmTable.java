@@ -350,7 +350,8 @@ public class AlarmTable extends org.jevis.commons.alarm.AlarmTable {
         boolean odd = false;
         boolean empty = true;
         for (Alarm currentAlarm : alarms) {
-            if (currentAlarm.getAlarmType().equals(AlarmType.DYNAMIC) || currentAlarm.getAlarmType().equals(AlarmType.STATIC)
+            /* static and dynamic alarms, both only outside silent times (log value 1) */
+            if ((currentAlarm.getAlarmType().equals(AlarmType.DYNAMIC) || currentAlarm.getAlarmType().equals(AlarmType.STATIC))
                     && currentAlarm.getLogValue() == 1) {
                 empty = false;
                 String name = currentAlarm.getObject().getName() + ":" + currentAlarm.getObject().getID().toString();

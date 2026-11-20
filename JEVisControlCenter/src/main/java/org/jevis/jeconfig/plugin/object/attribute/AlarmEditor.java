@@ -237,7 +237,7 @@ public class AlarmEditor implements AttributeEditor {
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabPane.setMinWidth(800);
         tabPane.setPrefWidth(480);
-        tabPane.setPrefHeight(350);
+        tabPane.setPrefHeight(460); /* J25.5: room for the tolerance row without scrolling */
 
         org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.alarmeditor.title"), I18n.getInstance().getString("plugin.configuration.alarmeditor.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
 
