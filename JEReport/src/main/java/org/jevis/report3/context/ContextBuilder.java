@@ -51,6 +51,8 @@ public class ContextBuilder {
         for (ReportData linkProperty : reportLinkProperty) {
             templateMap.putAll(linkProperty.getReportMap(property, intervalCalc));
         }
+        /* facts about the report itself (cover sheet); a report link with the same variable name wins */
+        templateMap.putIfAbsent(ReportInfo.VARIABLE, ReportInfo.build(property, intervalCalc));
         logger.info("Built Context for {} report links", templateMap.size());
 
         return templateMap;

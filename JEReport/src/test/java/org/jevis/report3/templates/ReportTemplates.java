@@ -92,9 +92,13 @@ public final class ReportTemplates {
         XSSFWorkbook wb = new XSSFWorkbook();
         Styles st = new Styles(wb);
 
-        /* sheet 1: overview */
+        /* cover sheet, then the overview */
+        cover(wb, st, "EnPI-Bericht", "Energiekennzahlen (EnPI) nach ISO 50001", new String[][]{
+                {"EnPI", "Kennzahlen und Verbrauch des Berichtsmonats gegenüber dem Vormonat, Diagramme"},
+                {"Verlauf", "Kennzahlen der letzten 12 Monate mit Mittelwert"},
+                {"Baseline", "Regression Strom Produktion zur Produktionsmenge, erwarteter und gemessener Verbrauch"}});
         Sheet s = wb.createSheet("EnPI");
-        int r = st.title(s, "EnPI-Bericht", "Energiekennzahlen (EnPI) nach ISO 50001 – Musterwerk", 6);
+        int r = st.title(s, "EnPI-Bericht", "Energiekennzahlen (EnPI) nach ISO 50001${" + SITE + "}", 6);
         st.label(s, r, 0, "Berichtsmonat");
         st.expr(s, r, 1, "${" + v("EnPI_Strom_Gesamt", "CURRENT") + ".value[0].timestamp}", st.month);
         r += 2;
@@ -211,9 +215,15 @@ public final class ReportTemplates {
         XSSFWorkbook wb = new XSSFWorkbook();
         Styles st = new Styles(wb);
 
-        /* sheet 1: overview */
+        /* cover sheet, then the overview */
+        cover(wb, st, "Energiemanagementbericht", "Jahresbericht als Grundlage der Managementbewertung nach ISO 50001", new String[][]{
+                {"Übersicht", "Verbrauch, Kosten und Kennzahlen gegenüber dem Vorjahr, Maßnahmen und Abweichungen, Diagramme"},
+                {"Verbrauch", "Verbrauch je Monat im Berichtsjahr und im Vorjahr"},
+                {"Kosten", "Energiekosten je Monat im Berichtsjahr und im Vorjahr"},
+                {"Maßnahmen", "alle Maßnahmen des Aktionsplans mit Status und Einsparung"},
+                {"Abweichungen", "alle Abweichungen mit Status"}});
         Sheet s = wb.createSheet("Übersicht");
-        int r = st.title(s, "Energiemanagementbericht", "Jahresbericht als Grundlage der Managementbewertung nach ISO 50001 – Musterwerk", 5);
+        int r = st.title(s, "Energiemanagementbericht", "Jahresbericht als Grundlage der Managementbewertung nach ISO 50001${" + SITE + "}", 5);
         st.label(s, r, 0, "Berichtszeitraum");
         st.expr(s, r, 1, "${enms.periodStart} – ${enms.periodEnd}", st.cell);
         r += 2;
@@ -391,6 +401,65 @@ public final class ReportTemplates {
     }
 
     static final int CHART_ROWS = 18;
+    /** " – <site>" or nothing (JEXL, inside ${…}); the variable "report" comes from JEReport (ReportInfo) */
+    static final String SITE = "empty(report.site) ? '' : ' – ' + report.site";
+
+    /**
+     * Cover sheet: title, the facts of the report (variable {@code report}: name, site, organisation, period, creation
+     * time), the table of contents and a block for the approval (management review).
+     */
+    static void cover(XSSFWorkbook wb, Styles st, String title, String subtitle, String[][] contents) {
+        Sheet c = wb.createSheet("Deckblatt");
+        st.widths(c, 24, 30, 30, 16);
+        int r = 2;
+        st.text(c, r, 0, title, st.coverTitle);
+        c.addMergedRegion(new CellRangeAddress(r, r, 0, 3));
+        c.getRow(r).setHeightInPoints(40);
+        r++;
+        st.text(c, r, 0, subtitle, st.coverSubtitle);
+        c.addMergedRegion(new CellRangeAddress(r, r, 0, 3));
+        c.getRow(r).setHeightInPoints(20);
+        r++;
+        for (int i = 0; i < 4; i++) st.at(c, r, i).setCellStyle(st.sunBar);
+        c.getRow(r).setHeightInPoints(5);
+        r += 3;
+        String[][] facts = {
+                {"Bericht", "${report.name}"},
+                {"Standort", "${report.site}"},
+                {"Organisation", "${report.organisation}"},
+                {"Berichtszeitraum", "${report.period}"},
+                {"Von – bis", "${report.periodStart} – ${report.periodEnd}"},
+                {"Erstellt am", "${report.createdAt}"}};
+        for (String[] f : facts) {
+            st.text(c, r, 0, f[0], st.factLabel);
+            st.expr(c, r, 1, f[1], st.factValue);
+            c.addMergedRegion(new CellRangeAddress(r, r, 1, 3));
+            c.getRow(r).setHeightInPoints(20);
+            r++;
+        }
+        r += 2;
+        st.header(c, r, "Inhalt", "", "", "");
+        r++;
+        for (String[] e : contents) {
+            st.text(c, r, 0, e[0], st.bold);
+            st.text(c, r, 1, e[1], st.wrap);
+            c.addMergedRegion(new CellRangeAddress(r, r, 1, 3));
+            c.getRow(r).setHeightInPoints(e[1].length() > 60 ? 28 : 16);
+            r++;
+        }
+        r += 2;
+        st.header(c, r, "Geprüft und freigegeben", "", "", "");
+        r++;
+        for (String f : new String[]{"Name", "Funktion", "Datum", "Unterschrift"}) {
+            st.text(c, r, 0, f, st.signLabel);
+            for (int i = 1; i < 4; i++) st.at(c, r, i).setCellStyle(st.signLine);
+            c.getRow(r).setHeightInPoints(f.equals("Unterschrift") ? 40 : 26);
+            r++;
+        }
+        r += 2;
+        st.note(c, r, "Automatisch erstellt aus den Daten des Energiemanagementsystems. Felder ohne Daten bleiben leer.", 4);
+        st.area(c, "D" + (r + 1));
+    }
     static final byte[] BLUEBERRY = {(byte) 0x1a, (byte) 0x2a, (byte) 0x45};
     static final byte[] SUN = {(byte) 0xff, (byte) 0xde, (byte) 0x00};
     static final byte[] GREY = {(byte) 0x9a, (byte) 0xa3, (byte) 0xb2};
@@ -424,7 +493,8 @@ public final class ReportTemplates {
     /** cell styles and small writing helpers */
     static final class Styles {
         final XSSFWorkbook wb;
-        final CellStyle cell, wrap, bold, number0, number2, boldNumber0, boldNumber2, percent, month, monthCell, head, titleStyle, subtitle, noteStyle;
+        final CellStyle cell, wrap, bold, number0, number2, boldNumber0, boldNumber2, percent, month, monthCell, head, titleStyle, subtitle, noteStyle,
+                coverTitle, coverSubtitle, sunBar, factLabel, factValue, signLabel, signLine;
         private final CreationHelper helper;
 
         Styles(XSSFWorkbook wb) {
@@ -444,9 +514,9 @@ public final class ReportTemplates {
             boldNumber0 = style(strong, "#,##0", null);
             boldNumber2 = style(strong, "#,##0.00", null);
             percent = style(base, "+0.0%;-0.0%;0.0%", null);
-            month = style(strong, "MMMM yyyy", null);
+            month = style(strong, "[$-407]MMMM yyyy", null);
             month.setAlignment(HorizontalAlignment.LEFT);
-            monthCell = style(base, "MMM yyyy", null);
+            monthCell = style(base, "[$-407]MMM yyyy", null);
             monthCell.setAlignment(HorizontalAlignment.LEFT);
             head = style(font(true, 10, new XSSFColor(new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff}, null)), null, blueberry);
             titleStyle = style(font(true, 16, blueberry), null, null);
@@ -458,6 +528,17 @@ public final class ReportTemplates {
             noteStyle = style(font(false, 9, new XSSFColor(new byte[]{(byte) 0x5b, (byte) 0x65, (byte) 0x76}, null)), null, light);
             noteStyle.setWrapText(true);
             noteStyle.setVerticalAlignment(VerticalAlignment.TOP);
+            coverTitle = style(font(true, 26, blueberry), null, null);
+            coverSubtitle = style(font(false, 12, new XSSFColor(new byte[]{(byte) 0x5b, (byte) 0x65, (byte) 0x76}, null)), null, null);
+            sunBar = style(base, null, sun);
+            factLabel = style(font(false, 11, new XSSFColor(new byte[]{(byte) 0x5b, (byte) 0x65, (byte) 0x76}, null)), null, null);
+            factValue = style(font(true, 11, blueberry), null, null);
+            factValue.setAlignment(HorizontalAlignment.LEFT);
+            signLabel = style(base, null, null);
+            signLabel.setVerticalAlignment(VerticalAlignment.BOTTOM);
+            signLine = style(base, null, null);
+            ((XSSFCellStyle) signLine).setBorderBottom(BorderStyle.THIN);
+            ((XSSFCellStyle) signLine).setBottomBorderColor(blueberry);
         }
 
         private Font font(boolean boldFont, int size, XSSFColor color) {
@@ -652,6 +733,9 @@ public final class ReportTemplates {
             sheet.setAutobreaks(true);
             sheet.setMargin(Sheet.LeftMargin, 0.6);
             sheet.setMargin(Sheet.RightMargin, 0.6);
+            /* page footer: sheet name left, page numbers right */
+            sheet.getFooter().setLeft("&A");
+            sheet.getFooter().setRight("Seite &P von &N");
         }
 
         /** JXLS each over one row */
