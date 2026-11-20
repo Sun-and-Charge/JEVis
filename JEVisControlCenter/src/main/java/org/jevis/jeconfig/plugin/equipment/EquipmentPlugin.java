@@ -95,7 +95,7 @@ public class EquipmentPlugin extends TablePlugin {
             pathColumn.setSortable(true);
             pathColumn.setSortType(TableColumn.SortType.ASCENDING);
 
-            TableColumn<RegisterTableRow, String> nameColumn = new TableColumn<>(I18n.getInstance().getString("plugin.meters.table.measurementpoint.columnname"));
+            TableColumn<RegisterTableRow, String> nameColumn = new TableColumn<>(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.equipment.table.name", "Anlage", "Equipment"));
             nameColumn.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().getName()));
             nameColumn.setStyle("-fx-alignment: CENTER-LEFT;");
             nameColumn.setSortable(true);

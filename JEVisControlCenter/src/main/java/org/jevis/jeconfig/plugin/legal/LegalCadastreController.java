@@ -298,6 +298,10 @@ public class LegalCadastreController {
                 });
         if (!shown) return;
         panel.setPanelWidth(900);
+        /* the form edits the data directly: compare its JSON with the state when the panel opened */
+        com.google.gson.Gson gson = org.jevis.jeconfig.gson.GsonBuilder.createDefaultBuilder().excludeFieldsWithoutExposeAnnotation().serializeNulls().create();
+        String snapshot = gson.toJson(data);
+        panel.setDirtyCheck(() -> !gson.toJson(data).equals(snapshot));
         panel.setOnClosed(() -> {
             if (saved[0]) return;
             if (isNew) {

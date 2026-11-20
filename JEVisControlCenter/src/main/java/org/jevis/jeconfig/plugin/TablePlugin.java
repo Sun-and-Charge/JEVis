@@ -770,6 +770,13 @@ public class TablePlugin implements Plugin {
         });
     }
 
+    /** "2011" instead of "2011.0", "0.3" stays; the cell editors parse with a dot, so no locale format here */
+    static String plainNumber(Double value) {
+        if (value == null) return "";
+        if (value.isNaN() || value.isInfinite()) return value.toString();
+        return new java.math.BigDecimal(value.toString()).stripTrailingZeros().toPlainString();
+    }
+
     protected Callback<TableColumn<RegisterTableRow, JEVisAttribute>, TableCell<RegisterTableRow, JEVisAttribute>> valueCellDouble() {
         return new Callback<TableColumn<RegisterTableRow, JEVisAttribute>, TableCell<RegisterTableRow, JEVisAttribute>>() {
             @Override
@@ -797,7 +804,7 @@ public class TablePlugin implements Plugin {
                             try {
                                 JEVisAttribute attribute = registerTableRow.getAttributeMap().get(item.getType());
                                 if (attribute != null && attribute.hasSample()) {
-                                    textField.setText(attribute.getLatestSample().getValueAsDouble().toString());
+                                    textField.setText(plainNumber(attribute.getLatestSample().getValueAsDouble()));
                                 }
                             } catch (JEVisException e) {
                                 e.printStackTrace();
@@ -879,7 +886,7 @@ public class TablePlugin implements Plugin {
                             try {
                                 JEVisAttribute attribute = registerTableRow.getAttributeMap().get(item.getType());
                                 if (attribute != null && attribute.hasSample()) {
-                                    textField.setText(attribute.getLatestSample().getValueAsDouble().toString());
+                                    textField.setText(plainNumber(attribute.getLatestSample().getValueAsDouble()));
                                 }
                             } catch (JEVisException e) {
                                 e.printStackTrace();

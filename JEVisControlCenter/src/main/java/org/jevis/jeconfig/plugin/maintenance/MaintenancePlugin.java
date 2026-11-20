@@ -315,7 +315,7 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
         entry.setCreatedBy(EntryStore.currentUserName(ds));
         MaintenanceDialog dialog = new MaintenanceDialog(ds, entry, null, true);
         /* J25.5: the editor opens in the side panel */
-        showInPanel(I18n.getInstance().getString("plugin.maintenance.new"), dialog, () -> {
+        showInPanel(I18n.getInstance().getString("plugin.maintenance.new"), dialog, entry, () -> {
             boolean inform = dialog.apply(entry);
             try {
                 JEVisObject object = EntryStore.create(directory, MaintenanceEntry.CLASS_NAME, entry.getTitle());
@@ -335,7 +335,7 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
         if (row == null) return;
         MaintenanceEntry entry = EntryFormat.fromJson(EntryFormat.toJson(row.entry), MaintenanceEntry.class);
         MaintenanceDialog dialog = new MaintenanceDialog(ds, entry, row.state, false);
-        showInPanel(row.entry.getTitle(), dialog, () -> {
+        showInPanel(row.entry.getTitle(), dialog, entry, () -> {
             boolean inform = dialog.apply(entry);
             boolean doneMail = MaintenanceLogic.pendingMail(entry, row.state) == MaintenanceLogic.MailKind.DONE
                     && MaintenanceLogic.pendingMail(row.entry, row.state) != MaintenanceLogic.MailKind.DONE;
@@ -347,8 +347,9 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
         });
     }
 
-    private void showInPanel(String title, MaintenanceDialog dialog, java.util.function.BooleanSupplier onSave) {
-        org.jevis.jeconfig.application.ui.SidePanel.get().show(title, I18n.getInstance().getString("plugin.maintenance.edit"), dialog.getForm(), () -> {
+    private void showInPanel(String title, MaintenanceDialog dialog, MaintenanceEntry entry, java.util.function.BooleanSupplier onSave) {
+        org.jevis.jeconfig.application.ui.SidePanel panel = org.jevis.jeconfig.application.ui.SidePanel.get();
+        boolean shown = panel.show(title, I18n.getInstance().getString("plugin.maintenance.edit"), dialog.getForm(), () -> {
             String error = dialog.validate();
             if (error != null) {
                 org.jevis.jeconfig.application.ui.Notify.error(error);
@@ -356,6 +357,20 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
             }
             return onSave.getAsBoolean();
         });
+        if (!shown) return;
+        /* unsaved changes: the form applied to a copy differs from the copy applied when the panel opened */
+        String snapshot = formState(dialog, entry);
+        panel.setDirtyCheck(() -> !formState(dialog, entry).equals(snapshot));
+    }
+
+    private static String formState(MaintenanceDialog dialog, MaintenanceEntry entry) {
+        try {
+            MaintenanceEntry copy = EntryFormat.fromJson(EntryFormat.toJson(entry), MaintenanceEntry.class);
+            dialog.apply(copy);
+            return EntryFormat.toJson(copy);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     private void informSelected() {

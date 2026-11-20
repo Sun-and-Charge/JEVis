@@ -338,7 +338,7 @@ public class AppointmentPlugin extends AbstractEntryPlugin {
         appointment.setCreatedBy(EntryStore.currentUserName(ds));
         AppointmentDialog dialog = new AppointmentDialog(ds, appointment, null, true);
         /* J25.5: the editor opens in the side panel */
-        showInPanel(I18n.getInstance().getString("plugin.appointments.new"), dialog, () -> {
+        showInPanel(I18n.getInstance().getString("plugin.appointments.new"), dialog, appointment, () -> {
             LocalDateTime next = dialog.apply(appointment);
             try {
                 JEVisObject object = EntryStore.create(directory, Appointment.CLASS_NAME, appointment.getTitle());
@@ -358,15 +358,16 @@ public class AppointmentPlugin extends AbstractEntryPlugin {
         if (row == null) return;
         Appointment appointment = EntryFormat.fromJson(EntryFormat.toJson(row.appointment), Appointment.class);
         AppointmentDialog dialog = new AppointmentDialog(ds, appointment, row.state, false);
-        showInPanel(row.appointment.getTitle(), dialog, () -> {
+        showInPanel(row.appointment.getTitle(), dialog, appointment, () -> {
             LocalDateTime next = dialog.apply(appointment);
             save(row, appointment, next);
             return true;
         });
     }
 
-    private void showInPanel(String title, AppointmentDialog dialog, java.util.function.BooleanSupplier onSave) {
-        org.jevis.jeconfig.application.ui.SidePanel.get().show(title, I18n.getInstance().getString("plugin.appointments.edit"), dialog.getForm(), () -> {
+    private void showInPanel(String title, AppointmentDialog dialog, Appointment appointment, java.util.function.BooleanSupplier onSave) {
+        org.jevis.jeconfig.application.ui.SidePanel panel = org.jevis.jeconfig.application.ui.SidePanel.get();
+        boolean shown = panel.show(title, I18n.getInstance().getString("plugin.appointments.edit"), dialog.getForm(), () -> {
             String error = dialog.validate();
             if (error != null) {
                 org.jevis.jeconfig.application.ui.Notify.error(error);
@@ -374,6 +375,20 @@ public class AppointmentPlugin extends AbstractEntryPlugin {
             }
             return onSave.getAsBoolean();
         });
+        if (!shown) return;
+        /* unsaved changes: the form applied to a copy differs from the copy applied when the panel opened */
+        String snapshot = formState(dialog, appointment);
+        panel.setDirtyCheck(() -> !formState(dialog, appointment).equals(snapshot));
+    }
+
+    private static String formState(AppointmentDialog dialog, Appointment appointment) {
+        try {
+            Appointment copy = EntryFormat.fromJson(EntryFormat.toJson(appointment), Appointment.class);
+            dialog.apply(copy);
+            return EntryFormat.toJson(copy);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     private void markSelectedDone() {

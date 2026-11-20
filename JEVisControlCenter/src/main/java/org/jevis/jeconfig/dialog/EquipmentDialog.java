@@ -76,7 +76,7 @@ public class EquipmentDialog extends org.jevis.jeconfig.application.ui.SucDialog
         }
         possibleParents.remove(jeVisClass);
 
-        Label folderLabel = new Label(I18n.getInstance().getString("jevis.types.parent"));
+        Label folderLabel = new Label(PluginSidebar.text("plugin.equipment.new.folder", "Ordner", "Folder"));
         folderLabel.getStyleClass().add("suc-form-label");
         Label folderName = new Label(PluginSidebar.text("plugin.equipment.new.nofolder", "Kein Ordner gewählt", "No folder chosen"));
         folderName.getStyleClass().add("suc-form-empty");
@@ -85,7 +85,7 @@ public class EquipmentDialog extends org.jevis.jeconfig.application.ui.SucDialog
         HBox folderRow = new HBox(10, folderButton, folderName);
         folderRow.setAlignment(Pos.CENTER_LEFT);
 
-        Label nameLabel = new Label(I18n.getInstance().getString("newobject.name"));
+        Label nameLabel = new Label(PluginSidebar.text("plugin.equipment.new.name", "Name", "Name"));
         nameLabel.getStyleClass().add("suc-form-label");
         TextField nameField = new TextField();
         nameField.setPromptText(PluginSidebar.text("plugin.equipment.new.nameprompt", "z. B. Lüftung 4", "e.g. Ventilation 4"));
