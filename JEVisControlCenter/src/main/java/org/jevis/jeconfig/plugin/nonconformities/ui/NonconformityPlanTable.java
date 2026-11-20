@@ -82,7 +82,7 @@ public class NonconformityPlanTable extends TableView<NonconformityData> {
     private final ObservableList<SummeryData> summeryData;
     private final Preferences pref = Preferences.userRoot().node("JEVis.JEConfig.NonConformityTable");
     private final List<String> defaultList = new ArrayList<>(Arrays.asList("NonConformityNo", "Responsible", "CreateDate",
-            "Title", "DoneDate", "PlannedDate"));
+            "TitleProperty", "DoneDate", "PlannedDate")); /* the title column has the id "TitleProperty"; "Title" hid it */
 
     public NonconformityPlanTable(NonconformityPlan nonconformityPlan, ObservableList<NonconformityData> data, BooleanProperty updateTrigger) {
         this.data = data;

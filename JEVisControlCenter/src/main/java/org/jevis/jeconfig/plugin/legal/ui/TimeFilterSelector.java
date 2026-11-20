@@ -126,7 +126,7 @@ public class TimeFilterSelector extends GridPane {
         fDateField.getSelectionModel().selectFirst();
 
 
-        TimeFilterSelector.this.addRow(0, fDateField, new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.date.from")), fFromMonth, fFromYear, new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.date.from")), fToMonth, fToYear);
+        TimeFilterSelector.this.addRow(0, fDateField, new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.date.from")), fFromMonth, fFromYear, new Label(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.date.to")), fToMonth, fToYear);
 
 
     }

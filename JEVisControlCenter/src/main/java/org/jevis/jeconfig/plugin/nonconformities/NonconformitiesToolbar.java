@@ -59,6 +59,11 @@ public class NonconformitiesToolbar extends ToolBar {
         getItems().setAll(newNonconformityPlan, nonconformityPlanConfig, reloadButton,
                 sep1, newNonconformity, deleteNonconformity, openForm,
                 sep2, exportPDF);
+        /* J25.5: no export yet, so no dead button in the toolbar */
+        exportPDF.setVisible(false);
+        exportPDF.setManaged(false);
+        sep2.setVisible(false);
+        sep2.setManaged(false);
 
 
         nonconformityPlanConfig.setOnAction(event -> nonconformitiesController.openPlanSettings());
