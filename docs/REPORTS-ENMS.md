@@ -41,7 +41,7 @@ JEReport (`ContextBuilder`, `ReportInfo`) puts the variable `report` into every 
 variable name wins): `name` (report object), `site` (nearest Building above the report, empty without one),
 `organisation` (nearest Organization), `periodStart`, `periodEnd` (`dd.MM.yyyy`, end = last day of the current
 period), `period` (German text by schedule: "Oktober 2026", "2026", "4. Quartal 2026", "KW 47 2026", a day or a
-range) and `createdAt` (`dd.MM.yyyy HH:mm`). Deploy JEReport with `ReportInfo` before uploading templates that use `report`.
+range; a period that does not start where the calendar unit starts, e.g. a yearly report from November, becomes "November 2025 – Oktober 2026" or a date range) and `createdAt` (`dd.MM.yyyy HH:mm`). Deploy JEReport with `ReportInfo` before uploading templates that use `report`.
 
 ### Charts
 

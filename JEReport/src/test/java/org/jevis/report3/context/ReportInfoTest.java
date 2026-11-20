@@ -38,6 +38,9 @@ class ReportInfoTest {
         assertEquals("4. Quartal 2026", ReportInfo.text(oct, oct.plusMonths(3), "QUARTERLY"));
         assertEquals("KW 47 2026", ReportInfo.text(new DateTime(2026, 11, 16, 0, 0, ZONE), new DateTime(2026, 11, 22, 0, 0, ZONE), "WEEKLY"));
         assertEquals("01.10.2026 – 15.10.2026", ReportInfo.text(oct, new DateTime(2026, 10, 15, 0, 0, ZONE), "CUSTOM"));
+        /* a year from November and a month from the 15th are not calendar units */
+        assertEquals("November 2025 – Oktober 2026", ReportInfo.text(new DateTime(2025, 11, 1, 0, 0, ZONE), new DateTime(2026, 10, 31, 23, 59, ZONE), "YEARLY"));
+        assertEquals("15.10.2026 – 14.11.2026", ReportInfo.text(new DateTime(2026, 10, 15, 0, 0, ZONE), new DateTime(2026, 11, 14, 0, 0, ZONE), "MONTHLY"));
     }
 
     @Test
