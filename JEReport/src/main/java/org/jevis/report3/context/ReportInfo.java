@@ -44,7 +44,8 @@ import java.util.Map;
  *     <li>{@code organisation}: the nearest organisation above the report</li>
  *     <li>{@code periodStart}, {@code periodEnd}: the report period as dd.MM.yyyy (end = last day)</li>
  *     <li>{@code period}: the report period as text in German, by schedule ("Oktober 2026", "2025",
- *     "3. Quartal 2026", "KW 47 2026", a day or a range)</li>
+ *     "3. Quartal 2026", "KW 47 2026", a day; "November 2025 – Oktober 2026" or a date range when the period does not start
+ *     where the calendar unit starts)</li>
  *     <li>{@code createdAt}: creation time as dd.MM.yyyy HH:mm</li>
  * </ul>
  */
@@ -99,17 +100,23 @@ public class ReportInfo {
         } catch (IllegalArgumentException e) {
             return range;
         }
+        /* calendar names only when the period starts where the calendar unit starts (a year from November is a range) */
+        boolean midnight = first.getMillisOfDay() == 0;
+        boolean monthStart = midnight && first.getDayOfMonth() == 1;
+        String months = first.toString("MMMM yyyy", GERMAN) + " – " + last.toString("MMMM yyyy", GERMAN);
         switch (p) {
             case DAILY:
-                return first.toString(DATE);
+                return midnight ? first.toString(DATE) : range;
             case WEEKLY:
-                return "KW " + first.getWeekOfWeekyear() + " " + first.getWeekyear();
+                return midnight && first.getDayOfWeek() == 1 ? "KW " + first.getWeekOfWeekyear() + " " + first.getWeekyear() : range;
             case MONTHLY:
-                return first.toString("MMMM yyyy", GERMAN);
+                return monthStart ? first.toString("MMMM yyyy", GERMAN) : range;
             case QUARTERLY:
-                return ((first.getMonthOfYear() - 1) / 3 + 1) + ". Quartal " + first.getYear();
+                if (!monthStart) return range;
+                return (first.getMonthOfYear() - 1) % 3 == 0 ? ((first.getMonthOfYear() - 1) / 3 + 1) + ". Quartal " + first.getYear() : months;
             case YEARLY:
-                return String.valueOf(first.getYear());
+                if (!monthStart) return range;
+                return first.getMonthOfYear() == 1 ? String.valueOf(first.getYear()) : months;
             default:
                 return range;
         }
