@@ -271,36 +271,39 @@ public class LegalCadastreController {
     }
 
     public void openDataForm(boolean isNew) {
-        ObligationForm obligationForm = new ObligationForm(getActivePlan());
         ObligationData data = getSelectedData();
+        if (data == null) return;
+        ObligationForm obligationForm = new ObligationForm(getActivePlan());
         obligationForm.setData(data);
         obligationForm.setNew(isNew);
-        obligationForm.setTitle(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.title"));
-        obligationForm.setDescription(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.header"));
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.save"), ButtonBar.ButtonData.OTHER);
-        ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.indexoflegalprovisions.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        javafx.scene.control.TabPane tabs = obligationForm.tabPane;
+        tabs.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
 
-
-        obligationForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
-        /* J25.5: Sun-coloured primary button, but no default button: Enter in a text field of the form must not save */
-        obligationForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
-        final Button btOk = (Button) obligationForm.getDialogPane().lookupButton(buttonTypeOne);
-        final Button btCancel = (Button) obligationForm.getDialogPane().lookupButton(buttonTypeTwo);
-        btOk.setOnAction(actionEvent -> {
-            try {
-                data.commit();
-                updateTrigger.set(!updateTrigger.get());
-
-            } catch (Exception e) {
-                logger.error(e);
-            }
-        });
-        btCancel.addEventFilter(ActionEvent.ACTION, event -> {
-            if (obligationForm.isNew()) {
+        /* J25.5: the obligation opens in the side panel (docs/DESIGN-CC.md: editors with more than five fields) */
+        org.jevis.jeconfig.application.ui.SidePanel panel = org.jevis.jeconfig.application.ui.SidePanel.get();
+        final boolean[] saved = {false};
+        boolean shown = panel.show(I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.title"),
+                I18n.getInstance().getString("plugin.indexoflegalprovisions.obligation.dialog.header"), tabs, () -> {
+                    try {
+                        data.commit();
+                        updateTrigger.set(!updateTrigger.get());
+                    } catch (Exception e) {
+                        logger.error(e);
+                        org.jevis.jeconfig.application.ui.Notify.error(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.error.save", "Der Wert konnte nicht gespeichert werden. Verbindung prüfen und erneut versuchen.", "The value could not be saved. Check the connection and try again."));
+                        return false;
+                    }
+                    saved[0] = true;
+                    org.jevis.jeconfig.application.ui.Notify.success(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.indexoflegalprovisions.form.saved", "Rechtliche Verpflichtung gespeichert", "Legal obligation saved"));
+                    return true;
+                });
+        if (!shown) return;
+        panel.setPanelWidth(900);
+        panel.setOnClosed(() -> {
+            if (saved[0]) return;
+            if (isNew) {
                 try {
                     data.getObject().delete();
                     getActiveTab().getLegalCadastre().getLegislationDataList().remove(data);
-
                 } catch (Exception e) {
                     logger.error(e);
                 }
@@ -308,9 +311,6 @@ public class LegalCadastreController {
                 reload(data);
             }
         });
-        obligationForm.show();
-
-
     }
 
     private void reload(ObligationData obligationData) {

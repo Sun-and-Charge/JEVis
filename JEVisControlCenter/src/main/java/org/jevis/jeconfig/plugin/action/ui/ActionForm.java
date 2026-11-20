@@ -71,5 +71,10 @@ public class ActionForm extends org.jevis.jeconfig.application.ui.SucDialog<java
 
     }
 
+    /** J25.5: the tabs for the side panel (the dialog itself is not shown any more) */
+    public TabPane getTabPane() {
+        return tabPane;
+    }
+
 
 }

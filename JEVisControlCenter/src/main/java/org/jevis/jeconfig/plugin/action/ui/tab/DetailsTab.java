@@ -137,13 +137,17 @@ public class DetailsTab extends Tab {
             JEVisObject obj = EmptyObject.getInstance();
 
             try {
-                Long id = Long.parseLong(data.EnPIProperty().get().jevisLinkProperty().get());
-                if (id.equals(EmptyObject.getInstance().getID())) {
-                    obj = EmptyObject.getInstance();
-                } else if (id.equals(FreeObject.getInstance().getID())) {
-                    obj = FreeObject.getInstance();
-                } else {
-                    obj = data.getObject().getDataSource().getObject(id);
+                /* an action without EnPI has an empty link: keep the empty entry */
+                String link = data.EnPIProperty().get().jevisLinkProperty().get();
+                if (link != null && !link.trim().isEmpty()) {
+                    Long id = Long.parseLong(link.trim());
+                    if (id.equals(EmptyObject.getInstance().getID())) {
+                        obj = EmptyObject.getInstance();
+                    } else if (id.equals(FreeObject.getInstance().getID())) {
+                        obj = FreeObject.getInstance();
+                    } else {
+                        obj = data.getObject().getDataSource().getObject(id);
+                    }
                 }
             } catch (Exception exception) {
                 logger.error(exception);
@@ -198,10 +202,16 @@ public class DetailsTab extends Tab {
             }
         });
 
+        /* show the stored medium (the preselection was commented out, so the box stayed empty) */
+        String storedMedium = data.mediaTagsProperty().get();
+        if (storedMedium != null && !storedMedium.isEmpty()) {
+            data.getActionPlan().getMedium().stream().filter(m -> storedMedium.equals(m.getId())).findFirst()
+                    .ifPresent(m -> f_mediaTags.getSelectionModel().select(m));
+        }
         f_mediaTags.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Medium>() {
             @Override
             public void changed(ObservableValue<? extends Medium> observable, Medium oldValue, Medium newValue) {
-                data.mediaTagsProperty().set(newValue.getId());
+                if (newValue != null) data.mediaTagsProperty().set(newValue.getId());
             }
         });
 
@@ -334,25 +344,32 @@ public class DetailsTab extends Tab {
         f_alternativAction.setWrapText(true);
         f_correctionIfNeeded.setWrapText(true);
 
-        gridPane.addRow(0, l_mediaTags, f_mediaTags, new Region(), l_EnpiSelection, f_EnpiSelection);
-        gridPane.addRow(1, l_energyBefore, f_consumptionBefore, new Region(), l_enpiBefore, box_EnpiBefore);
-        gridPane.addRow(2, l_energyAfter, f_consumptionAfter, new Region(), l_enpiAfter, box_EnpiAfter);
-        gridPane.addRow(3, l_energyChange, f_consumptionDiff, new Region(), l_enpiChange, box_EnpiDiff);
-        gridPane.addRow(4, new Region());
-
-        gridPane.add(l_correctionIfNeeded, 0, 7);
-        gridPane.add(f_correctionIfNeeded, 0, 8);
-
-        gridPane.add(l_nextActionIfNeeded, 3, 7);
-        gridPane.add(f_nextActionIfNeeded, 3, 8);
-
-        GridPane.setColumnSpan(l_correctionIfNeeded, 2);
-        GridPane.setColumnSpan(l_nextActionIfNeeded, 2);
-        GridPane.setColumnSpan(f_correctionIfNeeded, 2);
-        GridPane.setColumnSpan(f_nextActionIfNeeded, 2);
-        GridPane.setColumnSpan(l_alternativAction, 2);
-        GridPane.setColumnSpan(f_alternativAction, 2);
-
+        /* J25.5: sections, labels above the fields (docs/DESIGN-CC.md) */
+        for (HBox box : new HBox[]{box_EnpiBefore, box_EnpiAfter, box_EnpiDiff}) {
+            box.setSpacing(6);
+            box.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        }
+        HBox.setHgrow(f_enpiBefore, Priority.ALWAYS);
+        HBox.setHgrow(f_enpiAfter, Priority.ALWAYS);
+        HBox.setHgrow(f_enpiDiff, Priority.ALWAYS);
+        f_correctionIfNeeded.setPrefRowCount(4);
+        f_nextActionIfNeeded.setPrefRowCount(4);
+        org.jevis.jeconfig.application.ui.FormLayout form = new org.jevis.jeconfig.application.ui.FormLayout();
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.form.consumption", "Verbrauch", "Consumption"))
+                .add(l_mediaTags.getText(), f_mediaTags)
+                .add(l_energyBefore.getText(), f_consumptionBefore)
+                .add(l_energyAfter.getText(), f_consumptionAfter)
+                .add(l_energyChange.getText(), f_consumptionDiff);
+        form.section(l_EnpiSelection.getText())
+                .addWide(l_EnpiSelection.getText(), f_EnpiSelection)
+                .add(l_enpiBefore.getText(), box_EnpiBefore)
+                .add(l_enpiAfter.getText(), box_EnpiAfter)
+                .add(l_enpiChange.getText(), box_EnpiDiff);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.form.followup", "Weitere Maßnahmen", "Further actions"))
+                .addWide(l_correctionIfNeeded.getText().replaceAll(":\s*$", ""), f_correctionIfNeeded)
+                .addWide(l_nextActionIfNeeded.getText().replaceAll(":\s*$", ""), f_nextActionIfNeeded);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setContent(form);
         setContent(scrollPane);
 
     }

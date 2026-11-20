@@ -337,19 +337,20 @@ public class AppointmentPlugin extends AbstractEntryPlugin {
         appointment.setCreated(EntryFormat.formatTimestamp(new LocalDateTime()));
         appointment.setCreatedBy(EntryStore.currentUserName(ds));
         AppointmentDialog dialog = new AppointmentDialog(ds, appointment, null, true);
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (!result.isPresent() || result.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
-            return;
-        }
-        LocalDateTime next = dialog.apply(appointment);
-        try {
-            JEVisObject object = EntryStore.create(directory, Appointment.CLASS_NAME, appointment.getTitle());
-            EntryStore.write(object, EntryFormat.ATTRIBUTE_DATA, EntryFormat.toJson(appointment));
-            showNextDue(next);
-            reload();
-        } catch (Exception e) {
-            EntryStore.showError(I18n.getInstance().getString("plugin.scheduledentries.error.save"), e);
-        }
+        /* J25.5: the editor opens in the side panel */
+        showInPanel(I18n.getInstance().getString("plugin.appointments.new"), dialog, () -> {
+            LocalDateTime next = dialog.apply(appointment);
+            try {
+                JEVisObject object = EntryStore.create(directory, Appointment.CLASS_NAME, appointment.getTitle());
+                EntryStore.write(object, EntryFormat.ATTRIBUTE_DATA, EntryFormat.toJson(appointment));
+                showNextDue(next);
+                reload();
+                return true;
+            } catch (Exception e) {
+                EntryStore.showError(I18n.getInstance().getString("plugin.scheduledentries.error.save"), e);
+                return false;
+            }
+        });
     }
 
     private void editSelected() {
@@ -357,12 +358,22 @@ public class AppointmentPlugin extends AbstractEntryPlugin {
         if (row == null) return;
         Appointment appointment = EntryFormat.fromJson(EntryFormat.toJson(row.appointment), Appointment.class);
         AppointmentDialog dialog = new AppointmentDialog(ds, appointment, row.state, false);
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (!result.isPresent() || result.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
-            return;
-        }
-        LocalDateTime next = dialog.apply(appointment);
-        save(row, appointment, next);
+        showInPanel(row.appointment.getTitle(), dialog, () -> {
+            LocalDateTime next = dialog.apply(appointment);
+            save(row, appointment, next);
+            return true;
+        });
+    }
+
+    private void showInPanel(String title, AppointmentDialog dialog, java.util.function.BooleanSupplier onSave) {
+        org.jevis.jeconfig.application.ui.SidePanel.get().show(title, I18n.getInstance().getString("plugin.appointments.edit"), dialog.getForm(), () -> {
+            String error = dialog.validate();
+            if (error != null) {
+                org.jevis.jeconfig.application.ui.Notify.error(error);
+                return false;
+            }
+            return onSave.getAsBoolean();
+        });
     }
 
     private void markSelectedDone() {

@@ -17,6 +17,11 @@ Grafana's design recommendations (Saga design system and Grafana's UX writing gu
 4. **Overview pages**: dashboards and analyses start with search, site filter, favourites, recently opened.
 5. **Dialogs and editors** (below), step by step per plugin.
 
+Status 2026-11-20: editors as side panels (`application/ui/SidePanel`, `FormLayout`, `ObjectEditorPanel`): meters,
+equipment, action (tabs General/Details with sections), nonconformity, legal obligation, appointment and maintenance
+open in the drawer of the plugin area; "Neue Anlage" is a short dialog that creates the object only on "Anlegen".
+Plan settings (status/medium/field lists) and the meter change stay modal dialogs.
+
 Status 2026-11-19: stage 5 built as well: `application/ui/SucDialog` (sizes S/M/L, one primary button, form
 primary without Enter, discard question), `Confirm` (question naming the object, consequence, red non-default button)
 and `Notify` (toasts at the bottom right) replace the alerts and dialogs in all modules, except the login flow,

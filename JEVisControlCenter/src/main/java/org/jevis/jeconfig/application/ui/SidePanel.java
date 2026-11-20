@@ -52,6 +52,7 @@ public final class SidePanel extends BorderPane {
     private final Button cancel = new Button(SucDialog.text("dialog.ui.cancel", "Abbrechen", "Cancel"));
     private final BooleanProperty dirty = new SimpleBooleanProperty(false);
     private BooleanSupplier onSave;
+    private BooleanSupplier dirtyCheck;
     private Runnable onClosed;
 
     private SidePanel() {
@@ -131,6 +132,9 @@ public final class SidePanel extends BorderPane {
         scroll.setContent(body);
         scroll.setVvalue(0);
         this.onSave = onSave;
+        this.dirtyCheck = null;
+        setPrefWidth(640);
+        setMaxWidth(760);
         save.setDisable(false);
         save.setVisible(true);
         save.setManaged(true);
@@ -162,6 +166,7 @@ public final class SidePanel extends BorderPane {
         scroll.setContent(null);
         resetDirty();
         onSave = null;
+        dirtyCheck = null;
         Runnable closed = onClosed;
         onClosed = null;
         if (closed != null) closed.run();
@@ -176,13 +181,26 @@ public final class SidePanel extends BorderPane {
         return dirty;
     }
 
+    /** for editors whose data model knows its changes (e.g. a JSON comparison), asked in addition to the flag */
+    public void setDirtyCheck(BooleanSupplier dirtyCheck) {
+        this.dirtyCheck = dirtyCheck;
+    }
+
+    /** wider editors (tabs with tables), capped at 70 % of the window */
+    public void setPanelWidth(double width) {
+        double window = getScene() != null && getScene().getWindow() != null ? getScene().getWindow().getWidth() : width;
+        double w = Math.min(width, Math.max(420, window * 0.7));
+        setMaxWidth(w);
+        setPrefWidth(w);
+    }
+
     /** runs once when the panel closes (saved, cancelled or replaced) */
     public void setOnClosed(Runnable onClosed) {
         this.onClosed = onClosed;
     }
 
     private boolean confirmDiscard() {
-        if (!dirty.get()) return true;
+        if (!dirty.get() && (dirtyCheck == null || !dirtyCheck.getAsBoolean())) return true;
         return Confirm.ask(SucDialog.text("dialog.ui.discard.title", "Änderungen verwerfen?", "Discard changes?"),
                 SucDialog.text("dialog.ui.discard.panel", "Die Änderungen in diesem Editor gehen verloren.", "The changes in this editor will be lost."),
                 SucDialog.text("dialog.ui.discard.action", "Verwerfen", "Discard"), true);

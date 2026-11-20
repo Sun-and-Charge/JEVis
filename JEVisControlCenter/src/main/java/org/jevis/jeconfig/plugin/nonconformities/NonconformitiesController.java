@@ -289,42 +289,47 @@ public class NonconformitiesController {
     }
 
     public void openDataForm(boolean isNew) {
-        NonconformityForm nonconformityForm = new NonconformityForm(getActiveNonconformityPlan());
         NonconformityData data = getSelectedData();
+        if (data == null) return;
+        NonconformityForm nonconformityForm = new NonconformityForm(getActiveNonconformityPlan());
         nonconformityForm.setData(data);
         nonconformityForm.setNew(isNew);
-        nonconformityForm.setTitle(I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.title"));
-        nonconformityForm.setDescription(I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.header"));
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.nonconformities.form.save"), ButtonBar.ButtonData.OTHER);
-        ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.nonconformities.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        javafx.scene.control.TabPane tabs = nonconformityForm.tabPane;
+        tabs.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
 
-
-        nonconformityForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
-        /* J25.5: Sun-coloured primary button, but no default button: Enter in a text field of the form must not save */
-        nonconformityForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
-        final Button btOk = (Button) nonconformityForm.getDialogPane().lookupButton(buttonTypeOne);
-        final Button btCancel = (Button) nonconformityForm.getDialogPane().lookupButton(buttonTypeTwo);
-        btOk.addEventFilter(ActionEvent.ACTION,getCloseRequest(data, nonconformityForm));
-        btCancel.addEventFilter(ActionEvent.ACTION,event -> {
-            if (nonconformityForm.isNew()) {
+        /* J25.5: the nonconformity opens in the side panel (docs/DESIGN-CC.md: editors with more than five fields) */
+        org.jevis.jeconfig.application.ui.SidePanel panel = org.jevis.jeconfig.application.ui.SidePanel.get();
+        final boolean[] saved = {false};
+        boolean shown = panel.show(I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.title"),
+                I18n.getInstance().getString("plugin.nonconformities.nonconformity.dialog.header"), tabs, () -> {
+                    String errorText = data.checkForRequirements();
+                    if (!errorText.equals(NonconformityData.REQUIREMENTS_MET)) {
+                        nonconformityForm.showNotification(errorText, Icon.Warning);
+                        return false;
+                    }
+                    data.commit();
+                    updateTrigger.set(!updateTrigger.get());
+                    saved[0] = true;
+                    org.jevis.jeconfig.application.ui.Notify.success(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.form.saved", "Abweichung gespeichert", "Nonconformity saved"));
+                    return true;
+                });
+        if (!shown) return;
+        panel.setPanelWidth(900);
+        panel.setOnClosed(() -> {
+            if (saved[0]) return;
+            if (isNew) {
                 try {
                     data.getObject().delete();
                     getActiveTab().getNonconformityPlan().getNonconformityList().remove(data);
-
-
                 } catch (Exception e) {
                     logger.error(e);
                 }
-            }else {
+            } else {
                 reload(data);
             }
         });
-        nonconformityForm.show();
-
-
-
-
     }
+
     @NotNull
     private EventHandler getCloseRequest(NonconformityData data, NonconformityForm nonconformityForm) {
         return dialogEvent -> {

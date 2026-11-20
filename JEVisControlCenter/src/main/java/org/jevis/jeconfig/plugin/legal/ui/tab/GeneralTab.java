@@ -153,6 +153,31 @@ public class GeneralTab extends DataTab<ObligationData> {
         f_Nr.setEditable(JEConfig.getExpert());
 
 
+        /* J25.5: sections, labels above the fields (docs/DESIGN-CC.md); the grid above is replaced */
+        for (javafx.scene.control.TextArea area : new javafx.scene.control.TextArea[]{f_description, f_importanceForTheCompany}) {
+            area.setPrefRowCount(5);
+            area.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        }
+        org.jevis.jeconfig.application.ui.FormLayout form = new org.jevis.jeconfig.application.ui.FormLayout();
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.legal.form.section.regulation", "Rechtsvorschrift", "Regulation"))
+                .add(l_Nr, f_Nr)
+                .add(l_title, f_title)
+                .addWide(l_designation, f_designation)
+                .add(l_category, f_category)
+                .add(l_scope, f_scope)
+                .addWide(l_link, f_link)
+                .add(l_relevance, f_relevance);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.legal.form.section.dates", "Fassung und Prüfung", "Version and review"))
+                .add(l_issueDate, f_issueDate)
+                .add(l_activeVersion, f_activeVersion)
+                .add(l_dateOfExamination, f_dateOfExamination);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.legal.form.section.description", "Inhalt", "Content"))
+                .addWide(l_description, f_description)
+                .addWide(l_importanceForTheCompany, f_importanceForTheCompany);
+        javafx.scene.control.ScrollPane formScroll = new javafx.scene.control.ScrollPane(form);
+        formScroll.setFitToWidth(true);
+        notificationPane.setContent(formScroll);
+
         //scrollPane.setContent(gridPane);
         this.setContent(notificationPane);
     }

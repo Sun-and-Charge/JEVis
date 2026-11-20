@@ -144,13 +144,39 @@ public class FormLayout extends VBox {
             return this;
         }
 
+        /** a field with an existing label (its text may change later) */
+        public Section add(Label caption, Node field) {
+            grid.add(cell(caption, field), column, row);
+            column++;
+            if (column > 1) {
+                column = 0;
+                row++;
+            }
+            return this;
+        }
+
+        /** a field with an existing label over both columns */
+        public Section addWide(Label caption, Node field) {
+            if (column != 0) {
+                column = 0;
+                row++;
+            }
+            grid.add(cell(caption, field), 0, row, 2, 1);
+            row++;
+            return this;
+        }
+
         public boolean isEmpty() {
             return grid.getChildren().isEmpty();
         }
 
         private static VBox cell(String label, Node field) {
-            Label caption = new Label(label);
+            return cell(new Label(label), field);
+        }
+
+        private static VBox cell(Label caption, Node field) {
             caption.getStyleClass().add("suc-form-label");
+            caption.setPadding(javafx.geometry.Insets.EMPTY);
             caption.setWrapText(true);
             if (field instanceof Control) ((Control) field).setMaxWidth(Double.MAX_VALUE);
             if (field instanceof Region) ((Region) field).setMaxWidth(Double.MAX_VALUE);

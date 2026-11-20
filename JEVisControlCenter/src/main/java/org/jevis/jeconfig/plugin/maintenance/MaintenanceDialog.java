@@ -24,6 +24,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import org.jevis.jeconfig.application.ui.FormLayout;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.StringConverter;
@@ -55,6 +56,8 @@ public class MaintenanceDialog extends org.jevis.jeconfig.application.ui.SucDial
     private final ComboBox<MaintenanceEntry.Status> statusBox = new ComboBox<>();
     private final ObjectListEditor recipientEditor;
     private final CheckBox informBox = new CheckBox(I18n.getInstance().getString("plugin.maintenance.informaftersave"));
+
+    private final FormLayout form = new FormLayout();
 
     public MaintenanceDialog(JEVisDataSource ds, MaintenanceEntry entry, MailState state, boolean isNew) {
         super(I18n.getInstance().getString(isNew ? "plugin.maintenance.new" : "plugin.maintenance.edit"), null, Size.M);
@@ -97,30 +100,28 @@ public class MaintenanceDialog extends org.jevis.jeconfig.application.ui.SucDial
         statusBox.getSelectionModel().select(entry.getStatus());
         recipientEditor = new ObjectListEditor(ds, entry.getRecipients());
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(8);
-        grid.setPadding(new Insets(12));
-        int row = 0;
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.type")), typeBox);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.title")), titleField);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.description")), descriptionArea);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.start")), startInput);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.duration")), durationBox);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.impact")), impactArea);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.status")), statusBox);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.maintenance.recipients")), recipientEditor);
+        /* J25.5: sections, labels above the fields; shown in the side panel (docs/DESIGN-CC.md) */
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.maintenance.form.entry", "Meldung", "Notice"))
+                .add(I18n.getInstance().getString("plugin.maintenance.type"), typeBox)
+                .add(I18n.getInstance().getString("plugin.maintenance.status"), statusBox)
+                .addWide(I18n.getInstance().getString("plugin.maintenance.title"), titleField)
+                .addWide(I18n.getInstance().getString("plugin.maintenance.description"), descriptionArea);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.maintenance.form.time", "Zeitraum und Auswirkungen", "Time and impact"))
+                .add(I18n.getInstance().getString("plugin.maintenance.start"), startInput)
+                .add(I18n.getInstance().getString("plugin.maintenance.duration"), durationBox)
+                .addWide(I18n.getInstance().getString("plugin.maintenance.impact"), impactArea);
+        FormLayout.Section people = form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.maintenance.form.notification", "Benachrichtigung", "Notification"))
+                .addWide(I18n.getInstance().getString("plugin.maintenance.recipients"), recipientEditor);
         if (state != null && (state.getLastMail() != null || state.getLastError() != null)) {
-            grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.scheduledentries.lastmail")), new Label(MaintenancePlugin.mailText(entry, state)));
+            people.addWide(I18n.getInstance().getString("plugin.scheduledentries.lastmail"), new Label(MaintenancePlugin.mailText(entry, state)));
         }
-        grid.add(informBox, 1, row++);
+        people.addWide("", informBox);
         Label hint = new Label(I18n.getInstance().getString("plugin.maintenance.hint"));
         hint.setWrapText(true);
-        hint.setMaxWidth(560);
-        grid.add(hint, 0, row, 2, 1);
-        GridPane.setHgrow(titleField, Priority.ALWAYS);
+        hint.getStyleClass().add("suc-form-empty");
+        form.getChildren().add(hint);
 
-        getDialogPane().setContent(grid);
+        getDialogPane().setContent(form);
         ButtonType ok = new ButtonType(I18n.getInstance().getString("plugin.scheduledentries.save"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancel = new ButtonType(I18n.getInstance().getString("plugin.scheduledentries.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         getDialogPane().getButtonTypes().addAll(ok, cancel);
@@ -130,6 +131,19 @@ public class MaintenanceDialog extends org.jevis.jeconfig.application.ui.SucDial
                 org.jevis.jeconfig.application.ui.Notify.error(I18n.getInstance().getString("plugin.scheduledentries.error.title"));
             }
         });
+    }
+
+    /** the form for the side panel */
+    public FormLayout getForm() {
+        return form;
+    }
+
+    /** the first missing required value, null when the form can be saved */
+    public String validate() {
+        if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
+            return I18n.getInstance().getString("plugin.scheduledentries.error.title");
+        }
+        return null;
     }
 
     private static StringConverter<MaintenanceEntry.Type> typeConverter() {

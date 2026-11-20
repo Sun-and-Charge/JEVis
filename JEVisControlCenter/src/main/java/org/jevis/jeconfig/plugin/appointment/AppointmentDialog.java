@@ -23,6 +23,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import org.jevis.jeconfig.application.ui.FormLayout;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.StringConverter;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 public class AppointmentDialog extends org.jevis.jeconfig.application.ui.SucDialog<ButtonType> {
 
     private static final Logger logger = LogManager.getLogger(AppointmentDialog.class);
+    private final FormLayout form = new FormLayout();
 
     private final TextField titleField = new TextField();
     private final TextArea descriptionArea = new TextArea();
@@ -97,40 +99,33 @@ public class AppointmentDialog extends org.jevis.jeconfig.application.ui.SucDial
         HBox linkedBox = new HBox(6, linkedLabel, chooseLinked, clearLinked);
         linkedLabel.setMaxWidth(260);
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(8);
-        grid.setPadding(new Insets(12));
-        int row = 0;
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.title")), titleField);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.description")), descriptionArea);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.due")), dueInput);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.recurrence")), recurrenceBox);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.reminderdays")), reminderSpinner);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.responsible")), recipientEditor);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.linked")), linkedBox);
-        grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.appointments.status")), statusBox);
+        /* J25.5: sections, labels above the fields; shown in the side panel (docs/DESIGN-CC.md) */
+        linkedBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.appointments.form.entry", "Termin", "Appointment"))
+                .addWide(I18n.getInstance().getString("plugin.appointments.title"), titleField)
+                .addWide(I18n.getInstance().getString("plugin.appointments.description"), descriptionArea);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.appointments.form.schedule", "Termin und Erinnerung", "Date and reminder"))
+                .add(I18n.getInstance().getString("plugin.appointments.due"), dueInput)
+                .add(I18n.getInstance().getString("plugin.appointments.recurrence"), recurrenceBox)
+                .add(I18n.getInstance().getString("plugin.appointments.reminderdays"), reminderSpinner)
+                .add(I18n.getInstance().getString("plugin.appointments.status"), statusBox);
+        FormLayout.Section people = form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.appointments.form.people", "Zuständig und Bezug", "Responsible and reference"))
+                .addWide(I18n.getInstance().getString("plugin.appointments.responsible"), recipientEditor)
+                .addWide(I18n.getInstance().getString("plugin.appointments.linked"), linkedBox);
         if (state != null && (state.getLastMail() != null || state.getLastError() != null)) {
-            grid.addRow(row++, new Label(I18n.getInstance().getString("plugin.scheduledentries.lastmail")), new Label(AppointmentPlugin.mailStateText(state)));
+            people.addWide(I18n.getInstance().getString("plugin.scheduledentries.lastmail"), new Label(AppointmentPlugin.mailStateText(state)));
         }
         Label hint = new Label(I18n.getInstance().getString("plugin.appointments.hint"));
         hint.setWrapText(true);
-        hint.setMaxWidth(560);
-        grid.add(hint, 0, row, 2, 1);
-        GridPane.setHgrow(titleField, Priority.ALWAYS);
-        titleField.setPrefWidth(420);
+        hint.getStyleClass().add("suc-form-empty");
+        form.getChildren().add(hint);
 
-        getDialogPane().setContent(grid);
+        getDialogPane().setContent(form);
         ButtonType ok = new ButtonType(I18n.getInstance().getString("plugin.scheduledentries.save"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancel = new ButtonType(I18n.getInstance().getString("plugin.scheduledentries.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         getDialogPane().getButtonTypes().addAll(ok, cancel);
         getDialogPane().lookupButton(ok).addEventFilter(ActionEvent.ACTION, event -> {
-            String error = null;
-            if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
-                error = I18n.getInstance().getString("plugin.scheduledentries.error.title");
-            } else if (dueInput.getValue() == null) {
-                error = I18n.getInstance().getString("plugin.appointments.error.due");
-            }
+            String error = validate();
             if (error != null) {
                 event.consume();
                 org.jevis.jeconfig.application.ui.Notify.error(error);
@@ -182,6 +177,21 @@ public class AppointmentDialog extends org.jevis.jeconfig.application.ui.SucDial
      *
      * @return the new due date if a recurring appointment was completed, else null
      */
+    /** the form for the side panel */
+    public FormLayout getForm() {
+        return form;
+    }
+
+    /** the first missing required value, null when the form can be saved */
+    public String validate() {
+        if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
+            return I18n.getInstance().getString("plugin.scheduledentries.error.title");
+        } else if (dueInput.getValue() == null) {
+            return I18n.getInstance().getString("plugin.appointments.error.due");
+        }
+        return null;
+    }
+
     public LocalDateTime apply(Appointment appointment) {
         Appointment.Status oldStatus = appointment.getStatus();
         LocalDateTime oldDue = appointment.getDueDate();

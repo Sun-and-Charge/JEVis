@@ -346,41 +346,37 @@ public class ActionController {
     public void openDataForm() {
         logger.debug("openDataForm()");
         ActionData data = getSelectedData();
+        if (data == null) return;
         ActionForm actionForm = new ActionForm(getActiveActionPlan(), data);
+        TabPane tabs = actionForm.getTabPane();
+        tabs.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
 
-        ButtonType buttonTypeOne = new ButtonType(I18n.getInstance().getString("plugin.action.form.save"), ButtonBar.ButtonData.OTHER);
-        ButtonType buttonTypeTwo = new ButtonType(I18n.getInstance().getString("plugin.action.form.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-
-
-        actionForm.getDialogPane().getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo);
-        /* J25.5: Sun-coloured primary button, but no default button: Enter in a text field of the form must not save */
-        actionForm.getDialogPane().lookupButton(buttonTypeOne).getStyleClass().add("primary");
-
-
-        Optional<ButtonType> optional = actionForm.showAndWait();
-        if (optional.get() == buttonTypeOne) {
-            data.setNew(false);
-            data.commit();
-            getActiveTab().updateStatistics();
-        } else {
-            if (data.isNew()) {
-                // data.getActionPlan().removeAction(data);
-            } else {
-                try {
-                    int index = getActiveTab().getActionTable().getSelectionModel().getSelectedIndex();
-                    getActiveActionPlan().reloadAction(data);
-                    Platform.runLater(() -> {
-                        getActiveTab().getActionTable().getSelectionModel().select(index);
-                    });
-
-                } catch (Exception ex) {
-                    logger.error(ex, ex);
-                }
+        /* J25.5: the action opens in the side panel (docs/DESIGN-CC.md: editors with more than five fields) */
+        org.jevis.jeconfig.application.ui.SidePanel panel = org.jevis.jeconfig.application.ui.SidePanel.get();
+        final boolean[] saved = {false};
+        boolean shown = panel.show(data.getNoText() + (data.titleProperty().get() == null || data.titleProperty().get().isEmpty() ? "" : " – " + data.titleProperty().get()),
+                I18n.getInstance().getString("actionform.editor.title"), tabs, () -> {
+                    data.setNew(false);
+                    data.commit();
+                    getActiveTab().updateStatistics();
+                    saved[0] = true;
+                    org.jevis.jeconfig.application.ui.Notify.success(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.action.form.saved", "Maßnahme gespeichert", "Action saved"));
+                    return true;
+                });
+        if (!shown) return;
+        panel.setPanelWidth(900);
+        panel.setDirtyCheck(data::hasChanged);
+        panel.setOnClosed(() -> {
+            if (saved[0] || data.isNew()) return;
+            /* discarded: back to the stored state */
+            try {
+                int index = getActiveTab().getActionTable().getSelectionModel().getSelectedIndex();
+                getActiveActionPlan().reloadAction(data);
+                Platform.runLater(() -> getActiveTab().getActionTable().getSelectionModel().select(index));
+            } catch (Exception ex) {
+                logger.error(ex, ex);
             }
-
-        }
-
-
+        });
     }
 
     public boolean isIsOverviewTab() {

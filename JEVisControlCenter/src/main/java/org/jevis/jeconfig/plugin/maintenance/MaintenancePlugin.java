@@ -314,19 +314,20 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
         entry.setCreated(EntryFormat.formatTimestamp(new LocalDateTime()));
         entry.setCreatedBy(EntryStore.currentUserName(ds));
         MaintenanceDialog dialog = new MaintenanceDialog(ds, entry, null, true);
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (!result.isPresent() || result.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
-            return;
-        }
-        boolean inform = dialog.apply(entry);
-        try {
-            JEVisObject object = EntryStore.create(directory, MaintenanceEntry.CLASS_NAME, entry.getTitle());
-            EntryStore.write(object, EntryFormat.ATTRIBUTE_DATA, EntryFormat.toJson(entry));
-            if (inform) showInformQueued();
-            reload();
-        } catch (Exception e) {
-            EntryStore.showError(I18n.getInstance().getString("plugin.scheduledentries.error.save"), e);
-        }
+        /* J25.5: the editor opens in the side panel */
+        showInPanel(I18n.getInstance().getString("plugin.maintenance.new"), dialog, () -> {
+            boolean inform = dialog.apply(entry);
+            try {
+                JEVisObject object = EntryStore.create(directory, MaintenanceEntry.CLASS_NAME, entry.getTitle());
+                EntryStore.write(object, EntryFormat.ATTRIBUTE_DATA, EntryFormat.toJson(entry));
+                if (inform) showInformQueued();
+                reload();
+                return true;
+            } catch (Exception e) {
+                EntryStore.showError(I18n.getInstance().getString("plugin.scheduledentries.error.save"), e);
+                return false;
+            }
+        });
     }
 
     private void editSelected() {
@@ -334,16 +335,27 @@ public class MaintenancePlugin extends AbstractEntryPlugin {
         if (row == null) return;
         MaintenanceEntry entry = EntryFormat.fromJson(EntryFormat.toJson(row.entry), MaintenanceEntry.class);
         MaintenanceDialog dialog = new MaintenanceDialog(ds, entry, row.state, false);
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (!result.isPresent() || result.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
-            return;
-        }
-        boolean inform = dialog.apply(entry);
-        boolean doneMail = MaintenanceLogic.pendingMail(entry, row.state) == MaintenanceLogic.MailKind.DONE
-                && MaintenanceLogic.pendingMail(row.entry, row.state) != MaintenanceLogic.MailKind.DONE;
-        if (save(row, entry) && (inform || doneMail)) {
-            showInformQueued();
-        }
+        showInPanel(row.entry.getTitle(), dialog, () -> {
+            boolean inform = dialog.apply(entry);
+            boolean doneMail = MaintenanceLogic.pendingMail(entry, row.state) == MaintenanceLogic.MailKind.DONE
+                    && MaintenanceLogic.pendingMail(row.entry, row.state) != MaintenanceLogic.MailKind.DONE;
+            boolean saved = save(row, entry);
+            if (saved && (inform || doneMail)) {
+                showInformQueued();
+            }
+            return saved;
+        });
+    }
+
+    private void showInPanel(String title, MaintenanceDialog dialog, java.util.function.BooleanSupplier onSave) {
+        org.jevis.jeconfig.application.ui.SidePanel.get().show(title, I18n.getInstance().getString("plugin.maintenance.edit"), dialog.getForm(), () -> {
+            String error = dialog.validate();
+            if (error != null) {
+                org.jevis.jeconfig.application.ui.Notify.error(error);
+                return false;
+            }
+            return onSave.getAsBoolean();
+        });
     }
 
     private void informSelected() {

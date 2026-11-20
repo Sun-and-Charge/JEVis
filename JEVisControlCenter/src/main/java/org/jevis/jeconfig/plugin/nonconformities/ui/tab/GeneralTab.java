@@ -215,6 +215,35 @@ public class GeneralTab extends DataTab<NonconformityData> {
         f_Nr.setEditable(JEConfig.getExpert());
 
 
+        /* J25.5: sections, labels above the fields (docs/DESIGN-CC.md); the grid above is replaced */
+        for (javafx.scene.control.TextArea area : new javafx.scene.control.TextArea[]{f_Description, f_Cause, f_ImmediateMeasures, f_CorrectiveActions}) {
+            area.setPrefRowCount(4);
+            area.setWrapText(true);
+            area.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        }
+        org.jevis.jeconfig.application.ui.FormLayout form = new org.jevis.jeconfig.application.ui.FormLayout();
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.form.section.case", "Abweichung", "Nonconformity"))
+                .add(l_Nr, f_Nr)
+                .add(l_mediaTags, f_mediaTags)
+                .addWide(l_Title, f_Title)
+                .add(l_Responsible, f_Responsible)
+                .add(l_Creator, f_Creator)
+                .add(l_fieldTags, f_fieldTags)
+                .add(l_SEU, f_SEU)
+                .add(l_action, f_action);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.form.section.dates", "Termine", "Dates"))
+                .add(l_CreateDate, f_createDate)
+                .add(l_deadLine, f_deadlineDate)
+                .add(l_doneDate, f_doneDate);
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.nonconformities.form.section.description", "Beschreibung und Maßnahmen", "Description and actions"))
+                .addWide(l_Description, f_Description)
+                .addWide(l_Cause, f_Cause)
+                .addWide(l_ImmediateMeasures, f_ImmediateMeasures)
+                .addWide(l_CorrectiveActions, f_CorrectiveActions);
+        javafx.scene.control.ScrollPane formScroll = new javafx.scene.control.ScrollPane(form);
+        formScroll.setFitToWidth(true);
+        notificationPane.setContent(formScroll);
+
         //scrollPane.setContent(gridPane);
         this.setContent(notificationPane);
 
