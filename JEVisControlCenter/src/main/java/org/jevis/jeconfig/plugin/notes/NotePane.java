@@ -84,7 +84,8 @@ public class NotePane extends org.jevis.jeconfig.application.ui.SucDialog<Button
    private final Optional<NotesRow> notesRow;
 
     public NotePane(ObservableList<String> allTags, JEVisDataSource dataSource, Optional<NotesRow> notesRow) {
-        super(notesRow.isPresent() ? org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.notes.edit.title", "Notiz bearbeiten", "Edit note") : org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.notes.new.title", "Neue Notiz", "New note"), null, Size.M);
+        /* the dialog always creates a note; a selected row only preselects its data row */
+        super(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.notes.new.title", "Neue Notiz", "New note"), null, Size.M);
         this.notesRow = notesRow;
         GridPane gridPane = new GridPane();
         this.dataSource = dataSource;
@@ -164,13 +165,23 @@ public class NotePane extends org.jevis.jeconfig.application.ui.SucDialog<Button
             selectTargetDialog.show();
         });
 
-        gridPane.setPadding(new Insets(12));
-        gridPane.setVgap(12);
-        gridPane.setHgap(12);
-        gridPane.addColumn(0, targetLabel, timeLabel, noteLabel, tagLabel, userLabel);
-        gridPane.addColumn(1, targetTreeButton, hBox, noteTextArea, tagList, userField);
-
-        getDialogPane().setContent(gridPane);
+        /* J25.5: labels above the fields (docs/DESIGN-CC.md) */
+        hBox.setSpacing(8);
+        noteTextArea.setPrefRowCount(4);
+        noteTextArea.setWrapText(true);
+        tagList.setPrefHeight(150);
+        org.jevis.jeconfig.application.ui.FormLayout form = new org.jevis.jeconfig.application.ui.FormLayout();
+        form.setPadding(new Insets(0));
+        form.section(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.notes.form.note", "Notiz", "Note"))
+                .add(targetLabel, targetTreeButton)
+                .add(timeLabel, hBox)
+                .addWide(noteLabel, noteTextArea)
+                .addWide(tagLabel, tagList)
+                .addWide(userLabel, userField);
+        for (Label label : new Label[]{targetLabel, timeLabel, noteLabel, tagLabel, userLabel}) {
+            label.setText(label.getText().replaceAll(":\s*$", ""));
+        }
+        getDialogPane().setContent(form);
 
 
     }

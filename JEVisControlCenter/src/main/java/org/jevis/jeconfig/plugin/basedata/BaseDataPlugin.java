@@ -215,6 +215,10 @@ public class BaseDataPlugin extends TablePlugin {
                             try {
                                 JEVisAttribute periodAtt = param.getValue().getObject().getAttribute("Period");
 
+                                /* base data without a period (e.g. price indices): show date and time */
+                                if (att.hasSample() && (periodAtt == null || !periodAtt.hasSample())) {
+                                    return new ReadOnlyObjectWrapper<>(att.getLatestSample().getTimestamp().toString("dd.MM.yyyy HH:mm"));
+                                }
                                 if (att.hasSample() && periodAtt != null) {
                                     JEVisSample latestSample = att.getLatestSample();
                                     JEVisSample periodSample = periodAtt.getLatestSample();

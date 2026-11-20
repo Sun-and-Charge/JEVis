@@ -98,6 +98,7 @@ public class NotesPlugin implements Plugin {
     BooleanProperty searchInNote = new SimpleBooleanProperty(false);
     BooleanProperty searchInUser = new SimpleBooleanProperty(false);
     BooleanProperty searchInDataRow = new SimpleBooleanProperty(false);
+    BooleanProperty searchInTag = new SimpleBooleanProperty(true);
     StringProperty searchTextProperty = new SimpleStringProperty("");
     ObservableList<String> selectedTags = FXCollections.observableArrayList();
     ObservableList<String> allTags = FXCollections.observableArrayList();
@@ -180,6 +181,9 @@ public class NotesPlugin implements Plugin {
         searchInUser = toggleUser.selectedProperty();
         searchInNote = toggleNote.selectedProperty();
         searchInDataRow = toggleDR.selectedProperty();
+        /* the tag switch was shown but not used by the filter */
+        searchInTag = toggleTag.selectedProperty();
+        searchInTag.addListener((observable, oldValue, newValue) -> filter());
 
         searchTextProperty.addListener((observable, oldValue, newValue) -> {
             filter();
@@ -213,6 +217,8 @@ public class NotesPlugin implements Plugin {
         HBox hBox = new HBox();
         hBox.setFillHeight(true);
         hBox.setAlignment(Pos.CENTER_LEFT);
+        /* J25.5: gaps between the switches, otherwise the labels run into each other */
+        hBox.setSpacing(18);
         hBox.getChildren().addAll(filterLabel, toggleUser, toggleNote, toggleDR, toggleTag);
 
         Region spacer = new Region();
@@ -326,6 +332,10 @@ public class NotesPlugin implements Plugin {
                             }
 
                             if (searchInNote.get() && notesRow.getNote().contains(searchTextProperty.get())) {
+                                return true;
+                            }
+
+                            if (searchInTag.get() && notesRow.getTags().stream().anyMatch(tag -> tag.getName().contains(searchTextProperty.get()))) {
                                 return true;
                             }
                         } catch (Exception ex) {
@@ -832,6 +842,7 @@ public class NotesPlugin implements Plugin {
         });
 
 
+        tableView.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> newB.setDisable(b == null));
         tableView.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -904,7 +915,7 @@ public class NotesPlugin implements Plugin {
     private void addNote() {
         NotePane notePane = new NotePane(allTags, ds, Optional.ofNullable(tableView.getSelectionModel().getSelectedItem()));
 
-        ButtonType okButtonType = new ButtonType(I18n.getInstance().getString("plugin.note.pane.ok"), ButtonBar.ButtonData.APPLY);
+        ButtonType okButtonType = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"), ButtonBar.ButtonData.OTHER);
         ButtonType cancelButtonType = new ButtonType(I18n.getInstance().getString("plugin.note.pane.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
@@ -936,6 +947,7 @@ public class NotesPlugin implements Plugin {
         //Dialog.getDialogPane().setContent(vBox);
 
         final Button btOk = (Button) notePane.getDialogPane().lookupButton(okButtonType);
+        btOk.getStyleClass().add("primary");
         final Button btCancel = (Button) notePane.getDialogPane().lookupButton(cancelButtonType);
 
         btOk.setOnAction(event1 -> {
