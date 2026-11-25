@@ -71,11 +71,13 @@ public class CalendarRow {
     public boolean equals(Object obj) {
         if (obj instanceof CalendarRow) {
             CalendarRow otherObject = (CalendarRow) obj;
-            if (this.getCountryCode().equals(otherObject.getCountryCode()) && this.getStateCode() == null && otherObject.getStateCode() == null) {
-                return true;
-            } else {
-                return (this.getCountryCode().equals(otherObject.getCountryCode()) && this.getStateCode().equals(otherObject.getStateCode()));
-            }
+            return java.util.Objects.equals(this.getCountryCode(), otherObject.getCountryCode())
+                    && java.util.Objects.equals(this.getStateCode(), otherObject.getStateCode());
         } else return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getCountryCode(), getStateCode());
     }
 }
