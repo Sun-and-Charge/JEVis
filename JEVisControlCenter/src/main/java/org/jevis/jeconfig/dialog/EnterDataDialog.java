@@ -208,6 +208,14 @@ public class EnterDataDialog extends org.jevis.jeconfig.application.ui.SucDialog
         VBox vBox = new VBox(6, gridPane, separator);
         getDialogPane().setContent(vBox);
         getDialogPane().setMinWidth(450);
+        /* the target, period and value rows are filled in after the dialog is shown; grow the window with them */
+        getDialogPane().setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        gridPane.getChildren().addListener((javafx.collections.ListChangeListener<javafx.scene.Node>) change -> Platform.runLater(() -> {
+            javafx.stage.Window window = getDialogPane().getScene().getWindow();
+            if (window != null && window.isShowing() && window.getHeight() < getDialogPane().prefHeight(window.getWidth()) + 40) {
+                window.sizeToScene();
+            }
+        }));
 
         okButton.setOnAction(event -> {
 //            event.consume();
