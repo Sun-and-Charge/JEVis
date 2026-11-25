@@ -184,7 +184,7 @@ public class DateHelper {
                                 startDate = now;
                                 break;
                             case "STARTTIMEDAY":
-                                startDate = startDate.minusMillis(startDate.getMillisOfDay());
+                                startDate = now.minusMillis(now.getMillisOfDay());
                                 break;
                             case "CUSTOM_PERIOD":
                                 try {
