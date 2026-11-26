@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Sun and Charge Germany GmbH */
-import type { AnalysisChartConfig, AnalysisConfig, AnalysisData, AnalysisRowData, LimitLine, RowNote, RowStats, Sample } from '../api/analysis'
+import type { AnalysisChartConfig, AnalysisConfig, AnalysisData, AnalysisRowData, LimitLine, RowNote, RowStats, RowTimeOffset, Sample } from '../api/analysis'
 import { decimalsFor, type Decimals } from './format'
 import { rowNotes } from './notes'
 
@@ -133,6 +133,11 @@ function rowSamples(d: AnalysisRowData | undefined, data: AnalysisData | null): 
   return Number.isNaN(start) ? [] : [[start, d.pieValue, null]]
 }
 
+/** "Strom (-1 Jahr)": a shifted row is marked in the legend, so it is not mistaken for current values. */
+export function withOffset(name: string, offset: RowTimeOffset | null | undefined, offsetName?: (offset: RowTimeOffset) => string): string {
+  return offset?.amount && offsetName ? `${name} (${offsetName(offset)})` : name
+}
+
 function uniqueName(name: string, used: Set<string>): string {
   let result = name
   for (let i = 2; used.has(result); i++) result = `${name} (${i})`
@@ -149,7 +154,10 @@ function limitLines(lines: LimitLine[] | null | undefined): LimitLine[] {
  * Joins the configuration and the data answer of an analysis into one view model per chart.
  * `noAccessName` is the name shown for rows the user may not read.
  */
-export function buildChartViews(config: AnalysisConfig, data: AnalysisData | null, noAccessName: string): ChartView[] {
+/**
+ * @param offsetName text of a row's time offset for the legend, e.g. "-1 Jahr" (tender point 03); without it no hint
+ */
+export function buildChartViews(config: AnalysisConfig, data: AnalysisData | null, noAccessName: string, offsetName?: (offset: RowTimeOffset) => string): ChartView[] {
   const dataCharts = new Map((data?.charts ?? []).map((c) => [c.id, c]))
   return (config.charts ?? []).map((chart: AnalysisChartConfig) => {
     const type = normaliseType(chart.type)
@@ -161,7 +169,7 @@ export function buildChartViews(config: AnalysisConfig, data: AnalysisData | nul
       const state = rowState(d, readable)
       return {
         key: row.key,
-        name: uniqueName(readable && row.name ? row.name : noAccessName, used),
+        name: uniqueName(withOffset(readable && row.name ? row.name : noAccessName, row.timeOffset, offsetName), used),
         color: row.color || FALLBACK_COLORS[index % FALLBACK_COLORS.length],
         axis: row.axis === 1 ? 1 : 0,
         type: rowType(type, row.chartType),

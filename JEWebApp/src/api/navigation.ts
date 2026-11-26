@@ -49,6 +49,8 @@ export interface ModuleCounts {
   invoices: number
   /** readable accounting configurations plus result calculation templates (W4.8) */
   costs: number
+  /** BA-07: readable energy certificates */
+  certificates: number
   /** E8.1 meter reading: meters the user may read in; servers without the count use the readable meters */
   readings: number
   /** E8.5: contradictory readings to review (menu badge of "Ablesung", not a module of its own) */
@@ -75,6 +77,7 @@ export function moduleCounts(nav: Pick<Navigation, 'modules'> | null): ModuleCou
     contracts: n(m?.contracts),
     invoices: n(m?.invoices),
     costs: n(m?.costs),
+    certificates: n(m?.certificates),
     readings: n(m?.readings) || n(m?.meters),
     readingsReview: n(m?.readingsReview),
   }

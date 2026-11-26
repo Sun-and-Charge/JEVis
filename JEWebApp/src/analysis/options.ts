@@ -26,6 +26,18 @@ export interface OptionContext {
   tagName?: (id: string) => string
   /** E1: lines of rows that may get notes react to clicks (also without symbols) */
   noteClicks?: boolean
+  /** load duration curve: the values are sorted (manipulation SORTED_MIN/MAX), the x axis shows hours instead of dates */
+  duration?: { label: string }
+}
+
+/**
+ * Sorted values carry made-up time stamps (first + i · period). For the load duration curve each value becomes the
+ * hours covered up to and including it: (i + 1) · period.
+ */
+export function durationSamples(samples: [number, number, string | null][]): [number, number, string | null][] {
+  if (samples.length === 0) return samples
+  const step = samples.length > 1 ? samples[1][0] - samples[0][0] : 3_600_000
+  return samples.map(([, v, note], i) => [((i + 1) * step) / 3_600_000, v, note])
 }
 
 const GREY = '#9aa3b2'
@@ -238,9 +250,10 @@ export function limitLineSeries(
 export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
   const rows = chart.rows
   const stackCount = new Map<string, number>()
-  const samples = rows.map((row) => numericSamples(row))
+  const duration = ctx.duration
+  const samples = rows.map((row) => (duration ? durationSamples(numericSamples(row)) : numericSamples(row)))
   const series = rows.map((row, i) => seriesFor(row, samples[i], stackCount))
-  addNoteMarkers(rows, samples, series, ctx)
+  if (!duration) addNoteMarkers(rows, samples, series, ctx)
   if (ctx.noteClicks) {
     rows.forEach((row, i) => {
       if (series[i].type === 'line' && row.canAddNote) series[i].triggerLineEvent = true
@@ -275,15 +288,26 @@ export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
     textStyle: baseText,
     legend: legend(rows, ctx),
     grid: { left: 8, right: twoAxes ? 8 : 16, top: 56, bottom: 56 },
-    xAxis: {
-      type: 'time',
-      name: chart.xAxisTitle ?? undefined,
-      nameLocation: 'middle',
-      nameGap: 28,
-      axisLine: { lineStyle: { color: LINE } },
-      axisLabel: { ...baseText, color: MUTED, hideOverlap: true },
-      splitLine: { show: false },
-    },
+    xAxis: duration
+      ? {
+          type: 'value',
+          name: chart.xAxisTitle || duration.label,
+          nameLocation: 'middle',
+          nameGap: 28,
+          min: 0,
+          axisLine: { lineStyle: { color: LINE } },
+          axisLabel: { ...baseText, color: MUTED, hideOverlap: true, formatter: (v: number) => formatNumber(v, ctx.locale, { min: 0, max: 0 }) },
+          splitLine: { show: false },
+        }
+      : {
+          type: 'time',
+          name: chart.xAxisTitle ?? undefined,
+          nameLocation: 'middle',
+          nameGap: 28,
+          axisLine: { lineStyle: { color: LINE } },
+          axisLabel: { ...baseText, color: MUTED, hideOverlap: true },
+          splitLine: { show: false },
+        },
     yAxis,
     tooltip: {
       trigger: rows.every((r) => r.type === 'SCATTER' || r.type === 'BUBBLE') ? 'item' : 'axis',
@@ -299,7 +323,8 @@ export function xyOption(chart: ChartView, ctx: OptionContext): EChartsOption {
           const value = p.value as unknown[] | undefined
           return row ? valueLine(row, value?.[1], (value?.[2] as string | null) ?? null, ctx, markerOf(p)) : ''
         })
-        return `<div style="font-weight:600;margin-bottom:4px">${escapeHtml(formatDateTime(ts, ctx.locale))}</div>${lines.join('')}`
+        const head = duration ? `${formatNumber(ts, ctx.locale, { min: 0, max: 2 })} h` : formatDateTime(ts, ctx.locale)
+        return `<div style="font-weight:600;margin-bottom:4px">${escapeHtml(head)}</div>${lines.join('')}`
       },
     },
     dataZoom: [

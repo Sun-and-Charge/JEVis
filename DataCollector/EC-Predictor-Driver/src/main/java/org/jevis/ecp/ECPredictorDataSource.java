@@ -34,10 +34,6 @@ import org.joda.time.Weeks;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.nio.file.Files;
 import java.text.NumberFormat;
@@ -75,32 +71,12 @@ public class ECPredictorDataSource implements DataSource {
     public void run() {
         try {
 
-            TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                        }
-
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                        }
-
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return new java.security.cert.X509Certificate[]{};
-                        }
-                    }
-            };
-
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-
-            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
             String AUTH_URL = serverURL + port + "/token";
             String PREDICT_URL = serverURL + port + "/predict/gru";
 
+            /* TLS with the default certificate and host name checks; a server with its own certificate must be
+               trusted through the Java trust store of the service (it was accepted blindly before) */
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
-            builder.hostnameVerifier((hostname, session) -> true);
-
             OkHttpClient client = builder.build();
             RequestBody authBody = new FormBody.Builder()
                     .add("username", userName)

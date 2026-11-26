@@ -586,3 +586,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* tender point 03: shift of a row (amount + unit) */
+.ae-offset {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ae-offset input {
+  width: 6rem;
+}

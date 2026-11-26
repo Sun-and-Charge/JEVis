@@ -66,6 +66,7 @@ describe('analysis editor: definition <-> form', () => {
       calculation: false,
       bubbleType: 'NONE',
       interval: { enabled: false, start: null, end: null },
+      timeOffset: null,
       css: '',
     })
     expect(def.charts[1].filterTexts).toEqual({ 'Musterwerk Strom': '12' })
@@ -165,6 +166,7 @@ describe('analysis editor: validation', () => {
     chart.dayStart = '25:00'
     chart.rows[0].color = '#12345'
     chart.rows[0].decimalDigits = 30
+    chart.rows[0].timeMode = 'fixed'
     chart.rows[0].interval = { enabled: true, start: '2026-11-02T00:00:00+01:00', end: '2026-11-01T00:00:00+01:00' }
     // the locked row is never checked
     chart.rows[1].color = 'nonsense'
@@ -188,6 +190,28 @@ describe('analysis editor: validation', () => {
       'charts.1.id',
     ])
     expect(validateDraft(draft).map((p) => p.path)).not.toContain('name')
+  })
+
+  it('time reference of a row: as chart, shifted, fixed (tender point 03)', () => {
+    const draft = toDraft(editConfig(), 'Analyse A')
+    const row = draft.charts[0].rows[0]
+    expect(row.timeMode).toBe('chart')
+    expect(toDefinition(draft).charts[0].rows[0].timeOffset).toBeNull()
+    row.timeMode = 'offset'
+    row.offsetAmount = -1
+    row.offsetUnit = 'YEARS'
+    const def = toDefinition(draft).charts[0].rows[0]
+    expect(def.timeOffset).toEqual({ amount: -1, unit: 'YEARS' })
+    expect(def.interval?.enabled).toBe(false)
+    expect(validateDraft(draft).map((p) => p.path)).not.toContain('charts.0.rows.0.timeOffset')
+    row.offsetAmount = 11
+    expect(validateDraft(draft).map((p) => p.path)).toContain('charts.0.rows.0.timeOffset')
+    row.offsetAmount = 0
+    expect(validateDraft(draft).map((p) => p.path)).toContain('charts.0.rows.0.timeOffset')
+    row.timeMode = 'fixed'
+    const fixed = toDefinition(draft).charts[0].rows[0]
+    expect(fixed.timeOffset).toBeNull()
+    expect(fixed.interval?.enabled).toBe(true)
   })
 
   it('checks names as the server does', () => {

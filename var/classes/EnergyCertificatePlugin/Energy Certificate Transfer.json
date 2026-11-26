@@ -1,0 +1,139 @@
+{
+  "name": "Energy Certificate Transfer",
+  "description": "Target to which energy certificates are sent (mail, SFTP, HTTP), manually or on a schedule",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Energy Certificate Transfer",
+      "end": "Organization",
+      "type": 3
+    },
+    {
+      "start": "Energy Certificate Transfer",
+      "end": "Building",
+      "type": 3
+    },
+    {
+      "start": "Energy Certificate Transfer",
+      "end": "Energy Certificate Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Enabled",
+      "primitiveType": 4,
+      "guiType": "Check Box",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Channel",
+      "primitiveType": 0,
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Format",
+      "primitiveType": 0,
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Schedule",
+      "primitiveType": 0,
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Recipients",
+      "primitiveType": 0,
+      "guiposition": 4,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Host",
+      "primitiveType": 0,
+      "guiposition": 5,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Port",
+      "primitiveType": 0,
+      "guiposition": 6,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "User",
+      "primitiveType": 0,
+      "guiposition": 7,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Password",
+      "primitiveType": 0,
+      "guiType": "Password",
+      "guiposition": 8,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Path",
+      "primitiveType": 0,
+      "guiposition": 9,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "URL",
+      "primitiveType": 0,
+      "guiposition": 10,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Token",
+      "primitiveType": 0,
+      "guiType": "Password",
+      "guiposition": 11,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Requested",
+      "primitiveType": 0,
+      "guiposition": 12,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    },
+    {
+      "name": "Last Transfer",
+      "primitiveType": 0,
+      "guiposition": 13,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate Transfer"
+    }
+  ]
+}
