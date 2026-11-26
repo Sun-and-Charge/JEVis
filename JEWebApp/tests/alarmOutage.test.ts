@@ -134,4 +134,22 @@ describe('outage list', () => {
     expect(items[2].text()).toContain('Lücke bleibt')
     expect(items[2].text()).toContain('45 Minuten')
   })
+
+  it('lists an outage seen by two configurations once', () => {
+    i18n.global.locale.value = 'de'
+    const w = mount(AlarmOutages, {
+      props: {
+        outages: [
+          outage({ id: 'a' }),
+          outage({ id: 'b', configuration: { id: 51, name: 'Halle 3 Alarme' } }),
+          outage({ id: 'c', object: { id: 42, name: 'Bereinigte Daten', path: 'Daten / Gas', readable: true } }),
+        ],
+      },
+      global: { plugins: [i18n] },
+    })
+    const items = w.findAll('.alm-outage')
+    expect(items).toHaveLength(2)
+    expect(items[0].text()).toContain('Werk Alarme, Halle 3 Alarme')
+    expect(items[1].text()).not.toContain('Halle 3 Alarme')
+  })
 })

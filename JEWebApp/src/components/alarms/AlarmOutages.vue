@@ -13,8 +13,23 @@ import { formatLocal } from '../../modules/dates'
 const props = defineProps<{ outages: readonly AlarmOutage[] }>()
 const { t, locale } = useI18n()
 
-const open = computed(() => props.outages.filter((o) => o.open))
-const ended = computed(() => props.outages.filter((o) => !o.open))
+/*
+ * One entry per outage: several configurations that check the same row (e.g. one for the whole site and one for the
+ * row) each record it; their names are listed together.
+ */
+type MergedOutage = AlarmOutage & { configurations: string[] }
+const merged = computed<MergedOutage[]>(() => {
+  const byKey = new Map<string, MergedOutage>()
+  for (const o of props.outages) {
+    const key = [o.open, o.kind, o.object?.id ?? '', o.since ?? '', o.resumed ?? ''].join('|')
+    const known = byKey.get(key)
+    if (!known) byKey.set(key, { ...o, configurations: [o.configuration.name] })
+    else if (!known.configurations.includes(o.configuration.name)) known.configurations.push(o.configuration.name)
+  }
+  return [...byKey.values()]
+})
+const open = computed(() => merged.value.filter((o) => o.open))
+const ended = computed(() => merged.value.filter((o) => !o.open))
 
 const time = (iso: string | null) => (iso ? formatLocal(iso.slice(0, 16), locale.value) : '')
 
@@ -67,7 +82,7 @@ const kindName = (o: AlarmOutage) => t(o.kind === 'SOURCE' ? 'alarmOutages.kind.
             <dd>{{ o.site.name }}</dd>
           </template>
           <dt>{{ t('alarmOutages.configuration') }}</dt>
-          <dd>{{ o.configuration.name }}</dd>
+          <dd>{{ o.configurations.join(', ') }}</dd>
         </dl>
       </li>
     </ul>
