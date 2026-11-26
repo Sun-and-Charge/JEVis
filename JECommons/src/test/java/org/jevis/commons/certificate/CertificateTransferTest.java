@@ -286,6 +286,20 @@ public class CertificateTransferTest {
     }
 
     @Test
+    public void noResponsibleMeansNoReminderAndNoError() throws Exception {
+        JEVisObject building = object(10, "Musterwerk", "Building", null);
+        JEVisObject cert = object(100, "A", EnergyCertificate.CLASS_NAME, building);
+        values.put("100/Data", CertificateLogic.toJson(certificate("2027-03-31")));
+        values.put("100/Transfer State", "{\"lastError\":\"No recipients with an e-mail address\"}");
+        classOf(EnergyCertificate.CLASS_NAME, cert);
+        classOf(CertificateProcessor.CLASS_TRANSFER);
+        CertificateProcessor.Result result = processor().run(new DateTime(2026, 11, 26, 10, 0, ZONE));
+        assertTrue(mails.isEmpty());
+        assertEquals(0, result.failed);
+        assertNull(CertificateState.fromJson(values.get("100/Transfer State")).getLastError());
+    }
+
+    @Test
     public void onChangeSendsOnlyChangedAndRecordsErrors() throws Exception {
         JEVisObject org = object(1, "Demo", "Organization", null);
         JEVisObject building = object(10, "Musterwerk", "Building", org);

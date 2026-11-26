@@ -117,6 +117,14 @@ public class CertificateProcessor {
             JEVisAttribute stateAttribute = item.object.getAttribute(EnergyCertificate.ATTRIBUTE_TRANSFER_STATE);
             if (stateAttribute == null) return;
             CertificateState state = CertificateState.fromJson(latest(stateAttribute));
+            if (item.certificate.getResponsible().isEmpty()) {
+                /* nobody responsible: no reminders wanted, not an error (an old "no recipients" error is removed) */
+                if (state.getLastError() != null) {
+                    state.setLastError(null);
+                    write(stateAttribute, state.toJson(), now);
+                }
+                return;
+            }
             String validUntil = item.certificate.getValidUntil();
             Integer due = CertificateLogic.dueReminder(item.certificate, now.toLocalDate(), state.sentFor(validUntil));
             if (due == null) return;
