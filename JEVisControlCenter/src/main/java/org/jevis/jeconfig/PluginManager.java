@@ -188,6 +188,7 @@ public class PluginManager {
                         new AccountingPlugin(this._ds, I18n.getInstance().getString("plugin.accounting.title")),
                         new ActionPlugin(this._ds, I18n.getInstance().getString("plugin.action.name")),
                         new AppointmentPlugin(this._ds, I18n.getInstance().getString("plugin.appointments.name")),
+                        new org.jevis.jeconfig.plugin.certificate.CertificatePlugin(this._ds, org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.certificates.name", "Energieausweise", "Energy certificates")),
                         new MaintenancePlugin(this._ds, I18n.getInstance().getString("plugin.maintenance.name")),
                         new NonconformitiesPlugin(this._ds, I18n.getInstance().getString("plugin.nonconformities.name")),
                         new LegalCatasdrePlugin(this._ds, I18n.getInstance().getString("plugin.indexoflegalprovisions.name")),
@@ -231,6 +232,8 @@ public class PluginManager {
                                     enabledPlugins.add(new ActionPlugin(this._ds, I18n.getInstance().getString("plugin.action.name")));
                                 } else if (plugObj.getJEVisClassName().equals(AppointmentPlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new AppointmentPlugin(this._ds, I18n.getInstance().getString("plugin.appointments.name")));
+                                } else if (plugObj.getJEVisClassName().equals(org.jevis.jeconfig.plugin.certificate.CertificatePlugin.PLUGIN_NAME)) {
+                                    enabledPlugins.add(new org.jevis.jeconfig.plugin.certificate.CertificatePlugin(this._ds, org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.certificates.name", "Energieausweise", "Energy certificates")));
                                 } else if (plugObj.getJEVisClassName().equals(MaintenancePlugin.PLUGIN_NAME)) {
                                     enabledPlugins.add(new MaintenancePlugin(this._ds, I18n.getInstance().getString("plugin.maintenance.name")));
                                 } else if (plugObj.getJEVisClassName().equals(NonconformitiesPlugin.PLUGIN_NAME)) {

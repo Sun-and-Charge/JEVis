@@ -347,7 +347,8 @@
     -fx-background-color: -suc-surface;
     -fx-border-color: -suc-border;
     -fx-border-width: 1 0 1 0;
-    -fx-padding: 0;
+    /* content starts below the arrow of the title (title padding 0.833em at 14px), not at the edge */
+    -fx-padding: 8px 12px 8px 12px;
 }
 
 /*---------------------------------------------------------------------------------------------------------------

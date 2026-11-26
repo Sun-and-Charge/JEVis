@@ -49,7 +49,7 @@ public class PluginSidebar extends VBox {
             new AbstractMap.SimpleEntry<>(null, Arrays.asList("Dashboard Plugin", "Graph Plugin", "Load Profile Plugin")),
             new AbstractMap.SimpleEntry<>("iso", Arrays.asList("Action Plugin", "Action Plan Plugin", "Deviation Plugin", "Nonconformities Plugin", "Index of Legal Provisions Plugin")),
             new AbstractMap.SimpleEntry<>("operation", Arrays.asList("Appointment Plugin", "Maintenance Plugin", "Alarm Plugin", "Notes Plugin")),
-            new AbstractMap.SimpleEntry<>("assets", Arrays.asList("Meter Plugin", "Base Data Plugin", "Equipment Plugin")),
+            new AbstractMap.SimpleEntry<>("assets", Arrays.asList("Meter Plugin", "Base Data Plugin", "Equipment Plugin", "Energy Certificate Plugin")),
             new AbstractMap.SimpleEntry<>("finance", Arrays.asList("Accounting Plugin", "Template Result Calculation Plugin")),
             new AbstractMap.SimpleEntry<>(null, Arrays.asList("Report Plugin", "Configuration Plugin"))
     );
