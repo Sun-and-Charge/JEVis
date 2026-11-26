@@ -1968,6 +1968,8 @@
       "regressionRole": "Rolle in der Regression",
       "decimalDigits": "Dezimalstellen",
       "decimalAuto": "wie Diagramm",
+      "timeOffset": "Zeitversatz [min]",
+      "timeOffsetHint": "Verschiebt die Werte der Datenreihe, z. B. +120: der Wert von 10:00 erscheint um 12:00 (für Streu- und Blasendiagramme mit verzögerter Wirkung)",
       "interval": "Eigener Zeitraum",
       "start": "Start",
       "end": "Ende",
@@ -2047,6 +2049,7 @@
       "height": "Bitte leer lassen (automatisch) oder mindestens 50 Pixel.",
       "time": "Bitte eine Uhrzeit als HH:mm:ss.",
       "decimals": "Bitte leer lassen oder eine ganze Zahl von 0 bis 20.",
+      "timeOffset": "Bitte eine ganze Zahl von -10080 bis 10080 Minuten (eine Woche).",
       "interval": "Bitte Start und Ende angeben.",
       "intervalOrder": "Das Ende muss nach dem Start liegen."
     },

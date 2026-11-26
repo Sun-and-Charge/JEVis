@@ -50,6 +50,8 @@ export interface AnalysisRowConfig {
   calculationId?: number | null
   /** E3: own time frame of the row */
   interval?: RowInterval | null
+  /** tender point 03: shift of the row in minutes */
+  timeOffset?: number
   /** E3: custom CSS of the row (table cells in the Control Center) */
   css?: string | null
 }
@@ -233,6 +235,8 @@ export interface RowDefinition {
   calculation?: boolean
   bubbleType?: string
   interval?: RowInterval | null
+  /** tender point 03: shift of the row in minutes */
+  timeOffset?: number
   css?: string | null
 }
 

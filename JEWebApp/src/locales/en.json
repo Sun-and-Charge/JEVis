@@ -1968,6 +1968,8 @@
       "regressionRole": "Role in the regression",
       "decimalDigits": "Decimal Digits",
       "decimalAuto": "as chart",
+      "timeOffset": "Time offset [min]",
+      "timeOffsetHint": "Shifts the values of the row, e.g. +120: the value of 10:00 appears at 12:00 (for scatter and bubble charts with a delayed effect)",
       "interval": "Own time frame",
       "start": "Start",
       "end": "End",
@@ -2047,6 +2049,7 @@
       "height": "Leave empty (automatic) or at least 50 pixels.",
       "time": "Please enter a time as HH:mm:ss.",
       "decimals": "Leave empty or a whole number from 0 to 20.",
+      "timeOffset": "Please a whole number from -10080 to 10080 minutes (one week).",
       "interval": "Please enter start and end.",
       "intervalOrder": "The end must be after the start."
     },

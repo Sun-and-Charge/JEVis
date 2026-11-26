@@ -92,6 +92,9 @@ function colorForAll(row: DraftRow) {
 
 /* decimals: empty = like the chart (-1) */
 const decimalsValue = (row: DraftRow) => (row.decimalDigits === -1 ? '' : row.decimalDigits)
+function setTimeOffset(row: DraftRow, v: string) {
+  row.timeOffset = v === '' ? '' : Number.isFinite(Number(v)) ? Number(v) : ''
+}
 function setDecimals(row: DraftRow, value: string) {
   const v = value.trim()
   row.decimalDigits = v === '' ? -1 : Number.isFinite(Number(v)) ? Number(v) : ''
@@ -263,6 +266,23 @@ const showRowType = computed(() => !!chart.value && isXyType(chart.value.type))
                     @input="setDecimals(row, ($event.target as HTMLInputElement).value)"
                   />
                   <p v-if="f.problem(path(ri, 'decimalDigits'))" :id="f.errId(path(ri, 'decimalDigits'))" class="ae-error">{{ msg(path(ri, 'decimalDigits')) }}</p>
+                </div>
+                <div class="edit-field">
+                  <label :for="f.fid(path(ri, 'timeOffset'))">{{ t('analysisEdit.rows.timeOffset') }}</label>
+                  <input
+                    :id="f.fid(path(ri, 'timeOffset'))"
+                    :value="row.timeOffset"
+                    type="number"
+                    min="-10080"
+                    max="10080"
+                    step="15"
+                    inputmode="numeric"
+                    :title="t('analysisEdit.rows.timeOffsetHint')"
+                    :aria-invalid="f.problem(path(ri, 'timeOffset')) ? 'true' : undefined"
+                    :aria-describedby="f.describedBy(path(ri, 'timeOffset'))"
+                    @input="setTimeOffset(row, ($event.target as HTMLInputElement).value)"
+                  />
+                  <p v-if="f.problem(path(ri, 'timeOffset'))" :id="f.errId(path(ri, 'timeOffset'))" class="ae-error">{{ msg(path(ri, 'timeOffset')) }}</p>
                 </div>
                 <div v-if="showRowType || row.chartType !== 'DEFAULT'" class="edit-field">
                   <label :for="f.fid(path(ri, 'chartType'))">{{ t('analysisEdit.rows.chartType') }}</label>

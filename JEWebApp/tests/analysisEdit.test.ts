@@ -66,6 +66,7 @@ describe('analysis editor: definition <-> form', () => {
       calculation: false,
       bubbleType: 'NONE',
       interval: { enabled: false, start: null, end: null },
+      timeOffset: 0,
       css: '',
     })
     expect(def.charts[1].filterTexts).toEqual({ 'Musterwerk Strom': '12' })
@@ -188,6 +189,17 @@ describe('analysis editor: validation', () => {
       'charts.1.id',
     ])
     expect(validateDraft(draft).map((p) => p.path)).not.toContain('name')
+  })
+
+  it('time offset of a row: sent with the definition and checked (tender point 03)', () => {
+    const draft = toDraft(editConfig(), 'Analyse A')
+    const row = draft.charts[0].rows[0]
+    expect(row.timeOffset).toBe(0)
+    row.timeOffset = 120
+    expect(toDefinition(draft).charts[0].rows[0].timeOffset).toBe(120)
+    expect(validateDraft(draft).map((p) => p.path)).not.toContain('charts.0.rows.0.timeOffset')
+    row.timeOffset = 20000
+    expect(validateDraft(draft).map((p) => p.path)).toContain('charts.0.rows.0.timeOffset')
   })
 
   it('checks names as the server does', () => {

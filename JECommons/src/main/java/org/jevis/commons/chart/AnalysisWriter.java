@@ -208,6 +208,8 @@ public class AnalysisWriter {
         if (start != null) set(node, "intervalStart", NODES.textNode(start), Same.DATE_TIME);
         if (end != null) set(node, "intervalEnd", NODES.textNode(end), Same.DATE_TIME);
         set(node, "intervalEnabled", NODES.booleanNode(row.isIntervalEnabled()), Same.BOOLEAN);
+        /* web key (tender point 03), written only when used so files of rows without offset stay unchanged */
+        if (row.getTimeOffset() != 0 || node.has("timeOffset")) set(node, "timeOffset", NODES.numberNode(row.getTimeOffset()), Same.NUMBER);
         return node;
     }
 

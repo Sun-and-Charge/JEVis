@@ -1322,8 +1322,11 @@ The **definition** sent is the GET answer's shape without the read-only keys (`i
 "orientation", "fixYAxisToZero", "xAxisTitle", "yAxisTitle", "groupingInterval", "colorMapping", "filterEnabled",
 "coloringEnabled", "showColumnSums", "showRowSums", "dayStart", "dayEnd", "filterTexts", "rows": [{ "objectId",
 "attribute", "name", "color", "axis", "chartType", "unitPrefix", "unitFormula", "unitLabel", "decimalDigits",
-"calculation", "bubbleType", "interval", "css" }] }] }`. Missing keys get the CC defaults. Charts are stored in the
-order sent.
+"calculation", "bubbleType", "interval", "timeOffset", "css" }] }] }`. Missing keys get the CC defaults. Charts are stored in the
+order sent. `timeOffset` (tender point 03, minutes, −10080…10080, default 0) shifts the values of a row: the data are
+loaded `timeOffset` earlier and shown `timeOffset` later, e.g. `120` pairs the outside temperature of 10:00 with the
+heat of 12:00 in a scatter or bubble chart. It is stored as row key `timeOffset` only when not 0; the Control Center
+does not know the key yet (it neither applies nor keeps it when it saves the analysis).
 
 Validation (`400` JSON `{ "messages": [...] }` with all problems, as in E2): chart ids unique and ≥ 0; enum values
 (`type`, `chartType`, `orientation`, `colorMapping`, `bubbleType`, limit line `fill`) from the lists of W2 / the CC

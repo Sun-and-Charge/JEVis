@@ -57,7 +57,7 @@ export const isTableType = (type: string) => TABLE_TYPES.includes(type)
 export const isXyType = (type: string) => XY_CHART_TYPES.includes(type)
 
 /** Definition keys of a row; rows the user may not read are sent back with exactly the keys they came with. */
-const ROW_KEYS = ['objectId', 'attribute', 'name', 'color', 'axis', 'chartType', 'unitPrefix', 'unitFormula', 'unitLabel', 'decimalDigits', 'calculation', 'bubbleType', 'interval', 'css'] as const
+const ROW_KEYS = ['objectId', 'attribute', 'name', 'color', 'axis', 'chartType', 'unitPrefix', 'unitFormula', 'unitLabel', 'decimalDigits', 'calculation', 'bubbleType', 'interval', 'timeOffset', 'css'] as const
 
 export interface DraftInterval {
   enabled: boolean
@@ -82,6 +82,8 @@ export interface DraftRow {
   calculation: boolean
   bubbleType: string
   interval: DraftInterval
+  /** tender point 03: shift in minutes (+120: the values appear two hours later) */
+  timeOffset: number | ''
   css: string
   readable: boolean
   /** display unit (GET / picker); the unit fields win when set */
@@ -169,6 +171,7 @@ export function rowToDraft(row: AnalysisRowConfig): DraftRow {
     calculation: !!row.calculation,
     bubbleType: row.bubbleType || 'NONE',
     interval: { enabled: !!row.interval?.enabled, start: row.interval?.start ?? null, end: row.interval?.end ?? null },
+    timeOffset: num(row.timeOffset, 0),
     css: row.css ?? '',
     readable,
     unit: row.unit ?? null,
@@ -273,6 +276,7 @@ export function rowDefinition(row: DraftRow): RowDefinition {
     calculation: row.calculation,
     bubbleType: row.bubbleType,
     interval: { enabled: row.interval.enabled, start: row.interval.start || null, end: row.interval.end || null },
+    timeOffset: row.timeOffset === '' ? 0 : row.timeOffset,
     css: row.css,
   }
 }
@@ -485,6 +489,7 @@ export function validateDraft(draft: Draft, options: { checkName?: boolean } = {
       const rb = `${base}.rows.${ri}`
       if (r.color.trim() && !validColor(r.color)) add(`${rb}.color`, 'analysisEdit.problem.color')
       if (r.decimalDigits !== '' && r.decimalDigits !== -1 && !isInt(r.decimalDigits, 0, 20)) add(`${rb}.decimalDigits`, 'analysisEdit.problem.decimals')
+      if (r.timeOffset !== '' && !isInt(r.timeOffset, -10080, 10080)) add(`${rb}.timeOffset`, 'analysisEdit.problem.timeOffset')
       if (r.interval.enabled) {
         const start = r.interval.start ? Date.parse(r.interval.start) : NaN
         const end = r.interval.end ? Date.parse(r.interval.end) : NaN
@@ -550,6 +555,7 @@ export function newRow(node: Pick<RowTreeNode, 'id' | 'name' | 'unit' | 'class'>
     calculation: false,
     bubbleType: 'NONE',
     interval: { enabled: false, start: null, end: null },
+    timeOffset: 0,
     css: '',
     readable: true,
     unit: node.unit ?? null,

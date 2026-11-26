@@ -306,6 +306,7 @@ public class ResourceWebEditAnalysis {
                 interval.put("start", row.getIntervalStart());
                 interval.put("end", row.getIntervalEnd());
                 r.put("interval", interval);
+                r.put("timeOffset", row.getTimeOffset());
                 r.put("css", row.getCss());
             }
         }
@@ -1150,6 +1151,10 @@ public class ResourceWebEditAnalysis {
                     case "interval":
                         interval(row, value, key);
                         break;
+                    case "timeOffset":
+                        /* minutes, at most one week either way */
+                        row.setTimeOffset(integer(value, key, -10080, 10080, row.getTimeOffset()));
+                        break;
                     case "css":
                         String css = text(value, key, "");
                         row.setCss(css != null ? css : "");
@@ -1468,6 +1473,7 @@ public class ResourceWebEditAnalysis {
         row.setIntervalEnabled(source.isIntervalEnabled());
         row.setIntervalStart(source.getIntervalStart());
         row.setIntervalEnd(source.getIntervalEnd());
+        row.setTimeOffset(source.getTimeOffset());
         row.setCss(source.getCss());
         row.setAggregation(source.getAggregation());
         row.setManipulation(source.getManipulation());

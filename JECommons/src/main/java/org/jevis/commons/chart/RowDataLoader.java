@@ -128,7 +128,7 @@ public class RowDataLoader {
                 return result;
             }
 
-            List<ChartSample> samples = row.getSamples();
+            List<ChartSample> samples = row.applyTimeOffset(row.getSamples());
             if (settings.isLastSampleOnly() && samples.size() > 1) {
                 /* DataModelDataHandler.update: a forced interval of zero length keeps the newest sample */
                 samples = new ArrayList<>(samples.subList(samples.size() - 1, samples.size()));
@@ -255,6 +255,22 @@ public class RowDataLoader {
                 start = range.getStart().withZone(zone);
                 end = range.getEnd().withZone(zone);
             }
+            /* time offset: load the values that land in the range after shifting them */
+            if (definition.getTimeOffset() != 0) {
+                start = start.minusMinutes(definition.getTimeOffset());
+                end = end.minusMinutes(definition.getTimeOffset());
+            }
+        }
+
+        /** Shifts the samples by the row's time offset (tender point 03). */
+        List<ChartSample> applyTimeOffset(List<ChartSample> samples) {
+            int offset = definition.getTimeOffset();
+            if (offset == 0) return samples;
+            for (ChartSample sample : samples) {
+                if (sample.getTimestamp() != null) sample.setTimestamp(sample.getTimestamp().plusMinutes(offset));
+            }
+            if (newest != null) newest = newest.plusMinutes(offset);
+            return samples;
         }
 
         private DateTime parse(String value, DateTime fallback) {

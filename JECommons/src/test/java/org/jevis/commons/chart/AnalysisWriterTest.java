@@ -170,6 +170,21 @@ public class AnalysisWriterTest {
     }
 
     @Test
+    public void timeOffsetIsWrittenOnlyWhenUsedAndReadBack() throws Exception {
+        ObjectNode stored = stored();
+        AnalysisDefinition definition = new AnalysisReader().readAnalysisFile(stored);
+        assertEquals(0, definition.getCharts().get(0).getRows().get(0).getTimeOffset());
+        ObjectNode unchanged = new AnalysisWriter().patch(stored.deepCopy(), definition, NOW);
+        assertFalse(unchanged.get("chartModels").get(0).get("chartData").get(0).has("timeOffset"));
+
+        definition.getCharts().get(0).getRows().get(0).setTimeOffset(120);
+        ObjectNode written = new AnalysisWriter().patch(stored, definition, NOW);
+        assertEquals(120, written.get("chartModels").get(0).get("chartData").get(0).get("timeOffset").asInt());
+        AnalysisDefinition back = new AnalysisReader().readAnalysisFile(written);
+        assertEquals(120, back.getCharts().get(0).getRows().get(0).getTimeOffset());
+    }
+
+    @Test
     public void writtenFileIsPrettyPrintedLikeTheControlCenter() throws Exception {
         ObjectNode stored = stored();
         AnalysisWriter writer = new AnalysisWriter();
