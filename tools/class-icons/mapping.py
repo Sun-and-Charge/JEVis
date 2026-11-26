@@ -78,6 +78,8 @@ M = {
     'Index of Legal Provisions Directory': ('gavel', 'iso'), 'Obligation': ('policy', 'iso'), 'Obligation Directory': ('policy', 'iso'),
     'Maintenance Message': ('build', 'iso'), 'Maintenance Directory': ('build', 'iso'),
     'Appointment': ('event', 'iso'), 'Appointment Directory': ('event', 'iso'),
+    'Energy Certificate': ('workspace_premium', 'asset'), 'Energy Certificate Directory': ('workspace_premium', 'asset'),
+    'Energy Certificate Transfer': ('forward_to_inbox', 'asset'),
     # meters
     'Measurement Instrument': ('speed', 'asset'), 'Electricity Measurement Instrument': ('bolt', 'asset'),
     'Gas Measurement Instrument': ('local_fire_department', 'asset'), 'Water Measurement Instrument': ('water_drop', 'asset'),
@@ -119,7 +121,7 @@ M = {
 # plugins: the module symbol in system grey
 PLUGINS = {
     'Accounting Plugin': 'calculate', 'Action Plan Plugin': 'checklist', 'Alarm Plugin': 'notifications',
-    'Appointment Plugin': 'event', 'Base Data Plugin': 'dataset', 'Class Plugin': 'category', 'Configuration Plugin': 'account_tree',
+    'Appointment Plugin': 'event', 'Energy Certificate Plugin': 'workspace_premium', 'Base Data Plugin': 'dataset', 'Class Plugin': 'category', 'Configuration Plugin': 'account_tree',
     'Control Center Plugin': 'extension', 'Control Center': 'desktop_windows', 'Dashboard Plugin': 'space_dashboard',
     'Equipment Plugin': 'handyman', 'Graph Plugin': 'query_stats', 'Index of Legal Provisions Plugin': 'gavel',
     'Load Profile Plugin': 'ssid_chart', 'Loytec Plugin': 'memory', 'Maintenance Plugin': 'build', 'Map Plugin': 'map',
