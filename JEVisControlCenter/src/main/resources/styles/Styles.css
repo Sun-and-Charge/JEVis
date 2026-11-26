@@ -1165,3 +1165,11 @@
 .text-area.suc-cell-input .content {
     -fx-background-color: -fx-control-inner-background;
 }
+
+/* energy certificates: expired and expiring rows (CertificatePlugin) */
+.table-view .table-row-cell:certificate-expired .table-cell {
+    -fx-text-fill: #e53935;
+}
+.table-view .table-row-cell:certificate-expiring .table-cell {
+    -fx-text-fill: #c77700;
+}

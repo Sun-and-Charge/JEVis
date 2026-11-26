@@ -96,6 +96,9 @@ class CertificateForm {
         FormLayout.Section values = form.section(text("plugin.certificates.section.values", "Kennwerte", "Values"))
                 .add(text("plugin.certificates.class", "Effizienzklasse", "Efficiency class"), energyClass);
         for (String f : NUMBER_FIELDS) values.add(fieldLabel(f), numbers.get(f));
+        /* as in the web app: consumption certificates show the consumption values, demand certificates the demand values */
+        type.valueProperty().addListener((o, a, b) -> showTypeFields());
+        showTypeFields();
         FormLayout.Section validity = form.section(text("plugin.certificates.section.validity", "Gültigkeit und Erinnerung", "Validity and reminder"))
                 .add(text("plugin.certificates.issued", "Ausgestellt am", "Issued on"), issued)
                 .add(text("plugin.certificates.validuntil", "Gültig bis (Vorschlag: 10 Jahre)", "Valid until (suggestion: 10 years)"), validUntil)
@@ -107,6 +110,24 @@ class CertificateForm {
                         : new Label(text("plugin.certificates.file.aftersave", "Das PDF kann nach dem Anlegen hochgeladen werden.", "The PDF can be uploaded once the certificate is created.")));
         form.section(text("plugin.certificates.section.note", "Anmerkungen", "Notes"))
                 .addWide(text("plugin.certificates.note", "Anmerkungen", "Notes"), note);
+    }
+
+    /** hides the value fields that do not fit the type and places the others again without gaps (two columns) */
+    private void showTypeFields() {
+        boolean demand = type.getValue() == EnergyCertificate.Type.DEMAND;
+        List<javafx.scene.Node> cells = new ArrayList<>();
+        cells.add(energyClass.getParent());
+        for (String f : NUMBER_FIELDS) {
+            javafx.scene.Node cell = numbers.get(f).getParent();
+            boolean show = !demand || !(f.equals("heatConsumption") || f.equals("electricityConsumption"));
+            cell.setVisible(show);
+            cell.setManaged(show);
+            if (show) cells.add(cell);
+        }
+        for (int i = 0; i < cells.size(); i++) {
+            javafx.scene.layout.GridPane.setColumnIndex(cells.get(i), i % 2);
+            javafx.scene.layout.GridPane.setRowIndex(cells.get(i), i / 2);
+        }
     }
 
     FormLayout getForm() {

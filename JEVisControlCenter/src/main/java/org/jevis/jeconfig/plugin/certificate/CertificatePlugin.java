@@ -71,6 +71,8 @@ public class CertificatePlugin extends AbstractEntryPlugin {
     public static final String PLUGIN_NAME = "Energy Certificate Plugin";
     static final String CLASS_TRANSFER = "Energy Certificate Transfer";
     private static final Logger logger = LogManager.getLogger(CertificatePlugin.class);
+    private static final javafx.css.PseudoClass EXPIRED = javafx.css.PseudoClass.getPseudoClass("certificate-expired");
+    private static final javafx.css.PseudoClass EXPIRING = javafx.css.PseudoClass.getPseudoClass("certificate-expiring");
 
     private final ObservableList<Row> rows = FXCollections.observableArrayList();
     private final FilteredList<Row> filteredRows = new FilteredList<>(rows);
@@ -185,7 +187,7 @@ public class CertificatePlugin extends AbstractEntryPlugin {
                 setText(empty || item == null ? null : date(item));
             }
         });
-        TableColumn<Row, String> status = column("status", text("plugin.certificates.col.status", "Status", "Status"), 150, r -> {
+        TableColumn<Row, String> status = column("status", text("plugin.certificates.col.status", "Status", "Status"), 200, r -> {
             String s = statusText(r.status());
             LocalDate u = CertificateLogic.date(r.certificate.getValidUntil());
             if (u == null) return s;
@@ -193,12 +195,12 @@ public class CertificatePlugin extends AbstractEntryPlugin {
             return s + (days >= 0 ? " (" + String.format(text("plugin.certificates.daysleft", "noch %d Tage", "%d days left"), days) + ")" : "");
         });
         TableColumn<Row, String> cls = column("class", text("plugin.certificates.col.class", "Klasse", "Class"), 60, r -> nz(r.certificate.getEnergyClass()));
-        TableColumn<Row, String> value = column("value", text("plugin.certificates.col.value", "Kennwert kWh/(m²·a)", "Value kWh/(m²·a)"), 130, r -> {
+        TableColumn<Row, String> value = column("value", text("plugin.certificates.col.value", "Kennwert kWh/(m²·a)", "Value kWh/(m²·a)"), 175, r -> {
             Double v = r.certificate.getType() == EnergyCertificate.Type.CONSUMPTION && r.certificate.getHeatConsumption() != null
                     ? r.certificate.getHeatConsumption() : r.certificate.getFinalEnergy();
             return CertificateForm.number(v);
         });
-        TableColumn<Row, String> issuer = column("issuer", text("plugin.certificates.issuer", "Aussteller", "Issuer"), 160, r -> nz(r.certificate.getIssuer()));
+        TableColumn<Row, String> issuer = column("issuer", text("plugin.certificates.issuer", "Aussteller", "Issuer"), 220, r -> nz(r.certificate.getIssuer()));
         TableColumn<Row, String> responsible = column("responsible", text("plugin.certificates.col.responsible", "Zuständig", "Responsible"), 160, r -> names.names(r.certificate.getResponsible()));
         TableColumn<Row, String> pdf = column("pdf", "PDF", 60, r -> r.fileName != null ? "✓" : "");
         table.getColumns().addAll(building, type, reg, issued, until, status, cls, value, issuer, responsible, pdf);
@@ -214,10 +216,10 @@ public class CertificatePlugin extends AbstractEntryPlugin {
                 @Override
                 protected void updateItem(Row item, boolean empty) {
                     super.updateItem(item, empty);
-                    if (item == null || empty) setStyle("");
-                    else if (item.status() == CertificateLogic.Status.EXPIRED) setStyle("-fx-text-background-color: #c62828;");
-                    else if (item.status() == CertificateLogic.Status.EXPIRING) setStyle("-fx-text-background-color: #8a6100;");
-                    else setStyle("");
+                    /* colours in Styles.css (the table style sets the cell text colour, an inline row style is overridden) */
+                    CertificateLogic.Status s = item == null || empty ? null : item.status();
+                    pseudoClassStateChanged(EXPIRED, s == CertificateLogic.Status.EXPIRED);
+                    pseudoClassStateChanged(EXPIRING, s == CertificateLogic.Status.EXPIRING);
                 }
             };
             row.setOnMouseClicked(event -> {
@@ -232,6 +234,7 @@ public class CertificatePlugin extends AbstractEntryPlugin {
                 statusText(CertificateLogic.Status.EXPIRED), statusText(CertificateLogic.Status.EXPIRING),
                 statusText(CertificateLogic.Status.VALID));
         statusFilter.getSelectionModel().selectFirst();
+        searchField.setPrefWidth(280);
         searchField.setPromptText(text("plugin.certificates.search", "Gebäude, Nummer, Aussteller …", "Building, number, issuer …"));
         searchField.textProperty().addListener((o, a, b) -> updateFilter());
         statusFilter.valueProperty().addListener((o, a, b) -> updateFilter());
@@ -258,12 +261,14 @@ public class CertificatePlugin extends AbstractEntryPlugin {
         TableColumn<TransferRow, String> tSchedule = new TableColumn<>(text("plugin.certificates.transfer.schedule", "Zeitplan", "Schedule"));
         tSchedule.setCellValueFactory(p -> new ReadOnlyStringWrapper(scheduleText(p.getValue().values.get("Schedule"))));
         TableColumn<TransferRow, String> tEnabled = new TableColumn<>(text("plugin.certificates.transfer.enabled", "Aktiv", "Enabled"));
-        tEnabled.setCellValueFactory(p -> new ReadOnlyStringWrapper("true".equalsIgnoreCase(p.getValue().values.get("Enabled")) ? "✓" : ""));
+        tEnabled.setCellValueFactory(p -> new ReadOnlyStringWrapper("true".equalsIgnoreCase(p.getValue().values.get("Enabled"))
+                ? text("plugin.certificates.yes", "Ja", "Yes") : text("plugin.certificates.no", "Nein", "No")));
         TableColumn<TransferRow, String> tLast = new TableColumn<>(text("plugin.certificates.transfer.last", "Letzte Übermittlung", "Last transfer"));
         tLast.setCellValueFactory(p -> new ReadOnlyStringWrapper(lastText(p.getValue().last)));
         tLast.setPrefWidth(280);
         TableColumn<TransferRow, String> tRequested = new TableColumn<>(text("plugin.certificates.transfer.requested", "Angefordert", "Requested"));
         tRequested.setCellValueFactory(p -> new ReadOnlyStringWrapper(nz(p.getValue().values.get("Requested")).isEmpty() ? "" : "✓"));
+        tRequested.setPrefWidth(130);
         transferTable.getColumns().addAll(tName, tEnabled, tChannel, tFormat, tSchedule, tLast, tRequested);
         transferTable.setItems(transfers);
         transferTable.setPlaceholder(new Label(text("plugin.certificates.transfer.empty",
@@ -627,7 +632,7 @@ public class CertificatePlugin extends AbstractEntryPlugin {
 
     @Override
     public Region getIcon() {
-        return JEConfig.getSVGImage(Icon.BUILDING, Plugin.IconSize, Plugin.IconSize, Icon.CSS_PLUGIN);
+        return JEConfig.getSVGImage(Icon.CERTIFICATE, Plugin.IconSize, Plugin.IconSize, Icon.CSS_PLUGIN);
     }
 
     @Override

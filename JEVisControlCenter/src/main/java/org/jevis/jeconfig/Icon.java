@@ -125,6 +125,8 @@ public class Icon {
     public static final String LOADPROFILE = "/icons/MaterialDesignSVG/outlined/assessment.svg";
 
     public static final String BUILDING = "/icons/MaterialDesignSVG/outlined/home_storage.svg";
+    /** energy certificates (Material Symbol workspace_premium, as the class icon) */
+    public static final String CERTIFICATE = "/icons/MaterialDesignSVG/outlined/workspace_premium.svg";
 
     public static final String CONFIG = "/icons/MaterialDesignSVG/outlined/settings.svg";
 
