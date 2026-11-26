@@ -107,6 +107,8 @@ public class AlarmPlugin implements Plugin {
     private final JEVisDataSource ds;
     private final String title;
     private final BorderPane borderPane = new BorderPane();
+    /** data outages above the list (docs/ALARMS-OUTAGE.md) */
+    private OutagePane outagePane;
     private final ToolBar toolBar = new ToolBar();
     private final int iconSize = 20;
     private final Image checkAllImage = ResourceLoader.getImage(Icon.PNG_CHECK_ALL);
@@ -172,7 +174,10 @@ public class AlarmPlugin implements Plugin {
                 }
             }
         });
-        this.borderPane.setCenter(pagination);
+        this.outagePane = new OutagePane(ds);
+        VBox center = new VBox(outagePane, pagination);
+        VBox.setVgrow(pagination, Priority.ALWAYS);
+        this.borderPane.setCenter(center);
     }
 
     public static void autoFitTable(TableView<AlarmRow> tableView) {
@@ -369,6 +374,7 @@ public class AlarmPlugin implements Plugin {
         data.clear();
 
         List<AlarmConfiguration> alarms = getAllAlarmConfigs();
+        outagePane.load(alarms, start != null ? start : DateTime.now().minusDays(7), end != null ? end : DateTime.now());
         JEConfig.getStatusBar().startProgressJob("AlarmConfigs", alarms.size(), I18n.getInstance().getString("plugin.alarms.message.loadingconfigs"));
 
         alarms.forEach(alarmConfiguration -> {

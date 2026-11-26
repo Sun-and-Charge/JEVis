@@ -208,7 +208,7 @@ public class AlarmEditor implements AttributeEditor {
 
 
         if (jsonstring.startsWith("[")) {
-            list = Arrays.asList(JsonTools.objectMapper().readValue(jsonstring, JsonAlarmConfig[].class));
+            list = new ArrayList<>(Arrays.asList(JsonTools.objectMapper().readValue(jsonstring, JsonAlarmConfig[].class)));
         } else {
             list.add(JsonTools.objectMapper().readValue(jsonstring, JsonAlarmConfig.class));
         }
@@ -248,6 +248,20 @@ public class AlarmEditor implements AttributeEditor {
 
         }
 
+        /* data outage rule (docs/ALARMS-OUTAGE.md): no new value for the given time */
+        Button addOutage = new Button(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.addoutage", "Datenausfall überwachen", "Monitor data outage"));
+        addOutage.setOnAction(event -> {
+            JsonAlarmConfig outage = new JsonAlarmConfig();
+            outage.setName(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.outage", "Datenausfall", "Data outage"));
+            outage.setId(nextId(_listConfig));
+            outage.setNoData("120");
+            _listConfig.add(outage);
+            Tab tab = new Tab(outage.getName());
+            tabPane.getTabs().add(tab);
+            fillTab(tab, outage);
+            tabPane.getSelectionModel().select(tab);
+        });
+
         /* J25.5: "Speichern" in Sun, no default button (Enter in a field must not save), "Abbrechen" */
         ButtonType okType = dialog.addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
         Button okButton = (Button) dialog.getDialogPane().lookupButton(okType);
@@ -256,7 +270,7 @@ public class AlarmEditor implements AttributeEditor {
         Separator separator = new Separator(Orientation.HORIZONTAL);
         separator.setPadding(new Insets(8, 0, 8, 0));
 
-        VBox vBox = new VBox(6, tabPane, separator);
+        VBox vBox = new VBox(6, tabPane, new HBox(addOutage), separator);
         dialog.getDialogPane().setContent(vBox);
 
         okButton.setOnAction(event -> {
@@ -282,11 +296,29 @@ public class AlarmEditor implements AttributeEditor {
      * @param tab
      * @param config
      */
-    private void fillTab(Tab tab, JsonAlarmConfig config) {
-        Integer id = null;
-        if (config.getId() != null) {
-            id = Integer.parseInt(config.getId());
+    /** a free numeric id for a new rule */
+    static String nextId(List<JsonAlarmConfig> list) {
+        int max = 1;
+        for (JsonAlarmConfig c : list) {
+            try {
+                max = Math.max(max, Integer.parseInt(c.getId()));
+            } catch (Exception e) {
+                // not a number
+            }
         }
+        return String.valueOf(max + 1);
+    }
+
+    /** kind of a rule as JEAlarm reads it: outage, comparison row, fixed limit; without either by id (1 = row) */
+    static String kindOf(JsonAlarmConfig config) {
+        if (config.getNoData() != null && !config.getNoData().trim().isEmpty()) return "NO_DATA";
+        if (config.getLimitData() != null && !config.getLimitData().trim().isEmpty()) return "DYNAMIC";
+        if (config.getLimit() != null && !config.getLimit().trim().isEmpty()) return "STATIC";
+        return "1".equals(config.getId()) ? "DYNAMIC" : "STATIC";
+    }
+
+    private void fillTab(Tab tab, JsonAlarmConfig config) {
+        String kind = kindOf(config);
 
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
@@ -509,10 +541,33 @@ public class AlarmEditor implements AttributeEditor {
          * Create layout
          */
         int row = 0;
-        if (id == 1) {
+        if ("NO_DATA".equals(kind)) {
+            /* data outage: minutes without a new raw value, no operator, tolerance, mean or validity time */
+            Label noDataLabel = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.nodata", "Keine neuen Werte seit (Minuten)", "No new values for (minutes)"));
+            TextField noDataField = new TextField(config.getNoData());
+            noDataField.textProperty().addListener((o, a, b) -> config.setNoData(b == null || b.trim().isEmpty() ? null : b.trim()));
+            gridPane.add(noDataLabel, 0, row);
+            gridPane.add(noDataField, 1, row);
+            row++;
+            Label hint = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.nodata.hint",
+                    "Geprüft wird der Eingang der Rohdaten bei jedem Lauf von JEAlarm. Eine E-Mail beim Beginn, das Ende steht in der Tageszusammenfassung.",
+                    "The arrival of raw data is checked in every JEAlarm run. One e-mail at the start; the end is listed in the daily summary."));
+            hint.setWrapText(true);
+            hint.setMaxWidth(560);
+            gridPane.add(hint, 0, row, 3, 1);
+            row++;
+            gridPane.add(silentTimeLabel, 0, row);
+            gridPane.add(silentTime.getEditor(), 1, row);
+            row++;
+            gridPane.add(standbyLabel, 0, row);
+            gridPane.add(standbyTime.getEditor(), 1, row);
+            tab.setContent(new ScrollPane(gridPane));
+            return;
+        }
+        if ("DYNAMIC".equals(kind)) {
             gridPane.add(limitDataLabel, 0, row);
             gridPane.add(limitDataBox, 1, row);
-        } else if (id == 0) {
+        } else {
             gridPane.add(limitLabel, 0, row);
             gridPane.add(limitField, 1, row);
             gridPane.add(unitField, 2, row);
@@ -551,6 +606,28 @@ public class AlarmEditor implements AttributeEditor {
         gridPane.add(toleranceLabel, 0, row);
         gridPane.add(toleranceField, 1, row);
         gridPane.add(toleranceUnitLabel, 2, row);
+        row++;
+
+        /* moving mean and validity time (docs/ALARMS-OUTAGE.md); empty = not written (older clients reject the keys) */
+        Label averageLabel = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.average", "Mittelwert über (Minuten)", "Mean over (minutes)"));
+        TextField averageField = new TextField(config.getAverage() != null ? config.getAverage() : "");
+        averageField.setPromptText(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.average.none", "Einzelwerte", "Single values"));
+        averageField.textProperty().addListener((o, a, b) -> config.setAverage(b == null || b.trim().isEmpty() ? null : b.trim()));
+        gridPane.add(averageLabel, 0, row);
+        gridPane.add(averageField, 1, row);
+        row++;
+        Separator separator4 = new Separator();
+        separator4.setPadding(new Insets(4, 4, 4, 4));
+        gridPane.add(separator4, 0, row, 2, 1);
+        row++;
+        Label validLabel = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.valid", "Gilt nur zu", "Applies only at"));
+        ScheduleEditor validTime = config.getValidTime() != null ? new ScheduleEditor(config.getValidTime()) : new ScheduleEditor();
+        validTime.getValueChangedProperty().addListener((o, a, b) -> {
+            JsonScheduler value = validTime.getInputValue();
+            config.setValidTime(value != null && value.getRules() != null && !value.getRules().isEmpty() ? value : null);
+        });
+        gridPane.add(validLabel, 0, row);
+        gridPane.add(validTime.getEditor(), 1, row);
 
         tab.setContent(new ScrollPane(gridPane));
     }

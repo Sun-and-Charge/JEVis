@@ -19,6 +19,8 @@
  */
 package org.jevis.commons.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -28,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 @XmlRootElement(name = "JsonAlarmConfig")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonAlarmConfig {
 
     private String name;
@@ -38,6 +41,12 @@ public class JsonAlarmConfig {
     private JsonScheduler silentTime;
     private JsonScheduler standbyTime;
     private String tolerance;
+    /** minutes without a new value: rule kind "data outage" (docs/ALARMS-OUTAGE.md); only written when set */
+    private String noData;
+    /** the rule only applies to values inside these times (e.g. day or night limits); only written when set */
+    private JsonScheduler validTime;
+    /** minutes of a moving mean compared instead of the single value; only written when set */
+    private String average;
 
     public JsonAlarmConfig() {
     }
@@ -112,6 +121,36 @@ public class JsonAlarmConfig {
 
     public void setTolerance(String tolerance) {
         this.tolerance = tolerance;
+    }
+
+    @XmlElement(name = "noData")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getNoData() {
+        return noData;
+    }
+
+    public void setNoData(String noData) {
+        this.noData = noData;
+    }
+
+    @XmlElement(name = "validTime")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public JsonScheduler getValidTime() {
+        return validTime;
+    }
+
+    public void setValidTime(JsonScheduler validTime) {
+        this.validTime = validTime;
+    }
+
+    @XmlElement(name = "average")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getAverage() {
+        return average;
+    }
+
+    public void setAverage(String average) {
+        this.average = average;
     }
 
     @Override
