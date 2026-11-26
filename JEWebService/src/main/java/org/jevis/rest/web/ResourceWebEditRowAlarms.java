@@ -57,6 +57,8 @@ public class ResourceWebEditRowAlarms {
             ATTRIBUTE_LIMITS, ATTRIBUTE_ALARM_ENABLED, ATTRIBUTE_ALARM_CONFIG));
     static final String KIND_STATIC = "STATIC";
     static final String KIND_DYNAMIC = "DYNAMIC";
+    /** data outage rule (docs/ALARMS-OUTAGE.md): minutes without a new value */
+    static final String KIND_NO_DATA = "NO_DATA";
     static final int MAX_STEPS = 2;
     static final int MAX_RULES = 10;
     static final int MAX_NAME_LENGTH = 200;
@@ -76,6 +78,11 @@ public class ResourceWebEditRowAlarms {
     static final String RULE_TOLERANCE = "tolerance";
     static final String RULE_SILENT = "silentTime";
     static final String RULE_STANDBY = "standbyTime";
+    /* new keys (docs/ALARMS-OUTAGE.md): removed when empty, never written as null, so that older Control Centers,
+       which reject unknown keys, can still read rows that do not use them */
+    static final String RULE_NO_DATA = "noData";
+    static final String RULE_VALID = "validTime";
+    static final String RULE_AVERAGE = "average";
     /**
      * Keys of a step the web handles itself (web names and stored names); all other keys are passed through
      */
@@ -139,6 +146,15 @@ public class ResourceWebEditRowAlarms {
         json.put("unit", store.unit(clean.getId(), ATTRIBUTE_VALUE));
         json.put("rawId", raw != null ? raw.getId() : null);
         json.put("rawName", raw != null ? raw.getName() : null);
+        /* newest raw value (arrival of data, as the data outage rule checks it; docs/ALARMS-OUTAGE.md) */
+        String lastValue = null;
+        try {
+            JsonSample last = store.latest(raw != null ? raw.getId() : clean.getId(), ATTRIBUTE_VALUE);
+            lastValue = WebEdit.version(last);
+        } catch (Exception e) {
+            lastValue = null;
+        }
+        json.put("lastValue", lastValue);
         return json;
     }
 
@@ -216,6 +232,7 @@ public class ResourceWebEditRowAlarms {
      * dynamic, a limit static); a rule with neither is shown as the Control Center shows it (id 1: dynamic)
      */
     static String kind(ObjectNode rule) {
+        if (AlarmFormats.number(AlarmFormats.text(rule, RULE_NO_DATA)) != null) return KIND_NO_DATA;
         String limitData = AlarmFormats.text(rule, RULE_LIMIT_DATA);
         if (limitData != null && !limitData.trim().isEmpty()) return KIND_DYNAMIC;
         if (AlarmFormats.text(rule, RULE_LIMIT) != null) return KIND_STATIC;
@@ -227,6 +244,10 @@ public class ResourceWebEditRowAlarms {
      */
     static boolean complete(ObjectNode rule) {
         String kind = kind(rule);
+        if (KIND_NO_DATA.equals(kind)) {
+            Double minutes = AlarmFormats.number(AlarmFormats.text(rule, RULE_NO_DATA));
+            return minutes != null && minutes >= 1;
+        }
         boolean target = KIND_DYNAMIC.equals(kind)
                 ? !ResourceWebEditAlarms.targets(AlarmFormats.text(rule, RULE_LIMIT_DATA)).isEmpty()
                 : AlarmFormats.number(AlarmFormats.text(rule, RULE_LIMIT)) != null;
@@ -263,6 +284,9 @@ public class ResourceWebEditRowAlarms {
         json.put("tolerance", AlarmFormats.number(AlarmFormats.text(rule, RULE_TOLERANCE)));
         json.put("silent", AlarmFormats.scheduleJson(rule.get(RULE_SILENT)));
         json.put("standby", AlarmFormats.scheduleJson(rule.get(RULE_STANDBY)));
+        json.put("valid", AlarmFormats.scheduleJson(rule.get(RULE_VALID)));
+        json.put("noData", AlarmFormats.number(AlarmFormats.text(rule, RULE_NO_DATA)));
+        json.put("average", AlarmFormats.number(AlarmFormats.text(rule, RULE_AVERAGE)));
         json.put("complete", complete(rule));
         return json;
     }
@@ -477,7 +501,7 @@ public class ResourceWebEditRowAlarms {
      * {@code AlarmEditor} shows the limit for id 0 and the row for id 1), else the highest number + 1
      */
     static String newId(String kind, Set<String> used) {
-        String preferred = KIND_DYNAMIC.equals(kind) ? "1" : "0";
+        String preferred = KIND_DYNAMIC.equals(kind) ? "1" : KIND_NO_DATA.equals(kind) ? "2" : "0";
         if (!used.contains(preferred)) return preferred;
         int max = 1;
         for (String id : used) {
@@ -491,6 +515,7 @@ public class ResourceWebEditRowAlarms {
     }
 
     static String defaultRuleName(String kind, String language) {
+        if (KIND_NO_DATA.equals(kind)) return "de".equals(language) ? "Datenausfall" : "Data outage";
         String key = KIND_DYNAMIC.equals(kind) ? "newobject.alarmconfig2" : "newobject.alarmconfig1";
         String name = ResourceWebNotes.NoteTags.translate(key, language);
         return name != null ? name : KIND_DYNAMIC.equals(kind) ? "Dynamic Alarm" : "Static Alarm";
@@ -543,14 +568,15 @@ public class ResourceWebEditRowAlarms {
             String kind = original != null ? kind(original) : null;
             JsonNode kindNode = sent.get("kind");
             if (kindNode != null && !kindNode.isNull()) {
-                if (!kindNode.isTextual() || !(KIND_STATIC.equals(kindNode.asText()) || KIND_DYNAMIC.equals(kindNode.asText()))) {
-                    messages.add(label + ".kind: STATIC or DYNAMIC expected");
+                if (!kindNode.isTextual() || !(KIND_STATIC.equals(kindNode.asText()) || KIND_DYNAMIC.equals(kindNode.asText())
+                        || KIND_NO_DATA.equals(kindNode.asText()))) {
+                    messages.add(label + ".kind: STATIC, DYNAMIC or NO_DATA expected");
                     continue;
                 }
                 kind = kindNode.asText();
             }
             if (kind == null) {
-                messages.add(label + ".kind: STATIC or DYNAMIC expected");
+                messages.add(label + ".kind: STATIC, DYNAMIC or NO_DATA expected");
                 continue;
             }
             if (id == null) {
@@ -563,11 +589,28 @@ public class ResourceWebEditRowAlarms {
             if (name != null && !name.equals(AlarmFormats.text(rule, RULE_NAME))) rule.put(RULE_NAME, name);
             if (AlarmFormats.text(rule, RULE_NAME) == null) rule.put(RULE_NAME, defaultRuleName(kind, language));
 
-            if (KIND_STATIC.equals(kind)) {
+            if (KIND_NO_DATA.equals(kind)) {
+                Num minutes = num(sent, "noData", label + ".noData", messages);
+                if (minutes.sent) {
+                    if (minutes.value == null || minutes.value < 1 || minutes.value > 525600) {
+                        messages.add(label + ".noData: minutes from 1 to 525600 expected");
+                    } else {
+                        rule.put(RULE_NO_DATA, String.valueOf(Math.round(minutes.value)));
+                    }
+                }
+                /* an outage rule has no limit, row, operator, mean or validity time */
+                for (String key : new String[]{RULE_LIMIT, RULE_LIMIT_DATA, RULE_OPERATOR}) {
+                    if (AlarmFormats.text(rule, key) != null) rule.set(key, NullNode.getInstance());
+                }
+                rule.remove(RULE_AVERAGE);
+                rule.remove(RULE_VALID);
+            } else if (KIND_STATIC.equals(kind)) {
+                rule.remove(RULE_NO_DATA);
                 Num limit = num(sent, "limit", label + ".limit", messages);
                 if (limit.sent) setNumber(rule, RULE_LIMIT, limit.value, false);
                 if (AlarmFormats.text(rule, RULE_LIMIT_DATA) != null) rule.set(RULE_LIMIT_DATA, NullNode.getInstance());
             } else {
+                rule.remove(RULE_NO_DATA);
                 if (sent.has("limitData")) limitData(store, sent.get("limitData"), rule, rowClasses, label, messages);
                 if (AlarmFormats.text(rule, RULE_LIMIT) != null) rule.set(RULE_LIMIT, NullNode.getInstance());
             }
@@ -598,8 +641,27 @@ public class ResourceWebEditRowAlarms {
                 setSchedule(rule, RULE_STANDBY, AlarmFormats.schedule(sent.get("standby"), rule.get(RULE_STANDBY), zone,
                         label + ".standby", messages));
             }
+            if (!KIND_NO_DATA.equals(kind)) {
+                if (sent.has("valid")) {
+                    JsonNode valid = AlarmFormats.schedule(sent.get("valid"), rule.get(RULE_VALID), zone, label + ".valid", messages);
+                    if (valid == null) rule.remove(RULE_VALID);
+                    else rule.set(RULE_VALID, valid);
+                }
+                Num average = num(sent, "average", label + ".average", messages);
+                if (average.sent) {
+                    if (average.value == null) {
+                        rule.remove(RULE_AVERAGE);
+                    } else if (average.value < 1 || average.value > 10080) {
+                        messages.add(label + ".average: minutes from 1 to 10080 expected");
+                    } else {
+                        rule.put(RULE_AVERAGE, String.valueOf(Math.round(average.value)));
+                    }
+                }
+            }
 
-            if (messages.size() == before && !rule.equals(original)) {
+            if (messages.size() == before && !rule.equals(original) && KIND_NO_DATA.equals(kind)) {
+                if (!complete(rule)) messages.add(label + ".noData: minutes expected");
+            } else if (messages.size() == before && !rule.equals(original)) {
                 /* only changed or new rules must be complete (the Control Center's default rules are not) */
                 if (KIND_STATIC.equals(kind) && AlarmFormats.number(AlarmFormats.text(rule, RULE_LIMIT)) == null) {
                     messages.add(label + ".limit: number expected");

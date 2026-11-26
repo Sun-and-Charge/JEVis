@@ -318,6 +318,14 @@ public class AlarmTable extends org.jevis.commons.alarm.AlarmTable {
         return null;
     }
 
+    /**
+     * @return whether an alarm is listed in the mail: STATIC/DYNAMIC outside silent times, gaps and deltas
+     */
+    static boolean listedInMail(AlarmType type, int logValue) {
+        if (type == AlarmType.DYNAMIC || type == AlarmType.STATIC) return logValue == 1;
+        return type == AlarmType.GAP || type == AlarmType.D1 || type == AlarmType.D2;
+    }
+
     public String getAlarmTable() throws JEVisException {
         StringBuilder sb = new StringBuilder();
 
@@ -350,9 +358,9 @@ public class AlarmTable extends org.jevis.commons.alarm.AlarmTable {
         boolean odd = false;
         boolean empty = true;
         for (Alarm currentAlarm : alarms) {
-            /* static and dynamic alarms, both only outside silent times (log value 1) */
-            if ((currentAlarm.getAlarmType().equals(AlarmType.DYNAMIC) || currentAlarm.getAlarmType().equals(AlarmType.STATIC))
-                    && currentAlarm.getLogValue() == 1) {
+            /* static and dynamic alarms only outside silent times (log value 1); gaps and deltas as well (they triggered
+               the mail before without being listed, docs/ALARMS-OUTAGE.md) */
+            if (listedInMail(currentAlarm.getAlarmType(), currentAlarm.getLogValue())) {
                 empty = false;
                 String name = currentAlarm.getObject().getName() + ":" + currentAlarm.getObject().getID().toString();
                 String nameRaw = "";
@@ -430,7 +438,7 @@ public class AlarmTable extends org.jevis.commons.alarm.AlarmTable {
                 sb.append("<td style=\"");
                 sb.append(css);
                 sb.append("\">");
-                sb.append(nf.format(currentAlarm.getIsValue()));
+                if (currentAlarm.getIsValue() != null) sb.append(nf.format(currentAlarm.getIsValue()));
                 String currentUnit = null;
                 try {
                     currentUnit = UnitManager.getInstance().format(currentAlarm.getAttribute().getDisplayUnit());
@@ -457,8 +465,10 @@ public class AlarmTable extends org.jevis.commons.alarm.AlarmTable {
                 sb.append("<td style=\"");
                 sb.append(css);
                 sb.append("\">");
-                sb.append(nf.format(currentAlarm.getSetValue()));
-                if (currentUnit != null) sb.append(" ").append(currentUnit);
+                if (currentAlarm.getSetValue() != null) {
+                    sb.append(nf.format(currentAlarm.getSetValue()));
+                    if (currentUnit != null) sb.append(" ").append(currentUnit);
+                }
                 sb.append("</td>");
                 /**
                  * Alarm Type

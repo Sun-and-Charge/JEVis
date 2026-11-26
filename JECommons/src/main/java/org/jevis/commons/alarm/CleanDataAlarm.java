@@ -57,6 +57,7 @@ public class CleanDataAlarm {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final boolean validAlarmConfiguration;
     private final boolean isEnabled;
+    private List<AlarmRule> rules = new ArrayList<>();
 
     public CleanDataAlarm(JEVisObject cleanDataObject) throws JEVisException {
         this.cleanDataObject = cleanDataObject;
@@ -67,6 +68,15 @@ public class CleanDataAlarm {
         createJsonList(cleanDataObject);
 
         validAlarmConfiguration = parseJsonList(cleanDataObject);
+        rules = AlarmRule.parse(jsonList, cleanDataObject.getName() + ":" + cleanDataObject.getID());
+    }
+
+    /**
+     * All rules of the row in their order (docs/ALARMS-OUTAGE.md). The single-rule getters of this class keep their
+     * old meaning (the last entry wins) for existing callers.
+     */
+    public List<AlarmRule> getRules() {
+        return rules;
     }
 
     private boolean parseJsonList(JEVisObject cleanDataObject) {
