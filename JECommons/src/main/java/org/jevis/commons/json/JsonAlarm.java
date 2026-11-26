@@ -19,6 +19,7 @@
  */
 package org.jevis.commons.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jevis.commons.alarm.AlarmType;
 
@@ -29,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Gerrit Schutz <gerrit.schutz@sunandcharge.com>
  */
 @XmlRootElement(name = "JsonAlarm")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonAlarm {
 
     private String attribute;

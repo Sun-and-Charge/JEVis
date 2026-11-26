@@ -364,6 +364,50 @@
         "de": "Gebunden an Daten",
         "en": "Bind to Data"
       }
+    },
+    {
+      "type": "Daily Summary",
+      "descriptions": {
+        "de": "Sendet einmal täglich eine Zusammenfassung der Alarme und Datenausfälle der letzten 24 Stunden.",
+        "en": "Sends a summary of the alarms and data outages of the last 24 hours once a day."
+      },
+      "names": {
+        "de": "Tageszusammenfassung",
+        "en": "Daily Summary"
+      }
+    },
+    {
+      "type": "Daily Summary Time",
+      "descriptions": {
+        "de": "Uhrzeit (HH:mm, Zeitzone des Standorts), ab der die Tageszusammenfassung versendet wird, z. B. 07:00.",
+        "en": "Time (HH:mm, time zone of the site) from which the daily summary is sent, e.g. 07:00."
+      },
+      "names": {
+        "de": "Uhrzeit der Tageszusammenfassung",
+        "en": "Daily Summary Time"
+      }
+    },
+    {
+      "type": "Outage State",
+      "descriptions": {
+        "de": "Offene Datenausfälle und letzte Tageszusammenfassung (JSON), wird vom Dienst JEAlarm geschrieben.",
+        "en": "Open data outages and the last daily summary (JSON), written by the JEAlarm service."
+      },
+      "names": {
+        "de": "Ausfallstatus",
+        "en": "Outage State"
+      }
+    },
+    {
+      "type": "Outage Log",
+      "descriptions": {
+        "de": "Beginn und Ende von Datenausfällen und Übertragungsstörungen (JSON je Lauf), wird vom Dienst JEAlarm geschrieben.",
+        "en": "Start and end of data outages and transmission faults (JSON per run), written by the JEAlarm service."
+      },
+      "names": {
+        "de": "Ausfallprotokoll",
+        "en": "Outage Log"
+      }
     }
   ]
 }

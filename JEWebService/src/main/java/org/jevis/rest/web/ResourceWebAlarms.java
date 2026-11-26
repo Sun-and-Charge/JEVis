@@ -31,6 +31,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jevis.commons.alarm.AlarmConfiguration;
 import org.jevis.commons.alarm.AlarmType;
+import org.jevis.commons.alarm.OutageEvent;
+import org.jevis.commons.alarm.OutageLogic;
+import org.jevis.commons.alarm.OutageState;
 import org.jevis.commons.json.JsonAlarm;
 import org.jevis.commons.json.JsonTools;
 import org.jevis.commons.ws.json.JsonFactory;
@@ -439,7 +442,95 @@ public class ResourceWebAlarms {
         result.put("state", state);
         result.put("alarms", list);
         result.put("truncated", truncated);
+        result.put("outages", outagesJson(lookup, buildingClasses, store, from, to, zone));
         return result;
+    }
+
+    /**
+     * Data outages and transmission faults of the readable, enabled configurations (docs/ALARMS-OUTAGE.md): the open
+     * ones ("Outage State") and those that ended in the time frame ("Outage Log"); open first, then newest first.
+     * Independent of the confirmed state of the limit alarms.
+     */
+    static List<Map<String, Object>> outagesJson(ResourceWebModules.Lookup lookup, Set<String> buildingClasses, Store store,
+                                                 DateTime from, DateTime to, DateTimeZone zone) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (JsonObject configuration : configurations(lookup, store)) {
+            Map<String, Object> config = new LinkedHashMap<>();
+            config.put("id", configuration.getId());
+            config.put("name", configuration.getName());
+            try {
+                JsonSample state = store.latest(configuration.getId(), OutageState.ATTRIBUTE);
+                for (OutageState.Open o : OutageState.fromJson(state != null ? state.getValue() : null).getOpen().values()) {
+                    list.add(outageJson(o.kind, o.object, o.since, o.minutes, o.cause, o.opened, null, null, null, true,
+                            config, lookup, buildingClasses, zone));
+                }
+                for (JsonSample sample : store.samples(configuration.getId(), OutageEvent.ATTRIBUTE, from, to, MAX_ALARMS)) {
+                    for (OutageEvent e : outageEvents(sample.getValue())) {
+                        if (!OutageEvent.END.equals(e.event)) continue;
+                        Long ended = ResourceWebNotes.millis(sample.getTs());
+                        list.add(outageJson(e.kind, e.object, e.since, e.minutes, e.cause, null, e.resumed, e.backfilled,
+                                ended, false, config, lookup, buildingClasses, zone));
+                    }
+                }
+            } catch (Exception ex) {
+                logger.warn("Could not read the outages of {}", configuration.getId(), ex);
+            }
+        }
+        list.sort(Comparator.comparing((Map<String, Object> m) -> !Boolean.TRUE.equals(m.get("open")))
+                .thenComparing(m -> String.valueOf(m.get("since")), Comparator.reverseOrder()));
+        return list.size() > MAX_ALARMS ? new ArrayList<>(list.subList(0, MAX_ALARMS)) : list;
+    }
+
+    static List<OutageEvent> outageEvents(String json) {
+        List<OutageEvent> events = new ArrayList<>();
+        if (json == null || json.trim().isEmpty()) return events;
+        try {
+            if (json.trim().startsWith("[")) {
+                for (OutageEvent e : MAPPER.copy().configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .readValue(json, OutageEvent[].class)) {
+                    if (e != null) events.add(e);
+                }
+            } else {
+                OutageEvent e = OutageEvent.fromJson(json);
+                if (e != null) events.add(e);
+            }
+        } catch (Exception e) {
+            logger.warn("Could not read an outage log entry", e);
+        }
+        return events;
+    }
+
+    private static Map<String, Object> outageJson(String kind, long object, String since, int minutes, Long cause, String opened,
+                                                  String resumed, Boolean backfilled, Long ended, boolean open,
+                                                  Map<String, Object> configuration, ResourceWebModules.Lookup lookup,
+                                                  Set<String> buildingClasses, DateTimeZone zone) {
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("id", configuration.get("id") + "-" + object + "-" + (open ? "open" : ended));
+        json.put("kind", "SOURCE".equals(kind) ? "SOURCE" : "ROW");
+        json.put("open", open);
+        json.put("configuration", configuration);
+        json.put("object", ResourceWebNotes.rowJson(object, lookup, buildingClasses));
+        json.put("site", site(object, ((Number) configuration.get("id")).longValue(), lookup, buildingClasses));
+        json.put("since", iso(since, zone));
+        json.put("minutes", minutes);
+        JsonObject causeObject = cause != null ? lookup.readable(cause) : null;
+        Map<String, Object> causeJson = null;
+        if (cause != null) {
+            causeJson = new LinkedHashMap<>();
+            causeJson.put("id", cause);
+            causeJson.put("name", causeObject != null ? causeObject.getName() : null);
+        }
+        json.put("cause", causeJson);
+        json.put("opened", iso(opened, zone));
+        json.put("resumed", iso(resumed, zone));
+        json.put("backfilled", backfilled);
+        json.put("ended", ended != null ? ISODateTimeFormat.dateTime().print(new DateTime(ended, zone)) : null);
+        return json;
+    }
+
+    private static String iso(String time, DateTimeZone zone) {
+        DateTime t = OutageLogic.parse(time);
+        return t != null ? ISODateTimeFormat.dateTime().print(t.withZone(zone)) : null;
     }
 
     static Map<String, Object> configurationJson(JsonObject configuration, Checked checked, DateTimeZone zone,

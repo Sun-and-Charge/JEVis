@@ -68,13 +68,15 @@ public class ResourceWebEditAlarms {
     static final String ATTRIBUTE_PERIOD = "Alarm Period";
     static final String ATTRIBUTE_CUSTOM_SCHEDULE = "Custom Schedule Object";
     static final String ATTRIBUTE_BIND_TO_DATA = "Bind to Data";
+    static final String ATTRIBUTE_DAILY_SUMMARY = "Daily Summary";
+    static final String ATTRIBUTE_DAILY_SUMMARY_TIME = "Daily Summary Time";
     /**
      * The attributes of a configuration the version is taken from (not the JEAlarm outputs "Time Stamp", "Log",
      * "Log File" and "Alarm Checked")
      */
     static final List<String> CONFIGURATION_ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(ATTRIBUTE_ENABLED,
             ATTRIBUTE_DISABLE_LINK, ATTRIBUTE_INCLUDE_LIMITS, ATTRIBUTE_SCOPE, ATTRIBUTE_OBJECTS, ATTRIBUTE_PERIOD,
-            ATTRIBUTE_CUSTOM_SCHEDULE, ATTRIBUTE_BIND_TO_DATA));
+            ATTRIBUTE_CUSTOM_SCHEDULE, ATTRIBUTE_BIND_TO_DATA, ATTRIBUTE_DAILY_SUMMARY, ATTRIBUTE_DAILY_SUMMARY_TIME));
 
     static final String MAIL_ENABLED = "Enabled";
     static final String MAIL_RECIPIENTS = "Recipients";
@@ -310,6 +312,8 @@ public class ResourceWebEditAlarms {
         JsonSample bindToData;
         JsonSample includeLimits;
         JsonSample disableLink;
+        JsonSample dailySummary;
+        String dailySummaryTime;
         String scopeText;
         String objectsText;
         String periodText;
@@ -355,6 +359,8 @@ public class ResourceWebEditAlarms {
         c.bindToData = store.latest(id, ATTRIBUTE_BIND_TO_DATA);
         c.includeLimits = store.latest(id, ATTRIBUTE_INCLUDE_LIMITS);
         c.disableLink = store.latest(id, ATTRIBUTE_DISABLE_LINK);
+        c.dailySummary = store.latest(id, ATTRIBUTE_DAILY_SUMMARY);
+        c.dailySummaryTime = value(store.latest(id, ATTRIBUTE_DAILY_SUMMARY_TIME));
         c.scopeText = value(store.latest(id, ATTRIBUTE_SCOPE));
         c.objectsText = value(store.latest(id, ATTRIBUTE_OBJECTS));
         c.periodText = value(store.latest(id, ATTRIBUTE_PERIOD));
@@ -552,6 +558,8 @@ public class ResourceWebEditAlarms {
         json.put("bindToData", ResourceWebAlarms.isTrue(c.bindToData));
         json.put("includeLimits", ResourceWebAlarms.isTrue(c.includeLimits));
         json.put("disableLink", ResourceWebAlarms.isTrue(c.disableLink));
+        json.put("dailySummary", ResourceWebAlarms.isTrue(c.dailySummary));
+        json.put("dailySummaryTime", c.dailySummaryTime);
         json.put("timeStamp", timeStamp(c.timeStamp, store.workDay(object).zone));
         json.put("notification", notificationJson(context, c.notification));
         json.put("multipleNotifications", c.notifications.size() > 1);
@@ -694,6 +702,8 @@ public class ResourceWebEditAlarms {
         Boolean bindToData;
         Boolean includeLimits;
         Boolean disableLink;
+        Boolean dailySummary;
+        String dailySummaryTime;
         MailChange notification;
     }
 
@@ -738,6 +748,18 @@ public class ResourceWebEditAlarms {
         change.bindToData = optionalBoolean(json, "bindToData", messages);
         change.includeLimits = optionalBoolean(json, "includeLimits", messages);
         change.disableLink = optionalBoolean(json, "disableLink", messages);
+        change.dailySummary = optionalBoolean(json, "dailySummary", messages);
+        change.dailySummaryTime = optionalText(json, "dailySummaryTime", messages);
+        if (change.dailySummaryTime != null) {
+            change.dailySummaryTime = change.dailySummaryTime.trim();
+            if (org.jevis.commons.alarm.OutageLogic.hourMinute(change.dailySummaryTime) == null) {
+                messages.add("dailySummaryTime: HH:mm expected");
+                change.dailySummaryTime = null;
+            } else {
+                int[] hm = org.jevis.commons.alarm.OutageLogic.hourMinute(change.dailySummaryTime);
+                change.dailySummaryTime = String.format("%02d:%02d", hm[0], hm[1]);
+            }
+        }
         change.scope = optionalText(json, "scope", messages);
         if (change.scope != null && !SCOPES.contains(change.scope)) {
             messages.add("scope: one of " + String.join(", ", SCOPES) + " expected");
@@ -980,6 +1002,11 @@ public class ResourceWebEditAlarms {
         writeBoolean(store, object, ATTRIBUTE_BIND_TO_DATA, change.bindToData, store.latest(id, ATTRIBUTE_BIND_TO_DATA), now, action);
         writeBoolean(store, object, ATTRIBUTE_INCLUDE_LIMITS, change.includeLimits, store.latest(id, ATTRIBUTE_INCLUDE_LIMITS), now, action);
         writeBoolean(store, object, ATTRIBUTE_DISABLE_LINK, change.disableLink, store.latest(id, ATTRIBUTE_DISABLE_LINK), now, action);
+        /* daily summary (docs/ALARMS-OUTAGE.md); a configuration whose class lacks the attributes is left as it is */
+        if (store.classes().type(object.getJevisClass(), ATTRIBUTE_DAILY_SUMMARY) != null) {
+            writeBoolean(store, object, ATTRIBUTE_DAILY_SUMMARY, change.dailySummary, store.latest(id, ATTRIBUTE_DAILY_SUMMARY), now, action);
+            writeText(store, object, ATTRIBUTE_DAILY_SUMMARY_TIME, change.dailySummaryTime, store.latest(id, ATTRIBUTE_DAILY_SUMMARY_TIME), now, action);
+        }
     }
 
     /**

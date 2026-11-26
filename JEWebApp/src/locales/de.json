@@ -1575,6 +1575,30 @@
     "confirmAllResult": "{confirmed} quittiert, {refused} ohne Berechtigung abgelehnt.",
     "confirmAllDone": "Keine Konfiguration quittiert. | 1 Konfiguration quittiert. | {n} Konfigurationen quittiert."
   },
+  "alarmOutages": {
+    "title": "Datenausfälle",
+    "hint": "Datenreihen ohne neue Werte und Datenquellen, die nicht mehr lesen. Offene Ausfälle zuerst, darunter die im Zeitraum beendeten.",
+    "open": "Offen",
+    "ended": "Beendet",
+    "since": "Letzter Wert",
+    "never": "noch nie",
+    "allowed": "Erlaubt ohne Daten",
+    "cause": "Ursache (Datenquelle)",
+    "resumed": "Wieder Daten ab",
+    "configuration": "Alarmkonfiguration",
+    "minutes": "{n} Minuten | 1 Minute | {n} Minuten",
+    "hours": "{n} Stunden | 1 Stunde | {n} Stunden",
+    "days": "{n} Tage | 1 Tag | {n} Tage",
+    "kind": {
+      "row": "Datenausfall",
+      "source": "Übertragungsstörung"
+    },
+    "result": {
+      "late": "verspätet geliefert",
+      "gap": "Lücke bleibt",
+      "unmonitored": "nicht mehr überwacht"
+    }
+  },
   "alarmSettings": {
     "tabsLabel": "Bereiche der Alarme",
     "tab": {
@@ -1626,7 +1650,10 @@
       "cc": "Kopie an (CC)",
       "bcc": "Blindkopie an (BCC)",
       "subject": "Betreff",
-      "message": "Nachricht"
+      "message": "Nachricht",
+      "dailySummary": "Tageszusammenfassung per E-Mail",
+      "dailySummaryHint": "Einmal täglich: offene und beendete Datenausfälle sowie Grenzwertalarme der letzten 24 Stunden. Ohne Ereignisse wird nichts versendet.",
+      "dailySummaryTime": "Uhrzeit"
     },
     "scope": {
       "COMPLETE": "Alle Datenreihen",
@@ -1687,7 +1714,11 @@
       "rules": "Höchstens {max} Alarmregeln.",
       "days": "Bitte mindestens einen Wochentag wählen.",
       "time": "Bitte „von“ und „bis“ als Uhrzeit angeben.",
-      "sameTime": "„Von“ und „bis“ dürfen nicht gleich sein."
+      "sameTime": "„Von“ und „bis“ dürfen nicht gleich sein.",
+      "noData": "Bitte angeben, nach welcher Zeit ohne neue Werte ein Alarm kommt.",
+      "noDataNumber": "Bitte eine ganze Zahl größer 0 eingeben (höchstens ein Jahr).",
+      "average": "Bitte ganze Minuten von 1 bis 10080 eingeben oder leer lassen.",
+      "summaryTime": "Bitte eine Uhrzeit angeben, z. B. 07:00."
     },
     "row": {
       "title": "Alarmeinstellungen: {name}",
@@ -1700,7 +1731,9 @@
       "configurations": "Gemeldet von",
       "noConfiguration": "Keine Alarmkonfiguration prüft diese Datenreihe – erkannte Alarme werden nicht gemeldet.",
       "saved": "Die Alarmeinstellungen wurden gespeichert.",
-      "reprocess": "Geänderte Grenzwerte wirken nur auf Daten, die ab jetzt verarbeitet werden. Für vorhandene Daten die Datenreihe im Control Center neu berechnen lassen."
+      "reprocess": "Geänderte Grenzwerte wirken nur auf Daten, die ab jetzt verarbeitet werden. Für vorhandene Daten die Datenreihe im Control Center neu berechnen lassen.",
+      "lastValue": "Letzter Wert",
+      "noDataSince": "keine Daten seit {n} Stunden | keine Daten seit 1 Stunde | keine Daten seit {n} Stunden"
     },
     "limits": {
       "title": "Grenzwerte",
@@ -1751,7 +1784,19 @@
       "standby": "Bereitschaft",
       "standbyHint": "Alarme in dieser Zeit werden ignoriert.",
       "add": "Alarmregel hinzufügen",
-      "pickTitle": "Vergleichsreihe wählen"
+      "pickTitle": "Vergleichsreihe wählen",
+      "noDataKind": "Datenausfall",
+      "noData": "Alarm, wenn keine neuen Werte kommen seit",
+      "noDataUnit": "Einheit",
+      "minutes": "Minuten",
+      "hours": "Stunden",
+      "noDataHint": "Geprüft wird der Eingang der Rohdaten bei jedem Lauf des Dienstes, unabhängig vom Prüfintervall. Eine E-Mail beim Beginn, das Ende steht in der Tageszusammenfassung.",
+      "average": "Mittelwert über (Minuten)",
+      "averageNone": "Einzelwerte",
+      "averageHint": "Vergleicht den gleitenden Mittelwert statt jedes einzelnen Werts, z. B. 60 für den Mittelwert der letzten Stunde. Ein Wertekorridor sind zwei Regeln (unterhalb Minimum, oberhalb Maximum).",
+      "valid": "Gilt nur zu bestimmten Zeiten",
+      "validHint": "Für Tag- und Nachtgrenzwerte: z. B. eine Regel Mo–Fr 06:00–20:00 mit 40 kW und eine zweite nachts mit 10 kW.",
+      "addOutage": "Datenausfall überwachen"
     },
     "operator": {
       "BIGGER": "größer als",
