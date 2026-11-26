@@ -103,7 +103,7 @@ public class ECPredictorDataSource implements DataSource {
                     return;
                 }
 
-                logger.debug("Token: {}", token);
+                logger.debug("Token received ({} characters)", token.length());
 
                 for (ECChannel ecChannel : channels) {
                     try {
