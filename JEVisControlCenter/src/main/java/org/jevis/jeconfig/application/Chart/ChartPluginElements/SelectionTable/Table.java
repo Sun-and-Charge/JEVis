@@ -56,6 +56,8 @@ public class Table extends TableView<ChartData> {
     private final TableColumn<ChartData, ManipulationMode> manipulationModeColumn;
     private final TableColumn<ChartData, Boolean> mathColumn;
     private final TableColumn<ChartData, Integer> decimalDigitsColumn;
+    private final TableColumn<ChartData, Integer> timeOffsetColumn;
+    private final TableColumn<ChartData, String> timeOffsetUnitColumn;
     private final TableColumn<ChartData, String> cssColumn;
     private final ChartModel chartModel;
     private final JEVisDataSource ds;
@@ -83,11 +85,13 @@ public class Table extends TableView<ChartData> {
         manipulationModeColumn = buildManipulationModeColumn();
         mathColumn = buildMathColumn();
         decimalDigitsColumn = buildDecimalDigitsColumn();
+        timeOffsetColumn = buildTimeOffsetColumn();
+        timeOffsetUnitColumn = buildTimeOffsetUnitColumn();
         cssColumn = buildCssColumn();
 
         getColumns().setAll(objectNameColumn, nameColumn, processorObjectColumn, chartTypeColumn, colorColumn, unitColumn,
                 intervalEnabledColumn, intervalStartColumn, intervalEndColumn,
-                bubbleTypeColumn, axisColumn, aggregationPeriodColumn, manipulationModeColumn, mathColumn, decimalDigitsColumn, cssColumn);
+                bubbleTypeColumn, axisColumn, aggregationPeriodColumn, manipulationModeColumn, mathColumn, decimalDigitsColumn, timeOffsetColumn, timeOffsetUnitColumn, cssColumn);
         getSortOrder().setAll(nameColumn);
     }
 
@@ -303,6 +307,43 @@ public class Table extends TableView<ChartData> {
                     .setDecimalDigits(chartDataIntegerCellEditEvent.getNewValue());
         });
 
+        return column;
+    }
+
+    private TableColumn<ChartData, Integer> buildTimeOffsetColumn() {
+        TableColumn<ChartData, Integer> column = new TableColumn<>(I18n.getInstance().getString("graph.table.timeoffset"));
+        column.setMinWidth(130);
+        column.setStyle("-fx-alignment: CENTER;");
+        column.setCellValueFactory(new PropertyValueFactory<>("timeOffsetAmount"));
+        column.setCellFactory(TimeOffsetTableCell.forTableColumn());
+        column.setEditable(true);
+        column.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow()).setTimeOffsetAmount(event.getNewValue()));
+        return column;
+    }
+
+    /** unit of the shift (minutes … years) */
+    private TableColumn<ChartData, String> buildTimeOffsetUnitColumn() {
+        TableColumn<ChartData, String> column = new TableColumn<>(I18n.getInstance().getString("graph.table.timeoffsetunit"));
+        column.setMinWidth(110);
+        column.setStyle("-fx-alignment: CENTER;");
+        column.setCellValueFactory(new PropertyValueFactory<>("timeOffsetUnit"));
+        javafx.util.StringConverter<String> names = new javafx.util.StringConverter<String>() {
+            @Override
+            public String toString(String unit) {
+                return unit == null ? "" : I18n.getInstance().getString("graph.table.timeoffset." + unit.toLowerCase(java.util.Locale.ROOT));
+            }
+
+            @Override
+            public String fromString(String text) {
+                for (String unit : org.jevis.jeconfig.application.Chart.data.RowTimeOffset.UNITS) {
+                    if (toString(unit).equals(text)) return unit;
+                }
+                return "YEARS";
+            }
+        };
+        column.setCellFactory(javafx.scene.control.cell.ComboBoxTableCell.forTableColumn(names, org.jevis.jeconfig.application.Chart.data.RowTimeOffset.UNITS));
+        column.setEditable(true);
+        column.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow()).setTimeOffsetUnit(event.getNewValue()));
         return column;
     }
 

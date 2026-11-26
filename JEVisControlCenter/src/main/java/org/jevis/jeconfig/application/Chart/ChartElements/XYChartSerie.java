@@ -502,11 +502,14 @@ public class XYChartSerie {
     }
 
     public String getTableEntryName() {
-        if (singleRow.getName() == null || singleRow.getName().equals("")) {
-            return singleRow.getObject().getName();
-        } else {
-            return singleRow.getName();
+        String name = singleRow.getName() == null || singleRow.getName().equals("") ? singleRow.getObject().getName() : singleRow.getName();
+        /* tender point 03: a shifted row is marked, e.g. "Strom (-1 Jahre)", so it is not mistaken for current values */
+        if (singleRow.getTimeOffsetAmount() != 0 && !singleRow.isIntervalEnabled()) {
+            int amount = singleRow.getTimeOffsetAmount();
+            String unit = I18n.getInstance().getString("graph.table.timeoffset." + singleRow.getTimeOffsetUnit().toLowerCase(java.util.Locale.ROOT));
+            name = name + " (" + (amount > 0 ? "+" : "") + amount + " " + unit + ")";
         }
+        return name;
     }
 
     public String getUnit() {

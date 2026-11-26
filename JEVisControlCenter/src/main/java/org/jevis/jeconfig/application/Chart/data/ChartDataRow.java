@@ -155,6 +155,8 @@ public class ChartDataRow extends ChartData {
             setIntervalStart(chartData.getIntervalStart());
             setIntervalEnd(chartData.getIntervalEnd());
             setIntervalEnabled(chartData.isIntervalEnabled());
+            setTimeOffsetAmount(chartData.getTimeOffsetAmount());
+            setTimeOffsetUnit(chartData.getTimeOffsetUnit());
             setDecimalDigits(chartData.getDecimalDigits());
             setCss(chartData.getCss());
             setDayFilter(chartData.getDayFilter());
@@ -385,7 +387,42 @@ public class ChartDataRow extends ChartData {
         return alarmMap;
     }
 
+    /**
+     * The samples of the row; with a time offset (tender point 03) the values come from the shifted time frame and are
+     * shown on the chart's time axis, e.g. -1 YEARS lays last year over the current year (same as the web app's
+     * RowDataLoader). A fixed own time frame has priority.
+     */
     public List<JEVisSample> getSamples() {
+        int amount = getTimeOffsetAmount();
+        String unit = getTimeOffsetUnit();
+        if (amount == 0 || isIntervalEnabled() || !(this.somethingChanged || this.samples.isEmpty()) || isStringData
+                || getSelectedStart() == null || getSelectedEnd() == null) {
+            return loadSamples();
+        }
+        DateTime start = selectedStart;
+        DateTime end = selectedEnd;
+        selectedStart = RowTimeOffset.apply(start, amount, unit, 1);
+        selectedEnd = RowTimeOffset.apply(end, amount, unit, 1);
+        try {
+            List<JEVisSample> shifted = new ArrayList<>();
+            for (JEVisSample sample : loadSamples()) {
+                try {
+                    VirtualSample moved = new VirtualSample(RowTimeOffset.apply(sample.getTimestamp(), amount, unit, -1), sample.getValueAsDouble(), getUnit());
+                    moved.setNote(sample.getNote());
+                    shifted.add(moved);
+                } catch (Exception e) {
+                    logger.warn("Could not shift sample {}", sample, e);
+                }
+            }
+            this.samples = shifted;
+            return shifted;
+        } finally {
+            selectedStart = start;
+            selectedEnd = end;
+        }
+    }
+
+    private List<JEVisSample> loadSamples() {
         if (this.somethingChanged || this.samples.isEmpty()) {
             try {
                 List<JEVisSample> samples = new ArrayList<>();
@@ -436,7 +473,7 @@ public class ChartDataRow extends ChartData {
                                     if (ChartTools.getCalculationId(dataSource, getCalculationId()) == -1) {
                                         logger.warn("This is not a calculation, getting normal samples");
                                         setCalculation(false);
-                                        samples = getSamples();
+                                        samples = loadSamples();
                                     }
                                 }
                                 logger.debug("Getting calc job not absolute for object {}:{} from {} to {} with period {}",
@@ -563,6 +600,18 @@ public class ChartDataRow extends ChartData {
             }
         }
         return samples;
+    }
+
+    @Override
+    public void setTimeOffsetAmount(int amount) {
+        if (amount != getTimeOffsetAmount()) somethingChanged = true;
+        super.setTimeOffsetAmount(amount);
+    }
+
+    @Override
+    public void setTimeOffsetUnit(String unit) {
+        if (unit != null && !unit.equals(getTimeOffsetUnit())) somethingChanged = true;
+        super.setTimeOffsetUnit(unit);
     }
 
     public void setSamples(List<JEVisSample> samples) {

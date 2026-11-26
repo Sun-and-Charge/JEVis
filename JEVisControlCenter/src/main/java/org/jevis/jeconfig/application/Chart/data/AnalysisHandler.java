@@ -158,6 +158,12 @@ public class AnalysisHandler {
                 chartDataNode.put("intervalStart", chartData.getIntervalStart());
                 chartDataNode.put("intervalEnd", chartData.getIntervalEnd());
                 chartDataNode.put("intervalEnabled", chartData.isIntervalEnabled());
+                /* written only when used, like the web app (AnalysisWriter) */
+                if (chartData.getTimeOffsetAmount() != 0 && !chartData.isIntervalEnabled()) {
+                    ObjectNode offsetNode = chartDataNode.putObject("timeOffset");
+                    offsetNode.put("amount", chartData.getTimeOffsetAmount());
+                    offsetNode.put("unit", chartData.getTimeOffsetUnit());
+                }
 
                 chartDataList.add(chartDataNode);
             }

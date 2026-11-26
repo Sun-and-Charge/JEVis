@@ -86,6 +86,10 @@ public class ChartData {
     private final SimpleStringProperty intervalStart = new SimpleStringProperty(this, "intervalStart", DateTime.now().withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0).toString());
     private final SimpleStringProperty intervalEnd = new SimpleStringProperty(this, "intervalEnd", DateTime.now().toString());
     private final SimpleIntegerProperty decimalDigits = new SimpleIntegerProperty(this, "decimalDigits", -1);
+    /* tender point 03, row key "timeOffset" {amount, unit} (also set by the web app): where the values come from relative
+       to the chart, e.g. -1 YEARS = last year; 0 = as the chart */
+    private final SimpleIntegerProperty timeOffsetAmount = new SimpleIntegerProperty(this, "timeOffsetAmount", 0);
+    private final SimpleStringProperty timeOffsetUnit = new SimpleStringProperty(this, "timeOffsetUnit", "YEARS");
     private final SimpleStringProperty css = new SimpleStringProperty(this, "css", "");
     /* runtime only, set from the analysis (DataModel) before the charts are created; not serialised */
     private DayFilter dayFilter = null;
@@ -397,6 +401,44 @@ public class ChartData {
         return intervalEnd;
     }
 
+    /** JSON key "timeOffset": null when the row has no offset. */
+    public RowTimeOffset getTimeOffset() {
+        return getTimeOffsetAmount() == 0 ? null : new RowTimeOffset(getTimeOffsetAmount(), getTimeOffsetUnit());
+    }
+
+    public void setTimeOffset(RowTimeOffset offset) {
+        setTimeOffsetAmount(offset == null ? 0 : offset.getAmount());
+        if (offset != null && offset.getUnit() != null) setTimeOffsetUnit(offset.getUnit());
+    }
+
+    @JsonIgnore
+    public int getTimeOffsetAmount() {
+        return timeOffsetAmount.get();
+    }
+
+    @JsonIgnore
+    public void setTimeOffsetAmount(int amount) {
+        this.timeOffsetAmount.set(amount);
+    }
+
+    public SimpleIntegerProperty timeOffsetAmountProperty() {
+        return timeOffsetAmount;
+    }
+
+    @JsonIgnore
+    public String getTimeOffsetUnit() {
+        return timeOffsetUnit.get();
+    }
+
+    @JsonIgnore
+    public void setTimeOffsetUnit(String unit) {
+        this.timeOffsetUnit.set(unit);
+    }
+
+    public SimpleStringProperty timeOffsetUnitProperty() {
+        return timeOffsetUnit;
+    }
+
     public boolean isIntervalEnabled() {
         return intervalEnabled.get();
     }
@@ -473,6 +515,8 @@ public class ChartData {
         newData.setAggregationPeriod(this.getAggregationPeriod());
         newData.setManipulationMode(this.getManipulationMode());
         newData.setIntervalEnabled(this.isIntervalEnabled());
+        newData.setTimeOffsetAmount(this.getTimeOffsetAmount());
+        newData.setTimeOffsetUnit(this.getTimeOffsetUnit());
         newData.setIntervalStart(this.getIntervalStart());
         newData.setIntervalEnd(this.getIntervalEnd());
         newData.setDecimalDigits(this.getDecimalDigits());
