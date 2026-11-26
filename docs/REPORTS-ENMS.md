@@ -31,8 +31,8 @@ directory after a change and commit both files); `ReportTemplatesTest` fills the
 
 Both templates start with a sheet *Deckblatt*: title, the facts of the report (variable `report`, see below), the
 table of contents and an approval block (name, function, date, signature) for the management review. Every sheet
-has a page footer with the sheet name and "Seite n von m". Month labels use the format `[$-407]MMMM yyyy`, so
-LibreOffice on the server prints German month names whatever its own language is. The sheet subtitles add
+has a page footer with the sheet name and "Seite n von m". Month labels use the format `[$-407]MMMM yyyy` and numbers `[$-407]#,##0.00` (likewise percentages), so
+LibreOffice on the server prints German month names and decimal separators whatever its own language is. The sheet subtitles add
 " – <site>" only when the report has a site.
 
 ### Report facts (`report`)

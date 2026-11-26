@@ -128,7 +128,7 @@ public final class ReportTemplates {
                 + "der Baseline-Vergleich für Strom Produktion im Blatt „Baseline“.", 6);
         int chartRow = r + 2;
         int lastRow = chartRow + 2 * CHART_ROWS + 1;
-        st.widths(s, 30, 12, 16, 16, 14, 18);
+        st.widths(s, 30, 18, 16, 16, 14, 18);
         st.area(s, "F" + (lastRow + 1));
 
         /* sheet 2: last 12 months per EnPI (each block: header, rows, mean) */
@@ -150,7 +150,7 @@ public final class ReportTemplates {
             meanRows[i] = tr;
             tr += 2;
         }
-        st.widths(t, 22, 14, 12, 8);
+        st.widths(t, 22, 14, 18, 8);
         t.setColumnHidden(3, true);
         st.area(t, "D" + tr);
         /* the overview refers to the means (JXLS moves the references with the expanded blocks) */
@@ -267,7 +267,7 @@ public final class ReportTemplates {
         st.note(s, r, "Verbrauch und Kosten je Monat: Blätter „Verbrauch“ und „Kosten“. Einzelne Maßnahmen und Abweichungen: "
                 + "Blätter „Maßnahmen“ und „Abweichungen“.", 5);
         int chartRow = r + 2;
-        st.widths(s, 44, 10, 16, 16, 14);
+        st.widths(s, 44, 14, 16, 16, 14);
         st.area(s, "E" + (chartRow + 3 * (CHART_ROWS + 1) + 1));
 
         /* sheet 2: consumption per month, current year against the previous year */
@@ -509,11 +509,11 @@ public final class ReportTemplates {
             wrap = style(base, null, null);
             wrap.setWrapText(true);
             bold = style(strong, null, null);
-            number0 = style(base, "#,##0", null);
-            number2 = style(base, "#,##0.00", null);
-            boldNumber0 = style(strong, "#,##0", null);
-            boldNumber2 = style(strong, "#,##0.00", null);
-            percent = style(base, "+0.0%;-0.0%;0.0%", null);
+            number0 = style(base, "[$-407]#,##0", null);
+            number2 = style(base, "[$-407]#,##0.00", null);
+            boldNumber0 = style(strong, "[$-407]#,##0", null);
+            boldNumber2 = style(strong, "[$-407]#,##0.00", null);
+            percent = style(base, "[$-407]+0.0%;-0.0%;0.0%", null);
             month = style(strong, "[$-407]MMMM yyyy", null);
             month.setAlignment(HorizontalAlignment.LEFT);
             monthCell = style(base, "[$-407]MMM yyyy", null);
