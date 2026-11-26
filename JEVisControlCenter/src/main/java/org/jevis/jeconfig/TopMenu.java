@@ -171,7 +171,8 @@ public class TopMenu extends MenuBar {
         getMenus().add(createEditMenu());
 
         // --- Plugin Menu
-        if (getActivePlugin() != null) {
+        /* the favourites menu only has entries in the analysis module */
+        if (getActivePlugin() instanceof ChartPlugin) {
             getMenus().add(createPluginMenu());
         }
 
@@ -785,7 +786,6 @@ public class TopMenu extends MenuBar {
 
         subMenuImport.getItems().addAll(importCSV, importWeatherData);//, importXML, importJSON);
 //        menuFile.getItems().add(new MenuItem("New"));
-        menuFile.getItems().add(new SeparatorMenuItem());
         menuFile.getItems().addAll(subMenuImport, manualData);
         MenuItem exit = new MenuItem(I18n.getInstance().getString("menu.exit"));
 //        exit.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
