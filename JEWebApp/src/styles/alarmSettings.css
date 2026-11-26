@@ -114,7 +114,8 @@
 /* ---------- side panels ---------- */
 .alm-edit-backdrop {
   justify-content: flex-end;
-  align-items: stretch;
+  /* the panel grows with its content (stretch kept it one screen high and longer content ran past its background) */
+  align-items: flex-start;
   padding: 0;
 }
 
@@ -348,6 +349,8 @@
 
 .alm-nodata-input select {
   flex: 0 0 auto;
+  /* the general 100 % width squeezed the number field to nothing */
+  width: auto;
 }
 
 .alm-nodata-badge {

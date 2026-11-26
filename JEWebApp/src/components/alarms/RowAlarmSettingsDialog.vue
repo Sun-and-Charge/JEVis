@@ -28,7 +28,6 @@ import { useBusy, writeErrorKind, writeErrorText } from '../../edit/edit'
 import { useLeaveGuard } from '../../edit/useLeaveGuard'
 import { serverMessages } from '../../iso/edit'
 import { useAuthStore } from '../../stores/auth'
-import { formatLocal } from '../../modules/dates'
 import RowPickerDialog from '../analysis/edit/RowPickerDialog.vue'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EditDialog from '../edit/EditDialog.vue'
@@ -310,7 +309,9 @@ const lastValue = computed(() => {
     if (m != null && !Number.isNaN(m) && (allowed == null || m < allowed)) allowed = m
   }
   const ageMinutes = Math.floor((Date.now() - ms) / 60000)
-  return { text: formatLocal(iso.slice(0, 16), locale.value), overdue: allowed != null && ageMinutes > allowed, hours: Math.floor(ageMinutes / 60) }
+  /* an instant (the server writes UTC): shown in local time, not cut to its clock time */
+  const text = new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(ms)
+  return { text, overdue: allowed != null && ageMinutes > allowed, hours: Math.floor(ageMinutes / 60) }
 })
 </script>
 
