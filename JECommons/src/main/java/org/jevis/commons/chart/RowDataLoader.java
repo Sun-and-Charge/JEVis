@@ -255,21 +255,22 @@ public class RowDataLoader {
                 start = range.getStart().withZone(zone);
                 end = range.getEnd().withZone(zone);
             }
-            /* time offset: load the values that land in the range after shifting them */
-            if (definition.getTimeOffset() != 0) {
-                start = start.minusMinutes(definition.getTimeOffset());
-                end = end.minusMinutes(definition.getTimeOffset());
+            /* time offset: the values come from the shifted range (e.g. -1 year: last year) */
+            /* a fixed own time frame has priority (the editors offer either the one or the other) */
+            if (!definition.isIntervalEnabled() && !definition.getTimeOffset().isZero()) {
+                start = definition.getTimeOffset().apply(start, 1);
+                end = definition.getTimeOffset().apply(end, 1);
             }
         }
 
         /** Shifts the samples by the row's time offset (tender point 03). */
         List<ChartSample> applyTimeOffset(List<ChartSample> samples) {
-            int offset = definition.getTimeOffset();
-            if (offset == 0) return samples;
+            TimeOffset offset = definition.getTimeOffset();
+            if (offset.isZero() || definition.isIntervalEnabled()) return samples;
             for (ChartSample sample : samples) {
-                if (sample.getTimestamp() != null) sample.setTimestamp(sample.getTimestamp().plusMinutes(offset));
+                if (sample.getTimestamp() != null) sample.setTimestamp(offset.apply(sample.getTimestamp(), -1));
             }
-            if (newest != null) newest = newest.plusMinutes(offset);
+            if (newest != null) newest = offset.apply(newest, -1);
             return samples;
         }
 

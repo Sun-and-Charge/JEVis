@@ -47,8 +47,8 @@ public class RowDefinition {
     private boolean intervalEnabled = false;
     private String intervalStart;
     private String intervalEnd;
-    /** tender point 03: shift of the row in minutes (e.g. +120 pairs X at 10:00 with Y at 12:00); 0 = none */
-    private int timeOffset = 0;
+    /** tender point 03: where the values come from relative to the chart (e.g. -1 year, -2 hours); NONE = as the chart */
+    private TimeOffset timeOffset = TimeOffset.NONE;
     private String css = "";
     /* stored by older Control Center versions per row; only dashboards use them (analyses take the tool bar) */
     private AggregationPeriod aggregation;
@@ -243,12 +243,12 @@ public class RowDefinition {
         this.intervalEnd = intervalEnd;
     }
 
-    public int getTimeOffset() {
+    public TimeOffset getTimeOffset() {
         return timeOffset;
     }
 
-    public void setTimeOffset(int timeOffset) {
-        this.timeOffset = timeOffset;
+    public void setTimeOffset(TimeOffset timeOffset) {
+        this.timeOffset = timeOffset != null ? timeOffset : TimeOffset.NONE;
     }
 
     public String getCss() {

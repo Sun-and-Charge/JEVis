@@ -9,7 +9,7 @@ import '../analysis/echarts'
 import { buildChartViews, type ChartView, type RowView } from '../analysis/model'
 import { editableRowNote, type NotePoint } from '../analysis/notes'
 import { formatDateTime, formatNumber } from '../analysis/format'
-import type { RowNote } from '../api/analysis'
+import type { RowNote, RowTimeOffset } from '../api/analysis'
 import type { SavedValue, EntryInfo } from '../api/entry'
 import EditDialog from '../components/edit/EditDialog.vue'
 import EntryDialog from '../components/edit/EntryDialog.vue'
@@ -187,7 +187,9 @@ const ctx = computed<OptionContext>(() => ({
 
 /* while editing: the draft and its preview data */
 const shown = computed(() => ed.shownConfig.value)
-const charts = computed<ChartView[]>(() => (shown.value ? buildChartViews(shown.value, ed.shownData.value, t('analysis.state.noAccess')) : []))
+/** legend hint of a shifted row, e.g. "-1 Jahr" */
+const offsetName = (o: RowTimeOffset) => `${o.amount > 0 ? '+' : ''}${o.amount} ${t('analysis.offsetUnits.' + o.unit, Math.abs(o.amount))}`
+const charts = computed<ChartView[]>(() => (shown.value ? buildChartViews(shown.value, ed.shownData.value, t('analysis.state.noAccess'), offsetName) : []))
 
 /** consecutive pies / tables side by side (horizontalPies / horizontalTables of the analysis) */
 const blocks = computed(() => {

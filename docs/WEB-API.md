@@ -1323,10 +1323,14 @@ The **definition** sent is the GET answer's shape without the read-only keys (`i
 "coloringEnabled", "showColumnSums", "showRowSums", "dayStart", "dayEnd", "filterTexts", "rows": [{ "objectId",
 "attribute", "name", "color", "axis", "chartType", "unitPrefix", "unitFormula", "unitLabel", "decimalDigits",
 "calculation", "bubbleType", "interval", "timeOffset", "css" }] }] }`. Missing keys get the CC defaults. Charts are stored in the
-order sent. `timeOffset` (tender point 03, minutes, −10080…10080, default 0) shifts the values of a row: the data are
-loaded `timeOffset` earlier and shown `timeOffset` later, e.g. `120` pairs the outside temperature of 10:00 with the
-heat of 12:00 in a scatter or bubble chart. It is stored as row key `timeOffset` only when not 0; the Control Center
-does not know the key yet (it neither applies nor keeps it when it saves the analysis).
+order sent. `timeOffset` (tender point 03) is the relative time reference of a row: `{ "amount": -1, "unit": "YEARS" }` (units
+`MINUTES`, `HOURS`, `DAYS`, `WEEKS`, `MONTHS`, `YEARS`, amount ≠ 0 and at most about ten years) or `null` (as the chart).
+It says where the values come from: `-1 YEARS` loads last year's values of the time frame and shows them on the
+chart's time axis (previous-year comparison that moves with the time frame), `-2 HOURS` pairs the outside temperature
+of 10:00 with the heat of 12:00 in a scatter or bubble chart. A fixed own time frame (`interval.enabled`) has priority;
+the editors offer either the one or the other. Stored as row key `timeOffset` only when used (a plain number is read as
+minutes). The view answer carries `timeOffset` per row for the legend hint ("Strom (-1 Jahr)"). The Java 25 Control
+Center (feature/j25-build) applies, edits and keeps it as well; older Control Centers drop it when they save.
 
 Validation (`400` JSON `{ "messages": [...] }` with all problems, as in E2): chart ids unique and ≥ 0; enum values
 (`type`, `chartType`, `orientation`, `colorMapping`, `bubbleType`, limit line `fill`) from the lists of W2 / the CC

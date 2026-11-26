@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { decimalsFor, escapeHtml, formatNumber } from '../src/analysis/format'
 import { buildHeatMap, colorScale, typicalInterval } from '../src/analysis/heatmap'
-import { buildChartViews, chartKind, rowTotal, rowType, type ChartView } from '../src/analysis/model'
+import { buildChartViews, chartKind, rowTotal, rowType, withOffset, type ChartView } from '../src/analysis/model'
 import { bubblePoints, bubbleRoles, chartOption, durationSamples, stateText, type OptionContext } from '../src/analysis/options'
 import {
   dataRequest,
@@ -193,6 +193,13 @@ describe('ECharts options', () => {
     unit: 'kWh',
     samples,
     stats: { min: 10, max: 20, avg: 15, sum, count: 2 },
+  })
+
+  it('a shifted row is marked in the legend', () => {
+    const name = (o: { amount: number; unit: string }) => `${o.amount} ${o.unit}`
+    expect(withOffset('Strom', { amount: -1, unit: 'YEARS' }, name)).toBe('Strom (-1 YEARS)')
+    expect(withOffset('Strom', null, name)).toBe('Strom')
+    expect(withOffset('Strom', { amount: -1, unit: 'YEARS' })).toBe('Strom')
   })
 
   it('load duration curve: sorted values over an hours axis', () => {

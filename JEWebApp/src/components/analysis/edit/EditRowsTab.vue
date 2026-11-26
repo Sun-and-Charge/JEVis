@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { UnitOption } from '../../../api/analysis'
+import { TIME_OFFSET_UNITS, type UnitOption } from '../../../api/analysis'
 import {
   BUBBLE_TYPES,
   ROW_TYPES,
@@ -17,6 +17,7 @@ import {
   type Draft,
   type DraftRow,
   type Problem,
+  type TimeMode,
 } from '../../../analysis/editor'
 import { fieldHelpers, type RowUnits } from '../../../analysis/editFields'
 import { isoWithOffset, fromDateTimeInput } from '../../../edit/edit'
@@ -92,8 +93,8 @@ function colorForAll(row: DraftRow) {
 
 /* decimals: empty = like the chart (-1) */
 const decimalsValue = (row: DraftRow) => (row.decimalDigits === -1 ? '' : row.decimalDigits)
-function setTimeOffset(row: DraftRow, v: string) {
-  row.timeOffset = v === '' ? '' : Number.isFinite(Number(v)) ? Number(v) : ''
+function setOffsetAmount(row: DraftRow, v: string) {
+  row.offsetAmount = v === '' ? '' : Number.isFinite(Number(v)) ? Number(v) : ''
 }
 function setDecimals(row: DraftRow, value: string) {
   const v = value.trim()
@@ -105,9 +106,11 @@ function setInterval(row: DraftRow, which: 'start' | 'end', value: string) {
   const ms = fromDateTimeInput(value)
   row.interval[which] = ms == null ? null : isoWithOffset(ms)
 }
-function toggleInterval(row: DraftRow, enabled: boolean) {
-  row.interval.enabled = enabled
-  if (enabled && !row.interval.start && !row.interval.end) {
+/* tender point 03: one time reference per row (as the chart, shifted, fixed own time frame) */
+function setTimeMode(row: DraftRow, mode: TimeMode) {
+  row.timeMode = mode
+  row.interval.enabled = mode === 'fixed'
+  if (mode === 'fixed' && !row.interval.start && !row.interval.end) {
     const now = new Date()
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
     row.interval.start = isoWithOffset(start)
@@ -267,23 +270,6 @@ const showRowType = computed(() => !!chart.value && isXyType(chart.value.type))
                   />
                   <p v-if="f.problem(path(ri, 'decimalDigits'))" :id="f.errId(path(ri, 'decimalDigits'))" class="ae-error">{{ msg(path(ri, 'decimalDigits')) }}</p>
                 </div>
-                <div class="edit-field">
-                  <label :for="f.fid(path(ri, 'timeOffset'))">{{ t('analysisEdit.rows.timeOffset') }}</label>
-                  <input
-                    :id="f.fid(path(ri, 'timeOffset'))"
-                    :value="row.timeOffset"
-                    type="number"
-                    min="-10080"
-                    max="10080"
-                    step="15"
-                    inputmode="numeric"
-                    :title="t('analysisEdit.rows.timeOffsetHint')"
-                    :aria-invalid="f.problem(path(ri, 'timeOffset')) ? 'true' : undefined"
-                    :aria-describedby="f.describedBy(path(ri, 'timeOffset'))"
-                    @input="setTimeOffset(row, ($event.target as HTMLInputElement).value)"
-                  />
-                  <p v-if="f.problem(path(ri, 'timeOffset'))" :id="f.errId(path(ri, 'timeOffset'))" class="ae-error">{{ msg(path(ri, 'timeOffset')) }}</p>
-                </div>
                 <div v-if="showRowType || row.chartType !== 'DEFAULT'" class="edit-field">
                   <label :for="f.fid(path(ri, 'chartType'))">{{ t('analysisEdit.rows.chartType') }}</label>
                   <select :id="f.fid(path(ri, 'chartType'))" v-model="row.chartType">
@@ -308,11 +294,41 @@ const showRowType = computed(() => !!chart.value && isXyType(chart.value.type))
                   <input v-model="row.calculation" type="checkbox" class="ae-calculation" />
                   {{ t('analysisEdit.rows.calculation') }}
                 </label>
-                <label class="ae-check ae-wide">
-                  <input :checked="row.interval.enabled" type="checkbox" class="ae-interval" @change="toggleInterval(row, ($event.target as HTMLInputElement).checked)" />
-                  {{ t('analysisEdit.rows.interval') }}
-                </label>
-                <template v-if="row.interval.enabled">
+                <div class="edit-field">
+                  <label :for="f.fid(path(ri, 'timeMode'))">{{ t('analysisEdit.rows.timeMode') }}</label>
+                  <select
+                    :id="f.fid(path(ri, 'timeMode'))"
+                    :value="row.timeMode"
+                    class="ae-time-mode"
+                    :title="t('analysisEdit.rows.timeModeHint')"
+                    @change="setTimeMode(row, ($event.target as HTMLSelectElement).value as TimeMode)"
+                  >
+                    <option value="chart">{{ t('analysisEdit.rows.timeModes.chart') }}</option>
+                    <option value="offset">{{ t('analysisEdit.rows.timeModes.offset') }}</option>
+                    <option value="fixed">{{ t('analysisEdit.rows.timeModes.fixed') }}</option>
+                  </select>
+                </div>
+                <div v-if="row.timeMode === 'offset'" class="edit-field">
+                  <label :for="f.fid(path(ri, 'timeOffset'))">{{ t('analysisEdit.rows.offset') }}</label>
+                  <div class="ae-offset">
+                    <input
+                      :id="f.fid(path(ri, 'timeOffset'))"
+                      :value="row.offsetAmount"
+                      type="number"
+                      step="1"
+                      inputmode="numeric"
+                      :aria-invalid="f.problem(path(ri, 'timeOffset')) ? 'true' : undefined"
+                      :aria-describedby="f.describedBy(path(ri, 'timeOffset'))"
+                      @input="setOffsetAmount(row, ($event.target as HTMLInputElement).value)"
+                    />
+                    <select v-model="row.offsetUnit" :aria-label="t('analysisEdit.rows.offsetUnit')">
+                      <option v-for="u in TIME_OFFSET_UNITS" :key="u" :value="u">{{ t('analysisEdit.rows.offsetUnits.' + u) }}</option>
+                    </select>
+                  </div>
+                  <p class="ae-hint">{{ t('analysisEdit.rows.offsetHint') }}</p>
+                  <p v-if="f.problem(path(ri, 'timeOffset'))" :id="f.errId(path(ri, 'timeOffset'))" class="ae-error">{{ msg(path(ri, 'timeOffset')) }}</p>
+                </div>
+                <template v-if="row.timeMode === 'fixed'">
                   <div class="edit-field">
                     <label :for="f.fid(path(ri, 'interval')) + '-start'">{{ t('analysisEdit.rows.start') }}</label>
                     <input

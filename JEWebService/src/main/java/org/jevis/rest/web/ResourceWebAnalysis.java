@@ -310,7 +310,18 @@ public class ResourceWebAnalysis {
         r.put("calculation", row.isCalculation());
         r.put("bubbleType", row.getBubbleType());
         r.put("readable", readable);
+        /* tender point 03: relative time reference (legend hint in the web app) */
+        if (!row.getTimeOffset().isZero()) r.put("timeOffset", timeOffsetJson(row.getTimeOffset()));
         return r;
+    }
+
+    /** {@code {"amount", "unit"}} of a row's time offset, null when the row has none. */
+    static Map<String, Object> timeOffsetJson(TimeOffset offset) {
+        if (offset == null || offset.isZero()) return null;
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("amount", offset.getAmount());
+        m.put("unit", offset.getUnit().name());
+        return m;
     }
 
     /**

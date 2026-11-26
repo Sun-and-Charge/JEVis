@@ -206,7 +206,7 @@ public class AnalysisReader {
         row.setIntervalStart(text(rowNode, "intervalStart", null));
         row.setIntervalEnd(text(rowNode, "intervalEnd", null));
         row.setIntervalEnabled(bool(rowNode, "intervalEnabled", false));
-        row.setTimeOffset(integer(rowNode, "timeOffset", 0));
+        row.setTimeOffset(TimeOffset.fromJson(rowNode.get("timeOffset")));
         /* written by older Control Center versions (ChartData is read with Jackson, so the stored values apply) */
         if (has(rowNode, "aggregationPeriod")) row.setAggregation(AggregationPeriod.parseAggregation(rowNode.get("aggregationPeriod").asText()));
         if (has(rowNode, "manipulationMode")) row.setManipulation(ManipulationMode.parseManipulation(rowNode.get("manipulationMode").asText()));

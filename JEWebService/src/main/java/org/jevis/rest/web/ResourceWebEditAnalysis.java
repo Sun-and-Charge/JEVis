@@ -306,7 +306,7 @@ public class ResourceWebEditAnalysis {
                 interval.put("start", row.getIntervalStart());
                 interval.put("end", row.getIntervalEnd());
                 r.put("interval", interval);
-                r.put("timeOffset", row.getTimeOffset());
+                r.put("timeOffset", ResourceWebAnalysis.timeOffsetJson(row.getTimeOffset()));
                 r.put("css", row.getCss());
             }
         }
@@ -1152,8 +1152,7 @@ public class ResourceWebEditAnalysis {
                         interval(row, value, key);
                         break;
                     case "timeOffset":
-                        /* minutes, at most one week either way */
-                        row.setTimeOffset(integer(value, key, -10080, 10080, row.getTimeOffset()));
+                        row.setTimeOffset(timeOffset(value, key, row.getTimeOffset()));
                         break;
                     case "css":
                         String css = text(value, key, "");
@@ -1275,6 +1274,28 @@ public class ResourceWebEditAnalysis {
                 return fallback;
             }
             return value.asBoolean();
+        }
+
+        /** {"amount": n, "unit": "MINUTES|HOURS|DAYS|WEEKS|MONTHS|YEARS"} or null (no offset), amount within about ten years */
+        private TimeOffset timeOffset(JsonNode value, String key, TimeOffset fallback) {
+            if (value == null || value.isNull()) return TimeOffset.NONE;
+            if (!value.isObject() || !value.path("amount").isIntegralNumber() || !value.path("unit").isTextual()) {
+                messages.add("Invalid " + key);
+                return fallback;
+            }
+            TimeOffset.Unit unit;
+            try {
+                unit = TimeOffset.Unit.valueOf(value.get("unit").asText());
+            } catch (IllegalArgumentException e) {
+                messages.add("Invalid " + key + ".unit");
+                return fallback;
+            }
+            int max = TimeOffset.maxAmount(unit);
+            if (!value.get("amount").canConvertToInt() || Math.abs(value.get("amount").asInt()) > max) {
+                messages.add("Invalid " + key + ".amount (" + (-max) + "–" + max + ")");
+                return fallback;
+            }
+            return new TimeOffset(value.get("amount").asInt(), unit);
         }
 
         private int integer(JsonNode value, String key, int min, int max, int fallback) {
