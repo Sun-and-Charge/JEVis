@@ -54,6 +54,24 @@ class OutagePane extends VBox {
     private static final Logger logger = LogManager.getLogger(OutagePane.class);
     private static final ObjectMapper MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+    /**
+     * One line per outage: several configurations that check the same row (e.g. one for the whole site and one for
+     * the row) each record it; their names are joined in the last column.
+     */
+    static List<Row> merge(List<Row> rows) {
+        java.util.Map<String, Row> byKey = new java.util.LinkedHashMap<>();
+        for (Row r : rows) {
+            String key = r.open + "|" + r.object + "|" + r.kind + "|" + r.since + "|" + r.end;
+            Row known = byKey.get(key);
+            if (known == null) byKey.put(key, r);
+            else if (!(", " + known.configuration + ", ").contains(", " + r.configuration + ", ")) {
+                byKey.put(key, new Row(known.open, known.object, known.kind, known.since, known.allowed, known.cause, known.end,
+                        known.configuration + ", " + r.configuration));
+            }
+        }
+        return new ArrayList<>(byKey.values());
+    }
+
     static class Row {
         final boolean open;
         final String object;
@@ -147,8 +165,8 @@ class OutagePane extends VBox {
                     logger.warn("Could not read the outages of {}", configuration.getName(), e);
                 }
             }
-            List<Row> all = new ArrayList<>(open);
-            all.addAll(ended);
+            List<Row> all = merge(open);
+            all.addAll(merge(ended));
             Platform.runLater(() -> {
                 rows.setAll(all);
                 setVisible(!all.isEmpty());

@@ -235,11 +235,10 @@ public class AlarmEditor implements AttributeEditor {
 
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabPane.setMinWidth(800);
-        tabPane.setPrefWidth(480);
-        tabPane.setPrefHeight(460); /* J25.5: room for the tolerance row without scrolling */
+        /* fits the dialog width (a minimum of 800 px overflowed the 640 px dialog); tall enough for validity time and mean */
+        tabPane.setPrefHeight(600);
 
-        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.alarmeditor.title"), I18n.getInstance().getString("plugin.configuration.alarmeditor.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> dialog = new org.jevis.jeconfig.application.ui.SucDialog<>(I18n.getInstance().getString("plugin.configuration.alarmeditor.title"), I18n.getInstance().getString("plugin.configuration.alarmeditor.header"), org.jevis.jeconfig.application.ui.SucDialog.Size.L);
 
         for (JsonAlarmConfig config : _listConfig) {
             Tab newTab = new Tab(config.getName());
@@ -247,6 +246,20 @@ public class AlarmEditor implements AttributeEditor {
             fillTab(newTab, config);
 
         }
+
+        /* further rules of any kind once rules are stored (before only the two default tabs of an empty row existed) */
+        Button addStatic = new Button(I18n.getInstance().getString("newobject.alarmconfig1"), JEConfig.getSVGImage(Icon.PLUS, 14, 14));
+        addStatic.setOnAction(event -> addRule(tabPane, "STATIC", I18n.getInstance().getString("newobject.alarmconfig1")));
+        Button addDynamic = new Button(I18n.getInstance().getString("newobject.alarmconfig2"), JEConfig.getSVGImage(Icon.PLUS, 14, 14));
+        addDynamic.setOnAction(event -> addRule(tabPane, "DYNAMIC", I18n.getInstance().getString("newobject.alarmconfig2")));
+        Button removeRule = new Button(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.remove", "Regel entfernen", "Remove rule"), JEConfig.getSVGImage(Icon.DELETE, 14, 14));
+        removeRule.setOnAction(event -> {
+            Tab selected = tabPane.getSelectionModel().getSelectedItem();
+            if (selected == null) return;
+            _listConfig.remove(tabPane.getTabs().indexOf(selected));
+            tabPane.getTabs().remove(selected);
+        });
+        removeRule.disableProperty().bind(javafx.beans.binding.Bindings.isEmpty(tabPane.getTabs()));
 
         /* data outage rule (docs/ALARMS-OUTAGE.md): no new value for the given time */
         Button addOutage = new Button(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.addoutage", "Datenausfall überwachen", "Monitor data outage"));
@@ -261,6 +274,7 @@ public class AlarmEditor implements AttributeEditor {
             fillTab(tab, outage);
             tabPane.getSelectionModel().select(tab);
         });
+        HBox ruleButtons = new HBox(6, addStatic, addDynamic, addOutage, removeRule);
 
         /* J25.5: "Speichern" in Sun, no default button (Enter in a field must not save), "Abbrechen" */
         ButtonType okType = dialog.addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
@@ -270,7 +284,8 @@ public class AlarmEditor implements AttributeEditor {
         Separator separator = new Separator(Orientation.HORIZONTAL);
         separator.setPadding(new Insets(8, 0, 8, 0));
 
-        VBox vBox = new VBox(6, tabPane, new HBox(addOutage), separator);
+        VBox vBox = new VBox(6, tabPane, ruleButtons, separator);
+        VBox.setVgrow(tabPane, Priority.ALWAYS);
         dialog.getDialogPane().setContent(vBox);
 
         okButton.setOnAction(event -> {
@@ -296,6 +311,39 @@ public class AlarmEditor implements AttributeEditor {
      * @param tab
      * @param config
      */
+    /** kinds of rules added in this dialog that have no limit yet (kindOf would read an empty rule by its id) */
+    private final java.util.Map<JsonAlarmConfig, String> newKinds = new java.util.IdentityHashMap<>();
+
+    private void addRule(TabPane tabPane, String kind, String name) {
+        JsonAlarmConfig rule = new JsonAlarmConfig();
+        rule.setName(name);
+        rule.setId(nextId(_listConfig));
+        rule.setOperator(AlarmConstants.Operator.BIGGER.toString());
+        rule.setTolerance("0");
+        newKinds.put(rule, kind);
+        _listConfig.add(rule);
+        Tab tab = new Tab(name);
+        tabPane.getTabs().add(tab);
+        fillTab(tab, rule);
+        tabPane.getSelectionModel().select(tab);
+    }
+
+    /** scrolls vertically only; the rule fields take the width of the dialog */
+    private static ScrollPane fitted(GridPane gridPane) {
+        /* labels keep their width, the fields take the rest */
+        ColumnConstraints labels = new ColumnConstraints();
+        labels.setMinWidth(Region.USE_PREF_SIZE);
+        ColumnConstraints fields = new ColumnConstraints();
+        fields.setHgrow(Priority.ALWAYS);
+        ColumnConstraints units = new ColumnConstraints();
+        units.setMinWidth(Region.USE_PREF_SIZE);
+        gridPane.getColumnConstraints().setAll(labels, fields, units);
+        ScrollPane scroll = new ScrollPane(gridPane);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        return scroll;
+    }
+
     /** a free numeric id for a new rule */
     static String nextId(List<JsonAlarmConfig> list) {
         int max = 1;
@@ -318,14 +366,13 @@ public class AlarmEditor implements AttributeEditor {
     }
 
     private void fillTab(Tab tab, JsonAlarmConfig config) {
-        String kind = kindOf(config);
+        String kind = newKinds.getOrDefault(config, kindOf(config));
 
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
         gridPane.setHgap(10);
         gridPane.setVgap(5);
         gridPane.setMinHeight(220);//we have hidden element and need space
-        gridPane.setMinWidth(435);
 
 
         Label limitDataLabel = new Label(I18n.getInstance().getString("plugin.object.attribute.alarmeditor.label.limitData"));
@@ -561,9 +608,18 @@ public class AlarmEditor implements AttributeEditor {
             row++;
             gridPane.add(standbyLabel, 0, row);
             gridPane.add(standbyTime.getEditor(), 1, row);
-            tab.setContent(new ScrollPane(gridPane));
+            tab.setContent(fitted(gridPane));
             return;
         }
+        /* the kind of the rule, the tab only shows its name */
+        Label kindLabel = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.kind", "Art", "Kind"));
+        Label kindValue = new Label("DYNAMIC".equals(kind)
+                ? I18n.getInstance().getString("newobject.alarmconfig2") + " – " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.kind.dynamic", "Grenze aus einer Vergleichsreihe", "limit from a comparison row")
+                : I18n.getInstance().getString("newobject.alarmconfig1") + " – " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.kind.static", "fester Grenzwert", "fixed limit"));
+        kindValue.setStyle("-fx-font-weight: bold;");
+        gridPane.add(kindLabel, 0, row);
+        gridPane.add(kindValue, 1, row, 2, 1);
+        row++;
         if ("DYNAMIC".equals(kind)) {
             gridPane.add(limitDataLabel, 0, row);
             gridPane.add(limitDataBox, 1, row);
@@ -629,7 +685,7 @@ public class AlarmEditor implements AttributeEditor {
         gridPane.add(validLabel, 0, row);
         gridPane.add(validTime.getEditor(), 1, row);
 
-        tab.setContent(new ScrollPane(gridPane));
+        tab.setContent(fitted(gridPane));
     }
 
     @Override
