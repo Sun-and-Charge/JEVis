@@ -30,6 +30,28 @@ public class MsconsSample {
 
     private String unit;
 
+    /** OBIS code of the register (PIA+5), e.g. 1-1:1.29.0; null when the message has no PIA segment */
+    private String obis;
+
+    /** QTY qualifier: 220 = true value, 67 = substitute value, 201 = proposed value */
+    private String qualifier = "220";
+
+    public String getObis() {
+        return obis;
+    }
+
+    public void setObis(String obis) {
+        this.obis = obis;
+    }
+
+    public String getQualifier() {
+        return qualifier;
+    }
+
+    public void setQualifier(String qualifier) {
+        this.qualifier = qualifier;
+    }
+
     public DateTime getStart() {
         return start;
     }

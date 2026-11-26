@@ -39,6 +39,8 @@ public class MsconsParser {
 
     private State state = State.None;
 
+    private String currentObis = null;
+
 
     private MsconsPojo msconsPojo = new MsconsPojo();
 
@@ -53,20 +55,23 @@ public class MsconsParser {
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             int r;
             StringBuilder stringBuilder = new StringBuilder();
+            boolean released = false;
             while ((r = bufferedReader.read()) != -1) {
                 char c = (char) r;
-                if (c == '\'') {
-                    if (!parseSegment(stringBuilder.toString())) return false;
+                /* '?' is the release character: an escaped apostrophe does not end the segment */
+                if (c == '\'' && !released) {
+                    if (!parseSegment(stringBuilder.toString().trim())) return false;
                     stringBuilder.setLength(0);
                 } else {
                     stringBuilder.append(c);
                 }
+                released = c == '?' && !released;
             }
 
 
         } catch (Exception e) {
-            logger.error(e);
-
+            logger.error("Could not parse the MSCONS message", e);
+            return false;
         }
         return true;
     }
@@ -79,6 +84,7 @@ public class MsconsParser {
         if (!parseDtm(segment)) return false;
         if (!parseNad(segment)) return false;
         if (!parseLoc(segment)) return false;
+        if (!parsePia(segment)) return false;
         if (!parseQuantity(segment)) return false;
 
         return true;
@@ -162,11 +168,30 @@ public class MsconsParser {
         Pattern pattern = Pattern.compile("QTY\\+(.*?):(.*?)(:(.*?)$|$)");
         Matcher matcher = pattern.matcher(segment);
         if (matcher.find()) {
-            if (matcher.group(1).equals("220")) {
+            String qualifier = matcher.group(1);
+            /* 220 true value, 67 substitute value, 201 proposed value; others (e.g. 20 not usable) are skipped */
+            if (qualifier.equals("220") || qualifier.equals("67") || qualifier.equals("201")) {
                 state = State.Sample;
                 msconsSample = new MsconsSample();
-                msconsSample.setQuantity(Double.valueOf(matcher.group(2)));
+                msconsSample.setQuantity(Double.parseDouble(matcher.group(2).replace(',', '.')));
+                msconsSample.setQualifier(qualifier);
+                msconsSample.setObis(currentObis);
+            } else {
+                logger.debug("QTY qualifier {} skipped", qualifier);
+                state = State.Skip;
             }
+        }
+        return true;
+    }
+
+    private boolean parsePia(String segment) {
+        /* PIA+5+1-1?:1.29.0:SRW: the register (OBIS code) of the following quantities */
+        if (segment.startsWith("PIA+5+")) {
+            String code = segment.substring("PIA+5+".length()).replace("?:", "\u0000");
+            int colon = code.indexOf(':');
+            if (colon >= 0) code = code.substring(0, colon);
+            currentObis = code.replace("\u0000", ":");
+            logger.debug("PIA register {}", currentObis);
         }
         return true;
     }
@@ -225,6 +250,7 @@ public class MsconsParser {
         if (matcher2.find()) {
             state = State.Messlokation;
             try {
+                currentObis = null;
                 msconsPojo.getMesslokation().add(new Messlokation(matcher2.group(2)));
                 logger.debug("LOC Parsed {}",msconsPojo.getLastMesslokation());
             } catch (Exception e) {
@@ -234,6 +260,7 @@ public class MsconsParser {
         } else if (matcher1.find()) {
             state = State.Messlokation;
             try {
+                currentObis = null;
                 msconsPojo.getMesslokation().add(new Messlokation(matcher1.group(2)));
                 logger.debug("LOC PArsed {}",msconsPojo.getLastMesslokation());
             } catch (Exception e) {
@@ -274,7 +301,10 @@ public class MsconsParser {
     private DateTime convertDateTime(String string) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyyMMddHHmmZ");
 
-        DateTime dateTime = dateTimeFormatter.parseDateTime(string.replace("?", ""));
+        String value = string.replace("?", "");
+        /* format 303 ends with the UTC offset in hours, e.g. +02; Joda expects +0200 */
+        if (value.matches(".*[+-]\\d{2}$")) value = value + "00";
+        DateTime dateTime = dateTimeFormatter.parseDateTime(value);
         return dateTime;
     }
 
@@ -283,6 +313,6 @@ public class MsconsParser {
     }
 
     private enum State {
-        None, Messlokation, Sample,
+        None, Messlokation, Sample, Skip,
     }
 }

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { decimalsFor, escapeHtml, formatNumber } from '../src/analysis/format'
 import { buildHeatMap, colorScale, typicalInterval } from '../src/analysis/heatmap'
 import { buildChartViews, chartKind, rowTotal, rowType, type ChartView } from '../src/analysis/model'
-import { bubblePoints, bubbleRoles, chartOption, stateText, type OptionContext } from '../src/analysis/options'
+import { bubblePoints, bubbleRoles, chartOption, durationSamples, stateText, type OptionContext } from '../src/analysis/options'
 import {
   dataRequest,
   fromDateTimeInput,
@@ -193,6 +193,17 @@ describe('ECharts options', () => {
     unit: 'kWh',
     samples,
     stats: { min: 10, max: 20, avg: 15, sum, count: 2 },
+  })
+
+  it('load duration curve: sorted values over an hours axis', () => {
+    const sorted: [number, number, string | null][] = [[at(1, 0, 0), 30, null], [at(1, 0, 15), 20, null], [at(1, 0, 30), 10, null]]
+    expect(durationSamples(sorted).map(([h, v]) => [h, v])).toEqual([[0.25, 30], [0.5, 20], [0.75, 10]])
+    expect(durationSamples([])).toEqual([])
+    const [c] = views([chart(0, 'LINE', [row('a')])], [{ id: 0, rows: [ok('a')] }])
+    const o = chartOption(c, { ...ctx, duration: { label: 'Dauer [h]' } }) as Any
+    expect(o.xAxis.type).toBe('value')
+    expect(o.xAxis.name).toBe('Dauer [h]')
+    expect(o.xAxis.min).toBe(0)
   })
 
   it('LINE with two y axes, units as axis names, colours and zoom', () => {

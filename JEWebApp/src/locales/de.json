@@ -190,6 +190,7 @@
       "csvLabel": "Werte von {name} als CSV speichern"
     },
     "count": "Anzahl",
+    "duration": "Dauer [h]",
     "regression": {
       "model": "Modell",
       "formula": "Modellgleichung",

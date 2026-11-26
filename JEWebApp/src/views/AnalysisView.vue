@@ -181,6 +181,8 @@ const ctx = computed<OptionContext>(() => ({
     model: t('analysis.regression.model'),
   },
   tagName: i18nTagName(t, te),
+  /* sorted values: load duration curve with an hours axis */
+  duration: settings.value.manipulation.startsWith('SORTED') ? { label: t('analysis.duration') } : undefined,
 }))
 
 /* while editing: the draft and its preview data */

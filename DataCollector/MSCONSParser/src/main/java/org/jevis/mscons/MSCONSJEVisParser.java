@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.jevis.api.JEVisClass;
 import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
+import org.jevis.api.JEVisSample;
 
 import org.jevis.api.JEVisType;
 import org.jevis.commons.DatabaseHelper;
@@ -55,7 +56,6 @@ public class MSCONSJEVisParser implements Parser {
 
         this.parserObject = parserObject;
         try {
-            System.out.println(getChannels(parserObject));
             msconsChannels.addAll(getChannels(parserObject));
         } catch (Exception e) {
           logger.error(e);
@@ -75,15 +75,27 @@ public class MSCONSJEVisParser implements Parser {
             if(!msconsParser.parse()) continue;
 
             MsconsPojo msconsPojo = msconsParser.getMsconsPojo();
+            boolean newerFile = true;
             try {
                 if (parserObject.getAttribute("File Created Date").hasSample()) {
-                    if (!msconsPojo.getInterchangeHeader().getCreatedDateTime().isAfter(parserObject.getAttribute("File Created Date").getLatestSample().getTimestamp()))
-                        break;
-
+                    /* skip this file only; the next file of the same run may be newer (was "break") */
+                    /* compare with the stored creation date of the last file, not with the time it was imported */
+                    JEVisSample last = parserObject.getAttribute("File Created Date").getLatestSample();
+                    DateTime lastCreated;
+                    try {
+                        lastCreated = DateTime.parse(last.getValueAsString());
+                    } catch (Exception notADate) {
+                        lastCreated = last.getTimestamp();
+                    }
+                    if (!msconsPojo.getInterchangeHeader().getCreatedDateTime().isAfter(lastCreated))
+                        newerFile = false;
                 }
-
             } catch (Exception e) {
                 logger.error(e);
+            }
+            if (!newerFile) {
+                logger.info("MSCONS file from {} is not newer than the last imported file, skipped", msconsPojo.getInterchangeHeader().getCreatedDateTime());
+                continue;
             }
 
 
@@ -93,10 +105,23 @@ public class MSCONSJEVisParser implements Parser {
 
                     if (!jeVisObject.getAttribute(DataCollectorTypes.Channel.MSCONSChannel.MESSLIKATION).hasSample())
                         return;
-                    messlukationnumber = jeVisObject.getAttribute(DataCollectorTypes.Channel.MSCONSChannel.MESSLIKATION).getLatestSample().getValueAsString();
-                    Optional<Messlokation> messlokationOptional = msconsPojo.getMesslokation().stream().filter(nr -> nr.getMesslokationNumber().equals(messlukationnumber)).findFirst();
+                    messlukationnumber = jeVisObject.getAttribute(DataCollectorTypes.Channel.MSCONSChannel.MESSLIKATION).getLatestSample().getValueAsString().trim();
+                    /* "<location>|<OBIS>" selects one register of a location with several registers, e.g. DE0001…|1-1:1.29.0 */
+                    String location = messlukationnumber;
+                    String obis = null;
+                    int bar = messlukationnumber.indexOf('|');
+                    if (bar >= 0) {
+                        location = messlukationnumber.substring(0, bar).trim();
+                        obis = messlukationnumber.substring(bar + 1).trim();
+                    }
+                    final String locationNumber = location;
+                    final String register = obis;
+                    Optional<Messlokation> messlokationOptional = msconsPojo.getMesslokation().stream().filter(nr -> nr.getMesslokationNumber().equals(locationNumber)).findFirst();
                     if (!messlokationOptional.isPresent()) return;
-                    results.addAll(convertMSCONSSampletoResult(messlokationOptional.get().getSampleList(), getStartEnd(jeVisObject), getTargetValueAtribute(jeVisObject)));
+                    List<MsconsSample> samples = messlokationOptional.get().getSampleList().stream()
+                            .filter(sample -> register == null || register.equals(sample.getObis()))
+                            .collect(Collectors.toList());
+                    results.addAll(convertMSCONSSampletoResult(samples, getStartEnd(jeVisObject), getTargetValueAtribute(jeVisObject)));
 
 
                 } catch (Exception e) {
@@ -172,7 +197,6 @@ public class MSCONSJEVisParser implements Parser {
         String StartEnd = null;
         try {
             StartEnd = jeVisObject.getAttribute("Date Time").getLatestSample().getValueAsString();
-            System.out.println(StartEnd);
         } catch (Exception e) {
             e.printStackTrace();
         }

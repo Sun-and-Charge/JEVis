@@ -190,6 +190,7 @@
       "csvLabel": "Save the values of {name} as CSV"
     },
     "count": "Count",
+    "duration": "Duration [h]",
     "regression": {
       "model": "Model",
       "formula": "Model equation",
