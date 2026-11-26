@@ -161,6 +161,8 @@ public class NoteDialog extends SucDialog<ButtonType> {
                             RowNote rowNote = (RowNote) getTableRow().getItem();
 
                             TextArea textArea = new TextArea(rowNote.getUserNote());
+                            textArea.getStyleClass().add("suc-cell-input");
+                            HBox.setHgrow(textArea, Priority.ALWAYS);
 
                             Button expand = new Button(null);
                             expand.setBackground(new Background(new BackgroundImage(
@@ -222,7 +224,7 @@ public class NoteDialog extends SucDialog<ButtonType> {
         TableColumn<RowNote, String> columnUserData = new TableColumn<>(I18n.getInstance().getString("graph.dialog.column.uservalue"));
         columnUserData.setSortable(false);
         columnUserData.setEditable(true);
-        columnUserData.setMinWidth(310d);
+        columnUserData.setMinWidth(180d);
         columnUserData.setCellValueFactory(param -> {
             String userValue = param.getValue().getUserValue();
             return new ReadOnlyObjectWrapper<>(userValue);
@@ -245,12 +247,18 @@ public class NoteDialog extends SucDialog<ButtonType> {
                             RowNote rowNote = (RowNote) getTableRow().getItem();
 
                             TextField textField = new TextField();
+                            textField.getStyleClass().add("suc-cell-input");
                             if (!rowNote.getUserValue().equals("")) {
                                 double userValue = Double.parseDouble(rowNote.getUserValue()) * rowNote.getScaleFactor();
-                                textField.setText(String.valueOf(userValue));
+                                java.text.NumberFormat valueFormat = java.text.NumberFormat.getInstance(I18n.getInstance().getLocale());
+                                valueFormat.setGroupingUsed(false);
+                                valueFormat.setMaximumFractionDigits(6);
+                                textField.setText(valueFormat.format(userValue));
                             }
 
-                            textField.setAlignment(Pos.CENTER);
+                            textField.setAlignment(Pos.CENTER_RIGHT);
+                            textField.setMaxWidth(Double.MAX_VALUE);
+                            HBox.setHgrow(textField, Priority.ALWAYS);
 
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 if (!newValue.equals(oldValue)) {
@@ -275,17 +283,17 @@ public class NoteDialog extends SucDialog<ButtonType> {
                                 textField.setDisable(true);
                             }
 
-                            HBox hBox = new HBox(textField);
-                            hBox.setSpacing(4);
+                            /* value and unit on one line, the unit right of the field */
+                            HBox hBox = new HBox(6, textField);
                             if (!UnitManager.getInstance().format(rowNote.getUserValueUnit()).equals("")) {
-                                Label unitLabel = new Label();
-                                unitLabel.setAlignment(Pos.CENTER);
-                                unitLabel.setText(UnitManager.getInstance().format(rowNote.getUserValueUnit()));
+                                Label unitLabel = new Label(UnitManager.getInstance().format(rowNote.getUserValueUnit()));
+                                unitLabel.setMinWidth(Region.USE_PREF_SIZE);
                                 hBox.getChildren().add(unitLabel);
                             }
 
-                            hBox.setAlignment(Pos.CENTER);
-                            setGraphic(new VBox(hBox));
+                            hBox.setAlignment(Pos.CENTER_LEFT);
+                            setText(null);
+                            setGraphic(hBox);
                         }
                     }
                 };
@@ -295,7 +303,13 @@ public class NoteDialog extends SucDialog<ButtonType> {
         TableView<RowNote> tv = new TableView<>();
         tv.setEditable(true);
         if (!areThereXSamples) {
-            tv.getColumns().setAll(columnName, columnTimeStampY, columnNote, columnUserNote, columnValueY, columnUserData);
+            /* the "Notiz" column holds notes written by the system (e.g. data processing); show it only when there are any */
+            boolean anyNote = observableList.stream().anyMatch(rowNote -> rowNote.getNote() != null && !rowNote.getNote().trim().isEmpty());
+            if (anyNote) {
+                tv.getColumns().setAll(columnName, columnTimeStampY, columnNote, columnUserNote, columnValueY, columnUserData);
+            } else {
+                tv.getColumns().setAll(columnName, columnTimeStampY, columnUserNote, columnValueY, columnUserData);
+            }
         } else {
             this.setTitle(I18n.getInstance().getString("plugin.graph.charttype.bubble.name"));
             columnTimeStampY.setText(columnTimeStampY.getText() + " Y");

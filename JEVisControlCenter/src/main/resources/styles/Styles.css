@@ -1146,3 +1146,21 @@
 .suc-file-row {
     -fx-min-height: 30px;
 }
+
+/* editable fields inside table cells (e.g. the note dialog of the analysis): keep a visible frame */
+.suc-cell-input,
+.suc-cell-input .content {
+    -fx-background-color: #c9d1dc, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3, 2;
+}
+.text-area.suc-cell-input {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-border-color: #c9d1dc;
+    -fx-border-radius: 3;
+}
+.text-area.suc-cell-input .scroll-pane,
+.text-area.suc-cell-input .scroll-pane > .viewport,
+.text-area.suc-cell-input .content {
+    -fx-background-color: -fx-control-inner-background;
+}
