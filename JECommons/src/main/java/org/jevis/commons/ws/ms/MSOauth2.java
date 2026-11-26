@@ -84,7 +84,7 @@ public class MSOauth2 {
                     args[2]//c_secret
             );
             String accessToken = msAuth.connect(args[3], args[4]);
-            System.out.println("Token: " + accessToken);
+            System.out.println("Token received: " + (accessToken != null && !accessToken.isEmpty()));
             String displayName = msAuth.getUserDisplayName(accessToken);
             System.out.println("User Display Name: " + displayName);
         } catch (Exception e) {

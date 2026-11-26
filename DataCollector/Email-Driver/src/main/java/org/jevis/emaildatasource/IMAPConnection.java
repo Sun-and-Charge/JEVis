@@ -77,7 +77,7 @@ public class IMAPConnection implements EMailConnection {
         _foldName = param.getFolderName();
         try {
 
-            logger.info("Connect to IMAP Server: {}, User: {}, PW: '{}' .....", param.getHost(), param.getUserEMail(), param.getPassword());
+            logger.info("Connect to IMAP Server: {}, User: {} .....", param.getHost(), param.getUserEMail());
             _store.addConnectionListener(new ConnectionListener() {
                 @Override
                 public void opened(ConnectionEvent e) {

@@ -159,7 +159,7 @@ public class sFTPDataSource implements DataSource {
             } else {
                 client.setKeyIdentityProvider(KeyIdentityProvider.EMPTY_KEYS_PROVIDER);
                 client.addPasswordIdentity(password);
-                logger.debug("{}: using password: {}", logDataSourceID, password);
+                logger.debug("{}: using password authentication", logDataSourceID);
             }
 
             client.start();
