@@ -187,7 +187,13 @@
       "png": "PNG",
       "csv": "CSV",
       "pngLabel": "Save {name} as image (PNG)",
-      "csvLabel": "Save the values of {name} as CSV"
+      "csvLabel": "Save the values of {name} as CSV",
+      "jpeg": "JPEG",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "jpegLabel": "Save {name} as image (JPEG)",
+      "pdfLabel": "Save {name} as PDF",
+      "xlsxLabel": "Save the values of {name} as Excel file"
     },
     "count": "Count",
     "duration": "Duration [h]",

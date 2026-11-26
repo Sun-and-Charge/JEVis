@@ -187,7 +187,13 @@
       "png": "PNG",
       "csv": "CSV",
       "pngLabel": "{name} als Bild (PNG) speichern",
-      "csvLabel": "Werte von {name} als CSV speichern"
+      "csvLabel": "Werte von {name} als CSV speichern",
+      "jpeg": "JPEG",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "jpegLabel": "{name} als Bild (JPEG) speichern",
+      "pdfLabel": "{name} als PDF speichern",
+      "xlsxLabel": "Werte von {name} als Excel-Datei speichern"
     },
     "count": "Anzahl",
     "duration": "Dauer [h]",
