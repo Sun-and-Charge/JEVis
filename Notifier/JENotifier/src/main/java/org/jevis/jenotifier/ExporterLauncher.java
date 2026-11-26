@@ -28,8 +28,11 @@ import org.jevis.api.JEVisException;
 import org.jevis.api.JEVisObject;
 import org.jevis.api.JEVisSample;
 import org.jevis.commons.appointment.ScheduledMailProcessor;
+import org.jevis.commons.certificate.CertificateHttp;
+import org.jevis.commons.certificate.CertificateProcessor;
 import org.jevis.commons.cli.AbstractCliApp;
 import org.jevis.commons.i18n.I18n;
+import org.jevis.commons.mail.MailMessage;
 import org.jevis.commons.mail.MailSender;
 import org.jevis.commons.mail.MailSettings;
 import org.jevis.commons.task.LogTaskManager;
@@ -259,8 +262,38 @@ public class ExporterLauncher extends AbstractCliApp {
             ScheduledMailProcessor.Result result = new ScheduledMailProcessor(ds, mailSender::send).run(new LocalDateTime());
             logger.info("Appointment and maintenance mails: {}", result);
             sendReadingRoundMails(mailSender);
+            processCertificates(mailSender);
         } catch (Throwable t) {
             logger.error("Appointment and maintenance mails failed", t);
+        }
+    }
+
+    /**
+     * Energy certificates (BA-07, docs/ENERGY-CERTIFICATES.md): reminders before expiry and transfers to third parties
+     * by mail, SFTP or HTTP.
+     */
+    private void processCertificates(MailSender mailSender) {
+        try {
+            CertificateProcessor.Result result = new CertificateProcessor(ds, new CertificateProcessor.Channels() {
+                @Override
+                public void mail(MailMessage message) throws Exception {
+                    mailSender.send(message);
+                }
+
+                @Override
+                public String sftp(String host, int port, String user, String password, String directory,
+                                   String knownHostKey, String fileName, byte[] content) throws Exception {
+                    return CertificateSftp.upload(host, port, user, password, directory, knownHostKey, fileName, content);
+                }
+
+                @Override
+                public void http(String url, String token, String fileName, byte[] content, String contentType) throws Exception {
+                    CertificateHttp.post(url, token, fileName, content, contentType);
+                }
+            }, webAppUrl()).run(new DateTime());
+            logger.info("Energy certificates: {}", result);
+        } catch (Throwable t) {
+            logger.error("Energy certificates failed", t);
         }
     }
 

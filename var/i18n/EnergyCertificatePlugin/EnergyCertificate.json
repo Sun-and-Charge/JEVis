@@ -1,0 +1,70 @@
+{
+  "jevisclass": "Energy Certificate",
+  "names": {
+    "de": "Energieausweis",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Energy Certificate"
+  },
+  "descriptions": {
+    "de": "Vorhandener Energieausweis (Verbrauch oder Bedarf) eines Gebäudes mit PDF",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Existing energy certificate (consumption or demand) of a building with its PDF"
+  },
+  "types": [
+    {
+      "type": "Data",
+      "names": {
+        "de": "Datenmodell",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Data Model"
+      },
+      "descriptions": {
+        "de": "JSON-Daten des Ausweises (Art, Registriernummer, Gültigkeit, Kennwerte, Zuständige), bearbeitet in Web-App und Control Center",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "JSON data of the certificate (type, registration number, validity, values, responsible persons), edited in the web app and the Control Center"
+      }
+    },
+    {
+      "type": "File",
+      "names": {
+        "de": "Datei",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "File"
+      },
+      "descriptions": {
+        "de": "Der Energieausweis als PDF",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "The energy certificate as PDF"
+      }
+    },
+    {
+      "type": "Transfer State",
+      "names": {
+        "de": "Übermittlungsstatus",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Transfer State"
+      },
+      "descriptions": {
+        "de": "Erinnerungen und Übermittlungen (JSON), wird vom Dienst JENotifier geschrieben",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Reminders and transfers (JSON), written by the JENotifier service"
+      }
+    }
+  ]
+}

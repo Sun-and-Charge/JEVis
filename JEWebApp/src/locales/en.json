@@ -301,7 +301,156 @@
     "reports": "Reports",
     "contracts": "Contracts",
     "invoices": "Energy invoices",
-    "costs": "Cost calculation"
+    "costs": "Cost calculation",
+    "certificates": "Energy certificates"
+  },
+  "certificates": {
+    "title": "Energy certificates",
+    "loading": "Loading energy certificates …",
+    "empty": "No energy certificates for this selection.",
+    "today": "As of {date}",
+    "hint": "Existing energy certificates of the buildings with their values, validity and responsible persons. The issuer issues the certificates; they are stored here.",
+    "new": "New energy certificate",
+    "export": "Export CSV",
+    "tabs": {
+      "list": "Overview",
+      "transfers": "Transfer"
+    },
+    "filter": {
+      "all": "All",
+      "attention": "Action needed",
+      "EXPIRED": "Expired",
+      "EXPIRING": "Expiring",
+      "VALID": "Valid",
+      "UNKNOWN": "No date"
+    },
+    "status": {
+      "EXPIRED": "Expired",
+      "EXPIRING": "Expiring",
+      "VALID": "Valid",
+      "UNKNOWN": "No date"
+    },
+    "daysLeft": "{n} days left | 1 day left | {n} days left",
+    "daysAgo": "{n} days ago | 1 day ago | {n} days ago",
+    "type": {
+      "CONSUMPTION": "Consumption certificate",
+      "DEMAND": "Demand certificate"
+    },
+    "use": {
+      "RESIDENTIAL": "Residential building",
+      "NON_RESIDENTIAL": "Non-residential building"
+    },
+    "col": {
+      "building": "Building",
+      "type": "Type",
+      "registrationNumber": "Registration number",
+      "issued": "Issued",
+      "validUntil": "Valid until",
+      "status": "Status",
+      "energyClass": "Class",
+      "heatConsumption": "Heat",
+      "electricityConsumption": "Electricity",
+      "finalEnergy": "Final energy",
+      "primaryEnergy": "Primary energy",
+      "referenceArea": "Reference area",
+      "co2": "CO₂",
+      "issuer": "Issuer",
+      "responsible": "Responsible",
+      "file": "PDF"
+    },
+    "field": {
+      "building": "Building",
+      "type": "Type of certificate",
+      "use": "Use of the building",
+      "registrationNumber": "Registration number",
+      "issued": "Issued on",
+      "validUntil": "Valid until",
+      "validUntilHint": "Suggestion: 10 years from issue",
+      "issuer": "Issuer",
+      "responsible": "Responsible (reminders by e-mail)",
+      "energyClass": "Efficiency class",
+      "heatConsumption": "Heat consumption value",
+      "electricityConsumption": "Electricity consumption value",
+      "finalEnergy": "Final energy",
+      "primaryEnergy": "Primary energy",
+      "referenceArea": "Reference area",
+      "co2": "CO₂ emissions",
+      "reminderMonths": "Reminder (months before expiry)",
+      "reminderHint": "e.g. \"6, 1\": e-mail 6 months and 1 month before expiry",
+      "note": "Notes",
+      "none": "–"
+    },
+    "unit": {
+      "energy": "kWh/(m²·a)",
+      "area": "m²",
+      "co2": "kg/(m²·a)"
+    },
+    "section": {
+      "certificate": "Certificate",
+      "values": "Values",
+      "validity": "Validity and reminder",
+      "file": "File",
+      "note": "Notes"
+    },
+    "problem": {
+      "required": "Please fill in.",
+      "date": "Please enter a valid date.",
+      "order": "\"Valid until\" must be after the issue date.",
+      "class": "Please choose a class from A+ to H.",
+      "number": "Please enter a number of 0 or more.",
+      "range": "Please enter months from 0 to 24, separated by commas.",
+      "person": "Please choose users or groups only."
+    },
+    "editTitle": "Energy certificate: {name}",
+    "createTitle": "New energy certificate",
+    "saved": "\"{name}\" was saved.",
+    "created": "\"{name}\" was created.",
+    "deleted": "\"{name}\" was moved to the recycle bin.",
+    "delete": "Delete",
+    "deleteQuestion": "Move \"{name}\" to the recycle bin?",
+    "file": {
+      "none": "No PDF stored.",
+      "open": "Open PDF",
+      "upload": "Upload PDF",
+      "replace": "Replace PDF",
+      "remove": "Remove PDF",
+      "afterSave": "The PDF can be uploaded once the certificate is created.",
+      "uploaded": "The PDF was saved.",
+      "removed": "The PDF was removed.",
+      "tooLarge": "The PDF is larger than 20 MB.",
+      "notPdf": "Please choose a PDF file."
+    },
+    "noCreate": "You may not add energy certificates to any building.",
+    "lastReminder": "Last reminder",
+    "reminderError": "Reminder failed: {error}",
+    "createdBy": "Created {date} by {user}",
+    "transfer": {
+      "hint": "Targets the energy certificates are sent to (e-mail, SFTP, HTTP). The targets are set up in the Control Center. The JENotifier service sends on schedule or on request.",
+      "empty": "No transfer targets set up.",
+      "col": {
+        "name": "Target",
+        "channel": "Channel",
+        "format": "Format",
+        "schedule": "Schedule",
+        "enabled": "Enabled",
+        "last": "Last transfer",
+        "requested": "Requested"
+      },
+      "schedule": {
+        "MANUAL": "Manual only",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly",
+        "ON_CHANGE": "On change"
+      },
+      "run": "Transfer now",
+      "requestedAt": "{date} by {user}",
+      "requestedOk": "The transfer to \"{name}\" was requested. It runs with the next run of the service.",
+      "lastOk": "{date}: {count} certificates",
+      "lastError": "{date}: error – {error}",
+      "yes": "Yes",
+      "no": "No"
+    }
   },
   "appointments": {
     "title": "Appointments",

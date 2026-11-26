@@ -1,0 +1,18 @@
+{
+  "jevisclass": "Energy Certificate Directory",
+  "names": {
+    "de": "Energieausweise",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Energy Certificates"
+  },
+  "descriptions": {
+    "de": "Verzeichnis für die Energieausweise eines Gebäudes",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Directory for the energy certificates of a building"
+  },
+  "types": []
+}

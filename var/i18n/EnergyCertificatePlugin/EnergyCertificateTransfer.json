@@ -1,0 +1,257 @@
+{
+  "jevisclass": "Energy Certificate Transfer",
+  "names": {
+    "de": "Übermittlung Energieausweise",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Energy Certificate Transfer"
+  },
+  "descriptions": {
+    "de": "Ziel, an das Energieausweise übermittelt werden (E-Mail, SFTP, HTTP), manuell oder nach Zeitplan",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Target to which energy certificates are sent (mail, SFTP, HTTP), manually or on a schedule"
+  },
+  "types": [
+    {
+      "type": "Enabled",
+      "names": {
+        "de": "Aktiv",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enabled"
+      },
+      "descriptions": {
+        "de": "Übermittlung an dieses Ziel ist aktiv",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Transfer to this target is enabled"
+      }
+    },
+    {
+      "type": "Channel",
+      "names": {
+        "de": "Kanal",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Channel"
+      },
+      "descriptions": {
+        "de": "MAIL, SFTP oder HTTP",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "MAIL, SFTP or HTTP"
+      }
+    },
+    {
+      "type": "Format",
+      "names": {
+        "de": "Format",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Format"
+      },
+      "descriptions": {
+        "de": "CSV, JSON oder ZIP (CSV, JSON und PDFs)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "CSV, JSON or ZIP (CSV, JSON and PDFs)"
+      }
+    },
+    {
+      "type": "Schedule",
+      "names": {
+        "de": "Zeitplan",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Schedule"
+      },
+      "descriptions": {
+        "de": "MANUAL, DAILY, WEEKLY, MONTHLY oder ON_CHANGE",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "MANUAL, DAILY, WEEKLY, MONTHLY or ON_CHANGE"
+      }
+    },
+    {
+      "type": "Recipients",
+      "names": {
+        "de": "Empfänger",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Recipients"
+      },
+      "descriptions": {
+        "de": "IDs von Benutzern oder Gruppen und E-Mail-Adressen, getrennt durch Semikolon (Kanal MAIL)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Ids of users or groups and e-mail addresses, separated by semicolons (channel MAIL)"
+      }
+    },
+    {
+      "type": "Host",
+      "names": {
+        "de": "Server",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Host"
+      },
+      "descriptions": {
+        "de": "SFTP-Server",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "SFTP server"
+      }
+    },
+    {
+      "type": "Port",
+      "names": {
+        "de": "Port",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Port"
+      },
+      "descriptions": {
+        "de": "SFTP-Port, Standard 22",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "SFTP port, default 22"
+      }
+    },
+    {
+      "type": "User",
+      "names": {
+        "de": "Benutzer",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "User"
+      },
+      "descriptions": {
+        "de": "SFTP-Benutzer",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "SFTP user"
+      }
+    },
+    {
+      "type": "Password",
+      "names": {
+        "de": "Passwort",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Password"
+      },
+      "descriptions": {
+        "de": "SFTP-Passwort",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "SFTP password"
+      }
+    },
+    {
+      "type": "Path",
+      "names": {
+        "de": "Pfad",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Path"
+      },
+      "descriptions": {
+        "de": "Zielverzeichnis auf dem SFTP-Server",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Target directory on the SFTP server"
+      }
+    },
+    {
+      "type": "URL",
+      "names": {
+        "de": "URL",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "URL"
+      },
+      "descriptions": {
+        "de": "HTTP-Ziel (POST)",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "HTTP target (POST)"
+      }
+    },
+    {
+      "type": "Token",
+      "names": {
+        "de": "Token",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Token"
+      },
+      "descriptions": {
+        "de": "Bearer-Token für HTTP",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Bearer token for HTTP"
+      }
+    },
+    {
+      "type": "Requested",
+      "names": {
+        "de": "Angefordert",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Requested"
+      },
+      "descriptions": {
+        "de": "„Jetzt übermitteln“: Zeit und Benutzer, wird vom JENotifier gelöscht",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "\"Transfer now\": time and user, cleared by JENotifier"
+      }
+    },
+    {
+      "type": "Last Transfer",
+      "names": {
+        "de": "Letzte Übermittlung",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Last Transfer"
+      },
+      "descriptions": {
+        "de": "Zeit, Anzahl und Ergebnis der letzten Übermittlung sowie der SFTP-Serverschlüssel (JSON), wird vom JENotifier geschrieben",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Time, count and result of the last transfer and the SFTP server key (JSON), written by JENotifier"
+      }
+    }
+  ]
+}

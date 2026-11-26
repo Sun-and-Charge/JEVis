@@ -301,7 +301,156 @@
     "reports": "Berichte",
     "contracts": "Verträge",
     "invoices": "Energierechnungen",
-    "costs": "Kostenrechnung"
+    "costs": "Kostenrechnung",
+    "certificates": "Energieausweise"
+  },
+  "certificates": {
+    "title": "Energieausweise",
+    "loading": "Energieausweise werden geladen …",
+    "empty": "Keine Energieausweise für diese Auswahl.",
+    "today": "Stand: {date}",
+    "hint": "Vorhandene Energieausweise der Gebäude mit Kennwerten, Gültigkeit und Zuständigen. Ausgestellt werden die Ausweise vom Aussteller, hier werden sie hinterlegt.",
+    "new": "Neuer Energieausweis",
+    "export": "CSV exportieren",
+    "tabs": {
+      "list": "Übersicht",
+      "transfers": "Übermittlung"
+    },
+    "filter": {
+      "all": "Alle",
+      "attention": "Handlungsbedarf",
+      "EXPIRED": "Abgelaufen",
+      "EXPIRING": "Läuft ab",
+      "VALID": "Gültig",
+      "UNKNOWN": "Ohne Datum"
+    },
+    "status": {
+      "EXPIRED": "Abgelaufen",
+      "EXPIRING": "Läuft ab",
+      "VALID": "Gültig",
+      "UNKNOWN": "Ohne Datum"
+    },
+    "daysLeft": "noch {n} Tage | noch 1 Tag | noch {n} Tage",
+    "daysAgo": "seit {n} Tagen | seit 1 Tag | seit {n} Tagen",
+    "type": {
+      "CONSUMPTION": "Verbrauchsausweis",
+      "DEMAND": "Bedarfsausweis"
+    },
+    "use": {
+      "RESIDENTIAL": "Wohngebäude",
+      "NON_RESIDENTIAL": "Nichtwohngebäude"
+    },
+    "col": {
+      "building": "Gebäude",
+      "type": "Art",
+      "registrationNumber": "Registriernummer",
+      "issued": "Ausgestellt",
+      "validUntil": "Gültig bis",
+      "status": "Status",
+      "energyClass": "Klasse",
+      "heatConsumption": "Wärme",
+      "electricityConsumption": "Strom",
+      "finalEnergy": "Endenergie",
+      "primaryEnergy": "Primärenergie",
+      "referenceArea": "Bezugsfläche",
+      "co2": "CO₂",
+      "issuer": "Aussteller",
+      "responsible": "Zuständig",
+      "file": "PDF"
+    },
+    "field": {
+      "building": "Gebäude",
+      "type": "Art des Ausweises",
+      "use": "Gebäudenutzung",
+      "registrationNumber": "Registriernummer",
+      "issued": "Ausgestellt am",
+      "validUntil": "Gültig bis",
+      "validUntilHint": "Vorschlag: 10 Jahre ab Ausstellung",
+      "issuer": "Aussteller",
+      "responsible": "Zuständig (Erinnerungen per E-Mail)",
+      "energyClass": "Effizienzklasse",
+      "heatConsumption": "Energieverbrauchskennwert Wärme",
+      "electricityConsumption": "Energieverbrauchskennwert Strom",
+      "finalEnergy": "Endenergie",
+      "primaryEnergy": "Primärenergie",
+      "referenceArea": "Bezugsfläche",
+      "co2": "CO₂-Emissionen",
+      "reminderMonths": "Erinnerung (Monate vor Ablauf)",
+      "reminderHint": "z. B. „6, 1“: E-Mail 6 Monate und 1 Monat vor Ablauf",
+      "note": "Anmerkungen",
+      "none": "–"
+    },
+    "unit": {
+      "energy": "kWh/(m²·a)",
+      "area": "m²",
+      "co2": "kg/(m²·a)"
+    },
+    "section": {
+      "certificate": "Ausweis",
+      "values": "Kennwerte",
+      "validity": "Gültigkeit und Erinnerung",
+      "file": "Datei",
+      "note": "Anmerkungen"
+    },
+    "problem": {
+      "required": "Bitte ausfüllen.",
+      "date": "Bitte ein gültiges Datum eingeben.",
+      "order": "„Gültig bis“ muss nach dem Ausstellungsdatum liegen.",
+      "class": "Bitte eine Klasse von A+ bis H wählen.",
+      "number": "Bitte eine Zahl ab 0 eingeben.",
+      "range": "Bitte Monate von 0 bis 24 eingeben, getrennt durch Komma.",
+      "person": "Bitte nur Benutzer oder Gruppen wählen."
+    },
+    "editTitle": "Energieausweis: {name}",
+    "createTitle": "Neuer Energieausweis",
+    "saved": "„{name}“ wurde gespeichert.",
+    "created": "„{name}“ wurde angelegt.",
+    "deleted": "„{name}“ wurde in den Papierkorb verschoben.",
+    "delete": "Löschen",
+    "deleteQuestion": "„{name}“ in den Papierkorb verschieben?",
+    "file": {
+      "none": "Kein PDF hinterlegt.",
+      "open": "PDF öffnen",
+      "upload": "PDF hochladen",
+      "replace": "PDF ersetzen",
+      "remove": "PDF entfernen",
+      "afterSave": "Das PDF kann nach dem Anlegen hochgeladen werden.",
+      "uploaded": "Das PDF wurde gespeichert.",
+      "removed": "Das PDF wurde entfernt.",
+      "tooLarge": "Das PDF ist größer als 20 MB.",
+      "notPdf": "Bitte eine PDF-Datei wählen."
+    },
+    "noCreate": "Sie haben bei keinem Gebäude das Recht, Energieausweise anzulegen.",
+    "lastReminder": "Letzte Erinnerung",
+    "reminderError": "Erinnerung fehlgeschlagen: {error}",
+    "createdBy": "Angelegt {date} von {user}",
+    "transfer": {
+      "hint": "Ziele, an die Energieausweise übermittelt werden (E-Mail, SFTP, HTTP). Die Ziele werden im Control Center eingerichtet. Der Dienst JENotifier übermittelt nach Zeitplan oder auf Anforderung.",
+      "empty": "Keine Übermittlungsziele eingerichtet.",
+      "col": {
+        "name": "Ziel",
+        "channel": "Kanal",
+        "format": "Format",
+        "schedule": "Zeitplan",
+        "enabled": "Aktiv",
+        "last": "Letzte Übermittlung",
+        "requested": "Angefordert"
+      },
+      "schedule": {
+        "MANUAL": "Nur manuell",
+        "DAILY": "Täglich",
+        "WEEKLY": "Wöchentlich",
+        "MONTHLY": "Monatlich",
+        "ON_CHANGE": "Bei Änderung"
+      },
+      "run": "Jetzt übermitteln",
+      "requestedAt": "{date} von {user}",
+      "requestedOk": "Die Übermittlung an „{name}“ wurde angefordert. Sie erfolgt mit dem nächsten Lauf des Dienstes.",
+      "lastOk": "{date}: {count} Ausweise",
+      "lastError": "{date}: Fehler – {error}",
+      "yes": "Ja",
+      "no": "Nein"
+    }
   },
   "appointments": {
     "title": "Termine",

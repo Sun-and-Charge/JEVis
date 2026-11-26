@@ -1,0 +1,36 @@
+{
+  "jevisclass": "Energy Certificate Plugin",
+  "names": {
+    "de": "Energieausweise Plugin",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Energy Certificate Plugin"
+  },
+  "descriptions": {
+    "de": "Modul Energieausweise mit Fristen, Erinnerungen und Übermittlung an Dritte",
+    "ru": "",
+    "uk": "",
+    "th": "",
+    "en": "Energy certificates module with deadlines, reminders and transfer to third parties"
+  },
+  "types": [
+    {
+      "type": "Enable",
+      "descriptions": {
+        "de": "Aktiviert oder deaktiviert das Modul Energieausweise",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enable or disable the module Energy Certificates"
+      },
+      "names": {
+        "de": "Aktiviert",
+        "ru": "",
+        "uk": "",
+        "th": "",
+        "en": "Enabled"
+      }
+    }
+  ]
+}
