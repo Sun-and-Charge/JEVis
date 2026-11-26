@@ -51,6 +51,31 @@ export interface Alarm {
 }
 
 /** Answer of GET /web/alarms. */
+/** A data outage or transmission fault (docs/ALARMS-OUTAGE.md): open, or ended in the time frame. */
+export interface AlarmOutage {
+  id: string
+  /** ROW: a data row got no new values; SOURCE: a data source did not read */
+  kind: 'ROW' | 'SOURCE' | string
+  open: boolean
+  configuration: { id: number; name: string }
+  object: { id: number; name: string | null; path?: string | null; readable: boolean } | null
+  site: { id: number; name: string } | null
+  /** newest value / readout before the outage, null if there never was one */
+  since: string | null
+  /** allowed minutes without data */
+  minutes: number
+  /** the data source in outage at the same time (row outages) */
+  cause: { id: number; name: string | null } | null
+  /** when the outage was found */
+  opened: string | null
+  /** ended: first new value / readout, null if no longer monitored */
+  resumed: string | null
+  /** ended: the missing values arrived later (late delivery) instead of leaving a gap */
+  backfilled: boolean | null
+  /** when the end was noticed */
+  ended: string | null
+}
+
 export interface AlarmList {
   from: string
   to: string
@@ -58,6 +83,8 @@ export interface AlarmList {
   /** newest timestamp first, at most 5000 */
   alarms: Alarm[]
   truncated: boolean
+  /** open first; missing on older servers */
+  outages?: AlarmOutage[]
 }
 
 export interface AlarmQuery {

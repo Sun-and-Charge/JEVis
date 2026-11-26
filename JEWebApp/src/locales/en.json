@@ -1575,6 +1575,30 @@
     "confirmAllResult": "{confirmed} confirmed, {refused} refused (no permission).",
     "confirmAllDone": "No configuration confirmed. | 1 configuration confirmed. | {n} configurations confirmed."
   },
+  "alarmOutages": {
+    "title": "Data outages",
+    "hint": "Data rows without new values and data sources that no longer read. Open outages first, then the ones that ended in the time frame.",
+    "open": "Open",
+    "ended": "Ended",
+    "since": "Latest value",
+    "never": "never",
+    "allowed": "Allowed without data",
+    "cause": "Cause (data source)",
+    "resumed": "Data again from",
+    "configuration": "Alarm configuration",
+    "minutes": "{n} minutes | 1 minute | {n} minutes",
+    "hours": "{n} hours | 1 hour | {n} hours",
+    "days": "{n} days | 1 day | {n} days",
+    "kind": {
+      "row": "Data outage",
+      "source": "Transmission fault"
+    },
+    "result": {
+      "late": "delivered late",
+      "gap": "gap remains",
+      "unmonitored": "no longer monitored"
+    }
+  },
   "alarmSettings": {
     "tabsLabel": "Alarm sections",
     "tab": {
@@ -1626,7 +1650,10 @@
       "cc": "Copy to (CC)",
       "bcc": "Blind copy to (BCC)",
       "subject": "Subject",
-      "message": "Message"
+      "message": "Message",
+      "dailySummary": "Daily summary by e-mail",
+      "dailySummaryHint": "Once a day: open and ended data outages and limit alarms of the last 24 hours. Nothing is sent without events.",
+      "dailySummaryTime": "Time"
     },
     "scope": {
       "COMPLETE": "All data rows",
@@ -1687,7 +1714,11 @@
       "rules": "At most {max} alarm rules.",
       "days": "Please choose at least one weekday.",
       "time": "Please enter “from” and “to” as times.",
-      "sameTime": "“From” and “to” must differ."
+      "sameTime": "“From” and “to” must differ.",
+      "noData": "Please enter after which time without new values an alarm is raised.",
+      "noDataNumber": "Please enter a whole number greater than 0 (at most one year).",
+      "average": "Please enter whole minutes from 1 to 10080 or leave empty.",
+      "summaryTime": "Please enter a time of day, e.g. 07:00."
     },
     "row": {
       "title": "Alarm settings: {name}",
@@ -1700,7 +1731,9 @@
       "configurations": "Reported by",
       "noConfiguration": "No alarm configuration checks this data row – alarms found are not reported.",
       "saved": "The alarm settings were saved.",
-      "reprocess": "Changed limits only apply to data processed from now on. To apply them to existing data, have the data row recalculated in the Control Center."
+      "reprocess": "Changed limits only apply to data processed from now on. To apply them to existing data, have the data row recalculated in the Control Center.",
+      "lastValue": "Latest value",
+      "noDataSince": "no data for {n} hours | no data for 1 hour | no data for {n} hours"
     },
     "limits": {
       "title": "Limits",
@@ -1751,7 +1784,19 @@
       "standby": "Standby",
       "standbyHint": "Alarms in this time are ignored.",
       "add": "Add alarm rule",
-      "pickTitle": "Choose comparison row"
+      "pickTitle": "Choose comparison row",
+      "noDataKind": "Data outage",
+      "noData": "Alarm when no new values arrived for",
+      "noDataUnit": "Unit",
+      "minutes": "Minutes",
+      "hours": "Hours",
+      "noDataHint": "Checked against the arrival of raw data in every run of the service, independent of the check interval. One e-mail at the start; the end is listed in the daily summary.",
+      "average": "Mean over (minutes)",
+      "averageNone": "Single values",
+      "averageHint": "Compares the moving mean instead of every single value, e.g. 60 for the mean of the last hour. A value corridor is two rules (below minimum, above maximum).",
+      "valid": "Applies only at certain times",
+      "validHint": "For day and night limits: e.g. one rule Mon–Fri 06:00–20:00 with 40 kW and a second one at night with 10 kW.",
+      "addOutage": "Monitor data outage"
     },
     "operator": {
       "BIGGER": "greater than",

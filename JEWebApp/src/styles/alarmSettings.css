@@ -334,3 +334,26 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* data outage rule (docs/ALARMS-OUTAGE.md): time without data with its unit */
+.alm-nodata-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.alm-nodata-input input {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+
+.alm-nodata-input select {
+  flex: 0 0 auto;
+}
+
+.alm-nodata-badge {
+  margin-left: 0.4rem;
+}
+
+.alm-summary input[type='time'] {
+  max-width: 9rem;
+}

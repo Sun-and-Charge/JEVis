@@ -190,6 +190,9 @@ describe('row alarm settings form', () => {
       tolerance: 0,
       silent: { simple: true, days: ['SAT', 'SUN'], from: '22:00', to: '06:00' },
       standby: { simple: false, text: '0 0 12 ? * MON-FRI' },
+      /* sent as null so that a removed validity time / mean is deleted on the server */
+      valid: null,
+      average: null,
     })
   })
 
