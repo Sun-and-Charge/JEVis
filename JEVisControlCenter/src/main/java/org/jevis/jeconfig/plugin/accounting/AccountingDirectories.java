@@ -115,15 +115,27 @@ public class AccountingDirectories {
 
             governmentalDuesClass = ds.getJEVisClass(GOVERNMENTAL_DUES);
 
-            energyContractingDir = ds.getObjects(energyContractingDirectoryClass, false).stream().findFirst().orElse(null);
-            energySupplyDir = ds.getObjects(energySupplyDirectoryClass, false).stream().findFirst().orElse(null);
-            energyMeteringPointOperationDir = ds.getObjects(energyMeteringPointOperationDirectoryClass, false).stream().findFirst().orElse(null);
-            energyGridOperationDir = ds.getObjects(energyGridOperationDirectoryClass, false).stream().findFirst().orElse(null);
-            energyContractorDir = ds.getObjects(energyContractorDirectory, false).stream().findFirst().orElse(null);
-            energyGovernmentalDuesDir = ds.getObjects(energyGovernmentalDuesDirectory, false).stream().findFirst().orElse(null);
+            energyContractingDir = firstWritable(ds, energyContractingDirectoryClass);
+            energySupplyDir = firstWritable(ds, energySupplyDirectoryClass);
+            energyMeteringPointOperationDir = firstWritable(ds, energyMeteringPointOperationDirectoryClass);
+            energyGridOperationDir = firstWritable(ds, energyGridOperationDirectoryClass);
+            energyContractorDir = firstWritable(ds, energyContractorDirectory);
+            energyGovernmentalDuesDir = firstWritable(ds, energyGovernmentalDuesDirectory);
         } catch (Exception e) {
             logger.error("Could not get jevisClasses", e);
         }
+    }
+
+    /**
+     * With several sites the user may see contract directories of other sites read-only; use the first directory the
+     * user can write to, so the contract and data entry tabs work for the user's own site.
+     */
+    private static JEVisObject firstWritable(JEVisDataSource ds, JEVisClass directoryClass) throws Exception {
+        java.util.List<JEVisObject> directories = ds.getObjects(directoryClass, false);
+        for (JEVisObject directory : directories) {
+            if (ds.getCurrentUser().canWrite(directory.getID())) return directory;
+        }
+        return directories.stream().findFirst().orElse(null);
     }
 
     public String getENERGY_CONTRACTING_DIRECTORY() {

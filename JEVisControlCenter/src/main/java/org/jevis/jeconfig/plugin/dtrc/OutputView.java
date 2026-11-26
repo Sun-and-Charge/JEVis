@@ -101,7 +101,7 @@ public class OutputView extends Tab {
     private final ObjectRelations objectRelations;
     private final GridPane headerGP = new GridPane();
     private final HBox dateBox;
-    private final DateTimeFormatter dtfOutLegend = DateTimeFormat.forPattern("EE. dd.MM.yyyy HH:mm");
+    private final DateTimeFormatter dtfOutLegend = DateTimeFormat.forPattern("EE dd.MM.yyyy HH:mm");
     private SelectionTemplate selectionTemplate;
     private GridPane contractsGP;
     private Label timeframeField;
