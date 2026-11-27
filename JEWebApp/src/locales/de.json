@@ -1081,6 +1081,43 @@
       "notFound": "Die PDF-Datei ist nicht lesbar oder nicht mehr vorhanden.",
       "unsupported": "Ihr Browser kann die PDF-Datei hier nicht anzeigen.",
       "open": "PDF in neuem Tab öffnen"
+    },
+    "onDemand": {
+      "title": "Bericht auf Anforderung",
+      "loading": "Anforderungen werden geladen …",
+      "error": "Die Anforderungen konnten nicht geladen werden.",
+      "period": "Zeitraum",
+      "running": "(laufend)",
+      "quarter": "{quarter}. Quartal {year}",
+      "week": "KW {week} {year}",
+      "mail": "Per E-Mail an mich senden",
+      "send": "Bericht jetzt erstellen",
+      "sending": "Wird angefordert …",
+      "sent": "Angefordert. Der Bericht wird in etwa einer Minute erstellt.",
+      "tooMany": "Für diesen Bericht sind bereits drei Anforderungen offen.",
+      "sendError": {
+        "tooMany": "Für diesen Bericht sind bereits drei Anforderungen offen.",
+        "rights": "Sie dürfen diesen Bericht nicht anfordern.",
+        "invalid": "Dieser Zeitraum kann nicht angefordert werden.",
+        "noMail": "In Ihrem Benutzerkonto ist keine E-Mail-Adresse hinterlegt.",
+        "error": "Die Anforderung ist fehlgeschlagen."
+      },
+      "not": {
+        "rights": "Zum Anfordern brauchen Sie Schreibrechte auf den Bericht.",
+        "schedule": "Dieser Bericht hat keinen Zeitplan, der angefordert werden kann."
+      },
+      "none": "Noch keine Anforderungen in den letzten vier Wochen.",
+      "listLabel": "Anforderungen",
+      "requested": "Angefordert {time} von {name}",
+      "me": "Ihnen",
+      "mailed": "per E-Mail",
+      "status": {
+        "PENDING": "Wartet",
+        "RUNNING": "Wird erstellt",
+        "DONE": "Fertig",
+        "FAILED": "Fehlgeschlagen",
+        "EXPIRED": "Abgelaufen"
+      }
     }
   },
   "contracts": {

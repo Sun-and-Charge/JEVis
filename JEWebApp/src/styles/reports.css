@@ -225,3 +225,67 @@
 .rep-preview .rep-hint {
   margin-top: 0.35rem;
 }
+
+/* R04 report on demand */
+
+.rep-od {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.rep-od-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.rep-od-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 1rem;
+}
+
+.rep-od-form .rep-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.rep-od-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.rep-od-item {
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.rep-od-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rep-od-meta,
+.rep-od-message {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 0.875rem;
+}
+
+.mod-badge.rep-od-status.is-pending,
+.mod-badge.rep-od-status.is-running {
+  background: var(--sun);
+  border-color: var(--sun);
+  color: var(--blueberry);
+}
+
+.mod-badge.rep-od-status.is-done {
+  background: var(--ok-bg);
+  border-color: var(--ok-bg);
+  color: var(--ok);
+}

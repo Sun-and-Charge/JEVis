@@ -827,6 +827,25 @@ attachments `Content-Security-Policy: default-src 'none'; sandbox` (not for inli
 do not run in a sandbox). 404 if the
 report is not readable or the output does not exist; 400 for an unknown `format` or an invalid `ts`.
 
+### Report on demand (R04): `GET|POST /web/reports/{id}/on-demand`
+
+`GET`: `{id, name, schedule, timeZone, canRequest, reason, periods, requests}`. `schedule` DAILY … YEARLY or null
+(custom / none: cannot be requested, `reason` `schedule`); `canRequest` needs write right on the report (else
+`reason` `rights`). `periods`: `{start, end, current}` in the report's time zone, the running period first, then
+twelve before it. `requests` (last four weeks, newest first, at most 20): `{id, start, end, requestedAt,
+requestedByName, mine, mail, status, message, statusAt, pdf, xlsx}`, `status` PENDING, RUNNING, DONE, FAILED or
+EXPIRED (pending and older than seven days). 404 if the report is not readable.
+
+`POST` `{start, mail}`: `start` must be the start of a period of the schedule and not in the future; stores the
+request for JEReport (see docs/REPORTS-ENMS.md "Report on demand") and answers 201 with the request as listed. 400
+invalid JSON / start / schedule or `mail` without an e-mail address in the user's account, 403 no write right, 404
+not readable, 429 three requests of the report are open. With `mail` the addresses of the user's account are stored
+in the request (`mailTo`).
+
+`GET /web/reports/{id}/on-demand/{requestId}/file?format=pdf|xlsx[&inline=true]`: the file of a finished request
+(sample of "On Demand Report PDF" / "On Demand Report" with the request id as note); headers as for
+`/web/reports/{id}/file`; 404 if there is none.
+
 ### Dashboards
 
 Report links of dashboards (`Report-Link` widgets, `link.kind` `REPORT`; image widgets cannot link reports) now lead to the report in the web app

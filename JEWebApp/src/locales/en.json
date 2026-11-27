@@ -1081,6 +1081,43 @@
       "notFound": "The PDF file cannot be read or no longer exists.",
       "unsupported": "Your browser cannot show the PDF file here.",
       "open": "Open PDF in a new tab"
+    },
+    "onDemand": {
+      "title": "Report on demand",
+      "loading": "Loading requests …",
+      "error": "The requests could not be loaded.",
+      "period": "Period",
+      "running": "(running)",
+      "quarter": "Q{quarter} {year}",
+      "week": "Week {week} {year}",
+      "mail": "Send to me by e-mail",
+      "send": "Create report now",
+      "sending": "Requesting …",
+      "sent": "Requested. The report will be created in about a minute.",
+      "tooMany": "Three requests are already open for this report.",
+      "sendError": {
+        "tooMany": "Three requests are already open for this report.",
+        "rights": "You may not request this report.",
+        "invalid": "This period cannot be requested.",
+        "noMail": "Your user account has no e-mail address.",
+        "error": "The request failed."
+      },
+      "not": {
+        "rights": "Requesting needs write access to the report.",
+        "schedule": "This report has no schedule that can be requested."
+      },
+      "none": "No requests in the last four weeks.",
+      "listLabel": "Requests",
+      "requested": "Requested {time} by {name}",
+      "me": "you",
+      "mailed": "by e-mail",
+      "status": {
+        "PENDING": "Waiting",
+        "RUNNING": "Being created",
+        "DONE": "Done",
+        "FAILED": "Failed",
+        "EXPIRED": "Expired"
+      }
     }
   },
   "contracts": {

@@ -76,6 +76,42 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Report"
+    },
+    {
+      "name": "On Demand Request",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Report"
+    },
+    {
+      "name": "On Demand Status",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Report"
+    },
+    {
+      "name": "On Demand Report",
+      "primitiveType": 3,
+      "guiType": "File Selector",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Report"
+    },
+    {
+      "name": "On Demand Report PDF",
+      "primitiveType": 3,
+      "guiType": "File Selector",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Report"
     }
   ]
 }

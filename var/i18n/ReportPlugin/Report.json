@@ -112,6 +112,50 @@
         "en": "Time Zone",
         "ar": "المنطقة الزمنية"
       }
+    },
+    {
+      "type": "On Demand Request",
+      "descriptions": {
+        "de": "Aufträge aus der Web-App für einen Bericht in einem gewählten Zeitraum (vom Web-Service geschrieben)",
+        "en": "Requests from the web app for a report of a chosen period (written by the web service)"
+      },
+      "names": {
+        "de": "Bericht auf Anforderung: Aufträge",
+        "en": "On-demand report: requests"
+      }
+    },
+    {
+      "type": "On Demand Status",
+      "descriptions": {
+        "de": "Fortschritt der Aufträge (von JEReport geschrieben)",
+        "en": "Progress of the requests (written by JEReport)"
+      },
+      "names": {
+        "de": "Bericht auf Anforderung: Status",
+        "en": "On-demand report: status"
+      }
+    },
+    {
+      "type": "On Demand Report",
+      "descriptions": {
+        "de": "Auf Anforderung erstellte Berichte; die Notiz enthält die Auftragsnummer",
+        "en": "Reports created on request; the note holds the request id"
+      },
+      "names": {
+        "de": "Bericht auf Anforderung (XLSX)",
+        "en": "On-demand report (XLSX)"
+      }
+    },
+    {
+      "type": "On Demand Report PDF",
+      "descriptions": {
+        "de": "PDF der auf Anforderung erstellten Berichte",
+        "en": "PDF of the reports created on request"
+      },
+      "names": {
+        "de": "Bericht auf Anforderung (PDF)",
+        "en": "On-demand report (PDF)"
+      }
     }
   ]
 }

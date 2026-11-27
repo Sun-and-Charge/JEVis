@@ -50,9 +50,28 @@ public class IntervalCalculator {
     private DateTimeZone dateTimeZone;
     private String schedule;
     private WorkDays workDays;
+    /** R04 report on demand: the start of the period instead of "Start Record", null for scheduled runs */
+    private DateTime startOverride;
 
     public IntervalCalculator(SampleHandler samplesHandler) {
         this.samplesHandler = samplesHandler;
+    }
+
+    /** R04: the period starts here instead of at "Start Record" (also for the calculators of the links, see {@link #fresh()}) */
+    public void setStartOverride(DateTime startOverride) {
+        this.startOverride = startOverride;
+    }
+
+    public DateTime getStartOverride() {
+        return startOverride;
+    }
+
+    /** a new calculator for the same report with the same start (links with an own schedule build their intervals anew) */
+    public IntervalCalculator fresh() {
+        IntervalCalculator calculator = new IntervalCalculator(samplesHandler);
+        calculator.setStartOverride(startOverride);
+        calculator.buildIntervals(reportObject);
+        return calculator;
     }
 
 
@@ -78,7 +97,7 @@ public class IntervalCalculator {
         String startRecordString = samplesHandler.getLastSample(reportObject, JC.Report.a_StartRecord, "");
         dateTimeZone = samplesHandler.getLastSample(reportObject, JC.Report.a_TimeZone, DateTimeZone.UTC);
 
-        start = DateTime.parse(startRecordString);
+        start = startOverride != null ? startOverride : DateTime.parse(startRecordString);
         DateTimeZone startZone = start.getZone();
 
         if (!startZone.equals(dateTimeZone)) {

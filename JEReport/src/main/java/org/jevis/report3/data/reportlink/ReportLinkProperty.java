@@ -262,8 +262,8 @@ public class ReportLinkProperty implements ReportData {
                                     String overrideSchedule = "NONE";
                                     if (overrideScheduleAttribute.hasSample() || mode == PeriodMode.RELATIVE) {
                                         overrideSchedule = overrideScheduleAttribute.getLatestSample().getValueAsString();
-                                        intervalCalculator = new IntervalCalculator(new SampleHandler());
-                                        intervalCalculator.buildIntervals(intervalCalc.getReportObject());
+                                        /* same start as the report (R04: also an on-demand start) */
+                                        intervalCalculator = intervalCalc.fresh();
 
                                         if (!overrideSchedule.equals("NONE")) {
                                             DateTime newStart = intervalCalculator.alignDateToSchedule(overrideSchedule, intervalCalculator.getStart());
