@@ -48,6 +48,7 @@ public class CalcNonPeriodicTest {
         when(object.getName()).thenReturn(id);
         CalcInputObject input = new CalcInputObject(id, type, attribute);
         input.setSamples(samples);
+        input.setQuantity(type != CalcInputType.NON_PERIODIC);
         return input;
     }
 
@@ -108,5 +109,33 @@ public class CalcNonPeriodicTest {
         CalcInputObject x = input("x", CalcInputType.PERIODIC, months2025());
         assertEquals(new DateTime(2025, 1, 1, 0, 0, Z), x.sampleValidAt(new DateTime(2025, 8, 1, 0, 0, Z)).getTimestamp());
         assertNull(input("e", CalcInputType.NON_PERIODIC, new ArrayList<>()).sampleValidAt(new DateTime()));
+    }
+
+    @Test
+    public void nonPeriodicAmountsAreAddedUpPerPeriod() throws Exception {
+        /* "Value is a Quantity" on the non-periodic row (e.g. consumption entered by hand): its values are added up
+           for the period they fall into, not repeated until the next value (bug report 2026-11-27) */
+        List<JEVisSample> entered = new ArrayList<>(Arrays.asList(
+                new VirtualSample(new DateTime(2024, 12, 15, 0, 0, Z), 999.0),
+                new VirtualSample(new DateTime(2025, 1, 20, 0, 0, Z), 50.0),
+                new VirtualSample(new DateTime(2025, 3, 5, 0, 0, Z), 70.0)));
+        CalcInputObject y = input("y", CalcInputType.NON_PERIODIC, entered);
+        y.setQuantity(true);
+        CalcJob job = new CalcJob(Arrays.asList(input("x", CalcInputType.PERIODIC, months2025()), y), "x-y", Collections.emptyList(), 1L);
+        job.setStaticValue(0.0);
+        job.setNonPeriodicQuantitiesPerPeriod(true);
+        List<JEVisSample> results = job.getResults();
+        assertEquals(12, results.size());
+        assertEquals(1200 - 50 - 70, sum(results), 1e-9);
+        assertEquals(50, results.get(0).getValueAsDouble(), 1e-9);
+        assertEquals(100, results.get(1).getValueAsDouble(), 1e-9);
+        assertEquals(30, results.get(2).getValueAsDouble(), 1e-9);
+
+        /* JECalc keeps the step function */
+        CalcInputObject stepY = input("y", CalcInputType.NON_PERIODIC, entered);
+        stepY.setQuantity(true);
+        CalcJob step = new CalcJob(Arrays.asList(input("x", CalcInputType.PERIODIC, months2025()), stepY), "x-y", Collections.emptyList(), 1L);
+        step.setStaticValue(0.0);
+        assertEquals(-899, step.getResults().get(0).getValueAsDouble(), 1e-9);
     }
 }

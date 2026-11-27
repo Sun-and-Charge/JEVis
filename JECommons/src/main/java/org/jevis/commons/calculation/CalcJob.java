@@ -59,6 +59,8 @@ public class CalcJob {
     private Double allZeroValue;
     private boolean newSamplesWritten;
     private Period period;
+    /** live calculations: a non-periodic input with a quantity is summed per period instead of used as a step */
+    private boolean nonPeriodicQuantitiesPerPeriod;
 
     public CalcJob() {
         newSamplesWritten = false;
@@ -106,11 +108,26 @@ public class CalcJob {
         SampleMerger sampleMerger = new SampleMerger();
         sampleMerger.setPeriod(period);
         calcInputObjects.forEach(calcObject -> {
-            boolean quantity = calcObject.getInputType() != CalcInputType.ASYNC || calcObject.isQuantity();
-            sampleMerger.addSamples(calcObject.getSamples(), calcObject.getIdentifier(), calcObject.getInputType(), quantity);
+            CalcInputType type = calcObject.getInputType();
+            boolean quantity = type != CalcInputType.ASYNC || calcObject.isQuantity();
+            if (nonPeriodicQuantitiesPerPeriod && type == CalcInputType.NON_PERIODIC && calcObject.isQuantity()) {
+                /* amounts (e.g. consumption entered by hand) are added up for the period they fall into, like async
+                   quantities, instead of being repeated at every time until the next value (2026-11-27) */
+                type = CalcInputType.ASYNC;
+                quantity = true;
+            }
+            sampleMerger.addSamples(calcObject.getSamples(), calcObject.getIdentifier(), type, quantity);
             logger.debug("added {} samples with identifier {} to merger", calcObject.getSamples().size(), calcObject.getIdentifier());
         });
         return sampleMerger.merge();
+    }
+
+    /**
+     * Live calculations (charts, dashboards, web): non-periodic inputs with a quantity unit or "Value is a Quantity"
+     * are summed per period of the periodic inputs instead of being used as a step function. Not used by JECalc.
+     */
+    public void setNonPeriodicQuantitiesPerPeriod(boolean nonPeriodicQuantitiesPerPeriod) {
+        this.nonPeriodicQuantitiesPerPeriod = nonPeriodicQuantitiesPerPeriod;
     }
 
     /**
