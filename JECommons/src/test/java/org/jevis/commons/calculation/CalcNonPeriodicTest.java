@@ -83,8 +83,9 @@ public class CalcNonPeriodicTest {
 
     @Test
     public void totalOfTheTimeFrameIsTheSumOfThePerPeriodResults() throws Exception {
-        /* the dashboard total: before 2026-11-27 the periodic input was reduced to one value (1200 at the start)
-           and multiplied with the factor valid at the start (2), giving 2400 instead of 3000 */
+        /* the absolute total reduces the periodic input to one value (1200 at the start) and uses the factor valid
+           at the start (2): 2400; per period 3000. Value widgets keep the absolute total, because ratios such as
+           kWh per bed need total / total (a sum of per-period ratios is wrong) */
         CalcJob absolute = new CalcJob(Arrays.asList(
                 input("x", CalcInputType.PERIODIC, Collections.singletonList(new VirtualSample(new DateTime(2025, 1, 1, 0, 0, Z), 1200.0))),
                 input("f", CalcInputType.NON_PERIODIC, factor())), "x*f", Collections.emptyList(), 1L);

@@ -327,15 +327,11 @@ public class RowDataLoader {
 
                 CalcJobFactory calcJobCreator = new CalcJobFactory();
                 CalcJob calcJob;
-                if (absolute) {
+                if (absolute && aggregation != AggregationPeriod.NONE && perPeriodManipulation(manipulation)) {
                     /* value widgets: for mean/min/max/median the calculation runs per aggregation period and the
                        manipulation is applied to these values, as for rows without calculation (demo 2026-11-13:
-                       sum, daily mean and peak were the same value). The total runs at the resolution of the inputs
-                       and adds the results up: the calculation "absolute" over the whole time frame reduced every
-                       input to one value, a non-periodic input to its value at the start of the time frame, so a
-                       value changed inside the time frame was ignored (2026-11-27) */
-                    AggregationPeriod per = perPeriodManipulation(manipulation) ? aggregation : AggregationPeriod.NONE;
-                    calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, per);
+                       sum, daily mean and peak were the same value) */
+                    calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
                     List<ChartSample> perPeriod = applyDayFilter(factorizeSamples(copy(calcJob.getResults(), false)));
                     samples = new ArrayList<>();
                     if (!perPeriod.isEmpty()) {
@@ -345,7 +341,13 @@ public class RowDataLoader {
                     }
                     return samples;
                 }
-                calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
+                if (!absolute) {
+                    calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
+                } else {
+                    /* the total of the time frame: every input reduced to its total (quantities, also non-periodic
+                       ones) or its value, then the formula once, so ratios such as kWh per bed are total / total */
+                    calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, true);
+                }
 
                 samples = copy(calcJob.getResults(), false);
                 if (!absolute) {
