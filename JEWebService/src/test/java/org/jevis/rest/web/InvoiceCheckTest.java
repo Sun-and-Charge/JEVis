@@ -197,4 +197,21 @@ public class InvoiceCheckTest {
         assertNull(InvoiceCheck.status("kaputt"));
         assertEquals(new DateTime(2026, 9, 1, 0, 0, Z), InvoiceCheck.date("2026-09-01T00:00:00.000+02:00", Z));
     }
+    @Test
+    public void calculatorResultsAreLookedUpByFormulaName() {
+        org.jevis.commons.trc.RCTemplate template = new org.jevis.commons.trc.RCTemplate();
+        org.jevis.commons.trc.TemplateFormula measured = new org.jevis.commons.trc.TemplateFormula();
+        measured.setId("f1");
+        measured.setName(InvoiceCheck.MEASURED);
+        org.jevis.commons.trc.TemplateFormula other = new org.jevis.commons.trc.TemplateFormula();
+        other.setId("f2");
+        other.setName("Hilfswert");
+        template.getTemplateFormulas().add(measured);
+        template.getTemplateFormulas().add(other);
+        Map<String, Double> byId = new HashMap<>();
+        byId.put("f1", 1234.5);
+        Map<String, Double> named = ResourceWebInvoiceCheck.byName(template, byId);
+        assertEquals(Double.valueOf(1234.5), named.get(InvoiceCheck.MEASURED));
+        assertFalse(named.containsKey("Hilfswert"));
+    }
 }

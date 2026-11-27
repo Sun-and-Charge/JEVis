@@ -30,7 +30,9 @@ import org.jevis.api.JEVisConstants;
 import org.jevis.commons.mail.MailMessage;
 import org.jevis.commons.mail.MailSender;
 import org.jevis.commons.mail.MailSettings;
+import org.jevis.commons.trc.RCTemplate;
 import org.jevis.commons.trc.ResultCalculator;
+import org.jevis.commons.trc.TemplateFormula;
 import org.jevis.commons.trc.TrcResult;
 import org.jevis.commons.trc.TrcTimeFrames;
 import org.jevis.commons.ws.json.JsonObject;
@@ -100,6 +102,15 @@ public class ResourceWebInvoiceCheck {
         }
     }
 
+    /** the calculator keys its results by formula id; the check looks them up by formula name */
+    static Map<String, Double> byName(RCTemplate template, Map<String, Double> byId) {
+        Map<String, Double> named = new HashMap<>();
+        for (TemplateFormula formula : template.getTemplateFormulas()) {
+            if (formula.getName() != null && byId.containsKey(formula.getId())) named.put(formula.getName(), byId.get(formula.getId()));
+        }
+        return named;
+    }
+
     /** the check against the database, with the rights of the user */
     static final class SqlEnv implements InvoiceCheck.Env {
         private final SQLDataSource ds;
@@ -157,7 +168,7 @@ public class ResourceWebInvoiceCheck {
                     contractStore(), configuration);
             ResourceWebCosts.bind(subject, new HashMap<>());
             TrcResult result = new ResultCalculator(new LocalDataSource(ds), new TrcTimeFrames(zone, null)).calculate(subject.template, from, to);
-            return result.getFormulaResults();
+            return byName(subject.template, result.getFormulaResults());
         }
 
         @Override
