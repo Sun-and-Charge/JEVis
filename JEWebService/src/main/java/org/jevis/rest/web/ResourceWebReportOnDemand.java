@@ -187,7 +187,7 @@ public class ResourceWebReportOnDemand {
             if (report == null) throw new Problem(404, "Report not found");
             boolean pdf = ResourceWebReports.FORMAT_PDF.equals(normalized);
             String attribute = pdf ? ATTRIBUTE_PDF : ATTRIBUTE_XLSX;
-            JsonSample sample = fileSample(env, id, attribute, requestId, DateTime.now());
+            JsonSample sample = fileSample(env, id, attribute, normalized, requestId, DateTime.now());
             byte[] bytes = sample != null ? env.file(id, attribute, sample) : null;
             if (bytes == null) throw new Problem(404, "File not found");
             String name = sample.getValue() != null && !sample.getValue().trim().isEmpty() ? sample.getValue() : report.getName() + "." + normalized;
@@ -445,12 +445,42 @@ public class ResourceWebReportOnDemand {
         return answer;
     }
 
-    /** the file sample of the request (note = request id), null if there is none */
-    static JsonSample fileSample(Env env, long id, String attribute, String requestId, DateTime now) throws Exception {
+    /**
+     * The file sample of the request, null if there is none. JEReport stores the request id as note, but the server
+     * replaces the note of a file sample on upload ("Uploaded by …"); so the file is found by the name in the DONE
+     * status of the request: the newest sample with that name written up to one minute after that status.
+     *
+     * @param format {@code pdf} or {@code xlsx} (the key of the file name in the status)
+     */
+    static JsonSample fileSample(Env env, long id, String attribute, String format, String requestId, DateTime now) throws Exception {
         if (requestId == null || requestId.trim().isEmpty()) return null;
+        DateTime from = now.minusDays(MAX_AGE_DAYS * 4);
+        List<JsonSample> files = env.samples(id, attribute, from);
         JsonSample found = null;
-        for (JsonSample sample : env.samples(id, attribute, now.minusDays(MAX_AGE_DAYS * 4))) {
+        for (JsonSample sample : files) {
             if (requestId.equals(sample.getNote())) found = sample;
+        }
+        if (found != null) return found;
+
+        String name = null;
+        DateTime doneAt = null;
+        for (JsonSample sample : env.samples(id, ATTRIBUTE_STATUS, from)) {
+            try {
+                JsonNode node = MAPPER.readTree(sample.getValue());
+                if (node != null && requestId.equals(node.path("id").asText()) && DONE.equals(node.path("status").asText())
+                        && node.hasNonNull(format)) {
+                    name = node.get(format).asText();
+                    doneAt = time(sample.getTs());
+                }
+            } catch (Exception e) {
+                /* not a status */
+            }
+        }
+        if (name == null || doneAt == null) return null;
+        DateTime latest = doneAt.plusMinutes(1);
+        for (JsonSample sample : files) {
+            DateTime ts = time(sample.getTs());
+            if (name.equals(sample.getValue()) && ts != null && !ts.isAfter(latest)) found = sample;
         }
         return found;
     }

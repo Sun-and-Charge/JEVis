@@ -258,9 +258,32 @@ public class ResourceWebReportOnDemandTest {
         Fake fake = new Fake();
         fake.sample("On Demand Report PDF", NOW.minusHours(3), "x.pdf", "other");
         fake.sample("On Demand Report PDF", NOW.minusHours(2), "y.pdf", "mine");
-        assertEquals("y.pdf", ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "mine", NOW).getValue());
-        assertNull(ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "missing", NOW));
-        assertNull(ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "", NOW));
+        assertEquals("y.pdf", ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "pdf", "mine", NOW).getValue());
+        assertNull(ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "pdf", "missing", NOW));
+        assertNull(ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "pdf", "", NOW));
+    }
+
+    @Test
+    public void fileOfARequestIsFoundByTheNameInItsStatus() throws Exception {
+        /* live 2026-11-27: the server replaced the note of the file sample with "Uploaded by servicesuser" */
+        Fake fake = new Fake();
+        String name = "202610_EnPI_Bericht_20261001.pdf";
+        /* the same period requested before: same file name, older sample */
+        fake.sample("On Demand Report PDF", NOW.minusHours(5), name, "Uploaded by servicesuser");
+        fake.sample("On Demand Status", NOW.minusHours(5), "{\"id\":\"first\",\"status\":\"DONE\",\"pdf\":\"" + name + "\"}", null);
+        fake.sample("On Demand Status", NOW.minusHours(1).minusSeconds(11), "{\"id\":\"r1\",\"status\":\"RUNNING\"}", null);
+        fake.sample("On Demand Report PDF", NOW.minusHours(1), name, "Uploaded by servicesuser");
+        fake.sample("On Demand Status", NOW.minusHours(1), "{\"id\":\"r1\",\"status\":\"DONE\",\"xlsx\":\"a.xlsx\",\"pdf\":\"" + name + "\"}", null);
+        /* a later request of the same period */
+        fake.sample("On Demand Report PDF", NOW.minusMinutes(5), name, "Uploaded by servicesuser");
+
+        JsonSample r1 = ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "pdf", "r1", NOW);
+        assertEquals(JsonFactory.sampleDTF.print(NOW.minusHours(1)), r1.getTs());
+        JsonSample first = ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "pdf", "first", NOW);
+        assertEquals(JsonFactory.sampleDTF.print(NOW.minusHours(5)), first.getTs());
+        /* no xlsx sample stored, not finished, unknown */
+        assertNull(ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report", "xlsx", "r1", NOW));
+        assertNull(ResourceWebReportOnDemand.fileSample(fake, 42, "On Demand Report PDF", "pdf", "missing", NOW));
     }
 
     @Test
