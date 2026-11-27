@@ -134,6 +134,30 @@ Web app: column and filter chips "Prüfung" (In Ordnung, Abweichung, Nicht prüf
 details a section "Rechnungsprüfung" with contract, both comparisons and "Erneut prüfen". Control Center: "Check
 Result" is shown read-only in the object editor.
 
+## Unattended import (R02, 2026-11-27)
+
+E-invoices that arrive by mail, on an sFTP/FTP server or in a folder are imported by the **DataCollector** with the
+new parser **"E-Invoice Parser"** (module `DataCollector/EInvoiceParser`) below the channel of the existing data
+source, instead of a measurement parser:
+
+- Data sources: "IMAP/POP3 EMail Server" (EMail Channel: sender/subject filter, attachment name), "sFTP Server",
+  "FTP Server", "HTTP Server" and the new **"Local Folder Server"** (module `DataCollector/Folder-Driver`: a folder on
+  the DataCollector's machine; "Local Folder Channel" with "Path" as regular expression on the full path with `/`, as
+  for sFTP, e.g. `/srv/jevis/eingang/rechnungen/.*\.(pdf|xml)`; files changed after the channel's "Last Readout",
+  oldest first; after all parsers succeeded deleted ("Delete File on successful parsing") or moved ("Move To Folder")).
+- Parser attributes: **"Target Directory"** (Energy Invoices Directory, required), **"Default Medium"** (when the
+  server detects none; empty = OTHER), **"Error Recipients"** (addresses), "Last Run" (summary, written by the parser),
+  "Processed Files" (SHA-256 of the files handled, at most 1000, written by the parser).
+- Per file (`InvoiceInbox`): PDF or XML by content, other attachments are ignored; `POST /invoices/parse` (medium,
+  duplicate) and `POST /invoices/import` as the service user of the DataCollector, so the invoice check (R03) runs
+  too. Duplicates (`duplicate` in the parse answer or `409`) and files that are no e-invoice (`400 NOT_AN_E_INVOICE` /
+  `UNREADABLE`) are remembered and not tried or reported again; other errors (server not reachable, `403`, …) are
+  tried again in the next run.
+- The parser moves the channel's "Last Readout" to now (the data sources do that only for measurements), except
+  when a file must be tried again. Errors go to the parser report (sFTP/folder files are then not deleted) and, with
+  "Error Recipients", into one German mail per run (`POST /mail/send`, the server's mail settings).
+- The DataCollector's service user needs create/write rights in the target folder (as for an import in the web app).
+
 ## Control Center (AccountingPlugin)
 
 - Button "Rechnungen importieren" (where Energy Invoices Directories are shown; folder chooser if several).

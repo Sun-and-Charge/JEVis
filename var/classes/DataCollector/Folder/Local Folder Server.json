@@ -1,0 +1,42 @@
+{
+  "name": "Local Folder Server",
+  "description": "Reads files from a folder on the machine of the DataCollector (e.g. an inbox for e-invoices).",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Local Folder Channel Directory",
+      "end": "Local Folder Server",
+      "type": 3
+    },
+    {
+      "start": "Local Folder Server",
+      "end": "Data Server",
+      "type": 0
+    },
+    {
+      "start": "Local Folder Server",
+      "end": "Data Source Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Delete File on successful parsing",
+      "primitiveType": 4,
+      "guiType": "Check Box",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Local Folder Server"
+    },
+    {
+      "name": "Move To Folder",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Local Folder Server"
+    }
+  ]
+}

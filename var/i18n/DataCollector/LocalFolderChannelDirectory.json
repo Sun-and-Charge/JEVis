@@ -1,0 +1,12 @@
+{
+  "jevisclass": "Local Folder Channel Directory",
+  "names": {
+    "de": "Ordner-Kanäle",
+    "en": "Folder channels"
+  },
+  "descriptions": {
+    "de": "Kanäle eines lokalen Ordners",
+    "en": "Channels of a local folder"
+  },
+  "types": []
+}

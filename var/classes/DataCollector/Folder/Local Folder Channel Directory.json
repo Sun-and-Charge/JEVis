@@ -1,0 +1,22 @@
+{
+  "name": "Local Folder Channel Directory",
+  "description": "Channels of a local folder server.",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Local Folder Channel",
+      "end": "Local Folder Channel Directory",
+      "type": 3
+    },
+    {
+      "start": "Local Folder Channel Directory",
+      "end": "Channel Directory",
+      "type": 0
+    },
+    {
+      "start": "Local Folder Channel Directory",
+      "end": "Local Folder Server",
+      "type": 3
+    }
+  ]
+}

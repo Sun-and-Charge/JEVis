@@ -1,0 +1,68 @@
+{
+  "jevisclass": "E-Invoice Parser",
+  "names": {
+    "de": "E-Rechnungs-Parser",
+    "en": "E-Invoice Parser"
+  },
+  "descriptions": {
+    "de": "Importiert E-Rechnungen (ZUGFeRD, Factur-X, XRechnung), die die Datenquelle abholt (E-Mail-Anhänge, Dateien von sFTP/FTP oder aus einem Ordner), in einen Rechnungsordner. Die Rechnungsprüfung läuft danach automatisch.",
+    "en": "Imports e-invoices (ZUGFeRD, Factur-X, XRechnung) fetched by the data source (e-mail attachments, sFTP/FTP or folder files) into an invoice folder. The invoice check runs afterwards."
+  },
+  "types": [
+    {
+      "type": "Target Directory",
+      "names": {
+        "de": "Rechnungsordner",
+        "en": "Invoice folder"
+      },
+      "descriptions": {
+        "de": "Energierechnungen-Ordner, in den importiert wird (die Medium-Unterordner legt der Import an)",
+        "en": "Energy invoices folder to import into (the import creates the medium sub-folders)"
+      }
+    },
+    {
+      "type": "Default Medium",
+      "names": {
+        "de": "Standardmedium",
+        "en": "Default medium"
+      },
+      "descriptions": {
+        "de": "ELECTRICITY, GAS, DISTRICT_HEATING oder OTHER, wenn das Medium nicht aus der Rechnung erkannt wird (leer: OTHER)",
+        "en": "ELECTRICITY, GAS, DISTRICT_HEATING or OTHER when the medium is not detected from the invoice (empty: OTHER)"
+      }
+    },
+    {
+      "type": "Error Recipients",
+      "names": {
+        "de": "Empfänger bei Fehlern",
+        "en": "Error recipients"
+      },
+      "descriptions": {
+        "de": "E-Mail-Adressen (mit ; getrennt), die über Dateien informiert werden, die nicht importiert werden konnten",
+        "en": "E-mail addresses (separated by ;) informed about files that could not be imported"
+      }
+    },
+    {
+      "type": "Last Run",
+      "names": {
+        "de": "Letzter Lauf",
+        "en": "Last run"
+      },
+      "descriptions": {
+        "de": "Zusammenfassung des letzten Laufs (vom Parser geschrieben)",
+        "en": "Summary of the last run (written by the parser)"
+      }
+    },
+    {
+      "type": "Processed Files",
+      "names": {
+        "de": "Verarbeitete Dateien",
+        "en": "Processed files"
+      },
+      "descriptions": {
+        "de": "Prüfsummen der schon verarbeiteten Dateien (vom Parser geschrieben, nicht ändern)",
+        "en": "Checksums of the files already handled (written by the parser, do not change)"
+      }
+    }
+  ]
+}
