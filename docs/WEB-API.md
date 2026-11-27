@@ -2213,6 +2213,11 @@ bodies are plain text as the other E-stage deletes. `version` is `"none"` for an
   (net, VAT, gross, consumption from the energy lines, equal quantities counted once); optional own totals and own
   consumption; optional PDF/scan → `POST /JEWebService/v1/invoices/manual?directory=`; `409` shows "gibt es schon".
   Details show the format `MANUAL` as "Manuell erfasst".
+- **Invoice check** (R03, 2026-11-27, docs/ENERGY-INVOICES.md "Invoice check"): `GET /web/invoices` and
+  `GET /web/invoices/{id}` carry `check` (the stored result object, null if not checked) and `canCheck` (write right);
+  `POST /web/invoices/{id}/check` checks again and answers the result (`404` no invoice, `403` without write right).
+  The import answers (`/invoices/import`, `/invoices/manual`) carry `check` too. Web app: column "Prüfung" with
+  badge, filter chips by status, section "Rechnungsprüfung" in the details with "Erneut prüfen".
 
 ## Editing, stage E6.2: contract partners, prices and governmental dues
 

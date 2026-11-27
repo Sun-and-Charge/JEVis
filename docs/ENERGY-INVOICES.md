@@ -99,6 +99,40 @@ imported e-invoice, so they appear in the register, the series and the cost calc
 - Format `MANUAL`; same duplicate check (seller + number, `409 DUPLICATE`), same rights and rollback as the import.
 - Errors: `400 INVALID` with the problems in `message`, `400 INVALID_DIRECTORY`, `403`, `409`, `413`.
 - Editing: delete (recycle bin, taken out of the series) and enter again.
+- The invoice check (below) runs right after saving.
+
+## Invoice check (R03, 2026-11-27)
+
+After every import (`POST /invoices/import`, `/invoices/manual`; answer field `check`) and on
+`POST /JEWebService/v1/web/invoices/{id}/check` (write right on the invoice) the web service checks the invoice
+(`InvoiceCheck`, `ResourceWebInvoiceCheck`), with the rights of the user:
+
+1. **Contract:** the readable accounting configuration whose "Marktlokation" (`marketLocationNumber` of its template
+   file) equals the invoice's "Meter Point" (without spaces, case-insensitive). The field may hold several identifiers
+   separated by `;` or `,`, e.g. market location and meter point (`10000000001; DE0000…0001`), because invoices name
+   either one. Several matches: the first, `ambiguous` = count.
+2. **Calculation:** the configuration's cost calculation over the billing period (period start 00:00 to period end
+   23:59:59.999, server time zone). Check values by formula name of the template: **`M_Verbrauch`** (measured
+   consumption) and **`R_Soll`** (net amount according to the contract for the invoiced quantity, i.e. the sum of the
+   `R_…` positions). The demo templates (JEDemo `TemplateFactory`) have them; other templates need two formulas with
+   these names.
+3. **Comparison:** invoice "Consumption" against `M_Verbrauch`, invoice "Net Amount" against `R_Soll`; deviation in %
+   of the expected value (none against an expected 0, unless the invoice is 0 too). Tolerances from the nearest invoice
+   folder up the tree: "Check Tolerance Quantity" (default 2 %) and "Check Tolerance Amount" (default 1 %).
+4. **Result** in the new attribute "Check Result" (JSON, latest sample): `{checkedAt, status OK|DEVIATION|NOT_CHECKABLE,
+   reason?, message?, contract {id, name}, from, to, quantity {expected, invoiced, difference, deviationPercent,
+   tolerancePercent, ok, unit}, amount {…}, partial?}`. Reasons for NOT_CHECKABLE: `noMeterPoint`, `noContract`,
+   `noPeriod`, `calculation`, `noCheckFormulas`, `noValues`, `error`. `partial` when only one of the two comparisons
+   was possible. A failed check never fails the import. The invoice's `version` (delete conflict check) ignores
+   "Check Result".
+5. **Mail** when the status becomes DEVIATION (not again while it stays one): default mail settings of the server
+   (`ServerMail`), to the addresses in "Check Recipients" and (blind copy) the members of the group in "Check
+   Recipient Group" of the nearest folder that sets them; German HTML (`InvoiceCheckMail`). Nothing is sent without
+   mail server or recipients (`mailed: false` in the answer).
+
+Web app: column and filter chips "Prüfung" (In Ordnung, Abweichung, Nicht prüfbar, Ungeprüft) in the register; in the
+details a section "Rechnungsprüfung" with contract, both comparisons and "Erneut prüfen". Control Center: "Check
+Result" is shown read-only in the object editor.
 
 ## Control Center (AccountingPlugin)
 

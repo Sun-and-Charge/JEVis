@@ -108,7 +108,7 @@ describe('invoices view (mocked API)', () => {
     expect(path).toContain('/web/invoices?from=2024-12-01&to=2026-11-30&timeZone=')
     expect(w.text()).toContain('Nur Ansicht – Verträge und Rechnungen werden im Control Center gepflegt bzw. importiert.')
     expect(rows(w)).toHaveLength(4)
-    expect(txt(rows(w)[0])).toBe('› 01.10.2026 – 31.10.2026 EN-202610-S 03.11.2026 Energieversorger Nord Strom DE0000000000000000000000000000001 41.250 kWh 11.550,00 2.194,50 13.744,50 EUR')
+    expect(txt(rows(w)[0])).toBe('› 01.10.2026 – 31.10.2026 EN-202610-S 03.11.2026 Energieversorger Nord Strom DE0000000000000000000000000000001 41.250 kWh 11.550,00 2.194,50 13.744,50 EUR Ungeprüft')
     const credit = rows(w)[3]
     expect(credit.classes()).toContain('is-credit')
     expect(credit.find('.inv-credit').text()).toBe('Gutschrift')

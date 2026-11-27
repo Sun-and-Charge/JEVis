@@ -508,7 +508,7 @@ public final class CostCases {
 
     static CostCase caseA() {
         CostCase c = base("A", "A-strom-rlm", "Kostenrechnung Strom RLM", "Strom RLM - Musterwerk Hauptanschluss", SITE_MW,
-                ContractType.ELECTRICITY, "V-2025-0101", "10000000001");
+                ContractType.ELECTRICITY, "V-2025-0101", "10000000001; DE0000000000000000000000000000001");
         invoices(c, "ELECTRICITY", "SR", "Energieversorger Nord", "DE000000000", "Zählpunkt", "DE0000000000000000000000000000001");
         c.consumption = new Row(id(CLEAN_GRID_PURCHASE), "Clean Data", "Bezug", "kWh");
         c.peak = new Row(id(CLEAN_GRID_PURCHASE), "Clean Data", "Bezug", "kWh");
@@ -533,7 +533,7 @@ public final class CostCases {
 
     static CostCase caseB() {
         CostCase c = base("B", "B-strom-slp", "Kostenrechnung Strom SLP", "Strom SLP - Außenlager Süd", SITE_S,
-                ContractType.ELECTRICITY, "V-2025-0102", "10000000002");
+                ContractType.ELECTRICITY, "V-2025-0102", "10000000002; DE0000000000000000000000000000002");
         invoices(c, "ELECTRICITY", "SS", "Energieversorger Nord", "DE000000000", "Zählpunkt", "DE0000000000000000000000000000002");
         c.consumption = new Row(key("B.clean"), "Clean Data", "Strom Außenlager", "kWh");
         String supplier = "Electricity Supply Contractor";
@@ -604,7 +604,7 @@ public final class CostCases {
 
     static CostCase caseE() {
         CostCase c = base("E", "E-fernwaerme", "Kostenrechnung Fernwärme", "Fernwärme - Außenlager Süd", SITE_S,
-                ContractType.COMMUNITY_HEATING, "V-2025-0301", "");
+                ContractType.COMMUNITY_HEATING, "V-2025-0301", "WMZ-0001 Außenlager Süd");
         invoices(c, "DISTRICT_HEATING", "FW", "Wärmeversorgung Nord", "DE000000002", "Verbrauchsstelle", "WMZ-0001 Außenlager Süd");
         c.consumption = new Row(key("E.clean"), "Clean Data", "Fernwärme Außenlager", "kWh");
         String supplier = "Community Heating Supply Contractor";

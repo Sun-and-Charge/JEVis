@@ -38,10 +38,28 @@ export interface InvoiceFilter {
   /** selected media; none selected: all */
   media: InvoiceMedium[]
   site: SiteFilter
+  /** R03: status of the invoice check; 'all' */
+  check: CheckStatus | 'all'
 }
 
 export function defaultInvoiceFilter(): InvoiceFilter {
-  return { text: '', media: [], site: 'all' }
+  return { text: '', media: [], site: 'all', check: 'all' }
+}
+
+/** R03: the status of the invoice check; NONE if the invoice was not checked yet. */
+export const CHECK_STATUSES = ['DEVIATION', 'NOT_CHECKABLE', 'OK', 'NONE'] as const
+export type CheckStatus = (typeof CHECK_STATUSES)[number]
+
+export function checkStatus(inv: Pick<Invoice, 'check'>): CheckStatus {
+  const s = inv.check?.status
+  return s === 'OK' || s === 'DEVIATION' || s === 'NOT_CHECKABLE' ? s : 'NONE'
+}
+
+/** Check chips: the statuses present with their number (fixed order). */
+export function checkOptions(invoices: readonly Invoice[]): { id: CheckStatus; count: number }[] {
+  const counts = new Map<CheckStatus, number>()
+  for (const inv of invoices) counts.set(checkStatus(inv), (counts.get(checkStatus(inv)) ?? 0) + 1)
+  return CHECK_STATUSES.filter((s) => counts.has(s)).map((id) => ({ id, count: counts.get(id)! }))
 }
 
 const siteOf = (inv: Pick<Invoice, 'site'>) => (inv.site ? { id: inv.site.id, name: inv.site.name, names: inv.site.names ?? {} } : null)
@@ -52,6 +70,7 @@ export function filterInvoices(invoices: readonly Invoice[], filter: InvoiceFilt
   return invoices.filter(
     (inv) =>
       (!media.size || media.has(invoiceMedium(inv))) &&
+      (!filter.check || filter.check === 'all' || checkStatus(inv) === filter.check) &&
       matchesSite(siteOf(inv), filter.site) &&
       matchesTerms(terms, [inv.number, inv.seller, inv.meterPoint], locale),
   )

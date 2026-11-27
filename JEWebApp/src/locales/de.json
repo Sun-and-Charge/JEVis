@@ -1145,6 +1145,47 @@
     }
   },
   "invoices": {
+    "check": {
+      "title": "Rechnungsprüfung",
+      "filter": "Prüfung",
+      "all": "Alle",
+      "status": {
+        "OK": "In Ordnung",
+        "DEVIATION": "Abweichung",
+        "NOT_CHECKABLE": "Nicht prüfbar",
+        "NONE": "Nicht geprüft"
+      },
+      "short": {
+        "OK": "In Ordnung",
+        "DEVIATION": "Abweichung",
+        "NOT_CHECKABLE": "Nicht prüfbar",
+        "NONE": "Ungeprüft"
+      },
+      "reason": {
+        "noMeterPoint": "Die Rechnung hat keinen Zählpunkt bzw. keine Marktlokation.",
+        "noContract": "Kein Vertrag (Kostenrechnung) mit dieser Marktlokation, oder kein Leserecht darauf.",
+        "noPeriod": "Die Rechnung hat keinen Abrechnungszeitraum.",
+        "calculation": "Die Kostenrechnung des Vertrags konnte nicht berechnet werden.",
+        "noCheckFormulas": "Die Kostenrechnung des Vertrags hat keine Prüfgrößen (M_Verbrauch, R_Soll).",
+        "noValues": "Für den Zeitraum fehlen Messwerte oder Vertragspreise.",
+        "error": "Die Prüfung ist fehlgeschlagen."
+      },
+      "partial": "nur teilweise geprüft",
+      "contractName": "Vertrag (Kostenrechnung)",
+      "checkedAt": "Geprüft am",
+      "quantity": "Menge",
+      "amount": "Nettobetrag",
+      "measured": "gegen Messung",
+      "contract": "gegen Vertrag",
+      "expectedCol": "Soll",
+      "invoiced": "Rechnung",
+      "deviation": "Abweichung",
+      "tolerance": "Toleranz",
+      "result": "Ergebnis",
+      "none": "Diese Rechnung wurde noch nicht geprüft.",
+      "recheck": "Erneut prüfen",
+      "busy": "Wird geprüft …"
+    },
     "title": "Energierechnungen",
     "readOnly": "Nur Ansicht – Verträge und Rechnungen werden im Control Center gepflegt bzw. importiert.",
     "loading": "Rechnungen werden geladen …",
@@ -1192,6 +1233,7 @@
       "csvLabel": "Angezeigte Rechnungen als CSV herunterladen"
     },
     "col": {
+      "check": "Prüfung",
       "period": "Zeitraum",
       "periodStart": "Zeitraum von",
       "periodEnd": "Zeitraum bis",

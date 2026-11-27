@@ -1145,6 +1145,47 @@
     }
   },
   "invoices": {
+    "check": {
+      "title": "Invoice check",
+      "filter": "Check",
+      "all": "All",
+      "status": {
+        "OK": "OK",
+        "DEVIATION": "Deviation",
+        "NOT_CHECKABLE": "Not checkable",
+        "NONE": "Not checked"
+      },
+      "short": {
+        "OK": "OK",
+        "DEVIATION": "Deviation",
+        "NOT_CHECKABLE": "Not checkable",
+        "NONE": "Unchecked"
+      },
+      "reason": {
+        "noMeterPoint": "The invoice has no meter point or market location.",
+        "noContract": "No contract (cost calculation) with this market location, or no read right on it.",
+        "noPeriod": "The invoice has no billing period.",
+        "calculation": "The cost calculation of the contract could not be calculated.",
+        "noCheckFormulas": "The cost calculation of the contract has no check values (M_Verbrauch, R_Soll).",
+        "noValues": "Measurements or contract prices are missing for the period.",
+        "error": "The check failed."
+      },
+      "partial": "only partly checked",
+      "contractName": "Contract (cost calculation)",
+      "checkedAt": "Checked on",
+      "quantity": "Quantity",
+      "amount": "Net amount",
+      "measured": "against measurement",
+      "contract": "against contract",
+      "expectedCol": "Expected",
+      "invoiced": "Invoice",
+      "deviation": "Deviation",
+      "tolerance": "Tolerance",
+      "result": "Result",
+      "none": "This invoice has not been checked yet.",
+      "recheck": "Check again",
+      "busy": "Checking …"
+    },
     "title": "Energy invoices",
     "readOnly": "View only – contracts and invoices are maintained or imported in the Control Center.",
     "loading": "Loading invoices …",
@@ -1192,6 +1233,7 @@
       "csvLabel": "Download the shown invoices as CSV"
     },
     "col": {
+      "check": "Check",
       "period": "Period",
       "periodStart": "Period from",
       "periodEnd": "Period to",

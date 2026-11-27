@@ -28,6 +28,42 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Energy Invoices Directory"
+    },
+    {
+      "name": "Check Tolerance Quantity",
+      "primitiveType": 1,
+      "guiType": "Number",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoices Directory"
+    },
+    {
+      "name": "Check Tolerance Amount",
+      "primitiveType": 1,
+      "guiType": "Number",
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoices Directory"
+    },
+    {
+      "name": "Check Recipients",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoices Directory"
+    },
+    {
+      "name": "Check Recipient Group",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 4,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoices Directory"
     }
   ]
 }

@@ -35,6 +35,35 @@ export interface Invoice {
   canDelete?: boolean
   /** E6.1: latest change of the invoice's attributes, sent with DELETE (409 if outdated) */
   version?: string | null
+  /** R03: result of the automatic invoice check, null if not checked */
+  check?: InvoiceCheckResult | null
+  /** R03: write right on the invoice ("Erneut prüfen") */
+  canCheck?: boolean
+}
+
+/** One comparison of the invoice check: expected (measured / contract) against invoiced. */
+export interface InvoiceCheckPart {
+  expected: number
+  invoiced: number
+  difference: number
+  /** null against an expected 0 */
+  deviationPercent: number | null
+  tolerancePercent: number
+  ok: boolean
+  unit?: string | null
+}
+
+/** "Check Result" of an invoice (docs/ENERGY-INVOICES.md "Invoice check"). */
+export interface InvoiceCheckResult {
+  status?: 'OK' | 'DEVIATION' | 'NOT_CHECKABLE' | string
+  /** NOT_CHECKABLE: noMeterPoint, noContract, noPeriod, calculation, noCheckFormulas, noValues, error */
+  reason?: string
+  message?: string
+  checkedAt?: string
+  contract?: { id: number; name: string } | null
+  quantity?: InvoiceCheckPart | null
+  amount?: InvoiceCheckPart | null
+  partial?: boolean
 }
 
 /** One line of the parsed "Line Items" JSON as stored (typical keys: description, quantity, unit, unitPrice, net, taxRate, periodStart, periodEnd). */
@@ -206,6 +235,11 @@ export function saveManualInvoice(http: Pick<HttpClient, 'postForm'>, directory:
   form.append('data', JSON.stringify(body))
   if (file) form.append('file', file, file.name)
   return http.postForm<ImportedInvoice>(manualPath(directory), form)
+}
+
+/** POST /web/invoices/{id}/check (R03): checks the invoice again and stores the result. */
+export function recheckInvoice(http: Pick<HttpClient, 'post'>, id: number): Promise<InvoiceCheckResult> {
+  return http.post<InvoiceCheckResult>(`/web/invoices/${id}/check`)
 }
 
 /** DELETE /web/invoices/{id}?version=: recycle bin, amounts taken out of the series; 409 if changed meanwhile. */

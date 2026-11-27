@@ -148,7 +148,7 @@
   "type" : "SimpleDataHandler",
   "contractNumber" : "V-2025-0301",
   "contractType" : "COMMUNITY_HEATING",
-  "marketLocationNumber" : "",
+  "marketLocationNumber" : "WMZ-0001 Außenlager Süd",
   "contractDate" : "2024-10-15T00:00:00.000+02:00",
   "firstRate" : "2025-02-01T00:00:00.000+01:00",
   "periodOfNotice" : "2027-09-30T00:00:00.000+02:00",

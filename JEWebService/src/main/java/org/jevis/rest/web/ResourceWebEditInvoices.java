@@ -236,7 +236,10 @@ public class ResourceWebEditInvoices {
      */
     static String version(Map<String, JsonAttribute> attributes) {
         long max = Long.MIN_VALUE;
-        for (JsonAttribute attribute : attributes.values()) {
+        for (Map.Entry<String, JsonAttribute> entry : attributes.entrySet()) {
+            /* the check result (R03) is written by the service, a new check must not make the delete a conflict */
+            if (InvoiceCheck.ATTRIBUTE_RESULT.equals(entry.getKey())) continue;
+            JsonAttribute attribute = entry.getValue();
             JsonSample latest = attribute != null ? attribute.getLatestValue() : null;
             Long millis = latest != null ? ResourceWebNotes.millis(latest.getTs()) : null;
             if (millis != null) max = Math.max(max, millis);
