@@ -649,8 +649,13 @@ public class ResourceWebEditAlarmsTest {
         assertEquals("Einspeisung bereinigt", rules.get(1).get("limitData").get("name").asText());
         assertTrue(rules.get(1).get("silent").isNull());
 
-        /* configuration 50 selects the row, 55 (COMPLETE, disabled) covers the building's data directory */
+        /* configuration 50 (enabled) selects the row: 55 (COMPLETE) skips rows with an own configuration */
         JsonNode configurations = settings.get("configurations");
+        assertEquals(1, configurations.size());
+        assertEquals(50, configurations.get(0).get("id").asLong());
+        /* without an enabled own configuration the COMPLETE one covers the building's data directory */
+        store.sample(50, "Enabled", T1.plusSeconds(1), "false", null);
+        configurations = body(ResourceWebEditRowAlarms.settings(store, 40, "de")).get("configurations");
         assertEquals(2, configurations.size());
         assertEquals(55, configurations.get(0).get("id").asLong());
         assertFalse(configurations.get(0).get("enabled").asBoolean());
@@ -674,8 +679,52 @@ public class ResourceWebEditAlarmsTest {
                 .sample(55, "Alarm Objects", T1, "41:Value", null);
         JsonNode settings43 = body(ResourceWebEditRowAlarms.settings(store, 43, "de"));
         JsonNode settings41 = body(ResourceWebEditRowAlarms.settings(store, 41, "de"));
-        assertEquals(2, settings43.get("configurations").size());
+        /* 50 selects 41 and 43 itself: 55 does not report them (no overlap) */
+        assertEquals(1, settings43.get("configurations").size());
         assertEquals(1, settings41.get("configurations").size());
+        store.sample(50, "Alarm Objects", T1.plusSeconds(1), "41:Value", null);
+        settings43 = body(ResourceWebEditRowAlarms.settings(store, 43, "de"));
+        assertEquals(55, settings43.get("configurations").get(0).get("id").asLong());
+        assertEquals(1, settings43.get("configurations").size());
+    }
+
+    @Test
+    public void rulesCopiedToOtherRows() throws Exception {
+        FakeEditStore store = store();
+        /* 43 has no rules; 40 is the raw row of the source itself; 45 is hidden; 50 is not a row */
+        WebEdit.Reply reply = ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[43,40,45,50,43]}", NOW);
+        assertEquals(200, reply.status);
+        JsonNode answer = body(reply);
+        assertEquals(1, answer.get("changed").size());
+        assertEquals(43, answer.get("changed").get(0).get("id").asLong());
+        List<String> reasons = new ArrayList<>();
+        for (JsonNode s : answer.get("skipped")) reasons.add(s.get("id").asLong() + ":" + s.get("reason").asText());
+        assertEquals(Arrays.asList("40:source", "45:notFound", "50:notFound"), reasons);
+        JsonNode copied = body(ResourceWebEditRowAlarms.settings(store, 43, "de")).get("alarms");
+        assertTrue(copied.get("enabled").asBoolean());
+        assertEquals(2, copied.get("rules").size());
+        assertEquals("BIGGER", copied.get("rules").get(0).get("operator").asText());
+
+        /* added again: the ids 0 and 1 are taken, the copies get 2 and 3 */
+        assertEquals(200, ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[43]}", NOW.plusSeconds(1)).status);
+        JsonNode twice = body(ResourceWebEditRowAlarms.settings(store, 43, "de")).get("alarms").get("rules");
+        assertEquals(4, twice.size());
+        List<String> ids = new ArrayList<>();
+        for (JsonNode r : twice) ids.add(r.get("id").asText());
+        assertEquals(Arrays.asList("0", "1", "2", "3"), ids);
+        /* replace: exactly the source's rules again */
+        assertEquals(200, ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[43],\"replace\":true}", NOW.plusSeconds(2)).status);
+        assertEquals(2, body(ResourceWebEditRowAlarms.settings(store, 43, "de")).get("alarms").get("rules").size());
+
+        /* no write right on the target; a row without rules cannot be copied; bad input */
+        store.write.remove(43L);
+        assertEquals("noWrite", body(ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[43]}", NOW.plusSeconds(3)))
+                .get("skipped").get(0).get("reason").asText());
+        assertEquals(400, ResourceWebEditRowAlarms.copy(store(), 43, "{\"targets\":[41]}", NOW).status);
+        assertEquals(404, ResourceWebEditRowAlarms.copy(store, 45, "{\"targets\":[41]}", NOW).status);
+        assertEquals(400, ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[]}", NOW).status);
+        assertEquals(400, ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[\"x\"]}", NOW).status);
+        assertEquals(400, ResourceWebEditRowAlarms.copy(store, 41, "{\"targets\":[43],\"replace\":\"ja\"}", NOW).status);
     }
 
     // ---------------------------------------------------------------- E7.2 PUT

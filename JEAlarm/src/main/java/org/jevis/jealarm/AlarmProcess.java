@@ -672,10 +672,19 @@ public class AlarmProcess {
         };
     }
 
+    /** rows with an own configuration, read once per run (see AlarmConfiguration.rowsWithOwnConfiguration) */
+    private Set<Long> rowsWithOwnConfiguration;
+
+    private List<JEVisObject> withoutOwnConfiguration(List<JEVisObject> rows) {
+        if (rowsWithOwnConfiguration == null) rowsWithOwnConfiguration = AlarmConfiguration.rowsWithOwnConfiguration(ds);
+        rows.removeIf(row -> rowsWithOwnConfiguration.contains(row.getID()));
+        return rows;
+    }
+
     private List<JEVisObject> getAllCorrespondingCleanDataObjects() throws JEVisException {
         switch (getAlarmConfiguration().getAlarmScope()) {
             case COMPLETE:
-                return getCompleteList(null, getAlarmConfiguration().getObject());
+                return withoutOwnConfiguration(getCompleteList(null, getAlarmConfiguration().getObject()));
             case SELECTED:
                 return getListFromSelectedObjects();
             case WITHOUT_SELECTED:
@@ -683,7 +692,7 @@ public class AlarmProcess {
                 List<JEVisObject> unselectedList = getListFromSelectedObjects();
                 if (unselectedList != null) {
                     completeList.removeAll(unselectedList);
-                    return completeList;
+                    return withoutOwnConfiguration(completeList);
                 }
                 return new ArrayList<>();
             case NONE:

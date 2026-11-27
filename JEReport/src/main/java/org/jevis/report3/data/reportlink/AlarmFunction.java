@@ -215,22 +215,27 @@ public class AlarmFunction implements ReportData {
 
     private AlarmConfiguration getAlarmConfiguration(JEVisDataSource ds, JEVisObject alarmObj, JEVisClass alarmDirectoryClass) throws JEVisException {
         for (JEVisObject parent : alarmObj.getParents()) {
+            /* a configuration that selects the row itself first: COMPLETE / WITHOUT_SELECTED configurations skip rows with an
+             * own configuration (AlarmConfiguration.rowsWithOwnConfiguration); before, the row was compared with the
+             * configuration object instead of the alarm object; this.alarmObj is the row, the parameter walks up the tree */
+            AlarmConfiguration wide = null;
             for (JEVisObject child : parent.getChildren(alarmDirectoryClass, true)) {
                 for (JEVisObject alarmDirectoryChild : child.getChildren()) {
                     AlarmConfiguration alarmConfiguration = new AlarmConfiguration(ds, alarmDirectoryChild);
-                    if (alarmConfiguration.getAlarmScope().equals(AlarmScope.COMPLETE)) {
-                        return alarmConfiguration;
-                    } else if (alarmConfiguration.getAlarmScope().equals(AlarmScope.SELECTED)) {
-                        if (alarmConfiguration.getAlarmObjects().contains(alarmDirectoryChild)) {
+                    if (alarmConfiguration.getAlarmScope().equals(AlarmScope.SELECTED)) {
+                        if (alarmConfiguration.getAlarmObjects().contains(this.alarmObj)) {
                             return alarmConfiguration;
                         }
-                    } else if (alarmConfiguration.getAlarmScope().equals(AlarmScope.WITHOUT_SELECTED)) {
-                        if (!alarmConfiguration.getAlarmObjects().contains(alarmDirectoryChild)) {
-                            return alarmConfiguration;
+                    } else if (wide == null && alarmConfiguration.getAlarmScope().equals(AlarmScope.COMPLETE)) {
+                        wide = alarmConfiguration;
+                    } else if (wide == null && alarmConfiguration.getAlarmScope().equals(AlarmScope.WITHOUT_SELECTED)) {
+                        if (!alarmConfiguration.getAlarmObjects().contains(this.alarmObj)) {
+                            wide = alarmConfiguration;
                         }
                     }
                 }
             }
+            if (wide != null) return wide;
             return getAlarmConfiguration(ds, parent, alarmDirectoryClass);
         }
         return null;

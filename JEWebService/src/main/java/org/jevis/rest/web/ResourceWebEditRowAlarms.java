@@ -48,6 +48,9 @@ import java.util.*;
 public class ResourceWebEditRowAlarms {
 
     static final String ACTION_SAVE = "alarm-row-save";
+    /** copy of the alarm rules to other rows (R16) */
+    static final String ACTION_COPY = "alarm-row-copy";
+    static final int MAX_COPY_TARGETS = 200;
     static final String ATTRIBUTE_LIMITS_ENABLED = ResourceWebEditValues.ATTRIBUTE_LIMITS_ENABLED;
     static final String ATTRIBUTE_LIMITS = ResourceWebEditValues.ATTRIBUTE_LIMITS;
     static final String ATTRIBUTE_ALARM_ENABLED = "Alarm Enabled";
@@ -108,6 +111,14 @@ public class ResourceWebEditRowAlarms {
         String language = WebEdit.language(lang, httpHeaders);
         return WebEdit.run(httpHeaders, "save the alarm settings of " + rowId,
                 store -> update(store, rowId, body, language, DateTime.now()));
+    }
+
+    @POST
+    @Path("rows/{rowId}/alarm-settings/copy")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response copy(@Context HttpHeaders httpHeaders, @PathParam("rowId") long rowId, String body) {
+        return WebEdit.run(httpHeaders, "copy the alarm rules of " + rowId, store -> copy(store, rowId, body, DateTime.now()));
     }
 
     // ---------------------------------------------------------------- row
@@ -806,6 +817,105 @@ public class ResourceWebEditRowAlarms {
         Map<String, Object> answer = settingsJson(store, clean);
         answer.put("reprocessHint", limitsChanged);
         return WebEdit.Reply.ok(answer);
+    }
+
+    /**
+     * {@code POST /rows/{rowId}/alarm-settings/copy} with {@code {targets: [row ids], replace?: false}}: the stored
+     * alarm rules of the row go to each target row (raw rows resolve to their clean data row) the user may write.
+     * Added after the target's own rules, or instead of them with {@code replace}; ids are kept where free, else the
+     * next free number. "Alarm Enabled" is switched on; limits (Grenzwertprüfung) are not copied.
+     *
+     * @return {@code {changed: [row], skipped: [{row, reason}]}}; reasons: source, notFound, noWrite, unreadable,
+     * tooMany
+     */
+    static WebEdit.Reply copy(WebEdit.Store store, long rowId, String body, DateTime now) throws Exception {
+        JsonNode json = WebEdit.body(body);
+        JsonObject source = cleanRow(store, rowId);
+        if (source == null) return WebEdit.Reply.notFound("Clean data row not found");
+        List<ObjectNode> rules = stored(store, source.getId()).rules;
+        if (rules == null || rules.isEmpty()) return WebEdit.Reply.badRequest("The row has no alarm rules to copy");
+        JsonNode targets = json.get("targets");
+        if (targets == null || !targets.isArray() || targets.size() == 0) return WebEdit.Reply.badRequest("targets: row ids expected");
+        if (targets.size() > MAX_COPY_TARGETS) return WebEdit.Reply.badRequest("targets: at most " + MAX_COPY_TARGETS + " rows");
+        for (JsonNode target : targets) {
+            if (!target.canConvertToLong()) return WebEdit.Reply.badRequest("targets: row ids expected");
+        }
+        JsonNode replaceNode = json.get("replace");
+        if (replaceNode != null && !replaceNode.isNull() && !replaceNode.isBoolean()) return WebEdit.Reply.badRequest("replace: boolean expected");
+        boolean replace = replaceNode != null && replaceNode.asBoolean(false);
+
+        List<Map<String, Object>> changed = new ArrayList<>();
+        List<Map<String, Object>> skipped = new ArrayList<>();
+        Set<Long> done = new HashSet<>();
+        for (JsonNode target : targets) {
+            long id = target.asLong();
+            JsonObject clean = cleanRow(store, id);
+            if (clean == null) {
+                skipped.add(skip(id, null, "notFound"));
+                continue;
+            }
+            if (!done.add(clean.getId())) continue;
+            if (clean.getId() == source.getId()) {
+                skipped.add(skip(id, rowJson(store, clean), "source"));
+                continue;
+            }
+            if (!store.rights().canWrite(clean)) {
+                skipped.add(skip(id, rowJson(store, clean), "noWrite"));
+                continue;
+            }
+            Stored stored = stored(store, clean.getId());
+            List<ObjectNode> result = new ArrayList<>();
+            if (!replace) {
+                if (stored.rules == null) {
+                    skipped.add(skip(id, rowJson(store, clean), "unreadable"));
+                    continue;
+                }
+                result.addAll(stored.rules);
+            }
+            if (result.size() + rules.size() > MAX_RULES) {
+                skipped.add(skip(id, rowJson(store, clean), "tooMany"));
+                continue;
+            }
+            Set<String> used = new HashSet<>();
+            for (ObjectNode rule : result) {
+                if (rule.hasNonNull(RULE_ID)) used.add(rule.get(RULE_ID).asText());
+            }
+            for (ObjectNode rule : rules) {
+                ObjectNode copy = rule.deepCopy();
+                String ruleId = copy.hasNonNull(RULE_ID) ? copy.get(RULE_ID).asText() : null;
+                if (ruleId == null || used.contains(ruleId)) {
+                    int next = 0;
+                    while (used.contains(String.valueOf(next))) next++;
+                    ruleId = String.valueOf(next);
+                    copy.put(RULE_ID, ruleId);
+                }
+                used.add(ruleId);
+                result.add(copy);
+            }
+            if (!result.equals(stored.rules)) {
+                WebEdit.writeSample(store, clean.getId(), ATTRIBUTE_ALARM_CONFIG,
+                        WebEdit.primitiveType(store, clean, ATTRIBUTE_ALARM_CONFIG, JEVisConstants.PrimitiveType.STRING),
+                        WebEdit.sample(now, AlarmFormats.listText(result), null), ACTION_COPY);
+            }
+            if (!ResourceWebAlarms.isTrue(stored.alarmEnabled)) {
+                WebEdit.writeSample(store, clean.getId(), ATTRIBUTE_ALARM_ENABLED,
+                        WebEdit.primitiveType(store, clean, ATTRIBUTE_ALARM_ENABLED, JEVisConstants.PrimitiveType.BOOLEAN),
+                        WebEdit.sample(now, "true", null), ACTION_COPY);
+            }
+            changed.add(rowJson(store, clean));
+        }
+        Map<String, Object> answer = new LinkedHashMap<>();
+        answer.put("changed", changed);
+        answer.put("skipped", skipped);
+        return WebEdit.Reply.ok(answer);
+    }
+
+    private static Map<String, Object> skip(long id, Map<String, Object> row, String reason) {
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("id", id);
+        json.put("row", row);
+        json.put("reason", reason);
+        return json;
     }
 
     private static Boolean enabled(JsonNode json, String label, List<String> messages) {

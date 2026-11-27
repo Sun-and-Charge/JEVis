@@ -2439,6 +2439,15 @@ today; the web writes them in the Control Center's formats. Rules of E1–E8 (se
     write right on the clean data row; `version` = latest sample of these four; `409` with the current settings.
   - Logged `web:alarm-row-save`. Hint in the answer: limit changes only affect data the JEDataProcessor processes from
     now on (`reprocessHint: true`).
+- `POST /web/rows/{rowId}/alarm-settings/copy` `{ targets: [rowId…], replace?: false }` (R16, 2026-11-27): the
+  stored alarm rules of the row go to up to 200 target rows (raw rows resolve to their clean data row). Added after
+  the target's own rules (ids kept where free, else the next free number; at most 10 rules per row) or, with
+  `replace: true`, instead of them; "Alarm Enabled" switched on; limits are not copied. Per target write right on the
+  clean data row. Answer `{ changed: [row], skipped: [{ id, row, reason }] }` with reasons `source`, `notFound`,
+  `noWrite`, `unreadable` (stored rules not readable, only with add), `tooMany`. `400` when the row has no rules or
+  the body is invalid. Logged `web:alarm-row-copy`.
+- `configurations` of a row (GET above) leave out `COMPLETE` / `WITHOUT_SELECTED` configurations when an enabled
+  `SELECTED` configuration checks the row (one configuration per row, docs/ALARMS-OUTAGE.md).
 
 ### Web app
 

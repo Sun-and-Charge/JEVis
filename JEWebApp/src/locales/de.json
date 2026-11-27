@@ -1600,6 +1600,31 @@
     }
   },
   "alarmSettings": {
+    "copy": {
+      "button": "Regeln auf andere Datenreihen übertragen …",
+      "saveFirst": "Übertragen werden die gespeicherten Regeln. Bitte zuerst speichern oder verwerfen.",
+      "title": "Alarmregeln übertragen: {name}",
+      "intro": "Die gespeicherte Alarmregel dieser Datenreihe wird auf die gewählten Datenreihen übertragen; dort wird „Alarm aktiv“ eingeschaltet. Grenzwerte werden nicht übertragen. | Die gespeicherte Alarmregel dieser Datenreihe wird auf die gewählten Datenreihen übertragen; dort wird „Alarm aktiv“ eingeschaltet. Grenzwerte werden nicht übertragen. | Die {n} gespeicherten Alarmregeln dieser Datenreihe werden auf die gewählten Datenreihen übertragen; dort wird „Alarm aktiv“ eingeschaltet. Grenzwerte werden nicht übertragen.",
+      "targets": "Ziel-Datenreihen",
+      "none": "Noch keine Datenreihen gewählt.",
+      "choose": "Datenreihen wählen …",
+      "remove": "„{name}“ entfernen",
+      "replace": "Vorhandene Regeln der Ziel-Datenreihen ersetzen",
+      "addHint": "Die übertragenen Regeln kommen zu den vorhandenen Regeln hinzu (höchstens 10 je Datenreihe).",
+      "replaceHint": "Die Ziel-Datenreihen haben danach genau die Regeln dieser Datenreihe; ihre bisherigen Regeln werden entfernt.",
+      "submit": "Übertragen",
+      "busy": "Wird übertragen …",
+      "changed": "Keine Datenreihe geändert | 1 Datenreihe geändert | {n} Datenreihen geändert",
+      "skipped": "Nicht geändert | 1 Datenreihe nicht geändert | {n} Datenreihen nicht geändert",
+      "unknownRow": "Objekt {id}",
+      "reason": {
+        "source": "die Datenreihe selbst",
+        "notFound": "keine lesbare bereinigte Datenreihe",
+        "noWrite": "kein Schreibrecht",
+        "unreadable": "vorhandene Regeln nicht lesbar – mit „ersetzen“ möglich",
+        "tooMany": "mehr als 10 Regeln"
+      }
+    },
     "tabsLabel": "Bereiche der Alarme",
     "tab": {
       "list": "Alarme",

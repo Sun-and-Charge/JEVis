@@ -1600,6 +1600,31 @@
     }
   },
   "alarmSettings": {
+    "copy": {
+      "button": "Copy rules to other data rows …",
+      "saveFirst": "The saved rules are copied. Please save or discard first.",
+      "title": "Copy alarm rules: {name}",
+      "intro": "The saved alarm rule of this row is copied to the chosen rows; “Alarm active” is switched on there. Limits are not copied. | The saved alarm rule of this row is copied to the chosen rows; “Alarm active” is switched on there. Limits are not copied. | The {n} saved alarm rules of this row are copied to the chosen rows; “Alarm active” is switched on there. Limits are not copied.",
+      "targets": "Target rows",
+      "none": "No rows chosen yet.",
+      "choose": "Choose rows …",
+      "remove": "Remove “{name}”",
+      "replace": "Replace the existing rules of the target rows",
+      "addHint": "The copied rules are added to the existing rules (at most 10 per row).",
+      "replaceHint": "The target rows then have exactly the rules of this row; their previous rules are removed.",
+      "submit": "Copy",
+      "busy": "Copying …",
+      "changed": "No row changed | 1 row changed | {n} rows changed",
+      "skipped": "Not changed | 1 row not changed | {n} rows not changed",
+      "unknownRow": "Object {id}",
+      "reason": {
+        "source": "the row itself",
+        "notFound": "no readable clean data row",
+        "noWrite": "no write right",
+        "unreadable": "existing rules not readable – possible with “replace”",
+        "tooMany": "more than 10 rules"
+      }
+    },
     "tabsLabel": "Alarm sections",
     "tab": {
       "list": "Alarms",

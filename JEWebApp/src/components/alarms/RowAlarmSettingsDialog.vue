@@ -31,6 +31,7 @@ import { useAuthStore } from '../../stores/auth'
 import RowPickerDialog from '../analysis/edit/RowPickerDialog.vue'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EditDialog from '../edit/EditDialog.vue'
+import AlarmRulesCopyDialog from './AlarmRulesCopyDialog.vue'
 import AlarmScheduleField from './AlarmScheduleField.vue'
 import '../../styles/edit.css'
 import '../../styles/isoEdit.css'
@@ -180,6 +181,10 @@ function removeRule(r: RuleForm) {
 }
 
 const ruleLabel = (r: RuleForm, i: number) => (r.name ? t('alarmSettings.rules.ruleNamed', { n: i + 1, name: r.name }) : t('alarmSettings.rules.rule', { n: i + 1 }))
+
+/** copy of the stored rules to other rows (R16): only without unsaved changes, the server copies what is stored */
+const copying = ref(false)
+const storedRuleCount = computed(() => model.value?.alarms?.rules?.length ?? 0)
 
 /** rule whose comparison row is being chosen */
 const picking = ref<RuleForm | null>(null)
@@ -630,6 +635,12 @@ const lastValue = computed(() => {
             <button type="button" class="edit-btn alm-rule-add" :disabled="busy || form.rules.length >= RULES_MAX" @click="addRule">{{ t('alarmSettings.rules.add') }}</button>
             <button type="button" class="edit-btn alm-outage-add" :disabled="busy || form.rules.length >= RULES_MAX" @click="addOutageRule">{{ t('alarmSettings.rules.addOutage') }}</button>
           </div>
+          <div v-if="storedRuleCount > 0" class="edit-actions alm-copy-actions">
+            <button type="button" class="edit-btn alm-rules-copy" :disabled="busy || formDirty" :aria-describedby="formDirty ? id('copy-hint') : undefined" @click="copying = true">
+              {{ t('alarmSettings.copy.button') }}
+            </button>
+            <p v-if="formDirty" :id="id('copy-hint')" class="edit-hint">{{ t('alarmSettings.copy.saveFirst') }}</p>
+          </div>
         </section>
 
         <div v-if="messages.length" :id="id('messages')" class="alert alert-error iso-messages" role="alert">
@@ -660,6 +671,7 @@ const lastValue = computed(() => {
     </template>
   </EditDialog>
 
+  <AlarmRulesCopyDialog v-if="copying && model" :row-id="model.row.id" :row-name="model.row.rawName || model.row.name" :rule-count="storedRuleCount" @close="copying = false" />
   <RowPickerDialog v-if="picking" single :present="[]" :title="t('alarmSettings.rules.pickTitle')" @close="picking = null" @add="picked" />
   <ConfirmDialog
     v-if="leaveAsk"

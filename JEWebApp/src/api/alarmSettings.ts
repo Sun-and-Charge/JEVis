@@ -247,3 +247,24 @@ export function loadRowAlarmSettings(http: GetClient, rowId: number, locale: str
 export function saveRowAlarmSettings(http: Pick<HttpClient, 'put'>, rowId: number, body: RowAlarmSettingsBody, locale: string): Promise<RowAlarmSettings> {
   return http.put<RowAlarmSettings>(rowAlarmSettingsPath(rowId, locale), body)
 }
+
+/** A row in the answer of the rule copy (as `row` of the alarm settings). */
+export interface CopiedRow {
+  id: number
+  name: string
+  rawId: number | null
+  rawName: string | null
+}
+
+/** Why a target row was not changed. */
+export type CopySkipReason = 'source' | 'notFound' | 'noWrite' | 'unreadable' | 'tooMany'
+
+export interface RuleCopyResult {
+  changed: CopiedRow[]
+  skipped: { id: number; row: CopiedRow | null; reason: CopySkipReason | string }[]
+}
+
+/** Copies the stored alarm rules of a row to other rows (R16): added to their rules, or instead of them with `replace`. */
+export function copyRowAlarmRules(http: Pick<HttpClient, 'post'>, rowId: number, targets: number[], replace: boolean): Promise<RuleCopyResult> {
+  return http.post<RuleCopyResult>(`/web/rows/${rowId}/alarm-settings/copy`, { targets, replace })
+}

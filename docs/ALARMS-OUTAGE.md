@@ -57,6 +57,17 @@ Bookkeeping on the "Alarm Configuration":
   other). Kept apart from "Log File" so that older Control Centers' alarm lists keep working.
 - An outage of an object that is no longer checked (rule removed, out of scope) ends without `resumed`.
 
+## One configuration per row (user decision 2026-11-26)
+
+Older sites have one configuration with scope `COMPLETE` for all rows; the alarm wizard later added one configuration
+with scope `SELECTED` per row. Both reported the same row, so its alarms and outages were listed and mailed twice.
+Now a configuration with scope `COMPLETE` or `WITHOUT_SELECTED` skips every row that an **enabled** `SELECTED`
+configuration checks (`AlarmConfiguration.rowsWithOwnConfiguration`, used by JEAlarm and JEReport's alarm link; the
+web service's "Gemeldet von" list follows the same rule). Sites with only the site-wide configuration are unchanged; a
+disabled own configuration hands the row back to the site-wide one. Outages a site-wide configuration had open for
+such a row end as "no longer monitored". The outage lists of the web app and the Control Center still merge an outage
+reported by several configurations into one entry.
+
 ## Mails
 
 - **Start of an outage:** one mail per run with the newly started outages (row/source, since, how long, cause), via the

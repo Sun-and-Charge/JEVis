@@ -671,16 +671,28 @@ public class ResourceWebEditAlarms {
      */
     static List<Map<String, Object>> configurationsOfRow(WebEdit.Store store, JsonObject row) throws Exception {
         ResourceWebModules.Lookup lookup = store.lookup();
-        List<Map<String, Object>> list = new ArrayList<>();
+        List<Config> including = new ArrayList<>();
+        Map<Long, Boolean> enabled = new HashMap<>();
+        boolean ownConfiguration = false;
         for (JsonObject object : ResourceWebRegisters.readableOfClasses(lookup, store.classes().withHeirs(CLASS_CONFIGURATION))) {
             Config c = new Config(object);
             c.scopeText = value(store.latest(object.getId(), ATTRIBUTE_SCOPE));
             c.objectsText = value(store.latest(object.getId(), ATTRIBUTE_OBJECTS));
             if (!inScope(lookup, c, row)) continue;
+            boolean on = ResourceWebAlarms.isTrue(store.latest(object.getId(), ATTRIBUTE_ENABLED));
+            enabled.put(object.getId(), on);
+            including.add(c);
+            if (on && "SELECTED".equals(c.scope())) ownConfiguration = true;
+        }
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Config c : including) {
+            /* a row with an own (enabled, SELECTED) configuration is skipped by COMPLETE / WITHOUT_SELECTED ones
+             * (AlarmConfiguration.rowsWithOwnConfiguration, as JEAlarm does) */
+            if (ownConfiguration && !"SELECTED".equals(c.scope())) continue;
             Map<String, Object> json = new LinkedHashMap<>();
-            json.put("id", object.getId());
-            json.put("name", object.getName());
-            json.put("enabled", ResourceWebAlarms.isTrue(store.latest(object.getId(), ATTRIBUTE_ENABLED)));
+            json.put("id", c.object.getId());
+            json.put("name", c.object.getName());
+            json.put("enabled", enabled.get(c.object.getId()));
             list.add(json);
         }
         list.sort(Comparator.comparing((Map<String, Object> m) -> String.valueOf(m.get("name")))

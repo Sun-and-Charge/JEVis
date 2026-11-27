@@ -31,7 +31,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author <gerrit.schutz@sunandcharge.com>Gerrit Schutz</gerrit.schutz@sunandcharge.com>
@@ -326,5 +328,28 @@ public class AlarmConfiguration {
 
     public DateTimeZone getDateTimeZone() {
         return dateTimeZone;
+    }
+
+    /**
+     * Rows with an own configuration: the alarm objects of all enabled configurations with scope SELECTED (e.g. from
+     * the alarm wizard). A configuration with scope COMPLETE or WITHOUT_SELECTED skips these rows, so each row is
+     * checked, listed and mailed by one configuration only (user decision 2026-11-26; before, a site-wide
+     * configuration and the wizard's configuration of a row both reported its alarms).
+     */
+    public static Set<Long> rowsWithOwnConfiguration(JEVisDataSource ds) {
+        Set<Long> ids = new HashSet<>();
+        try {
+            JEVisClass configurationClass = ds.getJEVisClass(CLASS_NAME);
+            for (JEVisObject object : ds.getObjects(configurationClass, false)) {
+                AlarmConfiguration configuration = new AlarmConfiguration(ds, object);
+                if (!Boolean.TRUE.equals(configuration.isEnabled()) || configuration.getAlarmScope() != AlarmScope.SELECTED) continue;
+                for (JEVisObject row : configuration.getAlarmObjects()) {
+                    if (row != null) ids.add(row.getID());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Could not read the rows with an own alarm configuration", e);
+        }
+        return ids;
     }
 }
