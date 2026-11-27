@@ -112,7 +112,8 @@ After every import (`POST /invoices/import`, `/invoices/manual`; answer field `c
    separated by `;` or `,`, e.g. market location and meter point (`10000000001; DE0000…0001`), because invoices name
    either one. Several matches: the first, `ambiguous` = count.
 2. **Calculation:** the configuration's cost calculation over the billing period (period start 00:00 to period end
-   23:59:59.999, server time zone). Check values by formula name of the template: **`M_Verbrauch`** (measured
+   23:59:59.999 in the time zone of the configuration's site, attribute "Timezone" of the building; the server
+   itself runs in UTC). Check values by formula name of the template: **`M_Verbrauch`** (measured
    consumption) and **`R_Soll`** (net amount according to the contract for the invoiced quantity, i.e. the sum of the
    `R_…` positions). The demo templates (JEDemo `TemplateFactory`) have them; other templates need two formulas with
    these names.

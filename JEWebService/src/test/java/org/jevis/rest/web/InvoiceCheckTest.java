@@ -76,6 +76,13 @@ public class InvoiceCheckTest {
             return formulas;
         }
 
+        DateTimeZone zone = Z;
+
+        @Override
+        public DateTimeZone zone(long configuration) {
+            return zone;
+        }
+
         @Override
         public InvoiceCheck.Settings settings(long invoiceId) {
             return settings;
@@ -213,5 +220,16 @@ public class InvoiceCheckTest {
         Map<String, Double> named = ResourceWebInvoiceCheck.byName(template, byId);
         assertEquals(Double.valueOf(1234.5), named.get(InvoiceCheck.MEASURED));
         assertFalse(named.containsKey("Hilfswert"));
+    }
+    @Test
+    public void periodIsTakenInTheTimeZoneOfTheSite() throws Exception {
+        /* the server runs in UTC: the invoice dates come as UTC midnight, the month is the site's (Berlin) */
+        Fake fake = new Fake();
+        fake.invoice.periodStart = new DateTime(2025, 4, 1, 0, 0, DateTimeZone.UTC);
+        fake.invoice.periodEnd = new DateTime(2025, 4, 30, 0, 0, DateTimeZone.UTC);
+        InvoiceCheck.check(fake, 7, NOW);
+        assertEquals(new DateTime(2025, 4, 1, 0, 0, Z).getMillis(), fake.from.getMillis());
+        assertEquals(new DateTime(2025, 5, 1, 0, 0, Z).minusMillis(1).getMillis(), fake.to.getMillis());
+        assertEquals("2025-04-01T00:00:00.000+02:00", stored(fake).get("from").asText());
     }
 }

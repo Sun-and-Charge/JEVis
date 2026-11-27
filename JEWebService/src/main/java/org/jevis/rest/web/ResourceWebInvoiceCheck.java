@@ -35,6 +35,7 @@ import org.jevis.commons.trc.ResultCalculator;
 import org.jevis.commons.trc.TemplateFormula;
 import org.jevis.commons.trc.TrcResult;
 import org.jevis.commons.trc.TrcTimeFrames;
+import org.jevis.commons.datetime.WorkDays;
 import org.jevis.commons.ws.json.JsonObject;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.SQLDataSource;
@@ -118,6 +119,7 @@ public class ResourceWebInvoiceCheck {
         private final DateTimeZone zone = DateTimeZone.getDefault();
         private ResourceWebModules.Lookup lookup;
         private ResourceWebContracts.Store contracts;
+        private final Map<Long, DateTimeZone> zones = new HashMap<>();
 
         SqlEnv(SQLDataSource ds) {
             this.ds = ds;
@@ -167,8 +169,22 @@ public class ResourceWebInvoiceCheck {
             ResourceWebCosts.Subject subject = ResourceWebCosts.subject(lookup(), ResourceWebRegisters.Classes.fromCache(),
                     contractStore(), configuration);
             ResourceWebCosts.bind(subject, new HashMap<>());
-            TrcResult result = new ResultCalculator(new LocalDataSource(ds), new TrcTimeFrames(zone, null)).calculate(subject.template, from, to);
+            DateTimeZone siteZone = zone(configuration);
+            TrcResult result = new ResultCalculator(new LocalDataSource(ds), new TrcTimeFrames(siteZone, null)).calculate(subject.template, from, to);
             return byName(subject.template, result.getFormulaResults());
+        }
+
+        @Override
+        public DateTimeZone zone(long configuration) {
+            return zones.computeIfAbsent(configuration, id -> {
+                try {
+                    JsonObject object = lookup().object(id);
+                    if (object != null) return new WorkDays(ds, object).getDateTimeZone();
+                } catch (Exception e) {
+                    logger.warn("Could not read the time zone of the site of {}", id, e);
+                }
+                return zone;
+            });
         }
 
         @Override

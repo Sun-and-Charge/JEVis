@@ -105,6 +105,11 @@ public final class InvoiceCheck {
         /** the formula results of the configuration's cost calculation for the period */
         Map<String, Double> calculate(long configuration, DateTime from, DateTime to) throws Exception;
 
+        /** time zone of the configuration's site: the invoice period is a range of local dates there */
+        default DateTimeZone zone(long configuration) {
+            return DateTimeZone.getDefault();
+        }
+
         Settings settings(long invoiceId) throws Exception;
 
         void store(long invoiceId, String json, DateTime now) throws Exception;
@@ -215,8 +220,10 @@ public final class InvoiceCheck {
             notCheckable(result, "noPeriod");
             return;
         }
-        DateTime from = invoice.periodStart.withTimeAtStartOfDay();
-        DateTime to = invoice.periodEnd.withTimeAtStartOfDay().plusDays(1).minusMillis(1);
+        /* the period of the invoice is a range of days at the site, not of the server (which runs in UTC) */
+        DateTimeZone zone = env.zone(contract.id);
+        DateTime from = invoice.periodStart.toLocalDate().toDateTimeAtStartOfDay(zone);
+        DateTime to = invoice.periodEnd.toLocalDate().plusDays(1).toDateTimeAtStartOfDay(zone).minusMillis(1);
         result.put("from", ISODateTimeFormat.dateTime().print(from));
         result.put("to", ISODateTimeFormat.dateTime().print(to));
         Map<String, Double> formulas;
