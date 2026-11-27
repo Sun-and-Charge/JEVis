@@ -187,9 +187,18 @@
       "png": "PNG",
       "csv": "CSV",
       "pngLabel": "Save {name} as image (PNG)",
-      "csvLabel": "Save the values of {name} as CSV"
+      "csvLabel": "Save the values of {name} as CSV",
+      "jpeg": "JPEG",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "jpegLabel": "Save {name} as image (JPEG)",
+      "pdfLabel": "Save {name} as PDF",
+      "xlsxLabel": "Save the values of {name} as Excel file"
     },
     "count": "Count",
+    "duration": "Duration [h]",
+    "offsetSuffix": "{amount} {unit}",
+    "offsetUnits": { "MINUTES": "min", "HOURS": "h", "DAYS": "day | days", "WEEKS": "week | weeks", "MONTHS": "month | months", "YEARS": "year | years" },
     "regression": {
       "model": "Model",
       "formula": "Model equation",
@@ -292,7 +301,156 @@
     "reports": "Reports",
     "contracts": "Contracts",
     "invoices": "Energy invoices",
-    "costs": "Cost calculation"
+    "costs": "Cost calculation",
+    "certificates": "Energy certificates"
+  },
+  "certificates": {
+    "title": "Energy certificates",
+    "loading": "Loading energy certificates …",
+    "empty": "No energy certificates for this selection.",
+    "today": "As of {date}",
+    "hint": "Existing energy certificates of the buildings with their values, validity and responsible persons. The issuer issues the certificates; they are stored here.",
+    "new": "New energy certificate",
+    "export": "Export CSV",
+    "tabs": {
+      "list": "Overview",
+      "transfers": "Transfer"
+    },
+    "filter": {
+      "all": "All",
+      "attention": "Action needed",
+      "EXPIRED": "Expired",
+      "EXPIRING": "Expiring",
+      "VALID": "Valid",
+      "UNKNOWN": "No date"
+    },
+    "status": {
+      "EXPIRED": "Expired",
+      "EXPIRING": "Expiring",
+      "VALID": "Valid",
+      "UNKNOWN": "No date"
+    },
+    "daysLeft": "{n} days left | 1 day left | {n} days left",
+    "daysAgo": "{n} days ago | 1 day ago | {n} days ago",
+    "type": {
+      "CONSUMPTION": "Consumption certificate",
+      "DEMAND": "Demand certificate"
+    },
+    "use": {
+      "RESIDENTIAL": "Residential building",
+      "NON_RESIDENTIAL": "Non-residential building"
+    },
+    "col": {
+      "building": "Building",
+      "type": "Type",
+      "registrationNumber": "Registration number",
+      "issued": "Issued",
+      "validUntil": "Valid until",
+      "status": "Status",
+      "energyClass": "Class",
+      "heatConsumption": "Heat",
+      "electricityConsumption": "Electricity",
+      "finalEnergy": "Final energy",
+      "primaryEnergy": "Primary energy",
+      "referenceArea": "Reference area",
+      "co2": "CO₂",
+      "issuer": "Issuer",
+      "responsible": "Responsible",
+      "file": "PDF"
+    },
+    "field": {
+      "building": "Building",
+      "type": "Type of certificate",
+      "use": "Use of the building",
+      "registrationNumber": "Registration number",
+      "issued": "Issued on",
+      "validUntil": "Valid until",
+      "validUntilHint": "Suggestion: 10 years from issue",
+      "issuer": "Issuer",
+      "responsible": "Responsible (reminders by e-mail)",
+      "energyClass": "Efficiency class",
+      "heatConsumption": "Heat consumption value",
+      "electricityConsumption": "Electricity consumption value",
+      "finalEnergy": "Final energy",
+      "primaryEnergy": "Primary energy",
+      "referenceArea": "Reference area",
+      "co2": "CO₂ emissions",
+      "reminderMonths": "Reminder (months before expiry)",
+      "reminderHint": "e.g. \"6, 1\": e-mail 6 months and 1 month before expiry",
+      "note": "Notes",
+      "none": "–"
+    },
+    "unit": {
+      "energy": "kWh/(m²·a)",
+      "area": "m²",
+      "co2": "kg/(m²·a)"
+    },
+    "section": {
+      "certificate": "Certificate",
+      "values": "Values",
+      "validity": "Validity and reminder",
+      "file": "File",
+      "note": "Notes"
+    },
+    "problem": {
+      "required": "Please fill in.",
+      "date": "Please enter a valid date.",
+      "order": "\"Valid until\" must be after the issue date.",
+      "class": "Please choose a class from A+ to H.",
+      "number": "Please enter a number of 0 or more.",
+      "range": "Please enter months from 0 to 24, separated by commas.",
+      "person": "Please choose users or groups only."
+    },
+    "editTitle": "Energy certificate: {name}",
+    "createTitle": "New energy certificate",
+    "saved": "\"{name}\" was saved.",
+    "created": "\"{name}\" was created.",
+    "deleted": "\"{name}\" was moved to the recycle bin.",
+    "delete": "Delete",
+    "deleteQuestion": "Move \"{name}\" to the recycle bin?",
+    "file": {
+      "none": "No PDF stored.",
+      "open": "Open PDF",
+      "upload": "Upload PDF",
+      "replace": "Replace PDF",
+      "remove": "Remove PDF",
+      "afterSave": "The PDF can be uploaded once the certificate is created.",
+      "uploaded": "The PDF was saved.",
+      "removed": "The PDF was removed.",
+      "tooLarge": "The PDF is larger than 20 MB.",
+      "notPdf": "Please choose a PDF file."
+    },
+    "noCreate": "You may not add energy certificates to any building.",
+    "lastReminder": "Last reminder",
+    "reminderError": "Reminder failed: {error}",
+    "createdBy": "Created {date} by {user}",
+    "transfer": {
+      "hint": "Targets the energy certificates are sent to (e-mail, SFTP, HTTP). The targets are set up in the Control Center. The JENotifier service sends on schedule or on request.",
+      "empty": "No transfer targets set up.",
+      "col": {
+        "name": "Target",
+        "channel": "Channel",
+        "format": "Format",
+        "schedule": "Schedule",
+        "enabled": "Enabled",
+        "last": "Last transfer",
+        "requested": "Requested"
+      },
+      "schedule": {
+        "MANUAL": "Manual only",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly",
+        "ON_CHANGE": "On change"
+      },
+      "run": "Transfer now",
+      "requestedAt": "{date} by {user}",
+      "requestedOk": "The transfer to \"{name}\" was requested. It runs with the next run of the service.",
+      "lastOk": "{date}: {count} certificates",
+      "lastError": "{date}: error – {error}",
+      "yes": "Yes",
+      "no": "No"
+    }
   },
   "appointments": {
     "title": "Appointments",
@@ -923,6 +1081,43 @@
       "notFound": "The PDF file cannot be read or no longer exists.",
       "unsupported": "Your browser cannot show the PDF file here.",
       "open": "Open PDF in a new tab"
+    },
+    "onDemand": {
+      "title": "Report on demand",
+      "loading": "Loading requests …",
+      "error": "The requests could not be loaded.",
+      "period": "Period",
+      "running": "(running)",
+      "quarter": "Q{quarter} {year}",
+      "week": "Week {week} {year}",
+      "mail": "Send to me by e-mail",
+      "send": "Create report now",
+      "sending": "Requesting …",
+      "sent": "Requested. The report will be created in about a minute.",
+      "tooMany": "Three requests are already open for this report.",
+      "sendError": {
+        "tooMany": "Three requests are already open for this report.",
+        "rights": "You may not request this report.",
+        "invalid": "This period cannot be requested.",
+        "noMail": "Your user account has no e-mail address.",
+        "error": "The request failed."
+      },
+      "not": {
+        "rights": "Requesting needs write access to the report.",
+        "schedule": "This report has no schedule that can be requested."
+      },
+      "none": "No requests in the last four weeks.",
+      "listLabel": "Requests",
+      "requested": "Requested {time} by {name}",
+      "me": "you",
+      "mailed": "by e-mail",
+      "status": {
+        "PENDING": "Waiting",
+        "RUNNING": "Being created",
+        "DONE": "Done",
+        "FAILED": "Failed",
+        "EXPIRED": "Expired"
+      }
     }
   },
   "contracts": {
@@ -987,6 +1182,47 @@
     }
   },
   "invoices": {
+    "check": {
+      "title": "Invoice check",
+      "filter": "Check",
+      "all": "All",
+      "status": {
+        "OK": "OK",
+        "DEVIATION": "Deviation",
+        "NOT_CHECKABLE": "Not checkable",
+        "NONE": "Not checked"
+      },
+      "short": {
+        "OK": "OK",
+        "DEVIATION": "Deviation",
+        "NOT_CHECKABLE": "Not checkable",
+        "NONE": "Unchecked"
+      },
+      "reason": {
+        "noMeterPoint": "The invoice has no meter point or market location.",
+        "noContract": "No contract (cost calculation) with this market location, or no read right on it.",
+        "noPeriod": "The invoice has no billing period.",
+        "calculation": "The cost calculation of the contract could not be calculated.",
+        "noCheckFormulas": "The cost calculation of the contract has no check values (M_Verbrauch, R_Soll).",
+        "noValues": "Measurements or contract prices are missing for the period.",
+        "error": "The check failed."
+      },
+      "partial": "only partly checked",
+      "contractName": "Contract (cost calculation)",
+      "checkedAt": "Checked on",
+      "quantity": "Quantity",
+      "amount": "Net amount",
+      "measured": "against measurement",
+      "contract": "against contract",
+      "expectedCol": "Expected",
+      "invoiced": "Invoice",
+      "deviation": "Deviation",
+      "tolerance": "Tolerance",
+      "result": "Result",
+      "none": "This invoice has not been checked yet.",
+      "recheck": "Check again",
+      "busy": "Checking …"
+    },
     "title": "Energy invoices",
     "readOnly": "View only – contracts and invoices are maintained or imported in the Control Center.",
     "loading": "Loading invoices …",
@@ -1034,6 +1270,7 @@
       "csvLabel": "Download the shown invoices as CSV"
     },
     "col": {
+      "check": "Check",
       "period": "Period",
       "periodStart": "Period from",
       "periodEnd": "Period to",
@@ -1211,6 +1448,76 @@
     }
   },
   "invoiceEdit": {
+    "manual": {
+      "format": "Entered by hand (no e-invoice)",
+      "action": "Enter invoice",
+      "title": "Enter invoice",
+      "hint": "For invoices without e-invoice file, e.g. on paper or as a plain PDF. The invoice is stored like an imported e-invoice and appears in the invoice list, the invoice series and the cost calculation.",
+      "choose": "Please choose …",
+      "vat": "Supplier VAT ID",
+      "periodStart": "Billing period from",
+      "periodEnd": "to",
+      "meterPoint": "Meter point / market location",
+      "meterPointHint": "As on the invoice; used later to match the invoice with its contract.",
+      "creditNote": "Credit note (amounts and consumption are subtracted)",
+      "section": {
+        "invoice": "Invoice",
+        "lines": "Line items",
+        "totals": "Totals",
+        "file": "Document"
+      },
+      "linesHint": "Amount = quantity × unit price unless an amount is entered. Lines in kWh, MWh or m³ give the consumption; equal quantities (e.g. energy price and grid fee) are counted once.",
+      "line": {
+        "description": "Description",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "unitPrice": "Unit price (€)",
+        "net": "Net amount (€)",
+        "taxRate": "VAT"
+      },
+      "unit": {
+        "KWH": "kWh",
+        "MWH": "MWh",
+        "MTQ": "m³",
+        "KWT": "kW",
+        "MON": "month",
+        "DAY": "day",
+        "ANN": "year",
+        "C62": "piece",
+        "LS": "lump sum"
+      },
+      "energyLine": "counts as consumption",
+      "addLine": "Add line",
+      "removeLine": "Remove line {n}",
+      "tax": "VAT",
+      "noConsumption": "no consumption (no line in kWh, MWh or m³)",
+      "ownTotals": "Enter different totals (e.g. supplier rounding)",
+      "ownConsumption": "Enter a different consumption",
+      "file": "PDF or scan of the invoice (optional)",
+      "fileHint": "At most 20 MB; stored with the invoice and opened from the invoice list.",
+      "save": "Save invoice",
+      "saved": "The invoice was saved.",
+      "fix": "Please check the marked fields.",
+      "duplicate": "An invoice with this supplier and invoice number already exists in this folder.",
+      "problem": {
+        "directory": "Please choose a folder.",
+        "medium": "Please choose a medium.",
+        "seller": "Please enter the supplier.",
+        "number": "Please enter the invoice number.",
+        "date": "Please enter the invoice date.",
+        "period": "Please enter both dates of the period or none.",
+        "periodOrder": "The end is before the start.",
+        "lines": "Please enter at least one line or enter the totals.",
+        "number_quantity": "Please enter a number.",
+        "number_unitPrice": "Please enter a number.",
+        "number_net": "Please enter a number.",
+        "number_taxRate": "Please enter a number.",
+        "lineAmount": "Enter an amount or quantity and unit price.",
+        "lineDescription": "Please enter a description.",
+        "totals": "Enter net and gross (or net and VAT).",
+        "consumption": "Please enter a number."
+      }
+    },
     "hint": "Invoices can be imported and deleted here; contractors, prices and dues under \"Contracts\".",
     "importAction": "Import invoices",
     "delete": "Delete",
@@ -1417,7 +1724,56 @@
     "confirmAllResult": "{confirmed} confirmed, {refused} refused (no permission).",
     "confirmAllDone": "No configuration confirmed. | 1 configuration confirmed. | {n} configurations confirmed."
   },
+  "alarmOutages": {
+    "title": "Data outages",
+    "hint": "Data rows without new values and data sources that no longer read. Open outages first, then the ones that ended in the time frame.",
+    "open": "Open",
+    "ended": "Ended",
+    "since": "Latest value",
+    "never": "never",
+    "allowed": "Allowed without data",
+    "cause": "Cause (data source)",
+    "resumed": "Data again from",
+    "configuration": "Alarm configuration",
+    "minutes": "{n} minutes | 1 minute | {n} minutes",
+    "hours": "{n} hours | 1 hour | {n} hours",
+    "days": "{n} days | 1 day | {n} days",
+    "kind": {
+      "row": "Data outage",
+      "source": "Transmission fault"
+    },
+    "result": {
+      "late": "delivered late",
+      "gap": "gap remains",
+      "unmonitored": "no longer monitored"
+    }
+  },
   "alarmSettings": {
+    "copy": {
+      "button": "Copy rules to other data rows …",
+      "saveFirst": "The saved rules are copied. Please save or discard first.",
+      "title": "Copy alarm rules: {name}",
+      "intro": "The saved alarm rule of this row is copied to the chosen rows; “Alarm active” is switched on there. Limits are not copied. | The saved alarm rule of this row is copied to the chosen rows; “Alarm active” is switched on there. Limits are not copied. | The {n} saved alarm rules of this row are copied to the chosen rows; “Alarm active” is switched on there. Limits are not copied.",
+      "targets": "Target rows",
+      "none": "No rows chosen yet.",
+      "choose": "Choose rows …",
+      "remove": "Remove “{name}”",
+      "replace": "Replace the existing rules of the target rows",
+      "addHint": "The copied rules are added to the existing rules (at most 10 per row).",
+      "replaceHint": "The target rows then have exactly the rules of this row; their previous rules are removed.",
+      "submit": "Copy",
+      "busy": "Copying …",
+      "changed": "No row changed | 1 row changed | {n} rows changed",
+      "skipped": "Not changed | 1 row not changed | {n} rows not changed",
+      "unknownRow": "Object {id}",
+      "reason": {
+        "source": "the row itself",
+        "notFound": "no readable clean data row",
+        "noWrite": "no write right",
+        "unreadable": "existing rules not readable – possible with “replace”",
+        "tooMany": "more than 10 rules"
+      }
+    },
     "tabsLabel": "Alarm sections",
     "tab": {
       "list": "Alarms",
@@ -1468,7 +1824,10 @@
       "cc": "Copy to (CC)",
       "bcc": "Blind copy to (BCC)",
       "subject": "Subject",
-      "message": "Message"
+      "message": "Message",
+      "dailySummary": "Daily summary by e-mail",
+      "dailySummaryHint": "Once a day: open and ended data outages and limit alarms of the last 24 hours. Nothing is sent without events.",
+      "dailySummaryTime": "Time"
     },
     "scope": {
       "COMPLETE": "All data rows",
@@ -1529,7 +1888,11 @@
       "rules": "At most {max} alarm rules.",
       "days": "Please choose at least one weekday.",
       "time": "Please enter “from” and “to” as times.",
-      "sameTime": "“From” and “to” must differ."
+      "sameTime": "“From” and “to” must differ.",
+      "noData": "Please enter after which time without new values an alarm is raised.",
+      "noDataNumber": "Please enter a whole number greater than 0 (at most one year).",
+      "average": "Please enter whole minutes from 1 to 10080 or leave empty.",
+      "summaryTime": "Please enter a time of day, e.g. 07:00."
     },
     "row": {
       "title": "Alarm settings: {name}",
@@ -1542,7 +1905,9 @@
       "configurations": "Reported by",
       "noConfiguration": "No alarm configuration checks this data row – alarms found are not reported.",
       "saved": "The alarm settings were saved.",
-      "reprocess": "Changed limits only apply to data processed from now on. To apply them to existing data, have the data row recalculated in the Control Center."
+      "reprocess": "Changed limits only apply to data processed from now on. To apply them to existing data, have the data row recalculated in the Control Center.",
+      "lastValue": "Latest value",
+      "noDataSince": "no data for {n} hours | no data for 1 hour | no data for {n} hours"
     },
     "limits": {
       "title": "Limits",
@@ -1593,7 +1958,19 @@
       "standby": "Standby",
       "standbyHint": "Alarms in this time are ignored.",
       "add": "Add alarm rule",
-      "pickTitle": "Choose comparison row"
+      "pickTitle": "Choose comparison row",
+      "noDataKind": "Data outage",
+      "noData": "Alarm when no new values arrived for",
+      "noDataUnit": "Unit",
+      "minutes": "Minutes",
+      "hours": "Hours",
+      "noDataHint": "Checked against the arrival of raw data in every run of the service, independent of the check interval. One e-mail at the start; the end is listed in the daily summary.",
+      "average": "Mean over (minutes)",
+      "averageNone": "Single values",
+      "averageHint": "Compares the moving mean instead of every single value, e.g. 60 for the mean of the last hour. A value corridor is two rules (below minimum, above maximum).",
+      "valid": "Applies only at certain times",
+      "validHint": "For day and night limits: e.g. one rule Mon–Fri 06:00–20:00 with 40 kW and a second one at night with 10 kW.",
+      "addOutage": "Monitor data outage"
     },
     "operator": {
       "BIGGER": "greater than",
@@ -1961,6 +2338,13 @@
       "regressionRole": "Role in the regression",
       "decimalDigits": "Decimal Digits",
       "decimalAuto": "as chart",
+      "timeMode": "Time reference",
+      "timeModeHint": "As chart: time frame of the analysis. Shifted: values of a shifted time frame, e.g. -1 year (previous year). Fixed time frame: own time frame on a second time axis.",
+      "timeModes": { "chart": "as chart", "offset": "shifted", "fixed": "fixed time frame" },
+      "offset": "Shift",
+      "offsetUnit": "Unit of the shift",
+      "offsetUnits": { "MINUTES": "minutes", "HOURS": "hours", "DAYS": "days", "WEEKS": "weeks", "MONTHS": "months", "YEARS": "years" },
+      "offsetHint": "Where the values come from: -1 year shows the previous year, -2 hours the values of two hours before.",
       "interval": "Own time frame",
       "start": "Start",
       "end": "End",
@@ -2040,6 +2424,7 @@
       "height": "Leave empty (automatic) or at least 50 pixels.",
       "time": "Please enter a time as HH:mm:ss.",
       "decimals": "Leave empty or a whole number from 0 to 20.",
+      "timeOffset": "Please a whole number other than 0 (at most about ten years).",
       "interval": "Please enter start and end.",
       "intervalOrder": "The end must be after the start."
     },

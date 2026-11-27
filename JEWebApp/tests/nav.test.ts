@@ -50,10 +50,11 @@ describe('sidebar groups', () => {
     expect(menuGroups(all).map((g) => [g.id, g.modules.length])).toEqual([
       ['iso', 3],
       ['operations', 5],
-      ['assets', 3],
+      ['assets', 4],
       ['finance', 3],
     ])
     expect(menuGroups(all)[1].modules.map((m) => m.key)).toEqual(['readings', 'appointments', 'maintenance', 'alarms', 'notes'])
+    expect(menuGroups(all)[2].modules.map((m) => m.key)).toEqual(['meters', 'basedata', 'equipment', 'certificates'])
     expect(menuGroups(all)[3].modules.map((m) => m.key)).toEqual(['contracts', 'invoices', 'costs'])
   })
 
@@ -67,6 +68,7 @@ describe('sidebar groups', () => {
     expect(groupOfRoute('nonconformities')).toBe('iso')
     expect(groupOfRoute('alarms')).toBe('operations')
     expect(groupOfRoute('equipment')).toBe('assets')
+    expect(groupOfRoute('certificates')).toBe('assets')
     expect(groupOfRoute('costs')).toBe('finance')
     expect(groupOfRoute('reports')).toBeNull()
     expect(groupOfRoute('dashboard')).toBeNull()

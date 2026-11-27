@@ -36,6 +36,9 @@ function api(list: Answer<ReportList>, files: Record<number, Answer<ReportFiles>
   }
   const get = vi.fn(async (path: string) => {
     if (path === '/web/reports') return resolve(list)
+    /* R04 report on demand section of the details */
+    const od = /^\/web\/reports\/(\d+)\/on-demand$/.exec(path)
+    if (od) return { id: Number(od[1]), name: 'R', schedule: null, timeZone: 'Europe/Berlin', canRequest: false, reason: 'schedule', periods: [], requests: [] }
     const m = /^\/web\/reports\/(\d+)\/files$/.exec(path)
     if (m && files[Number(m[1])]) return resolve(files[Number(m[1])])
     if (m) throw new HttpError(404, '')
@@ -188,7 +191,8 @@ describe('reports view (mocked API)', () => {
     const client = api(LIST)
     const { wrapper: w } = await mountView(client, { id: '23803' })
     expect(w.find('.rep-detail').text()).toContain('noch keine Ausgabe')
-    expect(client.get).toHaveBeenCalledTimes(1)
+    /* the list and the on-demand section, no files */
+    expect(client.get.mock.calls.map((c) => (c as unknown[])[0])).toEqual(['/web/reports', '/web/reports/23803/on-demand'])
     expect(client.getBlob).not.toHaveBeenCalled()
     w.unmount()
   })

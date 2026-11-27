@@ -354,9 +354,12 @@ public class MathFunction implements ProcessFunction {
                         allSamples.sort((o1, o2) -> Double.compare(Double.parseDouble(o2.getValue()), Double.parseDouble(o1.getValue())));
                     }
 
-                    for (JsonSample sample : allSamples) {
+                    /* index loop: indexOf per sample made long series quadratic */
+                    long step = period.toStandardDuration().getMillis();
+                    for (int index = 0; index < allSamples.size(); index++) {
+                        JsonSample sample = allSamples.get(index);
                         JsonSample smp = new JsonSample();
-                        smp.setTs(firstDate.plus(allSamples.indexOf(sample) * period.toStandardDuration().getMillis()).toString());
+                        smp.setTs(firstDate.plus(index * step).toString());
                         smp.setValue(sample.getValue());
                         smp.setNote("math(" + mode.toString() + ")");
                         listManipulation.add(smp);
@@ -381,9 +384,12 @@ public class MathFunction implements ProcessFunction {
                         aggregatedSamples.sort((o1, o2) -> Double.compare(Double.parseDouble(o2.getValue()), Double.parseDouble(o1.getValue())));
                     }
 
-                    for (JsonSample sample : aggregatedSamples) {
+                    /* index loop: indexOf per sample made long series quadratic */
+                    long step = period.toStandardDuration().getMillis();
+                    for (int index = 0; index < aggregatedSamples.size(); index++) {
+                        JsonSample sample = aggregatedSamples.get(index);
                         JsonSample smp = new JsonSample();
-                        smp.setTs(firstDate.plus(aggregatedSamples.indexOf(sample) * period.toStandardDuration().getMillis()).toString());
+                        smp.setTs(firstDate.plus(index * step).toString());
                         smp.setValue(sample.getValue());
                         smp.setNote("math(" + mode.toString() + ")");
                         listManipulation.add(smp);

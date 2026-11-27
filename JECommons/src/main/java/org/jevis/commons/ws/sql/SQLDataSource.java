@@ -90,6 +90,12 @@ public class SQLDataSource {
      */
     private List<JsonObject> allObjects = new ArrayList<>();
     /**
+     * whether {@link #allObjects} holds all objects; {@link #getObject(Long)} also adds single objects to it, so a
+     * non-empty list alone does not mean "all loaded" (before, a getObject before getObjects made getObjects return
+     * only that one object)
+     */
+    private boolean allObjectsLoaded = false;
+    /**
      * Request-scoped cache of deleted objects.
      */
     private List<JsonObject> allDeletedObjects = new ArrayList<>();
@@ -341,6 +347,7 @@ public class SQLDataSource {
                     break;
                 case ALL_OBJECT:
                     this.allObjects = getObjectTable().getAllObjects();
+                    this.allObjectsLoaded = true;
                     break;
             }
         } catch (Exception sx) {
@@ -693,12 +700,13 @@ public class SQLDataSource {
      */
     public List<JsonObject> getObjects() throws JEVisException {
         logger.debug("getObjects");
-        if (!this.allObjects.isEmpty()) {
+        if (this.allObjectsLoaded) {
             logger.debug("Cache");
             return this.allObjects;
         }
 
         this.allObjects = this.oTable.getAllObjects();
+        this.allObjectsLoaded = true;
         logger.debug("NONE-Cache");
         return this.allObjects;
     }

@@ -451,6 +451,25 @@ const mailField = (key: 'recipients' | 'cc' | 'bcc') => ({
             <span>{{ t('alarmSettings.field.disableLink') }}</span>
           </label>
         </div>
+        <div class="edit-field alm-summary">
+          <label class="iso-edit-check">
+            <input v-model="form.dailySummary" type="checkbox" class="alm-summary-on" :disabled="disabled" />
+            <span>{{ t('alarmSettings.field.dailySummary') }}</span>
+          </label>
+          <p class="edit-hint">{{ t('alarmSettings.field.dailySummaryHint') }}</p>
+          <template v-if="form.dailySummary">
+            <label :for="id('summary-time')">{{ t('alarmSettings.field.dailySummaryTime') }}</label>
+            <input
+              :id="id('summary-time')"
+              v-model="form.dailySummaryTime"
+              type="time"
+              class="alm-summary-time"
+              :disabled="disabled"
+              :aria-invalid="problemText('dailySummaryTime') ? 'true' : undefined"
+            />
+            <p v-if="problemText('dailySummaryTime')" class="iso-field-error">{{ problemText('dailySummaryTime') }}</p>
+          </template>
+        </div>
         <p v-if="lastRun" class="edit-hint">{{ t('alarmSettings.lastRun', { time: lastRun }) }}</p>
       </section>
 

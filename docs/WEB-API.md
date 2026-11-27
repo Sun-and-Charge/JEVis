@@ -827,6 +827,25 @@ attachments `Content-Security-Policy: default-src 'none'; sandbox` (not for inli
 do not run in a sandbox). 404 if the
 report is not readable or the output does not exist; 400 for an unknown `format` or an invalid `ts`.
 
+### Report on demand (R04): `GET|POST /web/reports/{id}/on-demand`
+
+`GET`: `{id, name, schedule, timeZone, canRequest, reason, periods, requests}`. `schedule` DAILY … YEARLY or null
+(custom / none: cannot be requested, `reason` `schedule`); `canRequest` needs write right on the report (else
+`reason` `rights`). `periods`: `{start, end, current}` in the report's time zone, the running period first, then
+twelve before it. `requests` (last four weeks, newest first, at most 20): `{id, start, end, requestedAt,
+requestedByName, mine, mail, status, message, statusAt, pdf, xlsx}`, `status` PENDING, RUNNING, DONE, FAILED or
+EXPIRED (pending and older than seven days). 404 if the report is not readable.
+
+`POST` `{start, mail}`: `start` must be the start of a period of the schedule and not in the future; stores the
+request for JEReport (see docs/REPORTS-ENMS.md "Report on demand") and answers 201 with the request as listed. 400
+invalid JSON / start / schedule or `mail` without an e-mail address in the user's account, 403 no write right, 404
+not readable, 429 three requests of the report are open. With `mail` the addresses of the user's account are stored
+in the request (`mailTo`).
+
+`GET /web/reports/{id}/on-demand/{requestId}/file?format=pdf|xlsx[&inline=true]`: the file of a finished request
+(sample of "On Demand Report PDF" / "On Demand Report" with the request id as note); headers as for
+`/web/reports/{id}/file`; 404 if there is none.
+
 ### Dashboards
 
 Report links of dashboards (`Report-Link` widgets, `link.kind` `REPORT`; image widgets cannot link reports) now lead to the report in the web app
@@ -1322,8 +1341,15 @@ The **definition** sent is the GET answer's shape without the read-only keys (`i
 "orientation", "fixYAxisToZero", "xAxisTitle", "yAxisTitle", "groupingInterval", "colorMapping", "filterEnabled",
 "coloringEnabled", "showColumnSums", "showRowSums", "dayStart", "dayEnd", "filterTexts", "rows": [{ "objectId",
 "attribute", "name", "color", "axis", "chartType", "unitPrefix", "unitFormula", "unitLabel", "decimalDigits",
-"calculation", "bubbleType", "interval", "css" }] }] }`. Missing keys get the CC defaults. Charts are stored in the
-order sent.
+"calculation", "bubbleType", "interval", "timeOffset", "css" }] }] }`. Missing keys get the CC defaults. Charts are stored in the
+order sent. `timeOffset` (tender point 03) is the relative time reference of a row: `{ "amount": -1, "unit": "YEARS" }` (units
+`MINUTES`, `HOURS`, `DAYS`, `WEEKS`, `MONTHS`, `YEARS`, amount ≠ 0 and at most about ten years) or `null` (as the chart).
+It says where the values come from: `-1 YEARS` loads last year's values of the time frame and shows them on the
+chart's time axis (previous-year comparison that moves with the time frame), `-2 HOURS` pairs the outside temperature
+of 10:00 with the heat of 12:00 in a scatter or bubble chart. A fixed own time frame (`interval.enabled`) has priority;
+the editors offer either the one or the other. Stored as row key `timeOffset` only when used (a plain number is read as
+minutes). The view answer carries `timeOffset` per row for the legend hint ("Strom (-1 Jahr)"). The Java 25 Control
+Center (feature/j25-build) applies, edits and keeps it as well; older Control Centers drop it when they save.
 
 Validation (`400` JSON `{ "messages": [...] }` with all problems, as in E2): chart ids unique and ≥ 0; enum values
 (`type`, `chartType`, `orientation`, `colorMapping`, `bubbleType`, limit line `fill`) from the lists of W2 / the CC
@@ -2200,6 +2226,17 @@ bodies are plain text as the other E-stage deletes. `version` is `"none"` for an
 - Invoice details: **"Löschen"** (with `canDelete`; confirmation "Die Rechnung wird in den Papierkorb gelegt und aus
   den Rechnungsreihen herausgerechnet."), `409` handling as E2–E5.
 - Unsaved-changes guard while files are parsed or rows are chosen but not imported.
+- **"Rechnung erfassen"** (R01, 2026-11-27, docs/ENERGY-INVOICES.md "Manual invoices"): side panel with folder,
+  medium, supplier (+ VAT ID), number, date, billing period, meter point / market location, credit note; line items
+  (description, quantity, unit kWh/MWh/m³/kW/month/day/year/piece/lump sum, unit price, net, VAT 19/7/0 %); live totals
+  (net, VAT, gross, consumption from the energy lines, equal quantities counted once); optional own totals and own
+  consumption; optional PDF/scan → `POST /JEWebService/v1/invoices/manual?directory=`; `409` shows "gibt es schon".
+  Details show the format `MANUAL` as "Manuell erfasst".
+- **Invoice check** (R03, 2026-11-27, docs/ENERGY-INVOICES.md "Invoice check"): `GET /web/invoices` and
+  `GET /web/invoices/{id}` carry `check` (the stored result object, null if not checked) and `canCheck` (write right);
+  `POST /web/invoices/{id}/check` checks again and answers the result (`404` no invoice, `403` without write right).
+  The import answers (`/invoices/import`, `/invoices/manual`) carry `check` too. Web app: column "Prüfung" with
+  badge, filter chips by status, section "Rechnungsprüfung" in the details with "Erneut prüfen".
 
 ## Editing, stage E6.2: contract partners, prices and governmental dues
 
@@ -2432,6 +2469,15 @@ today; the web writes them in the Control Center's formats. Rules of E1–E8 (se
     write right on the clean data row; `version` = latest sample of these four; `409` with the current settings.
   - Logged `web:alarm-row-save`. Hint in the answer: limit changes only affect data the JEDataProcessor processes from
     now on (`reprocessHint: true`).
+- `POST /web/rows/{rowId}/alarm-settings/copy` `{ targets: [rowId…], replace?: false }` (R16, 2026-11-27): the
+  stored alarm rules of the row go to up to 200 target rows (raw rows resolve to their clean data row). Added after
+  the target's own rules (ids kept where free, else the next free number; at most 10 rules per row) or, with
+  `replace: true`, instead of them; "Alarm Enabled" switched on; limits are not copied. Per target write right on the
+  clean data row. Answer `{ changed: [row], skipped: [{ id, row, reason }] }` with reasons `source`, `notFound`,
+  `noWrite`, `unreadable` (stored rules not readable, only with add), `tooMany`. `400` when the row has no rules or
+  the body is invalid. Logged `web:alarm-row-copy`.
+- `configurations` of a row (GET above) leave out `COMPLETE` / `WITHOUT_SELECTED` configurations when an enabled
+  `SELECTED` configuration checks the row (one configuration per row, docs/ALARMS-OUTAGE.md).
 
 ### Web app
 

@@ -1,0 +1,24 @@
+{
+  "jevisclass": "Local Folder Channel",
+  "names": {
+    "de": "Ordner-Kanal",
+    "en": "Folder channel"
+  },
+  "descriptions": {
+    "de": "Dateien eines lokalen Ordners",
+    "en": "Files of a local folder"
+  },
+  "types": [
+    {
+      "type": "Path",
+      "names": {
+        "de": "Pfad",
+        "en": "Path"
+      },
+      "descriptions": {
+        "de": "Regulärer Ausdruck auf den vollständigen Pfad mit / als Trenner, z. B. /srv/jevis/eingang/.*\\.(pdf|xml)",
+        "en": "Regular expression on the full path with / as separator, e.g. /srv/jevis/inbox/.*\\.(pdf|xml)"
+      }
+    }
+  ]
+}

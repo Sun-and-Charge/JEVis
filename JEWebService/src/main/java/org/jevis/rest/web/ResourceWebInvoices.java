@@ -269,7 +269,19 @@ public class ResourceWebInvoices {
         json.put("file", text(attributes, ATTRIBUTE_FILE));
         json.put("path", ResourceWebNotes.path(object, lookup, buildingClasses));
         json.put("site", ResourceWebNotes.siteJson(object, lookup, buildingClasses));
+        json.put("check", checkJson(text(attributes, InvoiceCheck.ATTRIBUTE_RESULT)));
         return json;
+    }
+
+    /** the stored result of the invoice check (R03) as JSON object, null if not checked or not readable */
+    static Object checkJson(String stored) {
+        if (stored == null || stored.trim().isEmpty()) return null;
+        try {
+            JsonNode node = new ObjectMapper().readTree(stored);
+            return node != null && node.isObject() ? node : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -281,6 +293,8 @@ public class ResourceWebInvoices {
                             Map<Long, List<JsonObject>> seriesByFolder) {
         json.put("canDelete", ResourceWebEditInvoices.canDelete(object, rights, lookup, seriesByFolder));
         json.put("version", ResourceWebEditInvoices.version(attributes));
+        /* R03: "Erneut prüfen" writes the check result */
+        json.put("canCheck", rights.canWrite(object));
     }
 
     /**

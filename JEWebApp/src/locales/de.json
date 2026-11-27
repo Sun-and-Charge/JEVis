@@ -187,9 +187,18 @@
       "png": "PNG",
       "csv": "CSV",
       "pngLabel": "{name} als Bild (PNG) speichern",
-      "csvLabel": "Werte von {name} als CSV speichern"
+      "csvLabel": "Werte von {name} als CSV speichern",
+      "jpeg": "JPEG",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "jpegLabel": "{name} als Bild (JPEG) speichern",
+      "pdfLabel": "{name} als PDF speichern",
+      "xlsxLabel": "Werte von {name} als Excel-Datei speichern"
     },
     "count": "Anzahl",
+    "duration": "Dauer [h]",
+    "offsetSuffix": "{amount} {unit}",
+    "offsetUnits": { "MINUTES": "Min.", "HOURS": "Std.", "DAYS": "Tag | Tage", "WEEKS": "Woche | Wochen", "MONTHS": "Monat | Monate", "YEARS": "Jahr | Jahre" },
     "regression": {
       "model": "Modell",
       "formula": "Modellgleichung",
@@ -292,7 +301,156 @@
     "reports": "Berichte",
     "contracts": "Verträge",
     "invoices": "Energierechnungen",
-    "costs": "Kostenrechnung"
+    "costs": "Kostenrechnung",
+    "certificates": "Energieausweise"
+  },
+  "certificates": {
+    "title": "Energieausweise",
+    "loading": "Energieausweise werden geladen …",
+    "empty": "Keine Energieausweise für diese Auswahl.",
+    "today": "Stand: {date}",
+    "hint": "Vorhandene Energieausweise der Gebäude mit Kennwerten, Gültigkeit und Zuständigen. Ausgestellt werden die Ausweise vom Aussteller, hier werden sie hinterlegt.",
+    "new": "Neuer Energieausweis",
+    "export": "CSV exportieren",
+    "tabs": {
+      "list": "Übersicht",
+      "transfers": "Übermittlung"
+    },
+    "filter": {
+      "all": "Alle",
+      "attention": "Handlungsbedarf",
+      "EXPIRED": "Abgelaufen",
+      "EXPIRING": "Läuft ab",
+      "VALID": "Gültig",
+      "UNKNOWN": "Ohne Datum"
+    },
+    "status": {
+      "EXPIRED": "Abgelaufen",
+      "EXPIRING": "Läuft ab",
+      "VALID": "Gültig",
+      "UNKNOWN": "Ohne Datum"
+    },
+    "daysLeft": "noch {n} Tage | noch 1 Tag | noch {n} Tage",
+    "daysAgo": "seit {n} Tagen | seit 1 Tag | seit {n} Tagen",
+    "type": {
+      "CONSUMPTION": "Verbrauchsausweis",
+      "DEMAND": "Bedarfsausweis"
+    },
+    "use": {
+      "RESIDENTIAL": "Wohngebäude",
+      "NON_RESIDENTIAL": "Nichtwohngebäude"
+    },
+    "col": {
+      "building": "Gebäude",
+      "type": "Art",
+      "registrationNumber": "Registriernummer",
+      "issued": "Ausgestellt",
+      "validUntil": "Gültig bis",
+      "status": "Status",
+      "energyClass": "Klasse",
+      "heatConsumption": "Wärme",
+      "electricityConsumption": "Strom",
+      "finalEnergy": "Endenergie",
+      "primaryEnergy": "Primärenergie",
+      "referenceArea": "Bezugsfläche",
+      "co2": "CO₂",
+      "issuer": "Aussteller",
+      "responsible": "Zuständig",
+      "file": "PDF"
+    },
+    "field": {
+      "building": "Gebäude",
+      "type": "Art des Ausweises",
+      "use": "Gebäudenutzung",
+      "registrationNumber": "Registriernummer",
+      "issued": "Ausgestellt am",
+      "validUntil": "Gültig bis",
+      "validUntilHint": "Vorschlag: 10 Jahre ab Ausstellung",
+      "issuer": "Aussteller",
+      "responsible": "Zuständig (Erinnerungen per E-Mail)",
+      "energyClass": "Effizienzklasse",
+      "heatConsumption": "Energieverbrauchskennwert Wärme",
+      "electricityConsumption": "Energieverbrauchskennwert Strom",
+      "finalEnergy": "Endenergie",
+      "primaryEnergy": "Primärenergie",
+      "referenceArea": "Bezugsfläche",
+      "co2": "CO₂-Emissionen",
+      "reminderMonths": "Erinnerung (Monate vor Ablauf)",
+      "reminderHint": "z. B. „6, 1“: E-Mail 6 Monate und 1 Monat vor Ablauf",
+      "note": "Anmerkungen",
+      "none": "–"
+    },
+    "unit": {
+      "energy": "kWh/(m²·a)",
+      "area": "m²",
+      "co2": "kg/(m²·a)"
+    },
+    "section": {
+      "certificate": "Ausweis",
+      "values": "Kennwerte",
+      "validity": "Gültigkeit und Erinnerung",
+      "file": "Datei",
+      "note": "Anmerkungen"
+    },
+    "problem": {
+      "required": "Bitte ausfüllen.",
+      "date": "Bitte ein gültiges Datum eingeben.",
+      "order": "„Gültig bis“ muss nach dem Ausstellungsdatum liegen.",
+      "class": "Bitte eine Klasse von A+ bis H wählen.",
+      "number": "Bitte eine Zahl ab 0 eingeben.",
+      "range": "Bitte Monate von 0 bis 24 eingeben, getrennt durch Komma.",
+      "person": "Bitte nur Benutzer oder Gruppen wählen."
+    },
+    "editTitle": "Energieausweis: {name}",
+    "createTitle": "Neuer Energieausweis",
+    "saved": "„{name}“ wurde gespeichert.",
+    "created": "„{name}“ wurde angelegt.",
+    "deleted": "„{name}“ wurde in den Papierkorb verschoben.",
+    "delete": "Löschen",
+    "deleteQuestion": "„{name}“ in den Papierkorb verschieben?",
+    "file": {
+      "none": "Kein PDF hinterlegt.",
+      "open": "PDF öffnen",
+      "upload": "PDF hochladen",
+      "replace": "PDF ersetzen",
+      "remove": "PDF entfernen",
+      "afterSave": "Das PDF kann nach dem Anlegen hochgeladen werden.",
+      "uploaded": "Das PDF wurde gespeichert.",
+      "removed": "Das PDF wurde entfernt.",
+      "tooLarge": "Das PDF ist größer als 20 MB.",
+      "notPdf": "Bitte eine PDF-Datei wählen."
+    },
+    "noCreate": "Sie haben bei keinem Gebäude das Recht, Energieausweise anzulegen.",
+    "lastReminder": "Letzte Erinnerung",
+    "reminderError": "Erinnerung fehlgeschlagen: {error}",
+    "createdBy": "Angelegt {date} von {user}",
+    "transfer": {
+      "hint": "Ziele, an die Energieausweise übermittelt werden (E-Mail, SFTP, HTTP). Die Ziele werden im Control Center eingerichtet. Der Dienst JENotifier übermittelt nach Zeitplan oder auf Anforderung.",
+      "empty": "Keine Übermittlungsziele eingerichtet.",
+      "col": {
+        "name": "Ziel",
+        "channel": "Kanal",
+        "format": "Format",
+        "schedule": "Zeitplan",
+        "enabled": "Aktiv",
+        "last": "Letzte Übermittlung",
+        "requested": "Angefordert"
+      },
+      "schedule": {
+        "MANUAL": "Nur manuell",
+        "DAILY": "Täglich",
+        "WEEKLY": "Wöchentlich",
+        "MONTHLY": "Monatlich",
+        "ON_CHANGE": "Bei Änderung"
+      },
+      "run": "Jetzt übermitteln",
+      "requestedAt": "{date} von {user}",
+      "requestedOk": "Die Übermittlung an „{name}“ wurde angefordert. Sie erfolgt mit dem nächsten Lauf des Dienstes.",
+      "lastOk": "{date}: {count} Ausweise",
+      "lastError": "{date}: Fehler – {error}",
+      "yes": "Ja",
+      "no": "Nein"
+    }
   },
   "appointments": {
     "title": "Termine",
@@ -923,6 +1081,43 @@
       "notFound": "Die PDF-Datei ist nicht lesbar oder nicht mehr vorhanden.",
       "unsupported": "Ihr Browser kann die PDF-Datei hier nicht anzeigen.",
       "open": "PDF in neuem Tab öffnen"
+    },
+    "onDemand": {
+      "title": "Bericht auf Anforderung",
+      "loading": "Anforderungen werden geladen …",
+      "error": "Die Anforderungen konnten nicht geladen werden.",
+      "period": "Zeitraum",
+      "running": "(laufend)",
+      "quarter": "{quarter}. Quartal {year}",
+      "week": "KW {week} {year}",
+      "mail": "Per E-Mail an mich senden",
+      "send": "Bericht jetzt erstellen",
+      "sending": "Wird angefordert …",
+      "sent": "Angefordert. Der Bericht wird in etwa einer Minute erstellt.",
+      "tooMany": "Für diesen Bericht sind bereits drei Anforderungen offen.",
+      "sendError": {
+        "tooMany": "Für diesen Bericht sind bereits drei Anforderungen offen.",
+        "rights": "Sie dürfen diesen Bericht nicht anfordern.",
+        "invalid": "Dieser Zeitraum kann nicht angefordert werden.",
+        "noMail": "In Ihrem Benutzerkonto ist keine E-Mail-Adresse hinterlegt.",
+        "error": "Die Anforderung ist fehlgeschlagen."
+      },
+      "not": {
+        "rights": "Zum Anfordern brauchen Sie Schreibrechte auf den Bericht.",
+        "schedule": "Dieser Bericht hat keinen Zeitplan, der angefordert werden kann."
+      },
+      "none": "Noch keine Anforderungen in den letzten vier Wochen.",
+      "listLabel": "Anforderungen",
+      "requested": "Angefordert {time} von {name}",
+      "me": "Ihnen",
+      "mailed": "per E-Mail",
+      "status": {
+        "PENDING": "Wartet",
+        "RUNNING": "Wird erstellt",
+        "DONE": "Fertig",
+        "FAILED": "Fehlgeschlagen",
+        "EXPIRED": "Abgelaufen"
+      }
     }
   },
   "contracts": {
@@ -987,6 +1182,47 @@
     }
   },
   "invoices": {
+    "check": {
+      "title": "Rechnungsprüfung",
+      "filter": "Prüfung",
+      "all": "Alle",
+      "status": {
+        "OK": "In Ordnung",
+        "DEVIATION": "Abweichung",
+        "NOT_CHECKABLE": "Nicht prüfbar",
+        "NONE": "Nicht geprüft"
+      },
+      "short": {
+        "OK": "In Ordnung",
+        "DEVIATION": "Abweichung",
+        "NOT_CHECKABLE": "Nicht prüfbar",
+        "NONE": "Ungeprüft"
+      },
+      "reason": {
+        "noMeterPoint": "Die Rechnung hat keinen Zählpunkt bzw. keine Marktlokation.",
+        "noContract": "Kein Vertrag (Kostenrechnung) mit dieser Marktlokation, oder kein Leserecht darauf.",
+        "noPeriod": "Die Rechnung hat keinen Abrechnungszeitraum.",
+        "calculation": "Die Kostenrechnung des Vertrags konnte nicht berechnet werden.",
+        "noCheckFormulas": "Die Kostenrechnung des Vertrags hat keine Prüfgrößen (M_Verbrauch, R_Soll).",
+        "noValues": "Für den Zeitraum fehlen Messwerte oder Vertragspreise.",
+        "error": "Die Prüfung ist fehlgeschlagen."
+      },
+      "partial": "nur teilweise geprüft",
+      "contractName": "Vertrag (Kostenrechnung)",
+      "checkedAt": "Geprüft am",
+      "quantity": "Menge",
+      "amount": "Nettobetrag",
+      "measured": "gegen Messung",
+      "contract": "gegen Vertrag",
+      "expectedCol": "Soll",
+      "invoiced": "Rechnung",
+      "deviation": "Abweichung",
+      "tolerance": "Toleranz",
+      "result": "Ergebnis",
+      "none": "Diese Rechnung wurde noch nicht geprüft.",
+      "recheck": "Erneut prüfen",
+      "busy": "Wird geprüft …"
+    },
     "title": "Energierechnungen",
     "readOnly": "Nur Ansicht – Verträge und Rechnungen werden im Control Center gepflegt bzw. importiert.",
     "loading": "Rechnungen werden geladen …",
@@ -1034,6 +1270,7 @@
       "csvLabel": "Angezeigte Rechnungen als CSV herunterladen"
     },
     "col": {
+      "check": "Prüfung",
       "period": "Zeitraum",
       "periodStart": "Zeitraum von",
       "periodEnd": "Zeitraum bis",
@@ -1211,6 +1448,76 @@
     }
   },
   "invoiceEdit": {
+    "manual": {
+      "format": "Manuell erfasst (ohne E-Rechnung)",
+      "action": "Rechnung erfassen",
+      "title": "Rechnung erfassen",
+      "hint": "Für Rechnungen ohne E-Rechnungsdatei, z. B. auf Papier oder als einfaches PDF. Die Rechnung wird wie eine importierte E-Rechnung gespeichert und erscheint in der Rechnungsliste, den Rechnungsreihen und der Kostenrechnung.",
+      "choose": "Bitte wählen …",
+      "vat": "USt-IdNr. des Lieferanten",
+      "periodStart": "Abrechnungszeitraum von",
+      "periodEnd": "bis",
+      "meterPoint": "Zählpunkt / Marktlokation",
+      "meterPointHint": "Wie auf der Rechnung; damit wird die Rechnung später dem Vertrag zugeordnet.",
+      "creditNote": "Gutschrift (Beträge und Verbrauch werden abgezogen)",
+      "section": {
+        "invoice": "Rechnung",
+        "lines": "Positionen",
+        "totals": "Summen",
+        "file": "Beleg"
+      },
+      "linesHint": "Betrag = Menge × Einzelpreis, wenn kein Betrag eingetragen ist. Positionen in kWh, MWh oder m³ ergeben den Verbrauch; gleiche Mengen (z. B. Arbeitspreis und Netzentgelt) werden einmal gezählt.",
+      "line": {
+        "description": "Bezeichnung",
+        "quantity": "Menge",
+        "unit": "Einheit",
+        "unitPrice": "Einzelpreis (€)",
+        "net": "Betrag netto (€)",
+        "taxRate": "USt."
+      },
+      "unit": {
+        "KWH": "kWh",
+        "MWH": "MWh",
+        "MTQ": "m³",
+        "KWT": "kW",
+        "MON": "Monat",
+        "DAY": "Tag",
+        "ANN": "Jahr",
+        "C62": "Stück",
+        "LS": "pauschal"
+      },
+      "energyLine": "zählt als Verbrauch",
+      "addLine": "Position hinzufügen",
+      "removeLine": "Position {n} entfernen",
+      "tax": "Umsatzsteuer",
+      "noConsumption": "kein Verbrauch (keine Position in kWh, MWh oder m³)",
+      "ownTotals": "Summen abweichend eintragen (z. B. Rundung des Lieferanten)",
+      "ownConsumption": "Verbrauch abweichend eintragen",
+      "file": "PDF oder Scan der Rechnung (optional)",
+      "fileHint": "Höchstens 20 MB; wird an der Rechnung gespeichert und kann in der Rechnungsliste geöffnet werden.",
+      "save": "Rechnung speichern",
+      "saved": "Die Rechnung wurde gespeichert.",
+      "fix": "Bitte die markierten Felder prüfen.",
+      "duplicate": "Eine Rechnung mit diesem Lieferanten und dieser Rechnungsnummer gibt es in diesem Ordner schon.",
+      "problem": {
+        "directory": "Bitte einen Ordner wählen.",
+        "medium": "Bitte ein Medium wählen.",
+        "seller": "Bitte den Lieferanten angeben.",
+        "number": "Bitte die Rechnungsnummer angeben.",
+        "date": "Bitte das Rechnungsdatum angeben.",
+        "period": "Bitte beide Daten des Zeitraums angeben oder keins.",
+        "periodOrder": "Das Ende liegt vor dem Beginn.",
+        "lines": "Bitte mindestens eine Position eintragen oder die Summen abweichend eintragen.",
+        "number_quantity": "Bitte eine Zahl eingeben.",
+        "number_unitPrice": "Bitte eine Zahl eingeben.",
+        "number_net": "Bitte eine Zahl eingeben.",
+        "number_taxRate": "Bitte eine Zahl eingeben.",
+        "lineAmount": "Betrag oder Menge und Einzelpreis angeben.",
+        "lineDescription": "Bitte eine Bezeichnung angeben.",
+        "totals": "Netto und Brutto (oder Netto und Umsatzsteuer) angeben.",
+        "consumption": "Bitte eine Zahl eingeben."
+      }
+    },
     "hint": "Rechnungen können hier importiert und gelöscht werden; Vertragspartner, Preise und Abgaben unter „Verträge“.",
     "importAction": "Rechnungen importieren",
     "delete": "Löschen",
@@ -1417,7 +1724,56 @@
     "confirmAllResult": "{confirmed} quittiert, {refused} ohne Berechtigung abgelehnt.",
     "confirmAllDone": "Keine Konfiguration quittiert. | 1 Konfiguration quittiert. | {n} Konfigurationen quittiert."
   },
+  "alarmOutages": {
+    "title": "Datenausfälle",
+    "hint": "Datenreihen ohne neue Werte und Datenquellen, die nicht mehr lesen. Offene Ausfälle zuerst, darunter die im Zeitraum beendeten.",
+    "open": "Offen",
+    "ended": "Beendet",
+    "since": "Letzter Wert",
+    "never": "noch nie",
+    "allowed": "Erlaubt ohne Daten",
+    "cause": "Ursache (Datenquelle)",
+    "resumed": "Wieder Daten ab",
+    "configuration": "Alarmkonfiguration",
+    "minutes": "{n} Minuten | 1 Minute | {n} Minuten",
+    "hours": "{n} Stunden | 1 Stunde | {n} Stunden",
+    "days": "{n} Tage | 1 Tag | {n} Tage",
+    "kind": {
+      "row": "Datenausfall",
+      "source": "Übertragungsstörung"
+    },
+    "result": {
+      "late": "verspätet geliefert",
+      "gap": "Lücke bleibt",
+      "unmonitored": "nicht mehr überwacht"
+    }
+  },
   "alarmSettings": {
+    "copy": {
+      "button": "Regeln auf andere Datenreihen übertragen …",
+      "saveFirst": "Übertragen werden die gespeicherten Regeln. Bitte zuerst speichern oder verwerfen.",
+      "title": "Alarmregeln übertragen: {name}",
+      "intro": "Die gespeicherte Alarmregel dieser Datenreihe wird auf die gewählten Datenreihen übertragen; dort wird „Alarm aktiv“ eingeschaltet. Grenzwerte werden nicht übertragen. | Die gespeicherte Alarmregel dieser Datenreihe wird auf die gewählten Datenreihen übertragen; dort wird „Alarm aktiv“ eingeschaltet. Grenzwerte werden nicht übertragen. | Die {n} gespeicherten Alarmregeln dieser Datenreihe werden auf die gewählten Datenreihen übertragen; dort wird „Alarm aktiv“ eingeschaltet. Grenzwerte werden nicht übertragen.",
+      "targets": "Ziel-Datenreihen",
+      "none": "Noch keine Datenreihen gewählt.",
+      "choose": "Datenreihen wählen …",
+      "remove": "„{name}“ entfernen",
+      "replace": "Vorhandene Regeln der Ziel-Datenreihen ersetzen",
+      "addHint": "Die übertragenen Regeln kommen zu den vorhandenen Regeln hinzu (höchstens 10 je Datenreihe).",
+      "replaceHint": "Die Ziel-Datenreihen haben danach genau die Regeln dieser Datenreihe; ihre bisherigen Regeln werden entfernt.",
+      "submit": "Übertragen",
+      "busy": "Wird übertragen …",
+      "changed": "Keine Datenreihe geändert | 1 Datenreihe geändert | {n} Datenreihen geändert",
+      "skipped": "Nicht geändert | 1 Datenreihe nicht geändert | {n} Datenreihen nicht geändert",
+      "unknownRow": "Objekt {id}",
+      "reason": {
+        "source": "die Datenreihe selbst",
+        "notFound": "keine lesbare bereinigte Datenreihe",
+        "noWrite": "kein Schreibrecht",
+        "unreadable": "vorhandene Regeln nicht lesbar – mit „ersetzen“ möglich",
+        "tooMany": "mehr als 10 Regeln"
+      }
+    },
     "tabsLabel": "Bereiche der Alarme",
     "tab": {
       "list": "Alarme",
@@ -1468,7 +1824,10 @@
       "cc": "Kopie an (CC)",
       "bcc": "Blindkopie an (BCC)",
       "subject": "Betreff",
-      "message": "Nachricht"
+      "message": "Nachricht",
+      "dailySummary": "Tageszusammenfassung per E-Mail",
+      "dailySummaryHint": "Einmal täglich: offene und beendete Datenausfälle sowie Grenzwertalarme der letzten 24 Stunden. Ohne Ereignisse wird nichts versendet.",
+      "dailySummaryTime": "Uhrzeit"
     },
     "scope": {
       "COMPLETE": "Alle Datenreihen",
@@ -1529,7 +1888,11 @@
       "rules": "Höchstens {max} Alarmregeln.",
       "days": "Bitte mindestens einen Wochentag wählen.",
       "time": "Bitte „von“ und „bis“ als Uhrzeit angeben.",
-      "sameTime": "„Von“ und „bis“ dürfen nicht gleich sein."
+      "sameTime": "„Von“ und „bis“ dürfen nicht gleich sein.",
+      "noData": "Bitte angeben, nach welcher Zeit ohne neue Werte ein Alarm kommt.",
+      "noDataNumber": "Bitte eine ganze Zahl größer 0 eingeben (höchstens ein Jahr).",
+      "average": "Bitte ganze Minuten von 1 bis 10080 eingeben oder leer lassen.",
+      "summaryTime": "Bitte eine Uhrzeit angeben, z. B. 07:00."
     },
     "row": {
       "title": "Alarmeinstellungen: {name}",
@@ -1542,7 +1905,9 @@
       "configurations": "Gemeldet von",
       "noConfiguration": "Keine Alarmkonfiguration prüft diese Datenreihe – erkannte Alarme werden nicht gemeldet.",
       "saved": "Die Alarmeinstellungen wurden gespeichert.",
-      "reprocess": "Geänderte Grenzwerte wirken nur auf Daten, die ab jetzt verarbeitet werden. Für vorhandene Daten die Datenreihe im Control Center neu berechnen lassen."
+      "reprocess": "Geänderte Grenzwerte wirken nur auf Daten, die ab jetzt verarbeitet werden. Für vorhandene Daten die Datenreihe im Control Center neu berechnen lassen.",
+      "lastValue": "Letzter Wert",
+      "noDataSince": "keine Daten seit {n} Stunden | keine Daten seit 1 Stunde | keine Daten seit {n} Stunden"
     },
     "limits": {
       "title": "Grenzwerte",
@@ -1593,7 +1958,19 @@
       "standby": "Bereitschaft",
       "standbyHint": "Alarme in dieser Zeit werden ignoriert.",
       "add": "Alarmregel hinzufügen",
-      "pickTitle": "Vergleichsreihe wählen"
+      "pickTitle": "Vergleichsreihe wählen",
+      "noDataKind": "Datenausfall",
+      "noData": "Alarm, wenn keine neuen Werte kommen seit",
+      "noDataUnit": "Einheit",
+      "minutes": "Minuten",
+      "hours": "Stunden",
+      "noDataHint": "Geprüft wird der Eingang der Rohdaten bei jedem Lauf des Dienstes, unabhängig vom Prüfintervall. Eine E-Mail beim Beginn, das Ende steht in der Tageszusammenfassung.",
+      "average": "Mittelwert über (Minuten)",
+      "averageNone": "Einzelwerte",
+      "averageHint": "Vergleicht den gleitenden Mittelwert statt jedes einzelnen Werts, z. B. 60 für den Mittelwert der letzten Stunde. Ein Wertekorridor sind zwei Regeln (unterhalb Minimum, oberhalb Maximum).",
+      "valid": "Gilt nur zu bestimmten Zeiten",
+      "validHint": "Für Tag- und Nachtgrenzwerte: z. B. eine Regel Mo–Fr 06:00–20:00 mit 40 kW und eine zweite nachts mit 10 kW.",
+      "addOutage": "Datenausfall überwachen"
     },
     "operator": {
       "BIGGER": "größer als",
@@ -1961,6 +2338,13 @@
       "regressionRole": "Rolle in der Regression",
       "decimalDigits": "Dezimalstellen",
       "decimalAuto": "wie Diagramm",
+      "timeMode": "Zeitbezug",
+      "timeModeHint": "Wie Diagramm: Zeitraum der Analyse. Verschoben: Werte aus einem verschobenen Zeitraum, z. B. -1 Jahr (Vorjahr). Fester Zeitraum: eigener Zeitraum auf einer zweiten Zeitachse.",
+      "timeModes": { "chart": "wie Diagramm", "offset": "verschoben", "fixed": "fester Zeitraum" },
+      "offset": "Verschiebung",
+      "offsetUnit": "Einheit der Verschiebung",
+      "offsetUnits": { "MINUTES": "Minuten", "HOURS": "Stunden", "DAYS": "Tage", "WEEKS": "Wochen", "MONTHS": "Monate", "YEARS": "Jahre" },
+      "offsetHint": "Woher die Werte stammen: -1 Jahr zeigt das Vorjahr, -2 Stunden die Werte von zwei Stunden vorher.",
       "interval": "Eigener Zeitraum",
       "start": "Start",
       "end": "Ende",
@@ -2040,6 +2424,7 @@
       "height": "Bitte leer lassen (automatisch) oder mindestens 50 Pixel.",
       "time": "Bitte eine Uhrzeit als HH:mm:ss.",
       "decimals": "Bitte leer lassen oder eine ganze Zahl von 0 bis 20.",
+      "timeOffset": "Bitte eine ganze Zahl ungleich 0 angeben (höchstens etwa zehn Jahre).",
       "interval": "Bitte Start und Ende angeben.",
       "intervalOrder": "Das Ende muss nach dem Start liegen."
     },

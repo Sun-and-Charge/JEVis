@@ -170,7 +170,7 @@ public class HTTPDataSource {
         ParameterHelper parameterHelper = new ParameterHelper(lastReadout, endDateTime);
         path = parameterHelper.getNewPath(path, channel.getChannelObject());
 
-        logger.debug("[{}] Connection Setting: Server: {} User: {} PW: {} authScheme: {}", channelID, serverURL, userName, password, authScheme);
+        logger.debug("[{}] Connection Setting: Server: {} User: {} password set: {} authScheme: {}", channelID, serverURL, userName, password != null && !password.isEmpty(), authScheme);
         PathFollower pathFollower = new PathFollower(channel.getChannelObject());
 
         normalizeServerURL(channelID);

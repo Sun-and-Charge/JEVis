@@ -123,6 +123,14 @@
         </dependency>
         <dependency>
             <groupId>org.jevis</groupId>
+            <artifactId>EInvoiceParser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jevis</groupId>
+            <artifactId>FolderDataSource</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jevis</groupId>
             <artifactId>RevolutionPiServer</artifactId>
         </dependency>
         <dependency>

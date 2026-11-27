@@ -341,7 +341,8 @@
 
 .inv-import-backdrop {
   justify-content: flex-end;
-  align-items: stretch;
+  /* the panel grows with its content (stretch kept it one screen high and longer content ran past its background) */
+  align-items: flex-start;
   padding: 0;
 }
 
@@ -810,4 +811,10 @@ button.inv-status:focus-visible {
 
 .cfg-warnings ul {
   margin: 0.35rem 0 0;
+}
+
+.inv-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }

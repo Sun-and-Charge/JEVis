@@ -361,8 +361,10 @@ public class GaugeWidget extends Widget implements DataModelWidget {
                                 DateTime date = new DateTime();
                                 String formatString = PeriodHelper.STANDARD_PATTERN;
                                 try {
-                                    value = calcInputObject.getSamples().get(0).getValueAsDouble();
-                                    date = calcInputObject.getSamples().get(0).getTimestamp();
+                                    /* the value used for the time frame; a non-periodic input lists all its values, the first one is not it */
+                                    JEVisSample shown = calcInputObject.sampleValidAt(this.getDataHandler().getDuration().getStart());
+                                    value = shown.getValueAsDouble();
+                                    date = shown.getTimestamp();
                                     Period periodForDate = CleanDataObject.getPeriodForDate(calcInputObject.getValueAttribute().getObject(), date);
                                     formatString = PeriodHelper.getFormatString(periodForDate, false);
                                 } catch (Exception e) {

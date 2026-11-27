@@ -47,6 +47,8 @@ public class RowDefinition {
     private boolean intervalEnabled = false;
     private String intervalStart;
     private String intervalEnd;
+    /** tender point 03: where the values come from relative to the chart (e.g. -1 year, -2 hours); NONE = as the chart */
+    private TimeOffset timeOffset = TimeOffset.NONE;
     private String css = "";
     /* stored by older Control Center versions per row; only dashboards use them (analyses take the tool bar) */
     private AggregationPeriod aggregation;
@@ -239,6 +241,14 @@ public class RowDefinition {
 
     public void setIntervalEnd(String intervalEnd) {
         this.intervalEnd = intervalEnd;
+    }
+
+    public TimeOffset getTimeOffset() {
+        return timeOffset;
+    }
+
+    public void setTimeOffset(TimeOffset timeOffset) {
+        this.timeOffset = timeOffset != null ? timeOffset : TimeOffset.NONE;
     }
 
     public String getCss() {

@@ -195,6 +195,17 @@
         "de": "Rechnungspositionen",
         "en": "Line items"
       }
+    },
+    {
+      "type": "Check Result",
+      "descriptions": {
+        "de": "Ergebnis der automatischen Rechnungsprüfung (Menge und Betrag gegen Messung und Vertrag); vom Web-Service geschrieben, nicht ändern",
+        "en": "Result of the automatic invoice check (quantity and amount against measurement and contract); written by the web service, do not change"
+      },
+      "names": {
+        "de": "Prüfergebnis",
+        "en": "Check result"
+      }
     }
   ]
 }

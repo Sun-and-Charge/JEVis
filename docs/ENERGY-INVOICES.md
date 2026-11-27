@@ -83,6 +83,82 @@ the folder (or write right on an existing series); 400 for a wrong `medium` or a
   (413).
 - Authentication: the Control Center's session (Bearer token or legacy Basic) like all other endpoints.
 
+## Manual invoices (R01, 2026-11-27)
+
+Invoices without e-invoice file (paper, plain PDF) are entered in the web app ("Rechnung erfassen") and stored like an
+imported e-invoice, so they appear in the register, the series and the cost calculation:
+
+- `POST /JEWebService/v1/invoices/manual?directory=<id>`, multipart: part `data` (JSON) and an optional part `file`
+  (PDF or scan, max 20 MB, stored in "Invoice File"; without it the attribute stays empty).
+- `data`: `{medium, seller, sellerVatId?, buyer?, number, date, periodStart?, periodEnd?, meterPoint?, currency?
+  (EUR), creditNote?, consumption?: {value, unit KWH|MWH|MTQ}, lines?: [{description, quantity?, unit?, unitPrice?,
+  net?, taxRate?}], net?, tax?, gross?}` (`ManualInvoice`). A line's net is quantity × unit price (2 decimals) when
+  missing; the totals are the sums of the lines (tax per line, rounded to cents) unless given; the consumption is the
+  given one, else the analysis of the energy lines as for e-invoices (the web app always sends the consumption it
+  shows). Period both or none; credit notes negate totals and consumption as for e-invoices.
+- Format `MANUAL`; same duplicate check (seller + number, `409 DUPLICATE`), same rights and rollback as the import.
+- Errors: `400 INVALID` with the problems in `message`, `400 INVALID_DIRECTORY`, `403`, `409`, `413`.
+- Editing: delete (recycle bin, taken out of the series) and enter again.
+- The invoice check (below) runs right after saving.
+
+## Invoice check (R03, 2026-11-27)
+
+After every import (`POST /invoices/import`, `/invoices/manual`; answer field `check`) and on
+`POST /JEWebService/v1/web/invoices/{id}/check` (write right on the invoice) the web service checks the invoice
+(`InvoiceCheck`, `ResourceWebInvoiceCheck`), with the rights of the user:
+
+1. **Contract:** the readable accounting configuration whose "Marktlokation" (`marketLocationNumber` of its template
+   file) equals the invoice's "Meter Point" (without spaces, case-insensitive). The field may hold several identifiers
+   separated by `;` or `,`, e.g. market location and meter point (`10000000001; DE0000…0001`), because invoices name
+   either one. Several matches: the first, `ambiguous` = count.
+2. **Calculation:** the configuration's cost calculation over the billing period (period start 00:00 to period end
+   23:59:59.999 in the time zone of the configuration's site, attribute "Timezone" of the building; the server
+   itself runs in UTC). Check values by formula name of the template: **`M_Verbrauch`** (measured
+   consumption) and **`R_Soll`** (net amount according to the contract for the invoiced quantity, i.e. the sum of the
+   `R_…` positions). The demo templates (JEDemo `TemplateFactory`) have them; other templates need two formulas with
+   these names.
+3. **Comparison:** invoice "Consumption" against `M_Verbrauch`, invoice "Net Amount" against `R_Soll`; deviation in %
+   of the expected value (none against an expected 0, unless the invoice is 0 too). Tolerances from the nearest invoice
+   folder up the tree: "Check Tolerance Quantity" (default 2 %) and "Check Tolerance Amount" (default 1 %).
+4. **Result** in the new attribute "Check Result" (JSON, latest sample): `{checkedAt, status OK|DEVIATION|NOT_CHECKABLE,
+   reason?, message?, contract {id, name}, from, to, quantity {expected, invoiced, difference, deviationPercent,
+   tolerancePercent, ok, unit}, amount {…}, partial?}`. Reasons for NOT_CHECKABLE: `noMeterPoint`, `noContract`,
+   `noPeriod`, `calculation`, `noCheckFormulas`, `noValues`, `error`. `partial` when only one of the two comparisons
+   was possible. A failed check never fails the import. The invoice's `version` (delete conflict check) ignores
+   "Check Result".
+5. **Mail** when the status becomes DEVIATION (not again while it stays one): default mail settings of the server
+   (`ServerMail`), to the addresses in "Check Recipients" and (blind copy) the members of the group in "Check
+   Recipient Group" of the nearest folder that sets them; German HTML (`InvoiceCheckMail`). Nothing is sent without
+   mail server or recipients (`mailed: false` in the answer).
+
+Web app: column and filter chips "Prüfung" (In Ordnung, Abweichung, Nicht prüfbar, Ungeprüft) in the register; in the
+details a section "Rechnungsprüfung" with contract, both comparisons and "Erneut prüfen". Control Center: "Check
+Result" is shown read-only in the object editor.
+
+## Unattended import (R02, 2026-11-27)
+
+E-invoices that arrive by mail, on an sFTP/FTP server or in a folder are imported by the **DataCollector** with the
+new parser **"E-Invoice Parser"** (module `DataCollector/EInvoiceParser`) below the channel of the existing data
+source, instead of a measurement parser:
+
+- Data sources: "IMAP/POP3 EMail Server" (EMail Channel: sender/subject filter, attachment name), "sFTP Server",
+  "FTP Server", "HTTP Server" and the new **"Local Folder Server"** (module `DataCollector/Folder-Driver`: a folder on
+  the DataCollector's machine; "Local Folder Channel" with "Path" as regular expression on the full path with `/`, as
+  for sFTP, e.g. `/srv/jevis/eingang/rechnungen/.*\.(pdf|xml)`; files changed after the channel's "Last Readout",
+  oldest first; after all parsers succeeded deleted ("Delete File on successful parsing") or moved ("Move To Folder")).
+- Parser attributes: **"Target Directory"** (Energy Invoices Directory, required), **"Default Medium"** (when the
+  server detects none; empty = OTHER), **"Error Recipients"** (addresses), "Last Run" (summary, written by the parser),
+  "Processed Files" (SHA-256 of the files handled, at most 1000, written by the parser).
+- Per file (`InvoiceInbox`): PDF or XML by content, other attachments are ignored; `POST /invoices/parse` (medium,
+  duplicate) and `POST /invoices/import` as the service user of the DataCollector, so the invoice check (R03) runs
+  too. Duplicates (`duplicate` in the parse answer or `409`) and files that are no e-invoice (`400 NOT_AN_E_INVOICE` /
+  `UNREADABLE`) are remembered and not tried or reported again; other errors (server not reachable, `403`, …) are
+  tried again in the next run.
+- The parser moves the channel's "Last Readout" to now (the data sources do that only for measurements), except
+  when a file must be tried again. Errors go to the parser report (sFTP/folder files are then not deleted) and, with
+  "Error Recipients", into one German mail per run (`POST /mail/send`, the server's mail settings).
+- The DataCollector's service user needs create/write rights in the target folder (as for an import in the web app).
+
 ## Control Center (AccountingPlugin)
 
 - Button "Rechnungen importieren" (where Energy Invoices Directories are shown; folder chooser if several).

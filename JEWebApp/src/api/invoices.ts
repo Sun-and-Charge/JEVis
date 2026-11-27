@@ -35,6 +35,35 @@ export interface Invoice {
   canDelete?: boolean
   /** E6.1: latest change of the invoice's attributes, sent with DELETE (409 if outdated) */
   version?: string | null
+  /** R03: result of the automatic invoice check, null if not checked */
+  check?: InvoiceCheckResult | null
+  /** R03: write right on the invoice ("Erneut prüfen") */
+  canCheck?: boolean
+}
+
+/** One comparison of the invoice check: expected (measured / contract) against invoiced. */
+export interface InvoiceCheckPart {
+  expected: number
+  invoiced: number
+  difference: number
+  /** null against an expected 0 */
+  deviationPercent: number | null
+  tolerancePercent: number
+  ok: boolean
+  unit?: string | null
+}
+
+/** "Check Result" of an invoice (docs/ENERGY-INVOICES.md "Invoice check"). */
+export interface InvoiceCheckResult {
+  status?: 'OK' | 'DEVIATION' | 'NOT_CHECKABLE' | string
+  /** NOT_CHECKABLE: noMeterPoint, noContract, noPeriod, calculation, noCheckFormulas, noValues, error */
+  reason?: string
+  message?: string
+  checkedAt?: string
+  contract?: { id: number; name: string } | null
+  quantity?: InvoiceCheckPart | null
+  amount?: InvoiceCheckPart | null
+  partial?: boolean
 }
 
 /** One line of the parsed "Line Items" JSON as stored (typical keys: description, quantity, unit, unitPrice, net, taxRate, periodStart, periodEnd). */
@@ -174,6 +203,43 @@ export function parseInvoiceFile(http: Pick<HttpClient, 'postForm'>, directory: 
 /** POST /JEWebService/v1/invoices/import?directory=&medium= (multipart `file`): 409 DUPLICATE if it exists. */
 export function importInvoiceFile(http: Pick<HttpClient, 'postForm'>, directory: number, medium: InvoiceMedium, file: File): Promise<ImportedInvoice> {
   return http.postForm<ImportedInvoice>(importPath(directory, medium), fileForm(file))
+}
+
+/* ---------- R01: manual invoice ---------- */
+
+/** Body (part `data`) of POST /invoices/manual; amounts as numbers, dates yyyy-MM-dd. */
+export interface ManualInvoiceBody {
+  medium: InvoiceMedium
+  seller: string
+  sellerVatId?: string
+  number: string
+  date: string
+  periodStart?: string
+  periodEnd?: string
+  meterPoint?: string
+  creditNote?: boolean
+  lines: { description: string; quantity?: number; unit?: string; unitPrice?: number; net?: number; taxRate?: number }[]
+  net?: number
+  tax?: number
+  gross?: number
+  consumption?: { value: number; unit: 'KWH' | 'MWH' | 'MTQ' }
+}
+
+export function manualPath(directory: number): string {
+  return `/invoices/manual?directory=${directory}`
+}
+
+/** POST /JEWebService/v1/invoices/manual?directory= (multipart `data` JSON + optional `file`): 201 as the import, 409 DUPLICATE. */
+export function saveManualInvoice(http: Pick<HttpClient, 'postForm'>, directory: number, body: ManualInvoiceBody, file: File | null): Promise<ImportedInvoice> {
+  const form = new FormData()
+  form.append('data', JSON.stringify(body))
+  if (file) form.append('file', file, file.name)
+  return http.postForm<ImportedInvoice>(manualPath(directory), form)
+}
+
+/** POST /web/invoices/{id}/check (R03): checks the invoice again and stores the result. */
+export function recheckInvoice(http: Pick<HttpClient, 'post'>, id: number): Promise<InvoiceCheckResult> {
+  return http.post<InvoiceCheckResult>(`/web/invoices/${id}/check`)
 }
 
 /** DELETE /web/invoices/{id}?version=: recycle bin, amounts taken out of the series; 409 if changed meanwhile. */

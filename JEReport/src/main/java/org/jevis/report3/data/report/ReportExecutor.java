@@ -194,6 +194,57 @@ public class ReportExecutor {
         }
     }
 
+    /** files of an on-demand run (R04) */
+    public static final class OnDemandFiles {
+        public JEVisFile xlsx;
+        public JEVisFile pdf;
+    }
+
+    /**
+     * R04 report on demand: renders the report for the period that starts at {@code start} (the report's own schedule
+     * and links) and stores the files in "On Demand Report" / "On Demand Report PDF" with the request id as note.
+     * Unlike a scheduled run it does not wait for the end of the period or for new data, ignores preconditions and
+     * periodic conditions, sends no notification and leaves "Start Record" as it is.
+     *
+     * @throws Exception when the template gives no file
+     */
+    public OnDemandFiles executeOnDemand(DateTime start, String requestId) throws Exception {
+        intervalCalculator.setStartOverride(start);
+        intervalCalculator.buildIntervals(reportObject);
+        List<ReportData> reportLinks = reportLinkFactory.getReportLinks(reportObject);
+        contextBuilder.setIntervalCalculator(intervalCalculator);
+        ReportProperty property = new ReportProperty(reportObject);
+        Map<String, Object> contextMap = contextBuilder.buildContext(reportLinks, property, intervalCalculator);
+        byte[] outputBytes = new Report(property, contextMap).getReportFile();
+        if (outputBytes == null || outputBytes.length == 0) throw new IllegalStateException("The report template produced no file");
+
+        WorkDays wd = new WorkDays(reportObject);
+        String reportName = NameFormatter.formatNames(reportObject.getName().replaceAll("\\s", "_") + "_"
+                + start.toString(DateTimeFormat.forPattern("yyyyMMdd").withZone(wd.getDateTimeZone())));
+        reportName = ReportName.getPrefix(reportObject, start) + reportName;
+        DateTime now = new DateTime();
+        OnDemandFiles files = new OnDemandFiles();
+        files.xlsx = new JEVisFileImp(reportName + ".xlsx", outputBytes);
+        reportObject.getAttribute(ON_DEMAND_REPORT).buildSample(now, files.xlsx, requestId).commit();
+        try {
+            File wholePdf = new PdfConverter(reportName, outputBytes).runPdfConverter();
+            wholePdf.deleteOnExit();
+            PdfFileSplitter splitter = new PdfFileSplitter(property.getNrOfPdfPages(), wholePdf);
+            splitter.splitPDF();
+            File pdf = splitter.getOutputFile();
+            pdf.deleteOnExit();
+            files.pdf = new JEVisFileImp(reportName + ".pdf", pdf);
+            reportObject.getAttribute(ON_DEMAND_REPORT_PDF).buildSample(now, files.pdf, requestId).commit();
+        } catch (Exception e) {
+            /* the XLSX is there; the PDF needs LibreOffice */
+            logger.error("Could not create the PDF of the on-demand report {}", reportObject.getID(), e);
+        }
+        return files;
+    }
+
+    public static final String ON_DEMAND_REPORT = "On Demand Report";
+    public static final String ON_DEMAND_REPORT_PDF = "On Demand Report PDF";
+
     private boolean isEnabled(JEVisObject jeVisObject) {
         JEVisAttribute enabledAtt = null;
         try {

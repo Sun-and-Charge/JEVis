@@ -113,6 +113,10 @@ export interface ConfigForm {
   bindToData: boolean
   includeLimits: boolean
   disableLink: boolean
+  /** daily summary of alarms and outages (docs/ALARMS-OUTAGE.md) */
+  dailySummary: boolean
+  /** "HH:mm" */
+  dailySummaryTime: string
   notification: NotificationForm
 }
 
@@ -140,6 +144,8 @@ export function configForm(c: AlarmConfigSettings | null | undefined): ConfigFor
     bindToData: !!c?.bindToData,
     includeLimits: !!c?.includeLimits,
     disableLink: !!c?.disableLink,
+    dailySummary: !!c?.dailySummary,
+    dailySummaryTime: c?.dailySummaryTime || '07:00',
     notification: notificationForm(c?.notification),
   }
 }
@@ -165,7 +171,7 @@ function notificationKey(n: NotificationForm): string {
   ])
 }
 
-export const CONFIG_FIELDS = ['name', 'enabled', 'scope', 'objects', 'period', 'bindToData', 'includeLimits', 'disableLink', 'notification'] as const
+export const CONFIG_FIELDS = ['name', 'enabled', 'scope', 'objects', 'period', 'bindToData', 'includeLimits', 'disableLink', 'dailySummary', 'notification'] as const
 export type ConfigField = (typeof CONFIG_FIELDS)[number]
 
 /** Fields that differ from the loaded form. */
@@ -173,6 +179,7 @@ export function configChanges(initial: ConfigForm, form: ConfigForm): Set<Config
   const out = new Set<ConfigField>()
   if (initial.name.trim() !== form.name.trim()) out.add('name')
   for (const f of ['enabled', 'scope', 'period', 'bindToData', 'includeLimits', 'disableLink'] as const) if (initial[f] !== form[f]) out.add(f)
+  if (initial.dailySummary !== form.dailySummary || (form.dailySummary && initial.dailySummaryTime.trim() !== form.dailySummaryTime.trim())) out.add('dailySummary')
   if (objectsKey(initial.objects) !== objectsKey(form.objects)) out.add('objects')
   if (notificationKey(initial.notification) !== notificationKey(form.notification)) out.add('notification')
   return out
@@ -209,6 +216,8 @@ export function checkConfig(form: ConfigForm, opts: ConfigCheckOptions): { probl
   const name = nameProblem(form.name)
   if (name) problems.name = name
   if (scopeNeedsObjects(form.scope) && !form.objects.length) problems.objects = { key: 'alarmSettings.problem.objects' }
+  const summaryTime = normalizeTime(form.dailySummaryTime)
+  if (form.dailySummary && !summaryTime) problems.dailySummaryTime = { key: 'alarmSettings.problem.summaryTime' }
   const n = form.notification
   const sendNotification = opts.notificationEditable && (opts.changes == null ? n.enabled || hasNotificationContent(n) : opts.changes.has('notification'))
   if (sendNotification) {
@@ -234,8 +243,22 @@ export function checkConfig(form: ConfigForm, opts: ConfigCheckOptions): { probl
   if (want('bindToData')) body.bindToData = form.bindToData
   if (want('includeLimits')) body.includeLimits = form.includeLimits
   if (want('disableLink')) body.disableLink = form.disableLink
+  /* new configuration: only when switched on (servers without the attribute ignore it anyway) */
+  if (opts.changes == null ? form.dailySummary : opts.changes.has('dailySummary')) {
+    body.dailySummary = form.dailySummary
+    if (summaryTime) body.dailySummaryTime = summaryTime
+  }
   if (sendNotification) body.notification = notificationBody(n, opts.people, opts.known)
   return { problems, body }
+}
+
+/** "7:30" → "07:30"; null if not a time of day */
+export function normalizeTime(text: string): string | null {
+  const m = /^\s*(\d{1,2}):(\d{2})\s*$/.exec(text ?? '')
+  if (!m) return null
+  const h = Number(m[1])
+  const min = Number(m[2])
+  return h < 24 && min < 60 ? `${String(h).padStart(2, '0')}:${m[2]}` : null
 }
 
 const hasNotificationContent = (n: NotificationForm) => !!(n.people.length || n.recipients.trim() || n.cc.trim() || n.bcc.trim() || n.subject.trim() || n.message.trim())
@@ -323,7 +346,16 @@ export interface RuleForm {
   tolerance: string
   silent: ScheduleForm
   standby: ScheduleForm
+  /** validity time of the rule (day/night limits) */
+  valid: ScheduleForm
+  /** NO_DATA: allowed time without a new value, in {@link noDataUnit} */
+  noData: string
+  noDataUnit: 'MINUTES' | 'HOURS'
+  /** moving mean in minutes, empty = single values */
+  average: string
 }
+
+export const RULE_KINDS = ['STATIC', 'DYNAMIC', 'NO_DATA'] as const
 
 export interface RowForm {
   limitsEnabled: boolean
@@ -365,17 +397,23 @@ export function scheduleForm(s: AlarmSchedule | null | undefined): ScheduleForm 
 }
 
 export function ruleForm(r: AlarmRule, locale: string): RuleForm {
+  const minutes = typeof r.noData === 'number' && r.noData > 0 ? r.noData : null
+  const hours = minutes != null && minutes % 60 === 0
   return {
     uid: newRuleUid(),
     id: r.id ?? null,
     name: r.name ?? null,
-    kind: r.kind === 'DYNAMIC' ? 'DYNAMIC' : 'STATIC',
+    kind: r.kind === 'DYNAMIC' || r.kind === 'NO_DATA' ? r.kind : 'STATIC',
     limit: numberText(r.limit, locale),
     limitData: r.limitData ? { ...r.limitData } : null,
     operator: r.operator ?? '',
     tolerance: numberText(r.tolerance ?? 0, locale),
     silent: scheduleForm(r.silent),
     standby: scheduleForm(r.standby),
+    valid: scheduleForm(r.valid ?? null),
+    noData: minutes == null ? '' : String(hours ? minutes / 60 : minutes),
+    noDataUnit: minutes == null || hours ? 'HOURS' : 'MINUTES',
+    average: typeof r.average === 'number' && r.average > 0 ? String(r.average) : '',
   }
 }
 
@@ -391,7 +429,25 @@ export function newRule(): RuleForm {
     tolerance: '0',
     silent: scheduleForm(null),
     standby: scheduleForm(null),
+    valid: scheduleForm(null),
+    noData: '',
+    noDataUnit: 'HOURS',
+    average: '',
   }
+}
+
+/** A new data outage rule ("Datenausfall"), default 2 hours. */
+export function newOutageRule(): RuleForm {
+  return { ...newRule(), kind: 'NO_DATA', operator: '', noData: '2', noDataUnit: 'HOURS' }
+}
+
+/** Minutes of the outage rule, null if empty, NaN if not a whole positive number. */
+export function noDataMinutes(r: Pick<RuleForm, 'noData' | 'noDataUnit'>, locale: string): number | null {
+  if (!r.noData.trim()) return null
+  const n = parseUserNumber(r.noData, locale)
+  if (n == null || !(n > 0)) return NaN
+  const minutes = r.noDataUnit === 'HOURS' ? n * 60 : n
+  return Number.isInteger(minutes) && minutes <= 525600 ? minutes : NaN
 }
 
 export function rowForm(s: RowAlarmSettings | null | undefined, locale: string): RowForm {
@@ -413,6 +469,7 @@ export function cloneRowForm(f: RowForm): RowForm {
       limitData: r.limitData ? { ...r.limitData } : null,
       silent: { ...r.silent, days: [...r.silent.days] },
       standby: { ...r.standby, days: [...r.standby.days] },
+      valid: { ...r.valid, days: [...r.valid.days] },
     })),
   }
 }
@@ -515,6 +572,27 @@ export function checkRow(form: RowForm, changes: { limits: boolean; alarms: bool
     const rules: RowAlarmRuleBody[] = []
     for (const r of form.rules) {
       const p = `${r.uid}.`
+      if (r.kind === 'NO_DATA') {
+        const minutes = noDataMinutes(r, locale)
+        if (minutes == null) problems[p + 'noData'] = { key: 'alarmSettings.problem.noData' }
+        else if (Number.isNaN(minutes)) problems[p + 'noData'] = { key: 'alarmSettings.problem.noDataNumber' }
+        const silent = scheduleProblem(r.silent)
+        if (silent) problems[p + 'silent'] = silent
+        const standby = scheduleProblem(r.standby)
+        if (standby) problems[p + 'standby'] = standby
+        rules.push({
+          id: r.id,
+          ...(r.name != null ? { name: r.name } : {}),
+          kind: 'NO_DATA',
+          limit: null,
+          limitData: null,
+          tolerance: 0,
+          silent: scheduleBody(r.silent),
+          standby: scheduleBody(r.standby),
+          noData: minutes != null && !Number.isNaN(minutes) ? minutes : 0,
+        })
+        continue
+      }
       let limit: number | null = null
       if (r.kind === 'STATIC') {
         const n = num(r.limit, locale)
@@ -530,9 +608,19 @@ export function checkRow(form: RowForm, changes: { limits: boolean; alarms: bool
       if (silent) problems[p + 'silent'] = silent
       const standby = scheduleProblem(r.standby)
       if (standby) problems[p + 'standby'] = standby
+      const valid = scheduleProblem(r.valid)
+      if (valid) problems[p + 'valid'] = valid
+      let average: number | null = null
+      if (r.average.trim()) {
+        const n = parseUserNumber(r.average, locale)
+        if (n == null || !Number.isInteger(n) || n < 1 || n > 10080) problems[p + 'average'] = { key: 'alarmSettings.problem.average' }
+        else average = n
+      }
       rules.push({
         id: r.id,
         ...(r.name != null ? { name: r.name } : {}),
+        valid: scheduleBody(r.valid),
+        average,
         kind: r.kind,
         limit: r.kind === 'STATIC' ? limit : null,
         limitData: r.kind === 'DYNAMIC' && r.limitData ? { id: r.limitData.id, attribute: r.limitData.attribute || 'Value' } : null,

@@ -68,6 +68,21 @@ public class ReportLauncher extends AbstractCliApp {
         app.execute();
     }
 
+    /** R04: checks the on-demand requests every 30 s besides the normal cycle; started with the service mode */
+    private java.util.concurrent.ScheduledExecutorService onDemand;
+
+    private void startOnDemand() {
+        if (onDemand != null) return;
+        onDemand = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread thread = new Thread(r, "JEReport on demand");
+            thread.setDaemon(true);
+            return thread;
+        });
+        org.jevis.report3.ondemand.OnDemandRunner runner = new org.jevis.report3.ondemand.OnDemandRunner(ds, ReportLauncher::getReportExecutor);
+        onDemand.scheduleWithFixedDelay(runner::poll, 5, org.jevis.report3.ondemand.OnDemandRunner.POLL_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+        logger.info("On-demand report requests are checked every {} s", org.jevis.report3.ondemand.OnDemandRunner.POLL_SECONDS);
+    }
+
     private static @NotNull ReportExecutor getReportExecutor(JEVisObject reportObject) {
         SampleHandler sampleHandler = new SampleHandler();
         Precondition precondition = new Precondition(sampleHandler);
@@ -147,6 +162,7 @@ public class ReportLauncher extends AbstractCliApp {
     @Override
     protected void runServiceHelp() {
         if (checkConnection()) {
+            startOnDemand();
 
             checkForTimeout();
 

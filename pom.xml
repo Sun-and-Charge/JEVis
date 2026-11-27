@@ -291,6 +291,16 @@
                 <version>1.0.0</version>
             </dependency>
             <dependency>
+                <groupId>org.jevis</groupId>
+                <artifactId>EInvoiceParser</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jevis</groupId>
+                <artifactId>FolderDataSource</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jevis.jeopc</groupId>
                 <artifactId>OPCUA-Driver</artifactId>
                 <version>1.0</version>

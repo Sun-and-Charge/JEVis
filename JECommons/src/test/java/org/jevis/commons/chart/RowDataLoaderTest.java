@@ -87,6 +87,43 @@ public class RowDataLoaderTest {
     }
 
     @Test
+    public void timeOffsetLoadsEarlierValuesAndShiftsThem() throws Exception {
+        DataFake data = data(ds, 310, "Temperature", "Data", unit("°C"), samples(START.minusMinutes(120), 15, 10, 20));
+        RowDefinition definition = row("t", 310, "°C");
+        definition.setTimeOffset(new TimeOffset(-2, TimeOffset.Unit.HOURS));
+
+        RowResult result = loader.load(definition, AnalysisChartType.SCATTER, RANGE, null, settings());
+
+        /* the values two hours before the range are loaded and shown two hours later, i.e. in the range */
+        verify(data.value).getSamples(START.minusMinutes(120), END.minusMinutes(120), true, "NONE", "NONE", "Europe/Berlin");
+        assertEquals(2, result.getSamples().size());
+        assertEquals(START.getMillis(), result.getSamples().get(0).getTimestamp().getMillis());
+        assertEquals(START.plusMinutes(15).getMillis(), result.getSamples().get(1).getTimestamp().getMillis());
+    }
+
+    @Test
+    public void previousYearOffsetShowsLastYearsValuesInTheRange() throws Exception {
+        DataFake data = data(ds, 311, "Meter", "Data", unit("kWh"), samples(START.minusYears(1), 15, 7, 8));
+        RowDefinition definition = row("y", 311, "kWh");
+        definition.setTimeOffset(new TimeOffset(-1, TimeOffset.Unit.YEARS));
+
+        RowResult result = loader.load(definition, AnalysisChartType.LINE, RANGE, null, settings());
+
+        verify(data.value).getSamples(START.minusYears(1), END.minusYears(1), true, "NONE", "NONE", "Europe/Berlin");
+        assertEquals(START.getMillis(), result.getSamples().get(0).getTimestamp().getMillis());
+        assertEquals(7d, (Double) result.getSamples().get(0).getValue(), DELTA);
+    }
+
+    @Test
+    public void timeOffsetJsonAcceptsObjectsAndPlainMinutes() throws Exception {
+        com.fasterxml.jackson.databind.ObjectMapper m = new com.fasterxml.jackson.databind.ObjectMapper();
+        assertEquals(new TimeOffset(-1, TimeOffset.Unit.YEARS), TimeOffset.fromJson(m.readTree("{\"amount\":-1,\"unit\":\"years\"}")));
+        assertEquals(new TimeOffset(90, TimeOffset.Unit.MINUTES), TimeOffset.fromJson(m.readTree("90")));
+        assertTrue(TimeOffset.fromJson(m.readTree("{\"amount\":99,\"unit\":\"YEARS\"}")).isZero());
+        assertTrue(TimeOffset.fromJson(null).isZero());
+    }
+
+    @Test
     public void sourceSamplesAreNotModified() throws Exception {
         List<JEVisSample> source = samples(START, 15, 1000);
         data(ds, 302, "Meter", "Data", unit("Wh"), source);

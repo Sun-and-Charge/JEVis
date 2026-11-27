@@ -50,11 +50,22 @@ export interface AnalysisRowConfig {
   calculationId?: number | null
   /** E3: own time frame of the row */
   interval?: RowInterval | null
+  /** tender point 03: where the values come from relative to the chart (e.g. -1 YEARS) */
+  timeOffset?: RowTimeOffset | null
   /** E3: custom CSS of the row (table cells in the Control Center) */
   css?: string | null
 }
 
 /** E3: own time frame of a row (as stored: ISO date-times). */
+export const TIME_OFFSET_UNITS = ['MINUTES', 'HOURS', 'DAYS', 'WEEKS', 'MONTHS', 'YEARS'] as const
+export type TimeOffsetUnit = (typeof TIME_OFFSET_UNITS)[number]
+
+/** Tender point 03: relative time reference of a row, e.g. { amount: -1, unit: 'YEARS' } (last year) */
+export interface RowTimeOffset {
+  amount: number
+  unit: TimeOffsetUnit
+}
+
 export interface RowInterval {
   enabled: boolean
   start: string | null
@@ -233,6 +244,8 @@ export interface RowDefinition {
   calculation?: boolean
   bubbleType?: string
   interval?: RowInterval | null
+  /** tender point 03: where the values come from relative to the chart; null: as the chart */
+  timeOffset?: RowTimeOffset | null
   css?: string | null
 }
 

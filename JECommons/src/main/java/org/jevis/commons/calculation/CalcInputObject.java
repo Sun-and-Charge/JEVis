@@ -36,6 +36,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -83,6 +84,11 @@ public class CalcInputObject {
         }
     }
 
+    /** for tests: whether the input holds amounts, instead of reading the unit */
+    void setQuantity(Boolean quantity) {
+        this.quantity = quantity;
+    }
+
     /**
      * @return true if the input has a quantity unit (energy, volume, …) whose values can be summed
      */
@@ -127,6 +133,31 @@ public class CalcInputObject {
         } catch (Exception e) {
             logger.error("Could not get last sample before {} of input {}", startTime, identifier, e);
         }
+    }
+
+    /**
+     * The sample of this input that applies at {@code date}, for showing the inputs of a calculation: for a
+     * non-periodic or static input the last value at or before the date (the first one if all are later), otherwise
+     * the first sample (e.g. the total of the time frame).
+     *
+     * @return null without samples
+     */
+    public JEVisSample sampleValidAt(DateTime date) {
+        if (samples == null || samples.isEmpty()) return null;
+        /* periodic inputs and amounts of the time frame are one total (absolute mode) */
+        if (inputType != CalcInputType.NON_PERIODIC && inputType != CalcInputType.STATIC || samples.size() == 1) return samples.get(0);
+        JEVisSample valid = null;
+        JEVisSample earliest = null;
+        for (JEVisSample sample : samples) {
+            try {
+                DateTime ts = sample.getTimestamp();
+                if (earliest == null || ts.isBefore(earliest.getTimestamp())) earliest = sample;
+                if (!ts.isAfter(date) && (valid == null || ts.isAfter(valid.getTimestamp()))) valid = sample;
+            } catch (Exception e) {
+                logger.warn("Could not read sample of input {}", identifier, e);
+            }
+        }
+        return valid != null ? valid : earliest;
     }
 
     public CalcInputType getInputType() {
@@ -296,12 +327,33 @@ public class CalcInputObject {
                 if (foundUserDataObject) {
                     returnSamples = getUserData(startTime, endTime, correspondingUserDataObject, returnSamples);
                 }
+                if (isQuantity()) {
+                    /* amounts: the total of the values in the time frame, like a periodic quantity (2026-11-27) */
+                    returnSamples = Collections.singletonList(sumIn(returnSamples, startTime, endTime));
+                }
 
                 break;
         }
 
         this.samples = returnSamples;
 
+    }
+
+    /** one sample at {@code start} with the sum of the values in [start, end] */
+    private static JEVisSample sumIn(List<JEVisSample> samples, DateTime start, DateTime end) {
+        double sum = 0d;
+        for (JEVisSample sample : samples) {
+            try {
+                DateTime ts = sample.getTimestamp();
+                Double value = sample.getValueAsDouble();
+                if (value != null && !ts.isBefore(start) && !ts.isAfter(end)) sum += value;
+            } catch (Exception e) {
+                logger.warn("Could not read sample {}", sample, e);
+            }
+        }
+        VirtualSample virtualSample = new VirtualSample(start, sum);
+        virtualSample.setNote("");
+        return virtualSample;
     }
 
     private List<JEVisSample> getUserData(DateTime startTime, DateTime endTime, JEVisObject correspondingUserDataObject, List<JEVisSample> tempList) {

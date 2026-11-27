@@ -317,8 +317,21 @@ public class QuantityUnits {
             JEVisObject object = attribute.getObject();
             if (object != null) {
                 try {
-                    if (object.getJEVisClassName().equals(CleanDataObject.CLASS_NAME)) {
-                        JEVisAttribute quantityAttribute = object.getAttribute(CleanDataObject.AttributeName.VALUE_QUANTITY.getAttributeName());
+                    JEVisObject cleanData = null;
+                    if (object.getJEVisClassName().equals(CleanDataObject.CLASS_NAME) || object.getJEVisClassName().equals(JC.Data.BaseData.name)) {
+                        /* clean data and base data have the switch themselves */
+                        cleanData = object;
+                    } else if (object.getJEVisClassName().equals(JC.Data.name)) {
+                        /* a raw data row: the switch "Value is a Quantity" sits at its clean data (2026-11-27) */
+                        for (JEVisObject child : object.getChildren()) {
+                            if (CleanDataObject.CLASS_NAME.equals(child.getJEVisClassName())) {
+                                cleanData = child;
+                                break;
+                            }
+                        }
+                    }
+                    if (cleanData != null) {
+                        JEVisAttribute quantityAttribute = cleanData.getAttribute(CleanDataObject.AttributeName.VALUE_QUANTITY.getAttributeName());
                         if (quantityAttribute != null && quantityAttribute.hasSample()) {
                             JEVisSample latestSample = quantityAttribute.getLatestSample();
                             if (latestSample != null) {
@@ -361,7 +374,9 @@ public class QuantityUnits {
                     for (JsonRelationship jsonRelationship : sqlDataSource.getRelationships(object.getId())) {
                         if (jsonRelationship.getType() == 1 && jsonRelationship.getTo() == object.getId()) {
                             try {
-                                JsonObject child = sqlDataSource.getObject(jsonRelationship.getTo());
+                                /* the child is the start of the parent relationship (was getTo(): the row itself) */
+                                JsonObject child = sqlDataSource.getObject(jsonRelationship.getFrom());
+                                if (child == null || !CleanDataObject.CLASS_NAME.equals(child.getJevisClass())) continue;
                                 isQuantity = isQuantity(sqlDataSource, child, isQuantity);
                                 break;
                             } catch (Exception e) {
@@ -377,7 +392,7 @@ public class QuantityUnits {
 
     private boolean isQuantity(SQLDataSource sqlDataSource, JsonObject object, boolean isQuantity) {
         boolean isQuantityTemp = isQuantity;
-        if (object.getJevisClass().equals(CleanDataObject.CLASS_NAME)) {
+        if (object.getJevisClass().equals(CleanDataObject.CLASS_NAME) || object.getJevisClass().equals(JC.Data.BaseData.name)) {
             for (JsonAttribute jsonAttribute : sqlDataSource.getAttributes(object.getId())) {
                 if (jsonAttribute.getType().equals(CleanDataObject.AttributeName.VALUE_QUANTITY.getAttributeName())) {
                     if (jsonAttribute.getLatestValue() != null) {

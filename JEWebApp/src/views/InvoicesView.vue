@@ -22,6 +22,8 @@ import {
   monthlySeries,
   type Amount,
   type InvoiceFilter,
+  checkOptions,
+  checkStatus,
 } from '../accounting/invoices'
 import { echartsLocale } from '../analysis/echarts'
 import { formatNumber } from '../analysis/format'
@@ -29,6 +31,7 @@ import { browserTimeZone } from '../analysis/settings'
 import { deleteInvoice, loadInvoices, type Invoice, type InvoiceMedium } from '../api/invoices'
 import InvoiceDetails from '../components/accounting/InvoiceDetails.vue'
 import InvoiceImportDialog from '../components/accounting/InvoiceImportDialog.vue'
+import ManualInvoiceDialog from '../components/accounting/ManualInvoiceDialog.vue'
 import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
 import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
 import { saveBlob } from '../iso/download'
@@ -97,6 +100,10 @@ const siteValue = computed({
     filter.site = (v === 'all' || v === 'none' ? v : Number(v)) as SiteFilter
   },
 })
+
+/* R03: invoice check */
+const checks = computed(() => checkOptions(all.value))
+const checkClass = (inv: Invoice) => ({ OK: 'is-done', DEVIATION: 'is-overdue', NOT_CHECKABLE: 'is-unknown', NONE: 'is-unknown' })[checkStatus(inv)]
 
 function toggleMedium(m: InvoiceMedium) {
   filter.media = toggleTag(filter.media, m) as InvoiceMedium[]
@@ -174,6 +181,18 @@ function openImport() {
   importOpen.value = true
 }
 
+/* R01: an invoice without e-invoice file */
+const manualOpen = ref(false)
+function openManual() {
+  message.value = null
+  manualOpen.value = true
+}
+async function manualSaved() {
+  manualOpen.value = false
+  message.value = { ok: true, text: t('invoiceEdit.manual.saved') }
+  await reload()
+}
+
 const deleting = ref<Invoice | null>(null)
 const deleteError = ref<string | null>(null)
 const { busy: deleteBusy, run } = useBusy()
@@ -213,7 +232,7 @@ function cancelDelete() {
   if (!deleteBusy.value) deleting.value = null
 }
 
-const tableColumns = ['period', 'number', 'date', 'seller', 'medium', 'meterPoint', 'consumption', 'net', 'tax', 'gross', 'currency'] as const
+const tableColumns = ['period', 'number', 'date', 'seller', 'medium', 'meterPoint', 'consumption', 'net', 'tax', 'gross', 'currency', 'check'] as const
 const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
 </script>
 
@@ -221,7 +240,10 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
   <section class="iso notes invoices" aria-labelledby="invoices-title">
     <div class="mod-head">
       <h1 id="invoices-title">{{ t('invoices.title') }}</h1>
-      <button v-if="canImport" type="button" class="btn btn-primary inv-import" @click="openImport">{{ t('invoiceEdit.importAction') }}</button>
+      <div v-if="canImport" class="inv-head-actions">
+        <button type="button" class="btn inv-manual" @click="openManual">{{ t('invoiceEdit.manual.action') }}</button>
+        <button type="button" class="btn btn-primary inv-import" @click="openImport">{{ t('invoiceEdit.importAction') }}</button>
+      </div>
     </div>
     <p v-if="writable" class="muted read-only">{{ t('invoiceEdit.hint') }}</p>
     <p v-else class="muted read-only">{{ t('invoices.readOnly') }}</p>
@@ -301,6 +323,22 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
         </button>
       </div>
 
+      <div v-if="checks.length > 1 || (checks.length && checks[0].id !== 'NONE')" class="notes-tags inv-check-chips" role="group" :aria-label="t('invoices.check.filter')">
+        <span class="seg-label" aria-hidden="true">{{ t('invoices.check.filter') }}</span>
+        <button type="button" class="notes-chip" :aria-pressed="filter.check === 'all'" @click="filter.check = 'all'">{{ t('invoices.check.all') }}</button>
+        <button
+          v-for="c in checks"
+          :key="c.id"
+          type="button"
+          class="notes-chip"
+          :data-check="c.id"
+          :aria-pressed="filter.check === c.id"
+          @click="filter.check = filter.check === c.id ? 'all' : c.id"
+        >
+          {{ t('invoices.check.short.' + c.id) }} <span class="notes-chip-count">{{ c.count }}</span>
+        </button>
+      </div>
+
       <div v-if="data.truncated" class="alert notes-truncated" role="note">{{ t('invoices.truncated', { n: all.length }) }}</div>
 
       <section v-if="summaries.length" class="iso-stats inv-summary" aria-labelledby="invoices-summary-title">
@@ -366,6 +404,8 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
             <dd :class="{ 'is-negative': negative(inv.gross) }">
               {{ amount(inv.gross) || t('modules.none') }} {{ inv.gross != null ? inv.currency ?? '' : '' }}
             </dd>
+            <dt>{{ t('invoices.col.check') }}</dt>
+            <dd><span class="mod-badge inv-check-badge" :class="checkClass(inv)">{{ t('invoices.check.short.' + checkStatus(inv)) }}</span></dd>
           </dl>
           <button
             type="button"
@@ -378,7 +418,7 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
             <span class="chevron" aria-hidden="true">›</span>{{ t('modules.details') }}
           </button>
           <div v-if="selected === inv.id" :id="domId(inv, 'c')" class="mod-details">
-            <InvoiceDetails :invoice="inv" removable @remove="askDelete(inv)" />
+            <InvoiceDetails :invoice="inv" removable @remove="askDelete(inv)" @changed="reload" />
           </div>
         </li>
       </ul>
@@ -422,9 +462,10 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
                 <td class="num nowrap" :class="{ 'is-negative': negative(inv.tax) }">{{ amount(inv.tax) }}</td>
                 <td class="num nowrap" :class="{ 'is-negative': negative(inv.gross) }">{{ amount(inv.gross) }}</td>
                 <td class="nowrap">{{ inv.currency }}</td>
+                <td class="nowrap"><span class="mod-badge inv-check-badge" :class="checkClass(inv)">{{ t('invoices.check.short.' + checkStatus(inv)) }}</span></td>
               </tr>
               <tr v-if="selected === inv.id" :id="domId(inv, 'd')" class="mod-detail">
-                <td :colspan="tableColumns.length + 1"><InvoiceDetails :invoice="inv" removable @remove="askDelete(inv)" /></td>
+                <td :colspan="tableColumns.length + 1"><InvoiceDetails :invoice="inv" removable @remove="askDelete(inv)" @changed="reload" /></td>
               </tr>
             </template>
           </tbody>
@@ -433,6 +474,7 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
     </template>
 
     <InvoiceImportDialog v-if="importOpen" @close="importOpen = false" @imported="reload" />
+    <ManualInvoiceDialog v-if="manualOpen" @close="manualOpen = false" @saved="manualSaved" />
     <ConfirmDialog
       v-if="deleting"
       :title="t('invoiceEdit.deleteTitle')"

@@ -34,6 +34,7 @@ import org.jevis.commons.datetime.DateHelper;
 import org.jevis.commons.datetime.Period;
 import org.jevis.commons.datetime.PeriodHelper;
 import org.jevis.commons.json.*;
+import org.jevis.commons.object.plugin.TargetHelper;
 import org.jevis.commons.utils.CommonMethods;
 import org.jevis.jenotifier.mode.SendNotification;
 import org.jevis.jenotifier.notifier.Email.EmailNotification;
@@ -49,6 +50,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.TreeMap;
+import java.util.function.Function;
 
 /**
  * @author <gerrit.schutz@sunandcharge.com>Gerrit Schutz</gerrit.schutz@sunandcharge.com>
@@ -110,6 +115,9 @@ public class AlarmProcess {
             end = now.minusMillis(1);
         }
 
+        /* data outages and the daily summary are checked in every run, independent of the alarm period */
+        Set<Long> rowsInOutage = checkOutages(now);
+
         if (boundToData || end.isBefore(now)) {
             try {
                 allCleanDataObjects = getAllCorrespondingCleanDataObjects();
@@ -131,7 +139,8 @@ public class AlarmProcess {
                     enabledAlarms.add(obj);
 
                     DateTime lastTS = cleanDataObject.getFirstDate();
-                    if (alarmPeriod != Period.NONE && alarmEnabled && !lastTS.isAfter(end)) {
+                    /* a row in data outage no longer holds back the other rows of the configuration */
+                    if (alarmPeriod != Period.NONE && alarmEnabled && !lastTS.isAfter(end) && !rowsInOutage.contains(obj.getID())) {
                         logger.debug("Object {}:{} has last ts of {} that is not after {}", obj.getName(), obj.getID(), lastTS, end);
                         hasData = false;
                         break;
@@ -266,7 +275,93 @@ public class AlarmProcess {
         alarmConfiguration.getTimeStampAttribute().buildSample(new DateTime(), newStartRecordTime.toString()).commit();
     }
 
+    /**
+     * Outage check and daily summary (docs/ALARMS-OUTAGE.md); never throws.
+     *
+     * @return the rows in data outage
+     */
+    private Set<Long> checkOutages(DateTime now) {
+        try {
+            List<JEVisObject> rows = new ArrayList<>();
+            for (JEVisObject obj : getAllCorrespondingCleanDataObjects()) {
+                try {
+                    JEVisAttribute enabled = obj.getAttribute(ALARM_ENABLED_ATTRIBUTE);
+                    if (enabled != null && isAlarmEnabled(enabled.getLatestSample())) rows.add(obj);
+                } catch (Exception e) {
+                    logger.debug("Skipped {} in outage check", obj, e);
+                }
+            }
+            OutageMonitor monitor = new OutageMonitor(ds, alarmConfiguration, this::mail);
+            Set<Long> inOutage = monitor.run(rows, dataSources(), now);
+            monitor.dailySummary(now);
+            return inOutage;
+        } catch (Exception e) {
+            logger.error("Outage check of {} failed", alarmConfiguration.getObject().getID(), e);
+            return new HashSet<>();
+        }
+    }
+
+    /** data sources of the configuration: selected ones, or with scope COMPLETE all below the building */
+    private List<JEVisObject> dataSources() {
+        List<JEVisObject> sources = new ArrayList<>();
+        try {
+            switch (alarmConfiguration.getAlarmScope()) {
+                case SELECTED:
+                    for (JEVisObject o : alarmConfiguration.getAlarmObjects()) if (OutageMonitor.isA(o, "Data Source")) sources.add(o);
+                    break;
+                case COMPLETE:
+                case WITHOUT_SELECTED: {
+                    JEVisObject cfg = alarmConfiguration.getObject();
+                    JEVisObject building = cfg.getParents().get(0).getParents().get(0);
+                    OutageMonitor.collect(building, "Data Source", sources);
+                    if (alarmConfiguration.getAlarmScope() == AlarmScope.WITHOUT_SELECTED) sources.removeAll(alarmConfiguration.getAlarmObjects());
+                    break;
+                }
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            logger.error("Could not find the data sources of {}", alarmConfiguration.getObject().getID(), e);
+        }
+        return sources;
+    }
+
+    /** a mail with the configuration's notification and its own subject; false if it has no notification */
+    private boolean mail(String subject, String html) {
+        try {
+            EmailNotification notification = new EmailNotification();
+            notification.setNotificationObject(getNotificationObject());
+            notification.setIsHTML(true);
+            notification.setSubject(subject);
+            notification.setMessage(html);
+            sendNotification(notification);
+            return true;
+        } catch (Exception e) {
+            logger.warn("No notification for {}: {}", alarmConfiguration.getObject().getID(), e.getMessage());
+            return false;
+        }
+    }
+
     public boolean sendAlarm(AlarmTable alarmTable) {
+        /* no mail without a listed alarm (e.g. only alarms in silent times) */
+        String alarms = "";
+        String limits = "";
+        try {
+            alarms = alarmTable.getAlarmTable();
+        } catch (Exception e) {
+            logger.error("Could not get alarm table string.");
+        }
+        if (alarmConfiguration.includeLimits()) {
+            try {
+                limits = alarmTable.getTableString();
+            } catch (Exception e) {
+                logger.error("Could not get limit table string.");
+            }
+        }
+        if (alarms.isEmpty() && (limits == null || limits.isEmpty())) {
+            logger.info("Nothing to report for {}, no mail", alarmConfiguration.getObject().getID());
+            return false;
+        }
 
         try {
             EmailNotification emailNotification = new EmailNotification();
@@ -501,138 +596,35 @@ public class AlarmProcess {
                 }
 
 
+                /* all rules of the row, each with its own silent/standby and validity time (before, only the last
+                   entry of "Alarm Config" took effect; docs/ALARMS-OUTAGE.md) */
                 CleanDataAlarm cleanDataAlarm = new CleanDataAlarm(cleanData);
-                if (cleanDataAlarm.isValidAlarmConfiguration()) {
-                    Double tolerance = cleanDataAlarm.getTolerance();
-                    AlarmType alarmType = cleanDataAlarm.getAlarmType();
-                    Double limit = null;
-                    List<UsageSchedule> usageSchedules = cleanDataAlarm.getUsageSchedules();
-                    List<JEVisSample> comparisonSamples;
-                    Map<DateTime, JEVisSample> compareMap = new HashMap<>();
-
-                    boolean dynamicAlarm = alarmType.equals(AlarmType.DYNAMIC);
-
-                    DateTime firstTimeStamp = end;
-                    if (dynamicAlarm) {
-                        comparisonSamples = cleanDataAlarm.getSamples(start, end);
-                        for (JEVisSample sample : comparisonSamples) {
-                            if (sample.getTimestamp().isBefore(firstTimeStamp)) firstTimeStamp = sample.getTimestamp();
-                            compareMap.put(sample.getTimestamp(), sample);
+                List<JEVisSample> alarmLogs = new ArrayList<>();
+                if (!valueSamples.isEmpty()) {
+                    DateTime from = valueSamples.get(0).getTimestamp();
+                    DateTime to = valueSamples.get(valueSamples.size() - 1).getTimestamp();
+                    for (AlarmRule rule : cleanDataAlarm.getRules()) {
+                        if (rule.getKind() == AlarmRule.Kind.NO_DATA) continue;
+                        try {
+                            List<AlarmRuleEvaluator.Point> points = new ArrayList<>();
+                            if (rule.getAverageMinutes() != null) {
+                                addPoints(points, valueAtt.getSamples(from.minusMinutes(rule.getAverageMinutes()), from.minusMillis(1)));
+                            }
+                            addPoints(points, valueSamples);
+                            Function<DateTime, Double> compare = rule.getKind() == AlarmRule.Kind.DYNAMIC
+                                    ? comparison(rule, from, to) : null;
+                            for (AlarmRuleEvaluator.Hit hit : AlarmRuleEvaluator.evaluate(rule, points, from, compare)) {
+                                JEVisSample alarmSample = new VirtualSample(hit.ts, (long) hit.logValue);
+                                alarmLogs.add(alarmSample);
+                                activeAlarms.add(new Alarm(cleanData, valueAtt, alarmSample, hit.ts, hit.value, hit.operator,
+                                        hit.setValue, hit.type, hit.logValue));
+                            }
+                        } catch (Exception e) {
+                            logger.error("Could not evaluate alarm rule '{}' of {}:{}", rule.getName(), cleanData.getName(), cleanData.getID(), e);
                         }
-                    } else limit = cleanDataAlarm.getLimit();
-
-
-                    if (!valueSamples.isEmpty()) {
-                        List<JEVisSample> alarmLogs = new ArrayList<>();
-                        for (JEVisSample valueSample : valueSamples) {
-                            DateTime ts = valueSample.getTimestamp();
-                            JEVisSample compareSample = null;
-                            Double value = valueSample.getValueAsDouble();
-                            AlarmType sampleAlarmType;
-
-                            Double diff = null;
-                            Double lowerValue = null;
-                            Double upperValue = null;
-                            if (dynamicAlarm) {
-                                compareSample = compareMap.get(ts);
-
-                                if (compareSample == null) {
-
-                                    DateTime dt = ts.minusSeconds(1);
-                                    while (compareSample == null && (dt.equals(firstTimeStamp) || dt.isAfter(firstTimeStamp))) {
-                                        compareSample = compareMap.get(dt);
-                                        dt = dt.minusSeconds(1);
-                                    }
-
-                                    if (compareSample == null) {
-                                        logger.error("Could not find sample to compare with value: {}", ts);
-                                        continue;
-                                    }
-                                }
-
-                                if (tolerance != 0d) {
-                                    diff = compareSample.getValueAsDouble() * (tolerance / 100);
-                                } else {
-                                    diff = 0d;
-                                }
-                                lowerValue = compareSample.getValueAsDouble() - diff;
-                                upperValue = compareSample.getValueAsDouble() + diff;
-                                sampleAlarmType = AlarmType.DYNAMIC;
-                            } else {
-                                if (tolerance != 0d) {
-                                    diff = limit * (tolerance / 100);
-                                } else {
-                                    diff = 0d;
-                                }
-                                lowerValue = limit - diff;
-                                upperValue = limit + diff;
-                                sampleAlarmType = AlarmType.STATIC;
-                            }
-
-                            boolean isAlarm = false;
-                            boolean upper = true;
-                            String operator = "";
-                            switch (cleanDataAlarm.getOperator()) {
-                                case BIGGER:
-                                    if (value > upperValue) {
-                                        isAlarm = true;
-                                        operator = AlarmConstants.Operator.getValue(AlarmConstants.Operator.BIGGER);
-                                    }
-                                    break;
-                                case BIGGER_EQUALS:
-                                    if (value >= upperValue) {
-                                        isAlarm = true;
-                                        operator = AlarmConstants.Operator.getValue(AlarmConstants.Operator.BIGGER_EQUALS);
-                                    }
-                                    break;
-                                case EQUALS:
-                                    if (value.equals(upperValue)) {
-                                        isAlarm = true;
-                                        operator = AlarmConstants.Operator.getValue(AlarmConstants.Operator.EQUALS);
-                                    }
-                                    break;
-                                case NOT_EQUALS:
-                                    if (!value.equals(upperValue)) {
-                                        isAlarm = true;
-                                        operator = AlarmConstants.Operator.getValue(AlarmConstants.Operator.NOT_EQUALS);
-                                    }
-                                    break;
-                                case SMALLER:
-                                    if (value < lowerValue) {
-                                        isAlarm = true;
-                                        operator = AlarmConstants.Operator.getValue(AlarmConstants.Operator.SMALLER);
-                                    }
-                                    upper = false;
-                                    break;
-                                case SMALLER_EQUALS:
-                                    if (value <= lowerValue) {
-                                        isAlarm = true;
-                                        operator = AlarmConstants.Operator.getValue(AlarmConstants.Operator.SMALLER_EQUALS);
-                                    }
-                                    upper = false;
-                                    break;
-                            }
-
-                            if (isAlarm) {
-                                int logVal = 0;
-
-                                logVal = ScheduleService.getValueForLog(ts, usageSchedules);
-                                if (logVal != 4) {
-                                    JEVisSample alarmSample = new VirtualSample(ts, (long) logVal);
-                                    alarmLogs.add(alarmSample);
-
-                                    if (upper) {
-                                        activeAlarms.add(new Alarm(cleanData, valueAtt, alarmSample, ts, value, operator, upperValue, sampleAlarmType, logVal));
-                                    } else {
-                                        activeAlarms.add(new Alarm(cleanData, valueAtt, alarmSample, ts, value, operator, lowerValue, sampleAlarmType, logVal));
-                                    }
-                                }
-                            }
-                        }
-
-                        alarmLogAttribute.addSamples(alarmLogs);
                     }
                 }
+                if (!alarmLogs.isEmpty()) alarmLogAttribute.addSamples(alarmLogs);
             } catch (Exception e) {
                 String parentName = "";
                 try {
@@ -648,10 +640,51 @@ public class AlarmProcess {
     }
 
 
+    private static void addPoints(List<AlarmRuleEvaluator.Point> points, List<JEVisSample> samples) {
+        for (JEVisSample sample : samples) {
+            try {
+                Double value = sample.getValueAsDouble();
+                if (value != null && !value.isNaN()) points.add(new AlarmRuleEvaluator.Point(sample.getTimestamp(), value));
+            } catch (Exception e) {
+                logger.debug("Skipped sample {}", sample, e);
+            }
+        }
+    }
+
+    /**
+     * The comparison value of a DYNAMIC rule at a time stamp: the sample at that time, else the nearest earlier one
+     * (up to one day before the first value, as before but without stepping through every second).
+     */
+    private Function<DateTime, Double> comparison(AlarmRule rule, DateTime from, DateTime to) throws JEVisException {
+        TargetHelper th = new TargetHelper(ds, rule.getLimitTarget());
+        if (th.getObject().isEmpty() || th.getAttribute().isEmpty() || th.getAttribute().get(0) == null) return ts -> null;
+        TreeMap<Long, Double> values = new TreeMap<>();
+        for (JEVisSample sample : th.getAttribute().get(0).getSamples(from.minusDays(1), to)) {
+            try {
+                values.put(sample.getTimestamp().getMillis(), sample.getValueAsDouble());
+            } catch (Exception e) {
+                logger.debug("Skipped comparison sample {}", sample, e);
+            }
+        }
+        return ts -> {
+            Map.Entry<Long, Double> entry = values.floorEntry(ts.getMillis());
+            return entry != null ? entry.getValue() : null;
+        };
+    }
+
+    /** rows with an own configuration, read once per run (see AlarmConfiguration.rowsWithOwnConfiguration) */
+    private Set<Long> rowsWithOwnConfiguration;
+
+    private List<JEVisObject> withoutOwnConfiguration(List<JEVisObject> rows) {
+        if (rowsWithOwnConfiguration == null) rowsWithOwnConfiguration = AlarmConfiguration.rowsWithOwnConfiguration(ds);
+        rows.removeIf(row -> rowsWithOwnConfiguration.contains(row.getID()));
+        return rows;
+    }
+
     private List<JEVisObject> getAllCorrespondingCleanDataObjects() throws JEVisException {
         switch (getAlarmConfiguration().getAlarmScope()) {
             case COMPLETE:
-                return getCompleteList(null, getAlarmConfiguration().getObject());
+                return withoutOwnConfiguration(getCompleteList(null, getAlarmConfiguration().getObject()));
             case SELECTED:
                 return getListFromSelectedObjects();
             case WITHOUT_SELECTED:
@@ -659,7 +692,7 @@ public class AlarmProcess {
                 List<JEVisObject> unselectedList = getListFromSelectedObjects();
                 if (unselectedList != null) {
                     completeList.removeAll(unselectedList);
-                    return completeList;
+                    return withoutOwnConfiguration(completeList);
                 }
                 return new ArrayList<>();
             case NONE:

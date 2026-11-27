@@ -128,7 +128,7 @@ public class RowDataLoader {
                 return result;
             }
 
-            List<ChartSample> samples = row.getSamples();
+            List<ChartSample> samples = row.applyTimeOffset(row.getSamples());
             if (settings.isLastSampleOnly() && samples.size() > 1) {
                 /* DataModelDataHandler.update: a forced interval of zero length keeps the newest sample */
                 samples = new ArrayList<>(samples.subList(samples.size() - 1, samples.size()));
@@ -255,6 +255,23 @@ public class RowDataLoader {
                 start = range.getStart().withZone(zone);
                 end = range.getEnd().withZone(zone);
             }
+            /* time offset: the values come from the shifted range (e.g. -1 year: last year) */
+            /* a fixed own time frame has priority (the editors offer either the one or the other) */
+            if (!definition.isIntervalEnabled() && !definition.getTimeOffset().isZero()) {
+                start = definition.getTimeOffset().apply(start, 1);
+                end = definition.getTimeOffset().apply(end, 1);
+            }
+        }
+
+        /** Shifts the samples by the row's time offset (tender point 03). */
+        List<ChartSample> applyTimeOffset(List<ChartSample> samples) {
+            TimeOffset offset = definition.getTimeOffset();
+            if (offset.isZero() || definition.isIntervalEnabled()) return samples;
+            for (ChartSample sample : samples) {
+                if (sample.getTimestamp() != null) sample.setTimestamp(offset.apply(sample.getTimestamp(), -1));
+            }
+            if (newest != null) newest = offset.apply(newest, -1);
+            return samples;
         }
 
         private DateTime parse(String value, DateTime fallback) {
@@ -311,8 +328,7 @@ public class RowDataLoader {
                 CalcJobFactory calcJobCreator = new CalcJobFactory();
                 CalcJob calcJob;
                 if (absolute && aggregation != AggregationPeriod.NONE && perPeriodManipulation(manipulation)) {
-                    /* value widgets: the absolute calculation is the total of the time frame and knows no
-                       manipulation; for mean/min/max/median the calculation runs per aggregation period and the
+                    /* value widgets: for mean/min/max/median the calculation runs per aggregation period and the
                        manipulation is applied to these values, as for rows without calculation (demo 2026-11-13:
                        sum, daily mean and peak were the same value) */
                     calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
@@ -328,6 +344,8 @@ public class RowDataLoader {
                 if (!absolute) {
                     calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, aggregation);
                 } else {
+                    /* the total of the time frame: every input reduced to its total (quantities, also non-periodic
+                       ones) or its value, then the formula once, so ratios such as kWh per bed are total / total */
                     calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), ds, calculationObject, start, end, true);
                 }
 

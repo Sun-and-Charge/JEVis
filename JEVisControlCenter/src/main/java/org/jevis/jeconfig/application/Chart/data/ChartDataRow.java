@@ -483,8 +483,7 @@ public class ChartDataRow extends ChartData {
                                 calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
                                         selectedStart, selectedEnd, aggregationPeriod);
                             } else if (perPeriodManipulation) {
-                                /* value widgets: the absolute calculation is the total of the time frame and knows no
-                                   manipulation; for mean/min/max/median the calculation runs per aggregation period and
+                                /* value widgets: for mean/min/max/median the calculation runs per aggregation period and
                                    the manipulation is applied to these values, as for rows without calculation */
                                 calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
                                         selectedStart, selectedEnd, aggregationPeriod);
@@ -494,10 +493,9 @@ public class ChartDataRow extends ChartData {
                                     perPeriodSamples.add(new VirtualSample(perPeriod.get(0).getTimestamp(), getManipulatedData(perPeriod), getUnit()));
                                 }
                             } else {
-                                logger.debug("Getting calc job absolute for object {}:{} from {} to {} with period {}",
-                                        getCalculationObject().getName(), getCalculationObject().getID(),
-                                        selectedStart.toString("yyyy-MM-dd HH:mm:ss"), selectedEnd.toString("yyyy-MM-dd HH:mm:ss"),
-                                        aggregationPeriod.toString());
+                                /* the total of the time frame: every input reduced to its total (quantities, also
+                                   non-periodic ones) or its value, then the formula once, so ratios such as kWh per bed
+                                   are total / total (a sum of per-period results gave 0.00, 2026-11-27) */
                                 calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
                                         selectedStart, selectedEnd, true);
                             }

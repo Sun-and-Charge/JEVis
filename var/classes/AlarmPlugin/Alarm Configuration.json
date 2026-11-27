@@ -117,6 +117,39 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Alarm Configuration"
+    },
+    {
+      "name": "Daily Summary",
+      "primitiveType": 4,
+      "guiType": "Check Box",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Alarm Configuration"
+    },
+    {
+      "name": "Daily Summary Time",
+      "primitiveType": 0,
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Alarm Configuration"
+    },
+    {
+      "name": "Outage State",
+      "primitiveType": 0,
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Alarm Configuration"
+    },
+    {
+      "name": "Outage Log",
+      "primitiveType": 0,
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Alarm Configuration"
     }
   ]
 }

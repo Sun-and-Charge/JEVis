@@ -83,3 +83,73 @@ export function loadReportFiles(http: GetClient, id: number): Promise<ReportFile
 export function loadReportFile(http: BlobClient, id: number, format: ReportFormat, ts?: string | null, inline = false): Promise<Blob> {
   return http.getBlob(reportFilePath(id, format, ts, inline))
 }
+
+/* ---------- R04 report on demand ---------- */
+
+export type OnDemandStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'EXPIRED'
+
+/** A period that can be requested (start of the report's schedule period, end = start of the next one). */
+export interface OnDemandPeriod {
+  start: string
+  end: string
+  /** the running, not yet complete period */
+  current: boolean
+}
+
+/** One request of GET /web/reports/{id}/on-demand, newest first. */
+export interface OnDemandRequest {
+  id: string
+  start: string
+  end: string | null
+  requestedAt: string | null
+  requestedByName: string | null
+  /** requested by the logged-in user */
+  mine: boolean
+  mail: boolean
+  status: OnDemandStatus
+  /** error text of JEReport for FAILED */
+  message?: string | null
+  statusAt?: string | null
+  pdf: boolean
+  xlsx: boolean
+}
+
+/** Answer of GET /web/reports/{id}/on-demand. */
+export interface OnDemandState {
+  id: number
+  name: string
+  /** DAILY … YEARLY; null: the report cannot be requested (custom or no schedule) */
+  schedule: string | null
+  /** time zone of the report, the periods are given in it */
+  timeZone: string
+  /** write right on the report and a schedule that can be requested */
+  canRequest: boolean
+  /** why not: 'schedule' or 'rights' */
+  reason: 'schedule' | 'rights' | null
+  /** newest first, the first is the running period */
+  periods: OnDemandPeriod[]
+  requests: OnDemandRequest[]
+}
+
+type PostClient = Pick<HttpClient, 'post'>
+
+export function onDemandPath(id: number): string {
+  return `/web/reports/${id}/on-demand`
+}
+
+export function onDemandFilePath(id: number, requestId: string, format: ReportFormat): string {
+  return `/web/reports/${id}/on-demand/${encodeURIComponent(requestId)}/file?format=${format}`
+}
+
+export function loadOnDemand(http: GetClient, id: number): Promise<OnDemandState> {
+  return http.get<OnDemandState>(onDemandPath(id))
+}
+
+/** 400 invalid period, 403 no write right, 429 three requests are already open */
+export function requestOnDemand(http: PostClient, id: number, body: { start: string; mail: boolean }): Promise<OnDemandRequest> {
+  return http.post<OnDemandRequest>(onDemandPath(id), body)
+}
+
+export function loadOnDemandFile(http: BlobClient, id: number, requestId: string, format: ReportFormat): Promise<Blob> {
+  return http.getBlob(onDemandFilePath(id, requestId, format))
+}

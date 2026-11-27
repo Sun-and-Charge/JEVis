@@ -26,6 +26,7 @@ export const noModules: ModuleCounts = {
   contracts: 0,
   invoices: 0,
   costs: 0,
+  certificates: 0,
   readings: 0,
   readingsReview: 0,
 }

@@ -1,0 +1,84 @@
+{
+  "name": "E-Invoice Parser",
+  "description": "Imports ZUGFeRD / Factur-X and XRechnung files fetched by the data source (e-mail attachments, sFTP/FTP/folder files) as energy invoices instead of measurements.",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "E-Invoice Parser",
+      "end": "EMail Channel",
+      "type": 3
+    },
+    {
+      "start": "E-Invoice Parser",
+      "end": "FTP Channel",
+      "type": 3
+    },
+    {
+      "start": "E-Invoice Parser",
+      "end": "HTTP Channel",
+      "type": 3
+    },
+    {
+      "start": "E-Invoice Parser",
+      "end": "Parser",
+      "type": 0
+    },
+    {
+      "start": "E-Invoice Parser",
+      "end": "sFTP Channel",
+      "type": 3
+    },
+    {
+      "start": "E-Invoice Parser",
+      "end": "Local Folder Channel",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Target Directory",
+      "primitiveType": 0,
+      "guiType": "Object Target",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Invoice Parser"
+    },
+    {
+      "name": "Default Medium",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Invoice Parser"
+    },
+    {
+      "name": "Error Recipients",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Invoice Parser"
+    },
+    {
+      "name": "Last Run",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 3,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Invoice Parser"
+    },
+    {
+      "name": "Processed Files",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 4,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "E-Invoice Parser"
+    }
+  ]
+}

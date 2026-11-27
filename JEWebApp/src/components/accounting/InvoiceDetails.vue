@@ -1,5 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only · Copyright (C) 2026 Sun and Charge Germany GmbH -->
 <script setup lang="ts">
+import InvoiceCheckPanel from './InvoiceCheckPanel.vue'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -26,7 +27,7 @@ import { useAuthStore } from '../../stores/auth'
  */
 
 const props = defineProps<{ invoice: Invoice; removable?: boolean }>()
-const emit = defineEmits<{ remove: [] }>()
+const emit = defineEmits<{ remove: []; changed: [] }>()
 const { t, te, locale } = useI18n()
 const auth = useAuthStore()
 
@@ -163,7 +164,7 @@ const id = (suffix: string) => `invoice-${props.invoice.id}-${suffix}`
         <dd :class="{ 'is-negative': (inv.gross ?? 0) < 0 }">{{ money(inv.gross) }}</dd>
         <template v-if="inv.format">
           <dt>{{ t('invoices.col.format') }}</dt>
-          <dd>{{ inv.format }}</dd>
+          <dd>{{ inv.format === 'MANUAL' ? t('invoiceEdit.manual.format') : inv.format }}</dd>
         </template>
         <template v-if="where">
           <dt>{{ t('invoices.col.where') }}</dt>
@@ -181,6 +182,8 @@ const id = (suffix: string) => `invoice-${props.invoice.id}-${suffix}`
         </button>
       </div>
     </section>
+
+    <InvoiceCheckPanel :invoice="invoice" :editable="removable" @checked="emit('changed')" />
 
     <section class="iso-section inv-file" :aria-labelledby="id('file')">
       <h3 :id="id('file')">{{ t('invoices.file.title') }}</h3>

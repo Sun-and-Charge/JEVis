@@ -72,6 +72,8 @@ public class AggregationAlignmentStep implements ProcessStep {
 
         List<CleanInterval> needToBeRemoved = new ArrayList<>();
 
+        Map<DateTime, JEVisSample> userDataMap = resourceManager.getUserDataMap() != null ? resourceManager.getUserDataMap() : new java.util.HashMap<>();
+        int rawIndex = -1;
         double lastValue = 0d;
         for (int j = 0, intervalsSize = intervals.size(); j < intervalsSize; j++) {
             CleanInterval currentInterval = intervals.get(j);
@@ -269,6 +271,39 @@ public class AggregationAlignmentStep implements ProcessStep {
                         j += nextAdd - 1;
                     }
                 }
+            } else if (!currentInterval.isDifferential()) {
+                /* quantity, raw period longer than the clean period (e.g. month values -> 15-minute values): every
+                   interval gets its share of the raw value whose period contains it. The raw value may lie before
+                   this batch (the processor works in batches, a batch can start in the middle of a month), so it
+                   is looked up in the raw samples instead of in the intervals; intervals without a raw value (before
+                   the first one) stay empty instead of 0 */
+                DateTime timestamp = currentInterval.getResult().getTimestamp();
+                while (rawIndex + 1 < rawSamples.size() && !rawSamples.get(rawIndex + 1).getTimestamp().isAfter(timestamp)) {
+                    rawIndex++;
+                }
+                Double value = null;
+                String note = currentInterval.getResult().getNote();
+                if (rawIndex >= 0) {
+                    try {
+                        JEVisSample raw = rawSamples.get(rawIndex);
+                        DateTime rawStart = raw.getTimestamp();
+                        JEVisSample userValue = userDataMap.get(rawStart);
+                        Double rawValue = userValue != null ? userValue.getValueAsDouble() : raw.getValueAsDouble();
+                        DateTime maxDate = PeriodHelper.getNextPeriod(rawStart, inputPeriod, 1, true, timeZone);
+                        long diffInput = maxDate.getMillis() - rawStart.getMillis();
+                        long diffOutput = PeriodHelper.addPeriodToDate(rawStart, outputPeriod).getMillis() - rawStart.getMillis();
+                        long periodCount = diffOutput > 0 ? diffInput / diffOutput : 0;
+                        if (rawValue != null && periodCount > 0 && timestamp.isBefore(maxDate)) {
+                            value = getScaledValue(listMultipliers, rawStart, rawValue, offset).doubleValue() / periodCount;
+                            String agg = "agg(yes,up," + periodCount + ",sum)";
+                            note = note == null || note.isEmpty() ? agg : note + "," + agg;
+                        }
+                    } catch (Exception e) {
+                        logger.error("Could not split the raw value for {}, object {}:{}", timestamp, cleanDataObject.getCleanObject().getName(), cleanDataObject.getCleanObject().getID(), e);
+                    }
+                }
+                currentInterval.getResult().setValue(value);
+                currentInterval.getResult().setNote(note);
             } else {
                 Double nextValue = null;
                 int nextAdd = 0;

@@ -22,6 +22,7 @@ import { browserTimeZone } from '../analysis/settings'
 import { ALARM_STATES, confirmAlarmConfiguration, confirmAllAlarms, loadAlarms, type Alarm, type AlarmConfirmResult, type AlarmState } from '../api/alarms'
 import AlarmDetails from '../components/alarms/AlarmDetails.vue'
 import AlarmSettingsTab from '../components/alarms/AlarmSettingsTab.vue'
+import AlarmOutages from '../components/alarms/AlarmOutages.vue'
 import RowAlarmSettingsDialog from '../components/alarms/RowAlarmSettingsDialog.vue'
 import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
 import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
@@ -402,6 +403,8 @@ async function confirmAll() {
             {{ type.name }} <span class="notes-chip-count">{{ type.count }}</span>
           </button>
         </div>
+
+        <AlarmOutages v-if="data.outages?.length" :outages="data.outages" />
 
         <div v-if="data.truncated" class="alert notes-truncated" role="note">{{ t('alarms.truncated', { n: all.length }) }}</div>
 

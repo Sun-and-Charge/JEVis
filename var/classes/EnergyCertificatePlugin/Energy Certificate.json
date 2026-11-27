@@ -1,0 +1,38 @@
+{
+  "name": "Energy Certificate",
+  "description": "Existing energy certificate (consumption or demand) of a building with its PDF",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Energy Certificate",
+      "end": "Energy Certificate Directory",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Data",
+      "primitiveType": 0,
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate"
+    },
+    {
+      "name": "File",
+      "primitiveType": 3,
+      "guiposition": 1,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate"
+    },
+    {
+      "name": "Transfer State",
+      "primitiveType": 0,
+      "guiposition": 2,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Certificate"
+    }
+  ]
+}

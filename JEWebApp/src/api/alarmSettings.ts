@@ -64,6 +64,10 @@ export interface AlarmConfigSettings {
   bindToData: boolean
   includeLimits: boolean
   disableLink: boolean
+  /** daily summary of alarms and outages (docs/ALARMS-OUTAGE.md); missing on older servers */
+  dailySummary?: boolean
+  /** "HH:mm" in the time zone of the site */
+  dailySummaryTime?: string | null
   /** ISO, read-only (written by JEAlarm) */
   timeStamp: string | null
   /** null if the configuration has no notification */
@@ -114,6 +118,8 @@ export interface AlarmConfigBody {
   bindToData?: boolean
   includeLimits?: boolean
   disableLink?: boolean
+  dailySummary?: boolean
+  dailySummaryTime?: string
   notification?: AlarmNotificationBody
 }
 
@@ -179,18 +185,26 @@ export interface AlarmRuleLimitData {
 export interface AlarmRule {
   id: string | number | null
   name?: string | null
-  kind: 'STATIC' | 'DYNAMIC' | string
+  kind: 'STATIC' | 'DYNAMIC' | 'NO_DATA' | string
   limit: number | null
   limitData: AlarmRuleLimitData | null
   operator: string
   tolerance: number | null
   silent: AlarmSchedule | null
   standby: AlarmSchedule | null
+  /** the rule only applies to values inside these times (day/night limits); missing on older servers */
+  valid?: AlarmSchedule | null
+  /** NO_DATA: minutes without a new value */
+  noData?: number | null
+  /** minutes of a moving mean compared instead of the single value */
+  average?: number | null
+  /** false for stored rules JEAlarm cannot evaluate */
+  complete?: boolean
 }
 
 /** Answer of GET / PUT /web/rows/{rowId}/alarm-settings. */
 export interface RowAlarmSettings {
-  row: { id: number; name: string; unit: string | null; rawId: number | null; rawName: string | null }
+  row: { id: number; name: string; unit: string | null; rawId: number | null; rawName: string | null; lastValue?: string | null }
   canWrite: boolean
   version: string | null
   limits: { enabled: boolean; steps: LimitStep[] }
@@ -207,10 +221,13 @@ export interface RowAlarmRuleBody {
   kind: string
   limit: number | null
   limitData: { id: number; attribute: string } | null
-  operator: string
+  operator?: string
   tolerance: number
   silent: AlarmSchedule | null
   standby: AlarmSchedule | null
+  valid?: AlarmSchedule | null
+  noData?: number
+  average?: number | null
 }
 
 export interface RowAlarmSettingsBody {
@@ -229,4 +246,25 @@ export function loadRowAlarmSettings(http: GetClient, rowId: number, locale: str
 
 export function saveRowAlarmSettings(http: Pick<HttpClient, 'put'>, rowId: number, body: RowAlarmSettingsBody, locale: string): Promise<RowAlarmSettings> {
   return http.put<RowAlarmSettings>(rowAlarmSettingsPath(rowId, locale), body)
+}
+
+/** A row in the answer of the rule copy (as `row` of the alarm settings). */
+export interface CopiedRow {
+  id: number
+  name: string
+  rawId: number | null
+  rawName: string | null
+}
+
+/** Why a target row was not changed. */
+export type CopySkipReason = 'source' | 'notFound' | 'noWrite' | 'unreadable' | 'tooMany'
+
+export interface RuleCopyResult {
+  changed: CopiedRow[]
+  skipped: { id: number; row: CopiedRow | null; reason: CopySkipReason | string }[]
+}
+
+/** Copies the stored alarm rules of a row to other rows (R16): added to their rules, or instead of them with `replace`. */
+export function copyRowAlarmRules(http: Pick<HttpClient, 'post'>, rowId: number, targets: number[], replace: boolean): Promise<RuleCopyResult> {
+  return http.post<RuleCopyResult>(`/web/rows/${rowId}/alarm-settings/copy`, { targets, replace })
 }

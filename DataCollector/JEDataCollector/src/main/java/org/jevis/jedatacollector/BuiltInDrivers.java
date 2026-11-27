@@ -32,6 +32,8 @@ import org.jevis.jevisserver.JEVisServer;
 import org.jevis.jsonparser.JEVisJSONParser;
 import org.jevis.loytecxmldl.LoytecXmlDlDataSource;
 import org.jevis.modbusdatasource.ModbusDataSource;
+import org.jevis.einvoiceparser.EInvoiceParser;
+import org.jevis.folderdatasource.FolderDataSource;
 import org.jevis.mscons.MSCONSJEVisParser;
 import org.jevis.revolutionpiserver.RevolutionPiServer;
 import org.jevis.sftpdatasource.sFTPDataSource;
@@ -64,6 +66,7 @@ public final class BuiltInDrivers {
         drivers.put("sFTP Server", sFTPDataSource.class);
         drivers.put("HTTP Server", JEVisHTTPDataSource.class);
         drivers.put("JEVis Server", JEVisServer.class);
+        drivers.put(FolderDataSource.SERVER_CLASS, FolderDataSource.class);
         drivers.put("Loytec XML-DL Server", LoytecXmlDlDataSource.class);
         drivers.put("Modbus Master", ModbusDataSource.class);
         drivers.put("OPC UA Server", OPCUADataSource.class);
@@ -80,6 +83,7 @@ public final class BuiltInDrivers {
         parsers.put("DWD Parser", JEVisDWDWDParser.class);
         parsers.put("JSON Parser", JEVisJSONParser.class);
         parsers.put("MSCONS Parser", MSCONSJEVisParser.class);
+        parsers.put(EInvoiceParser.CLASS_NAME, EInvoiceParser.class);
         parsers.put("XLSX Parser", JEVisXLSXParser.class);
         parsers.put("XML Parser", JEVisXMLParser.class);
         return Collections.unmodifiableMap(parsers);

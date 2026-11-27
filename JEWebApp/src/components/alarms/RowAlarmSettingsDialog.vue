@@ -11,6 +11,8 @@ import {
   defaultSteps,
   mergeRowForm,
   newRule,
+  newOutageRule,
+  noDataMinutes,
   rowChanges,
   rowForm,
   rowSettingsOf,
@@ -29,6 +31,7 @@ import { useAuthStore } from '../../stores/auth'
 import RowPickerDialog from '../analysis/edit/RowPickerDialog.vue'
 import ConfirmDialog from '../edit/ConfirmDialog.vue'
 import EditDialog from '../edit/EditDialog.vue'
+import AlarmRulesCopyDialog from './AlarmRulesCopyDialog.vue'
 import AlarmScheduleField from './AlarmScheduleField.vue'
 import '../../styles/edit.css'
 import '../../styles/isoEdit.css'
@@ -179,6 +182,10 @@ function removeRule(r: RuleForm) {
 
 const ruleLabel = (r: RuleForm, i: number) => (r.name ? t('alarmSettings.rules.ruleNamed', { n: i + 1, name: r.name }) : t('alarmSettings.rules.rule', { n: i + 1 }))
 
+/** copy of the stored rules to other rows (R16): only without unsaved changes, the server copies what is stored */
+const copying = ref(false)
+const storedRuleCount = computed(() => model.value?.alarms?.rules?.length ?? 0)
+
 /** rule whose comparison row is being chosen */
 const picking = ref<RuleForm | null>(null)
 
@@ -275,7 +282,42 @@ function keepEditing() {
 }
 
 const stateText = computed(() => (formDirty.value ? t('registerEdit.unsaved') : t('registerEdit.noChanges')))
-const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleForm) => updateRule(r, { [key]: v } as Partial<RuleForm>)
+const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby' | 'valid') => (v: ScheduleForm) => updateRule(r, { [key]: v } as Partial<RuleForm>)
+
+/* ---------- data outage (docs/ALARMS-OUTAGE.md) ---------- */
+async function addOutageRule() {
+  if (form.value.rules.length >= RULES_MAX) return
+  const r = newOutageRule()
+  form.value.rules = [...form.value.rules, r]
+  clearProblem('rules')
+  await nextTick()
+  document.getElementById(id(r.uid + '-nodata'))?.focus()
+}
+
+function setKind(r: RuleForm, kind: string) {
+  const patch: Partial<RuleForm> = { kind }
+  if (kind === 'NO_DATA' && !r.noData) Object.assign(patch, { noData: '2', noDataUnit: 'HOURS' })
+  if (kind !== 'NO_DATA' && !r.operator) patch.operator = 'BIGGER'
+  updateRule(r, patch)
+}
+
+/** newest raw value and, with an outage rule, whether it is older than allowed */
+const lastValue = computed(() => {
+  const iso = model.value?.row.lastValue
+  if (!iso) return null
+  const ms = Date.parse(iso)
+  if (Number.isNaN(ms)) return null
+  let allowed: number | null = null
+  for (const r of form.value.rules) {
+    if (r.kind !== 'NO_DATA') continue
+    const m = noDataMinutes(r, locale.value)
+    if (m != null && !Number.isNaN(m) && (allowed == null || m < allowed)) allowed = m
+  }
+  const ageMinutes = Math.floor((Date.now() - ms) / 60000)
+  /* an instant (the server writes UTC): shown in local time, not cut to its clock time */
+  const text = new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(ms)
+  return { text, overdue: allowed != null && ageMinutes > allowed, hours: Math.floor(ageMinutes / 60) }
+})
 </script>
 
 <template>
@@ -293,6 +335,13 @@ const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleF
         <template v-if="model.row.rawName">
           <dt>{{ t('alarmSettings.row.raw') }}</dt>
           <dd>{{ model.row.rawName }}</dd>
+        </template>
+        <template v-if="lastValue">
+          <dt>{{ t('alarmSettings.row.lastValue') }}</dt>
+          <dd>
+            {{ lastValue.text }}
+            <span v-if="lastValue.overdue" class="mod-badge is-overdue alm-nodata-badge">{{ t('alarmSettings.row.noDataSince', { n: lastValue.hours }) }}</span>
+          </dd>
         </template>
       </dl>
       <p v-if="!writable" class="muted read-only alm-row-readonly">{{ t('alarmSettings.row.readOnly') }}</p>
@@ -418,12 +467,16 @@ const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleF
               <fieldset class="alm-kind">
                 <legend class="visually-hidden">{{ t('alarmSettings.rules.kind') }}</legend>
                 <label>
-                  <input type="radio" :name="id(r.uid + '-kind')" value="STATIC" :checked="r.kind === 'STATIC'" :disabled="disabled" @change="updateRule(r, { kind: 'STATIC' })" />
+                  <input type="radio" :name="id(r.uid + '-kind')" value="STATIC" :checked="r.kind === 'STATIC'" :disabled="disabled" @change="setKind(r, 'STATIC')" />
                   {{ t('alarmSettings.rules.static') }}
                 </label>
                 <label>
-                  <input type="radio" :name="id(r.uid + '-kind')" value="DYNAMIC" :checked="r.kind === 'DYNAMIC'" :disabled="disabled" @change="updateRule(r, { kind: 'DYNAMIC' })" />
+                  <input type="radio" :name="id(r.uid + '-kind')" value="DYNAMIC" :checked="r.kind === 'DYNAMIC'" :disabled="disabled" @change="setKind(r, 'DYNAMIC')" />
                   {{ t('alarmSettings.rules.dynamic') }}
+                </label>
+                <label>
+                  <input type="radio" :name="id(r.uid + '-kind')" value="NO_DATA" :checked="r.kind === 'NO_DATA'" :disabled="disabled" @change="setKind(r, 'NO_DATA')" />
+                  {{ t('alarmSettings.rules.noDataKind') }}
                 </label>
               </fieldset>
               <button
@@ -437,7 +490,32 @@ const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleF
                 {{ t('alarmSettings.rules.remove') }}
               </button>
             </div>
-            <div class="iso-edit-grid">
+            <div v-if="r.kind === 'NO_DATA'" class="iso-edit-grid alm-nodata">
+              <div class="edit-field">
+                <label :for="id(r.uid + '-nodata')">{{ t('alarmSettings.rules.noData') }}<span class="iso-req" aria-hidden="true"> *</span></label>
+                <div class="alm-nodata-input">
+                  <input
+                    :id="id(r.uid + '-nodata')"
+                    :value="r.noData"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    aria-required="true"
+                    :disabled="disabled"
+                    :aria-invalid="problemText(r.uid + '.noData') ? 'true' : undefined"
+                    :aria-describedby="describedBy(r.uid + '.noData', id(r.uid + '-nodata-hint'))"
+                    @input="updateRule(r, { noData: ($event.target as HTMLInputElement).value })"
+                  />
+                  <select :aria-label="t('alarmSettings.rules.noDataUnit')" :value="r.noDataUnit" :disabled="disabled" @change="updateRule(r, { noDataUnit: ($event.target as HTMLSelectElement).value as 'MINUTES' | 'HOURS' })">
+                    <option value="MINUTES">{{ t('alarmSettings.rules.minutes') }}</option>
+                    <option value="HOURS">{{ t('alarmSettings.rules.hours') }}</option>
+                  </select>
+                </div>
+                <p :id="id(r.uid + '-nodata-hint')" class="edit-hint">{{ t('alarmSettings.rules.noDataHint') }}</p>
+                <p v-if="problemText(r.uid + '.noData')" :id="id(r.uid + '.noData-err')" class="iso-field-error">{{ problemText(r.uid + '.noData') }}</p>
+              </div>
+            </div>
+            <div v-else class="iso-edit-grid">
               <div class="edit-field">
                 <label :for="id(r.uid + '-op')">{{ t('alarmSettings.rules.operator') }}</label>
                 <select
@@ -505,7 +583,34 @@ const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleF
                 <p :id="id(r.uid + '-tol-hint')" class="edit-hint">{{ t('alarmSettings.rules.toleranceHint') }}</p>
                 <p v-if="problemText(r.uid + '.tolerance')" :id="id(r.uid + '.tolerance-err')" class="iso-field-error">{{ problemText(r.uid + '.tolerance') }}</p>
               </div>
+              <div class="edit-field">
+                <label :for="id(r.uid + '-avg')">{{ t('alarmSettings.rules.average') }}</label>
+                <input
+                  :id="id(r.uid + '-avg')"
+                  :value="r.average"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  :placeholder="t('alarmSettings.rules.averageNone')"
+                  :disabled="disabled"
+                  :aria-invalid="problemText(r.uid + '.average') ? 'true' : undefined"
+                  :aria-describedby="describedBy(r.uid + '.average', id(r.uid + '-avg-hint'))"
+                  @input="updateRule(r, { average: ($event.target as HTMLInputElement).value })"
+                />
+                <p :id="id(r.uid + '-avg-hint')" class="edit-hint">{{ t('alarmSettings.rules.averageHint') }}</p>
+                <p v-if="problemText(r.uid + '.average')" :id="id(r.uid + '.average-err')" class="iso-field-error">{{ problemText(r.uid + '.average') }}</p>
+              </div>
             </div>
+            <AlarmScheduleField
+              v-if="r.kind !== 'NO_DATA'"
+              :model-value="r.valid"
+              :label="t('alarmSettings.rules.valid')"
+              :hint="t('alarmSettings.rules.validHint')"
+              :id-base="id(r.uid + '-valid')"
+              :disabled="disabled"
+              :error="problemText(r.uid + '.valid')"
+              @update:model-value="scheduleUpdate(r, 'valid')($event)"
+            />
             <AlarmScheduleField
               :model-value="r.silent"
               :label="t('alarmSettings.rules.silent')"
@@ -528,6 +633,13 @@ const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleF
           <p v-if="problemText('rules')" class="iso-field-error">{{ problemText('rules') }}</p>
           <div v-if="writable" class="edit-actions">
             <button type="button" class="edit-btn alm-rule-add" :disabled="busy || form.rules.length >= RULES_MAX" @click="addRule">{{ t('alarmSettings.rules.add') }}</button>
+            <button type="button" class="edit-btn alm-outage-add" :disabled="busy || form.rules.length >= RULES_MAX" @click="addOutageRule">{{ t('alarmSettings.rules.addOutage') }}</button>
+          </div>
+          <div v-if="storedRuleCount > 0" class="edit-actions alm-copy-actions">
+            <button type="button" class="edit-btn alm-rules-copy" :disabled="busy || formDirty" :aria-describedby="formDirty ? id('copy-hint') : undefined" @click="copying = true">
+              {{ t('alarmSettings.copy.button') }}
+            </button>
+            <p v-if="formDirty" :id="id('copy-hint')" class="edit-hint">{{ t('alarmSettings.copy.saveFirst') }}</p>
           </div>
         </section>
 
@@ -559,6 +671,7 @@ const scheduleUpdate = (r: RuleForm, key: 'silent' | 'standby') => (v: ScheduleF
     </template>
   </EditDialog>
 
+  <AlarmRulesCopyDialog v-if="copying && model" :row-id="model.row.id" :row-name="model.row.rawName || model.row.name" :rule-count="storedRuleCount" @close="copying = false" />
   <RowPickerDialog v-if="picking" single :present="[]" :title="t('alarmSettings.rules.pickTitle')" @close="picking = null" @add="picked" />
   <ConfirmDialog
     v-if="leaveAsk"

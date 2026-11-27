@@ -88,6 +88,30 @@ puts for the report period [start, end):
 
 The link never blocks a report (no data dependency); without a readable target it reports a failed sanity check.
 
+## Report on demand (R04, 2026-11-27)
+
+A user with write right on a report requests it for a chosen period in the web app (report details, "Bericht auf
+Anforderung"); JEReport renders it at once instead of waiting for the schedule.
+
+- **Periods:** only the periods of the report's own schedule (DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY; reports
+  with a custom or no schedule cannot be requested), in the report's "Time Zone" (else the site's), starting at the
+  time of day of "Start Record" (working day). The web app offers the running period and the twelve before it.
+- **Request:** the web service stores one sample of **"On Demand Request"** (string, JSON
+  `{id, start, requestedBy, requestedByName, mail}`) at the report; at most three open requests per report.
+- **Run:** `OnDemandRunner` in JEReport checks all reports every 30 s and renders the requests without a status
+  (oldest first; requests older than 7 days are not run; a request still RUNNING after 30 minutes, e.g. after a
+  restart, is run again). `ReportExecutor.executeOnDemand` uses the report's template and links with the requested
+  period as start ("Start Record" stays as it is); no precondition, end-of-period or new-data check, no finisher
+  and no notification of the scheduled run.
+- **Result:** the files go to **"On Demand Report"** (XLSX) and **"On Demand Report PDF"** with the request id as
+  note; the progress to **"On Demand Status"** (JSON `{id, status RUNNING|DONE|FAILED, message, xlsx, pdf, at}`).
+  "Last Report" / "Last Report PDF" of the scheduled runs are not touched.
+- **Mail:** with `mail` the PDF (else the XLSX) is mailed to the requesting user only: the web service stores the
+  e-mail addresses of the user's JEVis account in the request (`mailTo`; the JEReport service user may not read user
+  accounts, a request with `mail` but without address is refused), JEReport sends with `POST /mail/send`.
+- **Rights:** request = write right on the report; list and download = read right. The JEReport service user needs
+  write right on the reports (as for scheduled runs).
+
 ## Formulas
 
 `TemplateTransformator` evaluates every formula after filling (the PDF via LibreOffice and viewers without

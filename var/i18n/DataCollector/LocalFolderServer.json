@@ -1,0 +1,35 @@
+{
+  "jevisclass": "Local Folder Server",
+  "names": {
+    "de": "Lokaler Ordner",
+    "en": "Local folder"
+  },
+  "descriptions": {
+    "de": "Liest Dateien aus einem Ordner auf dem Rechner des DataCollectors, z. B. einen Eingangsordner für E-Rechnungen.",
+    "en": "Reads files from a folder on the machine of the DataCollector, e.g. an inbox for e-invoices."
+  },
+  "types": [
+    {
+      "type": "Delete File on successful parsing",
+      "names": {
+        "de": "Datei nach erfolgreichem Lesen löschen",
+        "en": "Delete file after successful parsing"
+      },
+      "descriptions": {
+        "de": "Löscht die Dateien, wenn alle Parser sie ohne Fehler gelesen haben",
+        "en": "Deletes the files when all parsers read them without errors"
+      }
+    },
+    {
+      "type": "Move To Folder",
+      "names": {
+        "de": "Verschieben nach",
+        "en": "Move to folder"
+      },
+      "descriptions": {
+        "de": "Ordner, in den die Dateien nach erfolgreichem Lesen verschoben werden (statt Löschen)",
+        "en": "Folder the files are moved to after successful parsing (instead of deleting)"
+      }
+    }
+  ]
+}

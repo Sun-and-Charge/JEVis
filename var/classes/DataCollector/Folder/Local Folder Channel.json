@@ -1,0 +1,43 @@
+{
+  "name": "Local Folder Channel",
+  "description": "Files of a local folder: \"Path\" is a regular expression on the full path with / as separator.",
+  "unique": false,
+  "relationships": [
+    {
+      "start": "Local Folder Channel",
+      "end": "Channel",
+      "type": 0
+    },
+    {
+      "start": "Local Folder Channel",
+      "end": "Local Folder Channel Directory",
+      "type": 3
+    },
+    {
+      "start": "CSV Parser",
+      "end": "Local Folder Channel",
+      "type": 3
+    },
+    {
+      "start": "XML Parser",
+      "end": "Local Folder Channel",
+      "type": 3
+    },
+    {
+      "start": "E-Invoice Parser",
+      "end": "Local Folder Channel",
+      "type": 3
+    }
+  ],
+  "types": [
+    {
+      "name": "Path",
+      "primitiveType": 0,
+      "guiType": "Text",
+      "guiposition": 0,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Local Folder Channel"
+    }
+  ]
+}

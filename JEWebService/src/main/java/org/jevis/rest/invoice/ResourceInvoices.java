@@ -91,7 +91,9 @@ public class ResourceInvoices {
         try {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             byte[] bytes = read(file);
-            return importInvoice(bytes, fileName(file), directory, medium, new SqlInvoiceStore(ds), DateTimeZone.getDefault());
+            SQLDataSource sql = ds;
+            return importInvoice(bytes, fileName(file), directory, medium, new SqlInvoiceStore(ds), DateTimeZone.getDefault(),
+                    id -> org.jevis.rest.web.ResourceWebInvoiceCheck.afterImport(sql, id));
         } catch (AuthenticationException ex) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
         } catch (InvoiceException ex) {
@@ -101,6 +103,62 @@ public class ResourceInvoices {
             return Response.serverError().build();
         } finally {
             Config.CloseDS(ds);
+        }
+    }
+
+    /**
+     * R01: an invoice entered by hand ({@link ManualInvoice}), part {@code data} (JSON) and an optional attachment
+     * {@code file} (PDF or scan); stored like an import, answer as {@code import}.
+     */
+    @POST
+    @Path("manual")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response manual(@Context HttpHeaders httpHeaders,
+                           @QueryParam("directory") Long directory,
+                           @FormDataParam("data") String data,
+                           @FormDataParam("file") FormDataBodyPart file) {
+        SQLDataSource ds = null;
+        try {
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
+            byte[] bytes = file != null ? read(file) : null;
+            SQLDataSource sql = ds;
+            return manual(data, bytes, fileName(file), directory, new SqlInvoiceStore(ds), DateTimeZone.getDefault(),
+                    id -> org.jevis.rest.web.ResourceWebInvoiceCheck.afterImport(sql, id));
+        } catch (AuthenticationException ex) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
+        } catch (InvoiceException ex) {
+            return error(ex);
+        } catch (Exception ex) {
+            logger.error("Could not store the manual invoice", ex);
+            return Response.serverError().build();
+        } finally {
+            Config.CloseDS(ds);
+        }
+    }
+
+    static Response manual(String data, byte[] bytes, String fileName, Long directory, InvoiceStore store,
+                           DateTimeZone zone) throws Exception {
+        return manual(data, bytes, fileName, directory, store, zone, null);
+    }
+
+    /**
+     * @param check the invoice check after a successful import (R03), its result goes into the answer as {@code check};
+     *              null: none
+     */
+    static Response manual(String data, byte[] bytes, String fileName, Long directory, InvoiceStore store,
+                           DateTimeZone zone, java.util.function.LongFunction<Map<String, Object>> check) throws Exception {
+        try {
+            if (InvoiceImport.directory(store, directory) == null) {
+                throw new InvoiceException(400, InvoiceException.INVALID_DIRECTORY,
+                        "The directory is no readable Energy Invoices Directory.");
+            }
+            ManualInvoice.Parsed parsed = ManualInvoice.parse(data);
+            InvoiceImport.Result result = InvoiceImport.importInvoice(store, directory, parsed.medium, parsed.invoice,
+                    parsed.analysis, bytes, bytes != null ? fileName : null, zone);
+            return json(Response.Status.CREATED, withCheck(result, check));
+        } catch (InvoiceException ex) {
+            return error(ex);
         }
     }
 
@@ -126,6 +184,14 @@ public class ResourceInvoices {
      */
     static Response importInvoice(byte[] bytes, String fileName, Long directory, String mediumName, InvoiceStore store,
                                   DateTimeZone zone) throws Exception {
+        return importInvoice(bytes, fileName, directory, mediumName, store, zone, null);
+    }
+
+    /**
+     * @param check see {@link #manual(String, byte[], String, Long, InvoiceStore, DateTimeZone, java.util.function.LongFunction)}
+     */
+    static Response importInvoice(byte[] bytes, String fileName, Long directory, String mediumName, InvoiceStore store,
+                                  DateTimeZone zone, java.util.function.LongFunction<Map<String, Object>> check) throws Exception {
         try {
             Medium medium = Medium.parse(mediumName);
             if (medium == null) {
@@ -140,10 +206,16 @@ public class ResourceInvoices {
             InvoiceAnalysis.Analysis analysis = InvoiceAnalysis.analyse(invoice);
             InvoiceImport.Result result = InvoiceImport.importInvoice(store, directory, medium, invoice, analysis, bytes,
                     fileName, zone);
-            return json(Response.Status.CREATED, result.toJson());
+            return json(Response.Status.CREATED, withCheck(result, check));
         } catch (InvoiceException ex) {
             return error(ex);
         }
+    }
+
+    private static Map<String, Object> withCheck(InvoiceImport.Result result, java.util.function.LongFunction<Map<String, Object>> check) {
+        Map<String, Object> json = result.toJson();
+        if (check != null) json.put("check", check.apply(result.invoiceId));
+        return json;
     }
 
     /**

@@ -125,6 +125,7 @@ public class CalcJobFactory {
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
         calcJob.setPeriod(periodicInputPeriod);
+        calcJob.setNonPeriodicQuantitiesPerPeriod(true);
 
         return calcJob;
     }
@@ -174,6 +175,7 @@ public class CalcJobFactory {
         calcJob.setCalcObjID(calcObjID);
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
+        calcJob.setNonPeriodicQuantitiesPerPeriod(false);
 
         return calcJob;
     }
@@ -243,6 +245,7 @@ public class CalcJobFactory {
         calcJob.setCalcObjID(calcObjID);
         calcJob.setStaticValue(staticValue);
         calcJob.setAllZeroValue(allZeroValue);
+        calcJob.setNonPeriodicQuantitiesPerPeriod(false);
 
         return calcJob;
     }

@@ -27,6 +27,50 @@
         "de": "Medium",
         "en": "Medium"
       }
+    },
+    {
+      "type": "Check Tolerance Quantity",
+      "descriptions": {
+        "de": "Erlaubte Abweichung der Rechnungsmenge von der Messung in Prozent (leer: übergeordneter Ordner, sonst 2 %)",
+        "en": "Allowed deviation of the invoiced quantity from the measurement in percent (empty: parent folder, else 2 %)"
+      },
+      "names": {
+        "de": "Prüftoleranz Menge (%)",
+        "en": "Check tolerance quantity (%)"
+      }
+    },
+    {
+      "type": "Check Tolerance Amount",
+      "descriptions": {
+        "de": "Erlaubte Abweichung des Nettobetrags vom Sollbetrag laut Vertrag in Prozent (leer: übergeordneter Ordner, sonst 1 %)",
+        "en": "Allowed deviation of the net amount from the amount according to the contract in percent (empty: parent folder, else 1 %)"
+      },
+      "names": {
+        "de": "Prüftoleranz Betrag (%)",
+        "en": "Check tolerance amount (%)"
+      }
+    },
+    {
+      "type": "Check Recipients",
+      "descriptions": {
+        "de": "E-Mail-Adressen, die bei einer Abweichung benachrichtigt werden (mit ; getrennt)",
+        "en": "E-mail addresses notified about a deviation (separated by ;)"
+      },
+      "names": {
+        "de": "Prüfung: E-Mail-Empfänger",
+        "en": "Check: e-mail recipients"
+      }
+    },
+    {
+      "type": "Check Recipient Group",
+      "descriptions": {
+        "de": "Benutzergruppe, deren Mitglieder bei einer Abweichung benachrichtigt werden",
+        "en": "User group whose members are notified about a deviation"
+      },
+      "names": {
+        "de": "Prüfung: Empfängergruppe",
+        "en": "Check: recipient group"
+      }
     }
   ]
 }

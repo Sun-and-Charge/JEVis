@@ -162,6 +162,15 @@
       "validity": 0,
       "inherited": false,
       "jevisClass": "Energy Invoice"
+    },
+    {
+      "name": "Check Result",
+      "primitiveType": 0,
+      "guiType": "Text Area",
+      "guiposition": 17,
+      "validity": 0,
+      "inherited": false,
+      "jevisClass": "Energy Invoice"
     }
   ]
 }

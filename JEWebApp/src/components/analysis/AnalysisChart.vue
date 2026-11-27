@@ -8,6 +8,7 @@ import type { ChartView, RowView } from '../../analysis/model'
 import { editableRowNote, notePointFromClick, type ChartClick, type NotePoint } from '../../analysis/notes'
 import { chartOption, type OptionContext } from '../../analysis/options'
 import { buildCsv, fileName } from '../../analysis/table'
+import { buildXlsx, dataUrlBytes, jpegPdf } from '../../analysis/fileExport'
 import DataTable from './DataTable.vue'
 import RegressionSummary from './RegressionSummary.vue'
 import SummaryTable from './SummaryTable.vue'
@@ -82,6 +83,33 @@ function exportPng() {
   if (url) download(url, baseName.value + '.png')
 }
 
+function exportJpeg() {
+  const url = chartRef.value?.getDataURL({ type: 'jpeg', pixelRatio: 2, backgroundColor: '#ffffff' })
+  if (url) download(url, baseName.value + '.jpg')
+}
+
+function downloadBytes(bytes: Uint8Array, type: string, name: string) {
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type }))
+  download(url, name)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+/** R18: the chart as one-page PDF (A4 landscape) with the chart name as title. */
+function exportPdf() {
+  const instance = chartRef.value as unknown as { getWidth?: () => number; getHeight?: () => number } | null
+  const url = chartRef.value?.getDataURL({ type: 'jpeg', pixelRatio: 2, backgroundColor: '#ffffff' })
+  if (!url || !instance?.getWidth || !instance.getHeight) return
+  const pdf = jpegPdf(dataUrlBytes(url), Math.round(instance.getWidth() * 2), Math.round(instance.getHeight() * 2), `${props.exportName} – ${props.chart.name}`)
+  downloadBytes(pdf, 'application/pdf', baseName.value + '.pdf')
+}
+
+/** R18: the values as Excel file (time stamps as dates, one column per row). */
+function exportXlsx() {
+  const rows = props.chart.rows.filter((r) => r.readable)
+  const xlsx = buildXlsx(rows, t('analysis.table.time'), props.chart.name)
+  downloadBytes(xlsx, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', baseName.value + '.xlsx')
+}
+
 function exportCsv() {
   const csv = buildCsv(
     props.chart.rows.filter((r) => r.readable),
@@ -102,8 +130,17 @@ function exportCsv() {
         <button v-if="!isTable" type="button" class="export" :aria-label="t('analysis.export.pngLabel', { name: chart.name })" :title="t('analysis.export.pngLabel', { name: chart.name })" @click="exportPng">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M3 13h10" /></svg>{{ t('analysis.export.png') }}
         </button>
+        <button v-if="!isTable" type="button" class="export" :aria-label="t('analysis.export.jpegLabel', { name: chart.name })" :title="t('analysis.export.jpegLabel', { name: chart.name })" @click="exportJpeg">
+          {{ t('analysis.export.jpeg') }}
+        </button>
+        <button v-if="!isTable" type="button" class="export" :aria-label="t('analysis.export.pdfLabel', { name: chart.name })" :title="t('analysis.export.pdfLabel', { name: chart.name })" @click="exportPdf">
+          {{ t('analysis.export.pdf') }}
+        </button>
         <button type="button" class="export" :aria-label="t('analysis.export.csvLabel', { name: chart.name })" :title="t('analysis.export.csvLabel', { name: chart.name })" @click="exportCsv">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M3 13h10" /></svg>{{ t('analysis.export.csv') }}
+        </button>
+        <button type="button" class="export" :aria-label="t('analysis.export.xlsxLabel', { name: chart.name })" :title="t('analysis.export.xlsxLabel', { name: chart.name })" @click="exportXlsx">
+          {{ t('analysis.export.xlsx') }}
         </button>
       </div>
     </header>

@@ -21,7 +21,7 @@ export interface MenuGroupDef {
 export const MENU_GROUPS: readonly MenuGroupDef[] = [
   { id: 'iso', modules: ['actionPlans', 'nonconformities', 'legal'] },
   { id: 'operations', modules: ['readings', 'appointments', 'maintenance', 'alarms', 'notes'] },
-  { id: 'assets', modules: ['meters', 'basedata', 'equipment'] },
+  { id: 'assets', modules: ['meters', 'basedata', 'equipment', 'certificates'] },
   { id: 'finance', modules: ['contracts', 'invoices', 'costs'] },
 ]
 

@@ -1,0 +1,22 @@
+{
+  "name": "Energy Certificate Directory",
+  "description": "Directory for the energy certificates of a building",
+  "unique": true,
+  "relationships": [
+    {
+      "start": "Energy Certificate Directory",
+      "end": "Building",
+      "type": 3
+    },
+    {
+      "start": "Energy Certificate Directory",
+      "end": "Organization",
+      "type": 3
+    },
+    {
+      "start": "Energy Certificate Directory",
+      "end": "Directory",
+      "type": 0
+    }
+  ]
+}

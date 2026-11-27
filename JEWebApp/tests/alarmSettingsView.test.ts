@@ -390,3 +390,45 @@ describe('row alarm settings from registers and readings', () => {
     expect(rowPanel()).not.toBeNull()
   })
 })
+
+describe('copy of alarm rules to other rows (R16)', () => {
+  it('copies the saved rules to chosen rows and lists changed and skipped rows', async () => {
+    const post = vi.fn(async () => ({
+      changed: [{ id: 8200, name: 'Bereinigte Daten', rawId: 8199, rawName: 'Gas - Halle' }],
+      skipped: [{ id: 8300, row: { id: 8300, name: 'Bereinigte Daten', rawId: 8299, rawName: 'Wasser' }, reason: 'noWrite' }],
+    }))
+    Object.assign(useAuthStore().http, { get: api(() => settingsList([])), post })
+    const w = mount(RowAlarmSettingsDialog, { props: { rowId: 8100 }, global: { plugins: [await withRouter(), i18n] }, attachTo: document.body })
+    mounted.push(w)
+    await flushPromises()
+    await click(document.body.querySelector<HTMLButtonElement>('.alm-rules-copy')!)
+    const copy = () => document.body.querySelector<HTMLElement>('.alm-copy-backdrop [role="dialog"]')!
+    expect(copy().textContent).toContain('Strom - Rohdaten')
+    expect(copy().querySelector<HTMLButtonElement>('.alm-copy-submit')!.disabled).toBe(true)
+
+    await click(copy().querySelector<HTMLButtonElement>('.alm-copy-pick')!)
+    const picker = w.findAllComponents({ name: 'RowPickerDialog' }).at(-1)!
+    picker.vm.$emit('add', [
+      { node: { id: 8199, name: 'Gas - Halle' }, attribute: 'Value' },
+      { node: { id: 8299, name: 'Wasser' }, attribute: 'Value' },
+    ])
+    await flushPromises()
+    expect(copy().querySelectorAll('.alm-copy-list li')).toHaveLength(2)
+    await click(copy().querySelector<HTMLInputElement>('.alm-copy-replace input')!)
+    await click(copy().querySelector<HTMLButtonElement>('.alm-copy-submit')!)
+
+    expect(post).toHaveBeenCalledWith('/web/rows/8100/alarm-settings/copy', { targets: [8199, 8299], replace: true })
+    expect(copy().querySelector('.alm-copy-changed')!.textContent).toContain('Gas - Halle / Bereinigte Daten')
+    expect(copy().querySelector('.alm-copy-skipped')!.textContent).toContain('kein Schreibrecht')
+    expect(copy().querySelector('.alm-copy-submit')).toBeNull()
+  })
+
+  it('needs saved changes first', async () => {
+    await mountRow({ get: api(() => settingsList([])) })
+    const panel = rowPanel()!
+    expect(panel.querySelector<HTMLButtonElement>('.alm-rules-copy')!.disabled).toBe(false)
+    await type(fieldIn(panel, 'Maximalwert [kWh]'), '450,5')
+    expect(panel.querySelector<HTMLButtonElement>('.alm-rules-copy')!.disabled).toBe(true)
+    expect(panel.textContent).toContain('Bitte zuerst speichern')
+  })
+})

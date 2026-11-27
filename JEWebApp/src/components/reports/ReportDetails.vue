@@ -7,6 +7,7 @@ import { HttpError } from '../../api/http'
 import { loadReportFile, loadReportFiles, type ReportFormat, type ReportOutput, type ReportSummary } from '../../api/reports'
 import { saveBlob } from '../../iso/download'
 import { hasOutput, outputFileName, outputLabel, outputTs, scheduleLabel, sortOutputs } from '../../reports/reports'
+import ReportOnDemand from './ReportOnDemand.vue'
 import { useAuthStore } from '../../stores/auth'
 
 /*
@@ -143,6 +144,8 @@ const domId = (suffix: string) => `report-${props.report.id}-${suffix}`
       <dt>{{ t('reports.detail.outputs') }}</dt>
       <dd>{{ report.count }}</dd>
     </dl>
+
+    <ReportOnDemand :report-id="report.id" :report-name="report.name" />
 
     <p v-if="filesState === 'none'" class="muted rep-none">{{ t('reports.detail.noOutput') }}</p>
     <p v-else-if="filesState === 'loading'" class="muted" role="status">{{ t('reports.detail.loading') }}</p>

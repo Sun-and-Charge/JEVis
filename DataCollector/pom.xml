@@ -56,6 +56,8 @@
         <module>SQL-Driver</module>
         <module>JSONParser</module>
         <module>MSCONSParser</module>
+        <module>EInvoiceParser</module>
+        <module>Folder-Driver</module>
         <module>Shelly-Driver</module>
         <module>Modbus-Driver</module>
         <module>XLSX-Driver</module>

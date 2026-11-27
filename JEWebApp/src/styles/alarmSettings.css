@@ -114,7 +114,8 @@
 /* ---------- side panels ---------- */
 .alm-edit-backdrop {
   justify-content: flex-end;
-  align-items: stretch;
+  /* the panel grows with its content (stretch kept it one screen high and longer content ran past its background) */
+  align-items: flex-start;
   padding: 0;
 }
 
@@ -333,4 +334,29 @@
   .alm-times {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* data outage rule (docs/ALARMS-OUTAGE.md): time without data with its unit */
+.alm-nodata-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.alm-nodata-input input {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+
+.alm-nodata-input select {
+  flex: 0 0 auto;
+  /* the general 100 % width squeezed the number field to nothing */
+  width: auto;
+}
+
+.alm-nodata-badge {
+  margin-left: 0.4rem;
+}
+
+.alm-summary input[type='time'] {
+  max-width: 9rem;
 }

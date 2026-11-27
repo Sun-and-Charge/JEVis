@@ -34,6 +34,7 @@ export const router = createRouter({
         { path: 'contracts', name: 'contracts', component: () => import('./views/ContractsView.vue') },
         { path: 'costs', name: 'costs', component: () => import('./views/CostsView.vue') },
         { path: 'invoices', name: 'invoices', component: () => import('./views/InvoicesView.vue') },
+        { path: 'certificates', name: 'certificates', component: () => import('./views/CertificatesView.vue') },
         { path: ':pathMatch(.*)*', name: 'notFound', component: () => import('./views/NotFoundView.vue') },
       ],
     },

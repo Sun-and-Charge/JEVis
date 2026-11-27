@@ -10,8 +10,10 @@ import type {
   NameTaken,
   RowDefinition,
   RowTreeNode,
+  TimeOffsetUnit,
   UnitOption,
 } from '../api/analysis'
+import { TIME_OFFSET_UNITS } from '../api/analysis'
 import { HttpError } from '../api/http'
 import { FALLBACK_COLORS } from './model'
 
@@ -57,7 +59,13 @@ export const isTableType = (type: string) => TABLE_TYPES.includes(type)
 export const isXyType = (type: string) => XY_CHART_TYPES.includes(type)
 
 /** Definition keys of a row; rows the user may not read are sent back with exactly the keys they came with. */
-const ROW_KEYS = ['objectId', 'attribute', 'name', 'color', 'axis', 'chartType', 'unitPrefix', 'unitFormula', 'unitLabel', 'decimalDigits', 'calculation', 'bubbleType', 'interval', 'css'] as const
+const ROW_KEYS = ['objectId', 'attribute', 'name', 'color', 'axis', 'chartType', 'unitPrefix', 'unitFormula', 'unitLabel', 'decimalDigits', 'calculation', 'bubbleType', 'interval', 'timeOffset', 'css'] as const
+
+/** time reference of a row (tender point 03) */
+export type TimeMode = 'chart' | 'offset' | 'fixed'
+
+/** largest offset per unit (about ten years, as the server) */
+export const MAX_OFFSET: Record<TimeOffsetUnit, number> = { MINUTES: 5_256_000, HOURS: 87_600, DAYS: 3_650, WEEKS: 520, MONTHS: 120, YEARS: 10 }
 
 export interface DraftInterval {
   enabled: boolean
@@ -82,6 +90,13 @@ export interface DraftRow {
   calculation: boolean
   bubbleType: string
   interval: DraftInterval
+  /**
+   * Tender point 03, time reference of the row: as the chart, shifted (values from `offsetAmount` `offsetUnit` before or
+   * after the chart's time frame, e.g. -1 YEARS) or a fixed own time frame (`interval`).
+   */
+  timeMode: TimeMode
+  offsetAmount: number | ''
+  offsetUnit: TimeOffsetUnit
   css: string
   readable: boolean
   /** display unit (GET / picker); the unit fields win when set */
@@ -169,6 +184,9 @@ export function rowToDraft(row: AnalysisRowConfig): DraftRow {
     calculation: !!row.calculation,
     bubbleType: row.bubbleType || 'NONE',
     interval: { enabled: !!row.interval?.enabled, start: row.interval?.start ?? null, end: row.interval?.end ?? null },
+    timeMode: row.interval?.enabled ? 'fixed' : row.timeOffset?.amount ? 'offset' : 'chart',
+    offsetAmount: row.timeOffset?.amount ?? -1,
+    offsetUnit: (TIME_OFFSET_UNITS as readonly string[]).includes(row.timeOffset?.unit ?? '') ? (row.timeOffset!.unit as TimeOffsetUnit) : 'YEARS',
     css: row.css ?? '',
     readable,
     unit: row.unit ?? null,
@@ -272,7 +290,8 @@ export function rowDefinition(row: DraftRow): RowDefinition {
     decimalDigits: row.decimalDigits === '' ? -1 : row.decimalDigits,
     calculation: row.calculation,
     bubbleType: row.bubbleType,
-    interval: { enabled: row.interval.enabled, start: row.interval.start || null, end: row.interval.end || null },
+    interval: { enabled: row.timeMode === 'fixed', start: row.interval.start || null, end: row.interval.end || null },
+    timeOffset: row.timeMode === 'offset' && row.offsetAmount !== '' && row.offsetAmount !== 0 ? { amount: row.offsetAmount, unit: row.offsetUnit } : null,
     css: row.css,
   }
 }
@@ -485,7 +504,9 @@ export function validateDraft(draft: Draft, options: { checkName?: boolean } = {
       const rb = `${base}.rows.${ri}`
       if (r.color.trim() && !validColor(r.color)) add(`${rb}.color`, 'analysisEdit.problem.color')
       if (r.decimalDigits !== '' && r.decimalDigits !== -1 && !isInt(r.decimalDigits, 0, 20)) add(`${rb}.decimalDigits`, 'analysisEdit.problem.decimals')
-      if (r.interval.enabled) {
+      if (r.timeMode === 'offset' && (r.offsetAmount === '' || r.offsetAmount === 0 || !isInt(r.offsetAmount, -MAX_OFFSET[r.offsetUnit], MAX_OFFSET[r.offsetUnit])))
+        add(`${rb}.timeOffset`, 'analysisEdit.problem.timeOffset')
+      if (r.timeMode === 'fixed') {
         const start = r.interval.start ? Date.parse(r.interval.start) : NaN
         const end = r.interval.end ? Date.parse(r.interval.end) : NaN
         if (Number.isNaN(start) || Number.isNaN(end)) add(`${rb}.interval`, 'analysisEdit.problem.interval')
@@ -550,6 +571,9 @@ export function newRow(node: Pick<RowTreeNode, 'id' | 'name' | 'unit' | 'class'>
     calculation: false,
     bubbleType: 'NONE',
     interval: { enabled: false, start: null, end: null },
+    timeMode: 'chart',
+    offsetAmount: -1,
+    offsetUnit: 'YEARS',
     css: '',
     readable: true,
     unit: node.unit ?? null,
