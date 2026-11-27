@@ -211,7 +211,19 @@ public class PrepareStep implements ProcessStep {
 
         logger.info("[{}] getIntervals: currentDate: {}  MaxEndDate: {} ", cleanDataObject.getCleanObject().getID(), currentDate, maxEndDate);
 
-        if (currentDate == null || maxEndDate == null || !currentDate.isBefore(maxEndDate)) {
+        /* month values split into shorter clean periods: the last raw month runs to its end (extended below as well),
+           so a batch that stopped inside that month must still find the rest of it */
+        DateTime effectiveEnd = maxEndDate;
+        if (maxEndDate != null && currentDate != null) {
+            Period rawAtEnd = CleanDataObject.getPeriodForDate(periodRawData, maxEndDate);
+            Period cleanAtEnd = CleanDataObject.getPeriodForDate(periodCleanData, maxEndDate);
+            if (rawAtEnd.equals(Period.months(1)) && new PeriodComparator().compare(cleanAtEnd, rawAtEnd) < 0) {
+                DateTime local = maxEndDate.withZone(timeZone);
+                effectiveEnd = local.withDayOfMonth(local.dayOfMonth().getMaximumValue()).withTime(23, 59, 59, 999);
+            }
+        }
+
+        if (currentDate == null || maxEndDate == null || !currentDate.isBefore(effectiveEnd)) {
             logger.warn("Nothing to do with only one interval");
             return cleanIntervals;
         } else {
