@@ -351,9 +351,7 @@ public class CleanDataObject {
             int compare = periodComparator.compare(outputPeriod, inputPeriod);
 
             if (timestampLatestCleanSample != null && timestampLatestRawSample != null && compare < 1) {
-                boolean equalRawAndCleanTs = timestampLatestRawSample.equals(timestampLatestCleanSample);
-                boolean rawTsAfterCleanTs = timestampLatestRawSample.isAfter(timestampLatestCleanSample);
-                if (!equalRawAndCleanTs && !rawTsAfterCleanTs) {
+                if (!hasNewSamples(timestampLatestCleanSample, timestampLatestRawSample, inputPeriod, outputPeriod, dateTimeZone)) {
                     errors.add(("No new Samples for cleaning"));
                 }
             } else if (timestampLatestCleanSample != null && compare < 1) {
@@ -378,6 +376,21 @@ public class CleanDataObject {
         }
 
         return true;
+    }
+
+    /**
+     * @return whether there is something to clean: the last raw value is not older than the last clean value, or, when
+     * the raw period is longer than the clean period (e.g. month values cleaned to 15 minutes), the clean values do
+     * not yet reach the end of the period of the last raw value (a run that stopped inside the last month)
+     */
+    static boolean hasNewSamples(DateTime latestClean, DateTime latestRaw, Period inputPeriod, Period outputPeriod, DateTimeZone zone) {
+        if (!latestRaw.isBefore(latestClean)) return true;
+        if (inputPeriod == null || outputPeriod == null || inputPeriod.equals(Period.ZERO) || outputPeriod.equals(Period.ZERO)) {
+            return false;
+        }
+        if (new PeriodComparator().compare(outputPeriod, inputPeriod) >= 0) return false;
+        DateTime endOfRawPeriod = PeriodHelper.getNextPeriod(latestRaw, inputPeriod, 1, true, zone != null ? zone : DateTimeZone.getDefault());
+        return latestClean.isBefore(endOfRawPeriod.minus(outputPeriod));
     }
 
     public void getAttributes() throws JEVisException {
