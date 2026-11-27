@@ -2551,3 +2551,68 @@ time; JEDataProcessor and JECalc calculate them again in their next cycle (as `R
 - Moved to E10.4: driver passwords (attributes with guiType "Password", primitive STRING) are returned in plain text;
   the DataCollector needs them, the Control Center shows them readable and would write a mask back, so masking needs
   the data source forms.
+
+### E10.1 users, groups, rights (contract)
+
+All under `/web/admin`, Bearer token, JSON. Rights are checked on the server with the existing rules (read/write/create
+on the objects, E10.0 grant rule for memberships); answers carry `canWrite`/`canDelete`/`version`, writes take
+`version` (409 with the current state), every write goes to `user_log` (`web:admin-…`). "Manageable" means the caller
+may write the object (Sys Admins: everything; site managers: the users and groups their "Verwalten" group owns).
+
+- `GET /web/admin/scope`: `{sysAdmin, sites: [{id, name, className, groupDirectory, userDirectory, canManage}]}`, the
+  organisations and buildings the caller can read, with the directories new users/groups go into (`null` if none
+  writable); `canManage` = the caller may write the site's group directory.
+- `GET /web/admin/users?q=&site=`: readable users: `{id, account, firstName, lastName, email, enabled, sysAdmin,
+  mfa, directory: {id, name, site}, groups: [{id, name, rights: ["READ","WRITE","EXECUTE","CREATE","DELETE"]}],
+  canWrite, version}`; `site` filters to users that are members of a group of that site or live in its user directory.
+- `POST /web/admin/users` `{directory, account, firstName, lastName, email, enabled, password}`: create right in the
+  directory; account unique (409 `ACCOUNT_EXISTS`); password checked like `/auth/password` (policy), stored hashed.
+- `PUT /web/admin/users/{id}` `{version, firstName, lastName, email, enabled, sysAdmin}`: write right on the user;
+  `sysAdmin` only by Sys Admins; nobody disables or demotes himself (400 `SELF`).
+- `POST /web/admin/users/{id}/password` `{password}`: write right on the user; all sessions of the user end
+  (`AuthService.setPassword`). `POST /web/admin/users/{id}/mfa-reset`: Sys Admins only (as `DELETE /auth/mfa/{id}`).
+- `PUT /web/admin/users/{id}/groups` `{version, groups: [{id, rights: [...]}]}`: the wanted memberships; the server adds
+  and removes `MEMBER_*` relationships for the groups the caller may write; a right the caller does not hold himself
+  on a group cannot be added (E10.0, 403 `GRANT`); memberships in groups the caller may not write stay untouched and
+  are reported as `unchanged`.
+- `GET /web/admin/groups?q=&site=`: readable groups `{id, name, site, path, members, canWrite, canDelete, version}`;
+  `POST /web/admin/groups` `{directory, name}`; `PUT /web/admin/groups/{id}` `{version, name}`; `DELETE
+  /web/admin/groups/{id}` into the recycle bin, only without members (409 `HAS_MEMBERS`).
+- `GET /web/admin/groups/{id}/members`: `[{user: {id, account, name}, rights}]`; `PUT` with `{version, members: [{user,
+  rights}]}` like the user side.
+- Sharing of a site (wizard "Zugriff einrichten", `SiteSharing`): `GET /web/admin/sites/{id}/sharing` →
+  `{groups: {VIEW, EDIT, MANAGE: {id, name} | null}, users: [{id, account, name, preset}]}`; `POST
+  /web/admin/sites/{id}/sharing/preview` `{assignments: {userId: "VIEW"|"EDIT"|"MANAGE"|null}, includeSubtree}` →
+  the planned changes (`RightsPlan`: objects to create, relationships to add/remove, warnings); `POST …/apply` with the
+  same body executes the plan with the caller's rights (each action checked like a single request; failed actions
+  are listed) and logs it.
+- "Who may do what": `GET /web/admin/rights?object={id}` and `?user={id}` (the existing `/permissions` views with the
+  reason of each right).
+- API keys (Sys Admins, interactive login): `GET/POST/DELETE /web/admin/apikeys` wrap `/auth/apikeys`.
+
+Implementation notes (server, `ResourceWebAdmin`, logic in `WebAdmin`):
+
+- Errors with a code answer `{code, message}` (`ACCOUNT_EXISTS`, `SELF`, `GRANT` with `group`, `user`, `rights`,
+  `HAS_MEMBERS` with `members`, `PASSWORD`, `SYS_ADMIN`, `RIGHTS`); a version conflict answers 409 with the current
+  state as before. `version` is an opaque hash: of a user over name fields, flags and memberships, of a group over
+  name and members. `DELETE groups/{id}` takes `?version=` optionally.
+- Directories in `scope` are `{id, name}`; the chosen directory is the topmost one of the site (nearest organisation
+  or building) the caller may create in. The `site` filter of users and groups means "below the site".
+- A membership change needs write right on the user and on the group (as `POST /relationships`). `PUT users/{id}/groups`
+  answers the user (as in the list) plus `unchanged: [{id, name}]`; `PUT groups/{id}/members` answers `{group, members,
+  unchanged}`; groups or users the caller cannot read are ignored. Changing one's own password here is refused
+  (`SELF`, use `/auth/password`); all writes are refused for API key logins (403).
+- Sharing: preview actions carry `type, category, text, object/parent` or `from/to/relType/right`, and `allowed` /
+  `reason` (the same check as apply). Apply answers the actions with `done`/`error`, `done` (count) and `failed: [{action,
+  text, error}]`. Objects created by the plan get the owners of their parent, so they are checked with its rights.
+- `GET rights?user=` also allows users the caller may write (site managers); otherwise as `/permissions/user/{id}`.
+- Navigation: `GET /web/navigation` has `admin: {users}` = Sys Admin or write right on a group or user directory.
+
+Web app: navigation group "Verwaltung" (only with `canManage` somewhere or Sys Admin) with "Benutzer" (list, search,
+site filter; side panel: data, password, MFA reset, groups with rights checkboxes), "Gruppen" (list, members),
+"Freigaben" (site sharing with preview before apply), "Wer darf was?" and, for Sys Admins, "API-Schlüssel".
+
+Delegation (user 2026-11-27): the sharing wizard (`SiteSharing`, web and Control Center) makes the "– Verwalten" group
+owner of the location's group and user directories, of the wizard groups and of the users in the user directory, so
+that site managers can manage them; a group created by someone who is not a Sys Admin gets its creator as member with
+all five rights (E10.0: only rights one holds can be granted).

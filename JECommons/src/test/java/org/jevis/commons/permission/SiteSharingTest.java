@@ -140,6 +140,26 @@ public class SiteSharingTest {
     }
 
     @Test
+    public void manageGroupOwnsTheAdministrationOfTheSite() {
+        /* E10.1: site managers manage the users and groups of their site */
+        add(model, 50, "Administration", "Administration Directory", 20L);
+        add(model, 51, "Groups", "Group Directory", 50L);
+        add(model, 54, "Users", "User Directory", 50L);
+        add(model, 55, "Dora", "User", 54L);
+        PlanSimulator.apply(model, new SiteSharing(model, 20, null).plan(assign(41, SiteSharing.Preset.MANAGE, 40, SiteSharing.Preset.VIEW), false));
+        RightsModel.Node manage = group(SiteSharing.Preset.MANAGE);
+        RightsModel.Node view = group(SiteSharing.Preset.VIEW);
+        assertTrue(model.has(51, manage.id, OWNER));
+        assertTrue(model.has(54, manage.id, OWNER));
+        assertTrue(model.has(55, manage.id, OWNER));
+        assertTrue(model.has(view.id, manage.id, OWNER));
+        assertTrue(model.has(manage.id, manage.id, OWNER));
+        /* only "Verwalten" administers */
+        assertFalse(model.has(51, view.id, OWNER));
+        assertEquals(0, new SiteSharing(model, 20, null).plan(assign(41, SiteSharing.Preset.MANAGE, 40, SiteSharing.Preset.VIEW), false).getActions().size());
+    }
+
+    @Test
     public void keepsRightsGrantedByRole() {
         PlanSimulator.apply(model, new SiteSharing(model, 20, null).plan(assign(40, SiteSharing.Preset.MANAGE), false));
         RightsModel.Node manage = group(SiteSharing.Preset.MANAGE);

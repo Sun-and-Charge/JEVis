@@ -9,7 +9,7 @@ import type { ModuleCounts } from '../api/navigation'
  */
 
 export type ModuleKey = Exclude<keyof ModuleCounts, 'alarmsOpen' | 'readingsReview'>
-export type GroupId = 'iso' | 'operations' | 'assets' | 'finance'
+export type GroupId = 'iso' | 'operations' | 'assets' | 'finance' | 'admin'
 
 export type NavIconName = GroupId | 'home' | 'dashboard' | 'analysis' | 'reports' | 'collapse' | 'expand' | 'search' | 'star' | 'chevron' | 'site' | 'user'
 
@@ -77,9 +77,23 @@ export function visibleModules(counts: ModuleCounts): MenuModule[] {
   return [...menuGroups(counts).flatMap((g) => g.modules), ...singleModules(counts)]
 }
 
+/*
+ * E10.1 "Verwaltung": administration pages, shown below the module groups for Sys Admins and site managers (GET
+ * /web/admin/scope). "API-Schlüssel" only for Sys Admins. The route name of a page is its key.
+ */
+export type AdminPageKey = 'adminUsers' | 'adminGroups' | 'adminSharing' | 'adminRights' | 'adminApiKeys'
+export const ADMIN_PAGES: readonly AdminPageKey[] = ['adminUsers', 'adminGroups', 'adminSharing', 'adminRights', 'adminApiKeys']
+
+/** The administration pages the user gets: none without administration, API keys only for Sys Admins. */
+export function adminPages(visible: boolean, sysAdmin: boolean): AdminPageKey[] {
+  if (!visible) return []
+  return ADMIN_PAGES.filter((p) => p !== 'adminApiKeys' || sysAdmin)
+}
+
 /** Group containing the module of a route, or null. */
 export function groupOfRoute(routeName: unknown): GroupId | null {
   if (typeof routeName !== 'string') return null
+  if ((ADMIN_PAGES as readonly string[]).includes(routeName)) return 'admin'
   return MENU_GROUPS.find((g) => (g.modules as readonly string[]).includes(routeName))?.id ?? null
 }
 

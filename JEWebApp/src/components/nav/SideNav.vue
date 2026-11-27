@@ -5,15 +5,17 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { hasModules } from '../../api/navigation'
 import { catalog, entryRoute, favouriteEntries } from '../../nav/catalog'
-import { menuGroups, openGroupOfRoute, singleModules, type GroupId, type MenuModule } from '../../nav/menu'
+import { adminPages, menuGroups, openGroupOfRoute, singleModules, type GroupId, type MenuModule } from '../../nav/menu'
 import { FAVOURITES_IN_MENU } from '../../nav/prefs'
+import { useAdminStore } from '../../stores/admin'
 import { useNavigationStore } from '../../stores/navigation'
 import { useNavPrefsStore } from '../../stores/navPrefs'
 import NavIcon from './NavIcon.vue'
 
 /*
  * Sidebar: Start, Dashboards and Analysen (overview pages, below them the user's favourites), the module groups
- * (collapsible, state remembered; the group of the current route opens) and Berichte. As a rail (`rail`) only the
+ * (collapsible, state remembered; the group of the current route opens), Berichte and, for Sys Admins and site
+ * managers, the group "Verwaltung" (E10.1). As a rail (`rail`) only the
  * icons are shown; their names stay the accessible names and appear as tooltips.
  */
 
@@ -23,12 +25,18 @@ const { t, locale } = useI18n()
 const nav = useNavigationStore()
 const prefs = useNavPrefsStore()
 const route = useRoute()
+const admin = useAdminStore()
 
 /* the analyses page offers "Neue Analyse" when a directory allows it: then the entry is shown without analyses too */
-onMounted(() => void nav.loadDirectories())
+onMounted(() => {
+  void nav.loadDirectories()
+  /* E10.1: the "Verwaltung" group for Sys Admins and site managers */
+  void admin.load()
+})
 
 const groups = computed(() => menuGroups(nav.modules))
 const singles = computed(() => singleModules(nav.modules))
+const admins = computed(() => adminPages(admin.visible, admin.sysAdmin))
 
 const sections = computed(() => {
   const list: { kind: 'dashboard' | 'analysis'; route: string; title: string; favourites: ReturnType<typeof catalog> }[] = []
@@ -141,6 +149,31 @@ const tip = (text: string) => (props.rail ? text : undefined)
           <NavIcon name="reports" /><span class="label">{{ label(m) }}</span>
           <span v-if="!rail" class="module-count">{{ m.count }}</span>
         </RouterLink>
+      </li>
+      <li v-if="admins.length" class="nav-group">
+        <button
+          type="button"
+          class="nav-link group-btn"
+          :aria-expanded="isOpen('admin')"
+          :aria-controls="rail ? undefined : 'nav-group-admin'"
+          :title="tip(t('nav.groups.admin'))"
+          @click="toggle('admin')"
+        >
+          <NavIcon name="admin" />
+          <span class="label">{{ t('nav.groups.admin') }}</span>
+          <span v-if="!rail && !isOpen('admin')" class="group-count">
+            <span aria-hidden="true">({{ admins.length }})</span>
+            <span class="visually-hidden">{{ t('nav.groupModules', admins.length) }}</span>
+          </span>
+          <span v-if="!rail" class="chevron" :class="{ open: isOpen('admin') }"><NavIcon name="chevron" /></span>
+        </button>
+        <ul v-show="isOpen('admin')" id="nav-group-admin" class="group-list">
+          <li v-for="p in admins" :key="p">
+            <RouterLink :to="{ name: p }" class="module-item" @click="emit('navigate')">
+              <span class="label">{{ t('admin.nav.' + p) }}</span>
+            </RouterLink>
+          </li>
+        </ul>
       </li>
     </ul>
     <p v-if="empty && !rail" class="side-info">{{ t('nav.empty') }}</p>

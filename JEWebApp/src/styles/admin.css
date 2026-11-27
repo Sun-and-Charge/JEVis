@@ -1,0 +1,184 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Sun and Charge Germany GmbH */
+
+/* Administration pages (E10.1): users, groups, sharing, rights, API keys. */
+
+.adm-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.adm-hint {
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.adm-name {
+  text-align: left;
+  font-weight: 600;
+}
+
+.adm-num {
+  text-align: right;
+}
+
+.adm-groups,
+.adm-reason {
+  max-width: 28rem;
+}
+
+.adm-reason-line {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.mod-row.adm-disabled,
+tr.adm-disabled {
+  opacity: 0.65;
+}
+
+.adm-small {
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.adm-badge {
+  margin-left: 0.35rem;
+}
+
+.adm-rights-table .adm-right-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.adm-rights-table input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+tr.adm-readonly th,
+tr.adm-readonly td {
+  color: var(--muted);
+}
+
+.adm-rights {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.8rem;
+}
+
+.adm-right,
+.adm-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+}
+
+.adm-checks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+
+.edit-field.adm-checks .edit-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.edit-actions.adm-left {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.adm-add {
+  margin-top: 0.75rem;
+}
+
+.adm-add select {
+  min-width: 14rem;
+  max-width: 100%;
+}
+
+.adm-subform {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.adm-delete-hint {
+  margin-top: 0.5rem;
+}
+
+.adm-preset-groups {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+tr.adm-changed {
+  background: var(--warn-bg, #fff4cc);
+}
+
+.adm-subtree {
+  margin: 1rem 0;
+}
+
+.adm-plan {
+  margin-top: 1.5rem;
+}
+
+.adm-plan h2,
+.adm-subtitle {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.adm-plan-list {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.adm-plan-list li {
+  margin: 0.15rem 0;
+}
+
+.adm-plan-list .adm-plan-REMOVE_RELATIONSHIP {
+  color: var(--error);
+}
+
+.adm-seg-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.adm-rights-form .adm-submit {
+  align-self: flex-end;
+}
+
+.adm-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.adm-key-text {
+  flex: 1 1 20rem;
+  min-width: 0;
+  padding: 0.5rem;
+  overflow-wrap: anywhere;
+  background: var(--bg);
+  border-radius: 4px;
+  user-select: all;
+}

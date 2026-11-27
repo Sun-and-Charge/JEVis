@@ -117,13 +117,23 @@ public class ResourcePermissions {
     public Response getUserPermissions(@Context HttpHeaders httpHeaders, @Context Request request, @Context UriInfo url,
                                        @PathParam("id") long id,
                                        @QueryParam("object") Long objectId) {
+        return userPermissions(httpHeaders, id, objectId, false);
+    }
+
+    /**
+     * The rights of a user (see {@link #getUserPermissions}).
+     *
+     * @param writableUsers also allow the users the caller may write (E10.1 web administration: site managers see
+     *                      the rights of the users they manage), not only himself
+     */
+    public static Response userPermissions(HttpHeaders httpHeaders, long id, Long objectId, boolean writableUsers) {
         SQLDataSource ds = null;
         try {
             ds = new SQLDataSource(httpHeaders::getRequestHeader);
             UserRightManagerForWS um = ds.getUserManager();
             JEVisUserSQL current = ds.getCurrentUser();
 
-            if (!um.isSysAdmin() && current.getUserID() != id) {
+            if (!um.isSysAdmin() && current.getUserID() != id && !(writableUsers && canWriteUser(ds, um, id))) {
                 return Response.status(Response.Status.FORBIDDEN).entity("Only Sys Admins can read the rights of other users").build();
             }
             JEVisUserSQL user = null;
@@ -175,6 +185,15 @@ public class ResourcePermissions {
             return Response.serverError().build();
         } finally {
             Config.CloseDS(ds);
+        }
+    }
+
+    private static boolean canWriteUser(SQLDataSource ds, UserRightManagerForWS um, long id) {
+        try {
+            JsonObject user = ds.getObject(id);
+            return user != null && "User".equals(user.getJevisClass()) && um.canWriteWOE(user);
+        } catch (Exception ex) {
+            return false;
         }
     }
 

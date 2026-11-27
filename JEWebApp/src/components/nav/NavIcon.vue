@@ -40,6 +40,12 @@ defineProps<{ name: NavIconName; filled?: boolean }>()
         <path d="M17.5 6.5A7 7 0 1 0 17.5 17.5" />
         <path d="M4 10h9M4 14h9" />
       </template>
+      <template v-else-if="name === 'admin'">
+        <circle cx="9" cy="8" r="3.5" />
+        <path d="M2.5 20c0-3.8 2.9-6.2 6.5-6.2 1.3 0 2.5.3 3.5.9" />
+        <circle cx="17.5" cy="16.5" r="2.2" />
+        <path d="M17.5 12.3v1.4M17.5 19.3v1.4M21.7 16.5h-1.4M14.7 16.5h-1.4M20.5 13.5l-1 1M15.5 18.5l-1 1M20.5 19.5l-1-1M15.5 14.5l-1-1" />
+      </template>
       <template v-else-if="name === 'reports'">
         <path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" />
         <path d="M14 3v5h5M8.5 13h7M8.5 17h5" />

@@ -14,12 +14,14 @@ import { useNarrow } from '../modules/useNarrow'
 import { openedItemKey } from '../nav/catalog'
 import { isPaletteShortcut } from '../nav/palette'
 import { useAuthStore } from '../stores/auth'
+import { useAdminStore } from '../stores/admin'
 import { useNavigationStore } from '../stores/navigation'
 import { useNavPrefsStore } from '../stores/navPrefs'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const nav = useNavigationStore()
+const admin = useAdminStore()
 const prefs = useNavPrefsStore()
 const router = useRouter()
 const route = useRoute()
@@ -71,6 +73,7 @@ watch(
     if (!loggedIn) {
       paletteOpen.value = false
       nav.reset()
+      admin.reset()
       router.replace({ name: 'login', query: auth.sessionExpired ? { redirect: route.fullPath } : {} })
     }
   },

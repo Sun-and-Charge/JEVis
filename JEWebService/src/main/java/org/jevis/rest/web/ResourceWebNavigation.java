@@ -36,6 +36,7 @@ import org.jevis.commons.ws.json.JsonSample;
 import org.jevis.commons.ws.sql.Config;
 import org.jevis.commons.ws.sql.JEVisUserSQL;
 import org.jevis.commons.ws.sql.SQLDataSource;
+import org.jevis.commons.ws.sql.UserRightManagerForWS;
 import org.joda.time.DateTime;
 
 import javax.security.sasl.AuthenticationException;
@@ -86,6 +87,11 @@ public class ResourceWebNavigation {
             me.put("sysAdmin", user.isSysAdmin());
             result.put("user", me);
             result.put("startDashboard", startDashboard(ds, user.getUserID(), readable));
+            /* E10.1: show "Verwaltung" (Sys Admin or write right on a group or user directory) */
+            Map<String, Object> admin = new LinkedHashMap<>();
+            UserRightManagerForWS um = ds.getUserManager();
+            admin.put("users", WebAdmin.managesSomething(user.isSysAdmin(), readable, um::canWriteWOE));
+            result.put("admin", admin);
             ResourceWebModules.Lookup lookup = new ResourceWebModules.Lookup(all, readable, parents);
             result.put("modules", ResourceWebModules.moduleCounts(lookup, ResourceWebAlarms.sqlStore(ds),
                     WebEdit.sqlStore(ds, lookup), DateTime.now()));

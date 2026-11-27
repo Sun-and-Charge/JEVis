@@ -4,8 +4,9 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { catalog, recentEntries, type CatalogEntry } from '../../nav/catalog'
-import { groupOfRoute, visibleModules } from '../../nav/menu'
+import { adminPages, groupOfRoute, visibleModules } from '../../nav/menu'
 import { paletteKey, paletteSearch, type PaletteItem } from '../../nav/palette'
+import { useAdminStore } from '../../stores/admin'
 import { useNavigationStore } from '../../stores/navigation'
 import { useNavPrefsStore } from '../../stores/navPrefs'
 import NavIcon from './NavIcon.vue'
@@ -21,6 +22,7 @@ const { t, locale } = useI18n()
 const nav = useNavigationStore()
 const prefs = useNavPrefsStore()
 const router = useRouter()
+const admin = useAdminStore()
 
 const query = ref('')
 const active = ref(0)
@@ -46,12 +48,14 @@ const pages = computed<PaletteItem[]>(() => {
   return list
 })
 
-const modules = computed<PaletteItem[]>(() =>
-  visibleModules(nav.modules).map((m) => {
+const modules = computed<PaletteItem[]>(() => [
+  ...visibleModules(nav.modules).map((m): PaletteItem => {
     const group = groupOfRoute(m.route)
     return { id: 'm:' + m.key, kind: 'module', label: t('modules.' + m.key), detail: group ? t('nav.groups.' + group) : null, route: { name: m.route } }
   }),
-)
+  /* E10.1: the administration pages */
+  ...adminPages(admin.visible, admin.sysAdmin).map((p): PaletteItem => ({ id: 'm:' + p, kind: 'module', label: t('admin.nav.' + p), detail: t('nav.groups.admin'), route: { name: p } })),
+])
 
 const items = computed(() => [...pages.value, ...modules.value, ...dashboards.value.map(entryItem), ...analyses.value.map(entryItem)])
 /* without a search: recently opened, then the pages and modules */

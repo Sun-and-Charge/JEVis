@@ -252,6 +252,28 @@ public class SiteSharing {
             }
         }
 
+        /* "Verwalten" administers the location (E10.1, 2026-11-27): its group owns the group and user directories of the
+           location, the wizard groups and the users in the user directory, so that site managers can manage the
+           users and groups of their site (new groups and users get the owners of their directory) */
+        RightsPlan.Ref manage = groupRefs.get(Preset.MANAGE);
+        if (manage != null) {
+            RightsPlan.Ref groupDirRef = groupDir != null ? groupDir
+                    : structure.groupDir != null ? refs.computeIfAbsent(structure.groupDir.id, id -> plan.existing(structure.groupDir)) : null;
+            if (groupDirRef != null) ensureRel(plan, groupDirRef, manage, OWNER, RightsPlan.Category.OWNER);
+            for (RightsPlan.Ref group : groupRefs.values()) {
+                ensureRel(plan, group, manage, OWNER, RightsPlan.Category.OWNER);
+            }
+            if (structure.userDir != null) {
+                RightsPlan.Ref userDirRef = refs.computeIfAbsent(structure.userDir.id, id -> plan.existing(structure.userDir));
+                ensureRel(plan, userDirRef, manage, OWNER, RightsPlan.Category.OWNER);
+                for (RightsModel.Node user : model.getChildren(structure.userDir.id, RightsModel.CLASS_USER)) {
+                    if (user.isDeleted()) continue;
+                    RightsPlan.Ref userRef = refs.computeIfAbsent(user.id, id -> plan.existing(user));
+                    ensureRel(plan, userRef, manage, OWNER, RightsPlan.Category.OWNER);
+                }
+            }
+        }
+
         /* memberships */
         for (Map.Entry<Long, Preset> assignment : assignments.entrySet()) {
             RightsModel.Node user = model.get(assignment.getKey());

@@ -59,7 +59,7 @@ public final class RelationshipGrant {
      * @param roleRights for {@code ROLE_MEMBER}: the rights of the role (group id → role right types), else ignored
      * @return whether the granting user may create the relationship
      */
-    static boolean mayGrant(boolean sysAdmin, int type, long from, long to, Map<Long, Set<Integer>> held,
+    public static boolean mayGrant(boolean sysAdmin, int type, long from, long to, Map<Long, Set<Integer>> held,
                             Map<Long, Set<Integer>> roleRights) {
         if (sysAdmin) return true;
         if (isMembership(type)) {
