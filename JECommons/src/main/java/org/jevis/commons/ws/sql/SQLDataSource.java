@@ -196,12 +196,21 @@ public class SQLDataSource {
      * @param msg   a human-readable description of the action
      */
     public void logUserAction(LOG_EVENT event, String msg) {
-        if (getCurrentUser().isSysAdmin()) {
-            /** we do not log SysAdmin because of the huge amount of event for the services. The Logging is for user events. **/
+        if (!logsActionsOf(getCurrentUser().isSysAdmin(), authMethod)) {
+            /* services (API key, Basic) of Sys Admins write a huge number of events; people are always logged */
             return;
         }
         logger.debug("Event '{}'| {}: {} ", getCurrentUser().getAccountName(), event, msg);
         UserLogService.log(this, getCurrentUser(), event.name(), null, msg);
+    }
+
+    /**
+     * E10.0: Sys Admins are logged when they work interactively (login with access token or SSO session), so that
+     * administration in the web app leaves an audit trail; their service logins (API key, Basic) stay unlogged.
+     */
+    static boolean logsActionsOf(boolean sysAdmin, AuthMethod authMethod) {
+        if (!sysAdmin) return true;
+        return authMethod == AuthMethod.ACCESS_TOKEN || authMethod == AuthMethod.SESSION;
     }
 
     /**

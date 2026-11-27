@@ -303,8 +303,12 @@ public class ResourceObject {
                     if (copyObject > 0) {
                         JsonObject toCopyObj = this.ds.getObject(copyObject);
 
-                        if (toCopyObj != null && this.ds.getUserManager().canCreate(toCopyObj)) {
+                        /* moving takes the object away from its old place: delete right on it as well (E10.0) */
+                        if (toCopyObj != null && this.ds.getUserManager().canCreate(toCopyObj) && canDeleteQuietly(toCopyObj)) {
+                            Long oldParent = toCopyObj.getParent();
                             this.ds.moveObject(toCopyObj.getId(), parentObj.getId());
+                            ds.logUserAction(SQLDataSource.LOG_EVENT.UPDATE_OBJECT, String.format("move %s:%s from %s to %s",
+                                    toCopyObj.getId(), toCopyObj.getName(), oldParent, parentObj.getId()));
                             return Response.ok(this.ds.getObject(copyObject)).build();
                         } else {
                             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -640,4 +644,13 @@ public class ResourceObject {
 //
 //    }
 
+
+    /** delete right without the exception of {@code UserRightManagerForWS.canDelete} */
+    private boolean canDeleteQuietly(JsonObject object) {
+        try {
+            return this.ds.getUserManager().canDelete(object);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

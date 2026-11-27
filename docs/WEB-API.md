@@ -2525,3 +2525,29 @@ today; the web writes them in the Control Center's formats. Rules of E1–E8 (se
   - substitution: the JEDataProcessor's `LimitsStep` fills step-2 violations with the row's gap-filling
     configuration, not with the step's `typeOfSubstituteValue`; the web reads and writes that key like the CC
     `LimitEditor` (no effect on processing today).
+
+## Administration, stage E10 (decided 2026-11-27)
+
+Administration in the web app instead of the Control Center "Konfiguration": E10.0 security fixes, E10.1 users,
+groups, roles and rights, E10.2 object tree and generic attribute form, E10.3 clean data and calculation settings with
+recalculation, E10.4 data sources/channels and CSV import (touches the Control Center, last before J25.6), E10.5
+service status. Users, groups and rights are managed per site: users with the share right "Verwalten" on a site manage
+the users and groups of that site, Sys Admins everything. Recalculation deletes the dependent values from a chosen
+time; JEDataProcessor and JECalc calculate them again in their next cycle (as `ResourceWebEditValues.resetDependents`).
+
+### E10.0 security fixes (generic API, also used by the Control Center)
+
+- **Audit of Sys Admins:** `SQLDataSource.logUserAction` wrote no `user_log` entry for Sys Admins. Now actions of
+  Sys Admins who logged in interactively (access token, SSO session) are logged; their service logins (API key,
+  Basic) stay unlogged because of the volume of service writes (`SQLDataSource.logsActionsOf`).
+- **Granting rights:** `POST /relationships` needed only write right on both objects, so a user who could edit a group
+  could give himself or others any right on it. Now (`RelationshipGrant`) a membership `MEMBER_x` (user → group) and
+  a role right `ROLE_x` (role → group) need the membership `MEMBER_x` of the granting user on that group, a role
+  assignment `ROLE_MEMBER` every right of the role; `403` otherwise. Sys Admins grant everything; owner, parent and
+  root relationships and removing relationships are unchanged. Site managers ("Verwalten") hold all rights on their
+  site groups and keep managing them.
+- **Moving objects:** `POST /objects?copy=<id>` (move) also needs the delete right on the moved object (it leaves its
+  old place) and writes a `user_log` entry `move <id>:<name> from <old parent> to <new parent>`.
+- Moved to E10.4: driver passwords (attributes with guiType "Password", primitive STRING) are returned in plain text;
+  the DataCollector needs them, the Control Center shows them readable and would write a mask back, so masking needs
+  the data source forms.

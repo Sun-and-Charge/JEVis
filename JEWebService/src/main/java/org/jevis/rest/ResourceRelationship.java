@@ -125,6 +125,9 @@ public class ResourceRelationship {
 
             ds.getUserManager().canWrite(fromObj);
             ds.getUserManager().canWrite(toObj);
+            if (!RelationshipGrant.mayGrant(ds, json)) {
+                return Response.status(Response.Status.FORBIDDEN).entity("Only rights you hold yourself can be granted").build();
+            }
 
             JsonRelationship newJSON = ds.setRelationships(json);
             try {
