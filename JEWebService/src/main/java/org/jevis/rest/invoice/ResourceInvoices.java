@@ -105,6 +105,51 @@ public class ResourceInvoices {
     }
 
     /**
+     * R01: an invoice entered by hand ({@link ManualInvoice}), part {@code data} (JSON) and an optional attachment
+     * {@code file} (PDF or scan); stored like an import, answer as {@code import}.
+     */
+    @POST
+    @Path("manual")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response manual(@Context HttpHeaders httpHeaders,
+                           @QueryParam("directory") Long directory,
+                           @FormDataParam("data") String data,
+                           @FormDataParam("file") FormDataBodyPart file) {
+        SQLDataSource ds = null;
+        try {
+            ds = new SQLDataSource(httpHeaders::getRequestHeader);
+            byte[] bytes = file != null ? read(file) : null;
+            return manual(data, bytes, fileName(file), directory, new SqlInvoiceStore(ds), DateTimeZone.getDefault());
+        } catch (AuthenticationException ex) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(ex.getMessage()).build();
+        } catch (InvoiceException ex) {
+            return error(ex);
+        } catch (Exception ex) {
+            logger.error("Could not store the manual invoice", ex);
+            return Response.serverError().build();
+        } finally {
+            Config.CloseDS(ds);
+        }
+    }
+
+    static Response manual(String data, byte[] bytes, String fileName, Long directory, InvoiceStore store,
+                           DateTimeZone zone) throws Exception {
+        try {
+            if (InvoiceImport.directory(store, directory) == null) {
+                throw new InvoiceException(400, InvoiceException.INVALID_DIRECTORY,
+                        "The directory is no readable Energy Invoices Directory.");
+            }
+            ManualInvoice.Parsed parsed = ManualInvoice.parse(data);
+            InvoiceImport.Result result = InvoiceImport.importInvoice(store, directory, parsed.medium, parsed.invoice,
+                    parsed.analysis, bytes, bytes != null ? fileName : null, zone);
+            return json(Response.Status.CREATED, result.toJson());
+        } catch (InvoiceException ex) {
+            return error(ex);
+        }
+    }
+
+    /**
      * Parse answer: the invoice JSON with {@code duplicate} if the directory is a readable Energy Invoices Directory.
      */
     static Response parse(byte[] bytes, String fileName, Long directory, InvoiceStore store) throws Exception {

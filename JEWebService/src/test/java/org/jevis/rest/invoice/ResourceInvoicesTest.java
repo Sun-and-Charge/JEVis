@@ -69,6 +69,72 @@ public class ResourceInvoicesTest {
         return new DateTime(year, month, day, 0, 0, ZONE);
     }
 
+    // ---------------------------------------------------------------- manual invoice (R01)
+
+    private static final String MANUAL = "{\"medium\":\"GAS\",\"seller\":\"Versorger Nord\",\"number\":\"M-7\","
+            + "\"date\":\"2026-10-05\",\"periodStart\":\"2026-09-01\",\"periodEnd\":\"2026-09-30\","
+            + "\"meterPoint\":\"DE0000000000000000000000000000001\",\"lines\":["
+            + "{\"description\":\"Arbeitspreis\",\"quantity\":\"12000\",\"unit\":\"KWH\",\"unitPrice\":\"0.08\",\"taxRate\":19},"
+            + "{\"description\":\"Grundpreis\",\"quantity\":1,\"unit\":\"MON\",\"unitPrice\":\"15.50\",\"taxRate\":19}]}";
+
+    @Test
+    public void manualInvoiceStoredLikeAnImport() throws Exception {
+        byte[] scan = "scan".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Response response = ResourceInvoices.manual(MANUAL, scan, "scan.pdf", DIRECTORY, store, ZONE);
+        assertEquals(201, response.getStatus());
+        JsonNode json = body(response);
+        long invoiceId = json.get("invoiceId").asLong();
+        assertEquals("Gas", store.objects.get(json.get("folderId").asLong()).getName());
+        assertEquals("MANUAL", store.latest(invoiceId, JC.EnergyInvoice.a_Format));
+        assertEquals("M-7 Versorger Nord", store.objects.get(invoiceId).getName());
+        /* 12000 × 0.08 = 960 + 15.50 = 975.50 net, 19 % = 185.35 tax (182.40 + 2.95) */
+        assertEquals("975.5", store.latest(invoiceId, JC.EnergyInvoice.a_NetAmount));
+        assertEquals("185.35", store.latest(invoiceId, JC.EnergyInvoice.a_TaxAmount));
+        assertEquals("1160.85", store.latest(invoiceId, JC.EnergyInvoice.a_GrossAmount));
+        assertEquals("12000", store.latest(invoiceId, JC.EnergyInvoice.a_Consumption));
+        assertEquals("DE0000000000000000000000000000001", store.latest(invoiceId, JC.EnergyInvoice.a_MeterPoint));
+        assertEquals("GAS", store.latest(invoiceId, JC.EnergyInvoice.a_Medium));
+        long consumption = json.get("series").get("CONSUMPTION").asLong();
+        assertEquals("12000", store.sampleAt(consumption, "Value", day(2026, 9, 1)).getValue());
+        assertArrayEquals(scan, store.files.get(invoiceId + "/" + JC.EnergyInvoice.a_InvoiceFile + "/scan.pdf"));
+
+        /* the same supplier and number again: duplicate */
+        assertEquals(409, ResourceInvoices.manual(MANUAL, null, null, DIRECTORY, store, ZONE).getStatus());
+    }
+
+    @Test
+    public void manualInvoiceWithoutFileTotalsAndConsumptionGiven() throws Exception {
+        String data = "{\"medium\":\"ELECTRICITY\",\"seller\":\"Versorger Nord\",\"number\":\"M-8\","
+                + "\"date\":\"2026-10-05\",\"net\":\"100\",\"tax\":\"19\",\"gross\":\"119\","
+                + "\"consumption\":{\"value\":\"1.5\",\"unit\":\"MWH\"}}";
+        Response response = ResourceInvoices.manual(data, null, null, DIRECTORY, store, ZONE);
+        assertEquals(201, response.getStatus());
+        long invoiceId = body(response).get("invoiceId").asLong();
+        assertEquals(1500.0, Double.parseDouble(store.latest(invoiceId, JC.EnergyInvoice.a_Consumption)), 1e-9);
+        assertEquals("119", store.latest(invoiceId, JC.EnergyInvoice.a_GrossAmount));
+        assertTrue(store.files.keySet().stream().noneMatch(k -> k.startsWith(invoiceId + "/")));
+    }
+
+    @Test
+    public void manualInvoiceValidation() throws Exception {
+        Response missing = ResourceInvoices.manual("{\"medium\":\"WATER\",\"date\":\"5.10.2026\"}", null, null, DIRECTORY, store, ZONE);
+        assertEquals(400, missing.getStatus());
+        JsonNode error = body(missing);
+        assertEquals("INVALID", error.get("error").asText());
+        String message = error.get("message").asText();
+        assertTrue(message, message.contains("medium"));
+        assertTrue(message, message.contains("seller: required"));
+        assertTrue(message, message.contains("number: required"));
+        assertTrue(message, message.contains("date: date yyyy-MM-dd expected"));
+        assertTrue(message, message.contains("net: amount or lines expected"));
+        assertEquals(400, ResourceInvoices.manual("[]", null, null, DIRECTORY, store, ZONE).getStatus());
+        assertEquals(400, ResourceInvoices.manual(MANUAL, null, null, OTHER_FOLDER, store, ZONE).getStatus());
+        assertEquals("INVALID_DIRECTORY", body(ResourceInvoices.manual(MANUAL, null, null, OTHER_FOLDER, store, ZONE)).get("error").asText());
+        /* period end before start */
+        String backwards = MANUAL.replace("\"periodEnd\":\"2026-09-30\"", "\"periodEnd\":\"2026-08-30\"");
+        assertTrue(body(ResourceInvoices.manual(backwards, null, null, DIRECTORY, store, ZONE)).get("message").asText().contains("periodEnd"));
+    }
+
     // ---------------------------------------------------------------- parse
 
     @Test

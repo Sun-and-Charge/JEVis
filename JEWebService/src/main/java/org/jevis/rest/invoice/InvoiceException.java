@@ -35,6 +35,8 @@ public class InvoiceException extends Exception {
     public static final String INVALID_DIRECTORY = "INVALID_DIRECTORY";
     public static final String TOO_LARGE = "TOO_LARGE";
     public static final String NO_FILE = "NO_FILE";
+    /** a manual invoice (R01) with missing or invalid fields */
+    public static final String INVALID = "INVALID";
 
     private final int status;
     private final String code;

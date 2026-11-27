@@ -176,6 +176,38 @@ export function importInvoiceFile(http: Pick<HttpClient, 'postForm'>, directory:
   return http.postForm<ImportedInvoice>(importPath(directory, medium), fileForm(file))
 }
 
+/* ---------- R01: manual invoice ---------- */
+
+/** Body (part `data`) of POST /invoices/manual; amounts as numbers, dates yyyy-MM-dd. */
+export interface ManualInvoiceBody {
+  medium: InvoiceMedium
+  seller: string
+  sellerVatId?: string
+  number: string
+  date: string
+  periodStart?: string
+  periodEnd?: string
+  meterPoint?: string
+  creditNote?: boolean
+  lines: { description: string; quantity?: number; unit?: string; unitPrice?: number; net?: number; taxRate?: number }[]
+  net?: number
+  tax?: number
+  gross?: number
+  consumption?: { value: number; unit: 'KWH' | 'MWH' | 'MTQ' }
+}
+
+export function manualPath(directory: number): string {
+  return `/invoices/manual?directory=${directory}`
+}
+
+/** POST /JEWebService/v1/invoices/manual?directory= (multipart `data` JSON + optional `file`): 201 as the import, 409 DUPLICATE. */
+export function saveManualInvoice(http: Pick<HttpClient, 'postForm'>, directory: number, body: ManualInvoiceBody, file: File | null): Promise<ImportedInvoice> {
+  const form = new FormData()
+  form.append('data', JSON.stringify(body))
+  if (file) form.append('file', file, file.name)
+  return http.postForm<ImportedInvoice>(manualPath(directory), form)
+}
+
 /** DELETE /web/invoices/{id}?version=: recycle bin, amounts taken out of the series; 409 if changed meanwhile. */
 export function deleteInvoice(http: Pick<HttpClient, 'delete'>, id: number, version: string): Promise<void> {
   return http.delete(deleteInvoicePath(id, version))

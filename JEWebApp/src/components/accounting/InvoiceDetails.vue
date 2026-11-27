@@ -163,7 +163,7 @@ const id = (suffix: string) => `invoice-${props.invoice.id}-${suffix}`
         <dd :class="{ 'is-negative': (inv.gross ?? 0) < 0 }">{{ money(inv.gross) }}</dd>
         <template v-if="inv.format">
           <dt>{{ t('invoices.col.format') }}</dt>
-          <dd>{{ inv.format }}</dd>
+          <dd>{{ inv.format === 'MANUAL' ? t('invoiceEdit.manual.format') : inv.format }}</dd>
         </template>
         <template v-if="where">
           <dt>{{ t('invoices.col.where') }}</dt>

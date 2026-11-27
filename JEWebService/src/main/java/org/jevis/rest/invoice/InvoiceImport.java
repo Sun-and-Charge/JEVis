@@ -271,7 +271,8 @@ public final class InvoiceImport {
             store.setUnit(id, JC.EnergyInvoice.a_TaxAmount, currency);
             store.setUnit(id, JC.EnergyInvoice.a_GrossAmount, currency);
         }
-        store.storeFile(id, JC.EnergyInvoice.a_InvoiceFile, timestamp, safeFileName(fileName), file, number);
+        /* a manual invoice (R01) may come without attachment */
+        if (file != null) store.storeFile(id, JC.EnergyInvoice.a_InvoiceFile, timestamp, safeFileName(fileName), file, number);
 
         /* series samples */
         if (analysis.consumption != null) {

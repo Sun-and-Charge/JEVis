@@ -2207,6 +2207,12 @@ bodies are plain text as the other E-stage deletes. `version` is `"none"` for an
 - Invoice details: **"Löschen"** (with `canDelete`; confirmation "Die Rechnung wird in den Papierkorb gelegt und aus
   den Rechnungsreihen herausgerechnet."), `409` handling as E2–E5.
 - Unsaved-changes guard while files are parsed or rows are chosen but not imported.
+- **"Rechnung erfassen"** (R01, 2026-11-27, docs/ENERGY-INVOICES.md "Manual invoices"): side panel with folder,
+  medium, supplier (+ VAT ID), number, date, billing period, meter point / market location, credit note; line items
+  (description, quantity, unit kWh/MWh/m³/kW/month/day/year/piece/lump sum, unit price, net, VAT 19/7/0 %); live totals
+  (net, VAT, gross, consumption from the energy lines, equal quantities counted once); optional own totals and own
+  consumption; optional PDF/scan → `POST /JEWebService/v1/invoices/manual?directory=`; `409` shows "gibt es schon".
+  Details show the format `MANUAL` as "Manuell erfasst".
 
 ## Editing, stage E6.2: contract partners, prices and governmental dues
 

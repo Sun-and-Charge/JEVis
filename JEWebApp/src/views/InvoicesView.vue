@@ -29,6 +29,7 @@ import { browserTimeZone } from '../analysis/settings'
 import { deleteInvoice, loadInvoices, type Invoice, type InvoiceMedium } from '../api/invoices'
 import InvoiceDetails from '../components/accounting/InvoiceDetails.vue'
 import InvoiceImportDialog from '../components/accounting/InvoiceImportDialog.vue'
+import ManualInvoiceDialog from '../components/accounting/ManualInvoiceDialog.vue'
 import ConfirmDialog from '../components/edit/ConfirmDialog.vue'
 import { useBusy, writeErrorKind, writeErrorText } from '../edit/edit'
 import { saveBlob } from '../iso/download'
@@ -174,6 +175,18 @@ function openImport() {
   importOpen.value = true
 }
 
+/* R01: an invoice without e-invoice file */
+const manualOpen = ref(false)
+function openManual() {
+  message.value = null
+  manualOpen.value = true
+}
+async function manualSaved() {
+  manualOpen.value = false
+  message.value = { ok: true, text: t('invoiceEdit.manual.saved') }
+  await reload()
+}
+
 const deleting = ref<Invoice | null>(null)
 const deleteError = ref<string | null>(null)
 const { busy: deleteBusy, run } = useBusy()
@@ -221,7 +234,10 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
   <section class="iso notes invoices" aria-labelledby="invoices-title">
     <div class="mod-head">
       <h1 id="invoices-title">{{ t('invoices.title') }}</h1>
-      <button v-if="canImport" type="button" class="btn btn-primary inv-import" @click="openImport">{{ t('invoiceEdit.importAction') }}</button>
+      <div v-if="canImport" class="inv-head-actions">
+        <button type="button" class="btn inv-manual" @click="openManual">{{ t('invoiceEdit.manual.action') }}</button>
+        <button type="button" class="btn btn-primary inv-import" @click="openImport">{{ t('invoiceEdit.importAction') }}</button>
+      </div>
     </div>
     <p v-if="writable" class="muted read-only">{{ t('invoiceEdit.hint') }}</p>
     <p v-else class="muted read-only">{{ t('invoices.readOnly') }}</p>
@@ -433,6 +449,7 @@ const numericColumns = new Set(['consumption', 'net', 'tax', 'gross'])
     </template>
 
     <InvoiceImportDialog v-if="importOpen" @close="importOpen = false" @imported="reload" />
+    <ManualInvoiceDialog v-if="manualOpen" @close="manualOpen = false" @saved="manualSaved" />
     <ConfirmDialog
       v-if="deleting"
       :title="t('invoiceEdit.deleteTitle')"

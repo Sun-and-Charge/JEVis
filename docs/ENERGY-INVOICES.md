@@ -83,6 +83,23 @@ the folder (or write right on an existing series); 400 for a wrong `medium` or a
   (413).
 - Authentication: the Control Center's session (Bearer token or legacy Basic) like all other endpoints.
 
+## Manual invoices (R01, 2026-11-27)
+
+Invoices without e-invoice file (paper, plain PDF) are entered in the web app ("Rechnung erfassen") and stored like an
+imported e-invoice, so they appear in the register, the series and the cost calculation:
+
+- `POST /JEWebService/v1/invoices/manual?directory=<id>`, multipart: part `data` (JSON) and an optional part `file`
+  (PDF or scan, max 20 MB, stored in "Invoice File"; without it the attribute stays empty).
+- `data`: `{medium, seller, sellerVatId?, buyer?, number, date, periodStart?, periodEnd?, meterPoint?, currency?
+  (EUR), creditNote?, consumption?: {value, unit KWH|MWH|MTQ}, lines?: [{description, quantity?, unit?, unitPrice?,
+  net?, taxRate?}], net?, tax?, gross?}` (`ManualInvoice`). A line's net is quantity × unit price (2 decimals) when
+  missing; the totals are the sums of the lines (tax per line, rounded to cents) unless given; the consumption is the
+  given one, else the analysis of the energy lines as for e-invoices (the web app always sends the consumption it
+  shows). Period both or none; credit notes negate totals and consumption as for e-invoices.
+- Format `MANUAL`; same duplicate check (seller + number, `409 DUPLICATE`), same rights and rollback as the import.
+- Errors: `400 INVALID` with the problems in `message`, `400 INVALID_DIRECTORY`, `403`, `409`, `413`.
+- Editing: delete (recycle bin, taken out of the series) and enter again.
+
 ## Control Center (AccountingPlugin)
 
 - Button "Rechnungen importieren" (where Energy Invoices Directories are shown; folder chooser if several).
