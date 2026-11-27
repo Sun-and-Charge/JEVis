@@ -55,7 +55,9 @@ public class GenericAttributeExtension implements ObjectEditorExtension {
 
     /** attributes a service keeps up to date; a manual change would break its state */
     private static final java.util.Set<String> SERVICE_WRITTEN = new java.util.HashSet<>(java.util.Arrays.asList(
-            org.jevis.commons.alarm.OutageState.ATTRIBUTE, org.jevis.commons.alarm.OutageEvent.ATTRIBUTE));
+            org.jevis.commons.alarm.OutageState.ATTRIBUTE, org.jevis.commons.alarm.OutageEvent.ATTRIBUTE,
+            /* result of the automatic invoice check (R03), written by the web service */
+            "Check Result"));
 
 
     private static final String TITLE = I18n.getInstance().getString("plugin.object.attribute.title");
