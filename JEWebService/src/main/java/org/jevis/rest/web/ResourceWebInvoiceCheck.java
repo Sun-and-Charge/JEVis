@@ -89,6 +89,10 @@ public class ResourceWebInvoiceCheck {
      */
     public static Map<String, Object> afterImport(SQLDataSource ds, long invoiceId) {
         try {
+            /* the request cache was filled before the import: the new invoice (and maybe its medium folder) is not in
+               it, so the folder settings above the invoice would not be found */
+            ds.preload(SQLDataSource.PRELOAD.ALL_REL);
+            ds.preload(SQLDataSource.PRELOAD.ALL_OBJECT);
             return InvoiceCheck.check(new SqlEnv(ds), invoiceId, DateTime.now());
         } catch (Exception e) {
             logger.warn("Invoice check after the import of {} failed", invoiceId, e);
