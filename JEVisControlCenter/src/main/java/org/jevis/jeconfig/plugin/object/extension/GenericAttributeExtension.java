@@ -53,6 +53,11 @@ import java.util.List;
  */
 public class GenericAttributeExtension implements ObjectEditorExtension {
 
+    /** attributes a service keeps up to date; a manual change would break its state */
+    private static final java.util.Set<String> SERVICE_WRITTEN = new java.util.HashSet<>(java.util.Arrays.asList(
+            org.jevis.commons.alarm.OutageState.ATTRIBUTE, org.jevis.commons.alarm.OutageEvent.ATTRIBUTE));
+
+
     private static final String TITLE = I18n.getInstance().getString("plugin.object.attribute.title");
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(GenericAttributeExtension.class);
     public static DoubleProperty editorWidth = new SimpleDoubleProperty(350);
@@ -326,7 +331,8 @@ public class GenericAttributeExtension implements ObjectEditorExtension {
 
                             editor = getEditor(type, att);
 
-                            editor.setReadOnly(readOnly);
+                            /* written by JEAlarm only (docs/ALARMS-OUTAGE.md): visible for diagnosis, not editable */
+                            editor.setReadOnly(readOnly || SERVICE_WRITTEN.contains(type.getName()));
 
                             if (editor instanceof WebViewEditor) {
                                 webview = editor;

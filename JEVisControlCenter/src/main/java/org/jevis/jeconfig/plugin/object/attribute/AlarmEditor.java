@@ -274,7 +274,11 @@ public class AlarmEditor implements AttributeEditor {
             fillTab(tab, outage);
             tabPane.getSelectionModel().select(tab);
         });
-        HBox ruleButtons = new HBox(6, addStatic, addDynamic, addOutage, removeRule);
+        /* R16: the rules shown here to other rows (added to their rules, or instead of them) */
+        Button copyRules = new Button(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy", "Auf andere Datenreihen übertragen …", "Copy to other data rows …"), JEConfig.getSVGImage(Icon.COPY, 14, 14));
+        copyRules.disableProperty().bind(javafx.beans.binding.Bindings.isEmpty(tabPane.getTabs()));
+        copyRules.setOnAction(event -> chooseCopyTargets());
+        HBox ruleButtons = new HBox(6, addStatic, addDynamic, addOutage, removeRule, copyRules);
 
         /* J25.5: "Speichern" in Sun, no default button (Enter in a field must not save), "Abbrechen" */
         ButtonType okType = dialog.addFormPrimary(org.jevis.jeconfig.application.navigation.PluginSidebar.text("dialog.ui.save", "Speichern", "Save"));
@@ -311,6 +315,149 @@ public class AlarmEditor implements AttributeEditor {
      * @param tab
      * @param config
      */
+    // ---------------------------------------------------------------- copy to other rows (R16)
+
+    private void chooseCopyTargets() {
+        try {
+            List<JEVisTreeFilter> filters = new ArrayList<>();
+            JEVisTreeFilter rows = SelectTargetDialog.buildAllDataAndCleanDataFilter();
+            filters.add(rows);
+            SelectTargetDialog select = new SelectTargetDialog(filters, rows, null, SelectionMode.MULTIPLE, _attribute.getDataSource(), new ArrayList<>());
+            select.setOnCloseRequest(event -> {
+                if (select.getResponse() != SelectTargetDialog.Response.OK) return;
+                List<JEVisObject> targets = new ArrayList<>();
+                for (UserSelection us : select.getUserSelection()) {
+                    if (us.getSelectedObject() != null) targets.add(us.getSelectedObject());
+                }
+                if (!targets.isEmpty()) Platform.runLater(() -> confirmCopy(targets));
+            });
+            select.show();
+        } catch (Exception e) {
+            logger.error("Could not choose the rows to copy the alarm rules to", e);
+        }
+    }
+
+    private void confirmCopy(List<JEVisObject> targets) {
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> ask = new org.jevis.jeconfig.application.ui.SucDialog<>(
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.title", "Alarmregeln übertragen", "Copy alarm rules"),
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.description", "%d Regeln auf %d Datenreihen", "%d rules to %d data rows"), _listConfig.size(), targets.size()),
+                org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        CheckBox replace = new CheckBox(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.replace", "Vorhandene Regeln der Ziel-Datenreihen ersetzen", "Replace the existing rules of the target rows"));
+        Label hint = new Label(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.hint",
+                "Übertragen werden die hier angezeigten Regeln; ohne „ersetzen“ kommen sie zu den vorhandenen Regeln hinzu (höchstens 10 je Datenreihe). Auf den Ziel-Datenreihen wird „Alarm aktiv“ eingeschaltet, Grenzwerte werden nicht übertragen.",
+                "The rules shown here are copied; without “replace” they are added to the existing rules (at most 10 per row). “Alarm enabled” is switched on at the target rows; limits are not copied."));
+        hint.setWrapText(true);
+        ask.setBody(new VBox(10, replace, hint));
+        ButtonType go = new ButtonType(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.submit", "Übertragen", "Copy"), ButtonBar.ButtonData.OK_DONE);
+        ask.addPrimary(go);
+        ask.addCancel();
+        java.util.Optional<ButtonType> answer = ask.open();
+        if (!answer.isPresent() || answer.get() != go) return;
+
+        List<String> changed = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+        copyTo(targets, replace.isSelected(), changed, skipped);
+        org.jevis.jeconfig.application.ui.SucDialog<ButtonType> result = org.jevis.jeconfig.application.ui.SucDialog.result(
+                org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.title", "Alarmregeln übertragen", "Copy alarm rules"),
+                String.format(org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.result", "%d geändert, %d nicht geändert", "%d changed, %d not changed"), changed.size(), skipped.size()),
+                org.jevis.jeconfig.application.ui.SucDialog.Size.M);
+        StringBuilder text = new StringBuilder();
+        for (String c : changed) text.append("✓ ").append(c).append(System.lineSeparator());
+        for (String c : skipped) text.append("– ").append(c).append(System.lineSeparator());
+        Label list = new Label(text.toString().trim());
+        list.setWrapText(true);
+        result.setBody(list);
+        result.open();
+    }
+
+    /** writes the rules of the dialog to each target row the user may write (as the web service's copy) */
+    private void copyTo(List<JEVisObject> targets, boolean replace, List<String> changed, List<String> skipped) {
+        long source = _attribute.getObject().getID();
+        java.util.Set<Long> done = new java.util.HashSet<>();
+        for (JEVisObject target : targets) {
+            String label = rowLabel(target);
+            try {
+                JEVisObject clean = cleanOf(target);
+                JEVisAttribute config = clean != null ? clean.getAttribute(_attribute.getName()) : null;
+                if (config == null) {
+                    skipped.add(label + ": " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.noClean", "keine bereinigte Datenreihe", "no clean data row"));
+                    continue;
+                }
+                if (!done.add(clean.getID())) continue;
+                if (clean.getID() == source) {
+                    skipped.add(label + ": " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.source", "die Datenreihe selbst", "the row itself"));
+                    continue;
+                }
+                if (!clean.getDataSource().getCurrentUser().canWrite(clean.getID())) {
+                    skipped.add(label + ": " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.noWrite", "kein Schreibrecht", "no write right"));
+                    continue;
+                }
+                List<JsonAlarmConfig> result = new ArrayList<>();
+                if (!replace) {
+                    JEVisSample latest = config.getLatestSample();
+                    String json = latest != null ? latest.getValueAsString() : null;
+                    if (json != null && !json.trim().isEmpty()) {
+                        try {
+                            result.addAll(parseJson(json.trim()));
+                        } catch (Exception e) {
+                            skipped.add(label + ": " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.unreadable", "vorhandene Regeln nicht lesbar, mit „ersetzen“ möglich", "existing rules not readable, possible with “replace”"));
+                            continue;
+                        }
+                    }
+                }
+                if (result.size() + _listConfig.size() > 10) {
+                    skipped.add(label + ": " + org.jevis.jeconfig.application.navigation.PluginSidebar.text("plugin.alarmeditor.copy.tooMany", "mehr als 10 Regeln", "more than 10 rules"));
+                    continue;
+                }
+                java.util.Set<String> used = new java.util.HashSet<>();
+                for (JsonAlarmConfig rule : result) if (rule.getId() != null) used.add(rule.getId());
+                for (JsonAlarmConfig rule : _listConfig) {
+                    JsonAlarmConfig copy = JsonTools.objectMapper().readValue(JsonTools.objectMapper().writeValueAsString(rule), JsonAlarmConfig.class);
+                    if (copy.getId() == null || used.contains(copy.getId())) copy.setId(nextFree(used));
+                    used.add(copy.getId());
+                    result.add(copy);
+                }
+                DateTime now = new DateTime();
+                config.buildSample(now, result.toString()).commit();
+                JEVisAttribute enabled = clean.getAttribute("Alarm Enabled");
+                JEVisSample on = enabled != null ? enabled.getLatestSample() : null;
+                if (enabled != null && (on == null || !Boolean.TRUE.equals(on.getValueAsBoolean()))) enabled.buildSample(now, true).commit();
+                changed.add(label);
+            } catch (Exception e) {
+                logger.error("Could not copy the alarm rules to {}", target.getID(), e);
+                skipped.add(label + ": " + e.getMessage());
+            }
+        }
+    }
+
+    private static String nextFree(java.util.Set<String> used) {
+        int next = 0;
+        while (used.contains(String.valueOf(next))) next++;
+        return String.valueOf(next);
+    }
+
+    /** the clean data row itself, or the first clean data child of a raw data row */
+    private static JEVisObject cleanOf(JEVisObject object) throws JEVisException {
+        if ("Clean Data".equals(object.getJEVisClassName())) return object;
+        if ("Data".equals(object.getJEVisClassName())) {
+            for (JEVisObject child : object.getChildren()) {
+                if ("Clean Data".equals(child.getJEVisClassName())) return child;
+            }
+        }
+        return null;
+    }
+
+    private static String rowLabel(JEVisObject object) {
+        try {
+            if ("Clean Data".equals(object.getJEVisClassName()) && !object.getParents().isEmpty()) {
+                return object.getParents().get(0).getName() + " / " + object.getName();
+            }
+        } catch (Exception e) {
+            /* name only */
+        }
+        return object.getName();
+    }
+
     /** kinds of rules added in this dialog that have no limit yet (kindOf would read an empty rule by its id) */
     private final java.util.Map<JsonAlarmConfig, String> newKinds = new java.util.IdentityHashMap<>();
 
