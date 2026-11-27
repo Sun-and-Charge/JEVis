@@ -74,6 +74,9 @@ public class AggregationAlignmentStep implements ProcessStep {
 
         Map<DateTime, JEVisSample> userDataMap = resourceManager.getUserDataMap() != null ? resourceManager.getUserDataMap() : new java.util.HashMap<>();
         int rawIndex = -1;
+        int countedIndex = -1;
+        long countedPeriods = 0;
+        DateTime countedEnd = null;
         double lastValue = 0d;
         for (int j = 0, intervalsSize = intervals.size(); j < intervalsSize; j++) {
             CleanInterval currentInterval = intervals.get(j);
@@ -131,14 +134,32 @@ public class AggregationAlignmentStep implements ProcessStep {
                             }
                         }
                     } else {
-                        lastInterval = new CleanInterval(currentInterval.getInterval(), currentInterval.getDate());
-                        lastInterval.getRawSamples().add(currentInterval.getRawSamples().get(0));
-                        note += "ex-li-m";
+                        /* the reading before this interval (it may belong to an earlier batch or lie before the
+                           intervals); without one the interval starts at its own first reading */
+                        JEVisSample before = readingBefore(rawSamples, currentInterval);
+                        if (before != null) {
+                            /* an interval of its own time: CleanInterval.equals compares the date, an interval with
+                               the date of the current one was taken for the current one (one raw step lost at
+                               every batch start, 2026-11-27) */
+                            DateTime beforeTs = before.getTimestamp();
+                            lastInterval = new CleanInterval(new org.joda.time.Interval(beforeTs.minusMillis(1), beforeTs), beforeTs);
+                            lastInterval.getRawSamples().add(before);
+                            note += "ex-li-b";
+                        } else {
+                            lastInterval = new CleanInterval(currentInterval.getInterval(), currentInterval.getDate());
+                            lastInterval.getRawSamples().add(currentInterval.getRawSamples().get(0));
+                            note += "ex-li-m";
+                        }
                     }
                 }
 
-                Double valueAsDouble = calcAvgSample(currentInterval.getRawSamples(), currentInterval.isDifferential(), lastInterval);
-                currentInterval.getResult().setValue(getScaledValue(listMultipliers, currentInterval.getDate(), valueAsDouble, offset).doubleValue());
+                if (currentInterval.getRawSamples().isEmpty()) {
+                    /* a mean of no values is no value (a temperature of 0 is a value) */
+                    currentInterval.getResult().setValue(null);
+                } else {
+                    Double valueAsDouble = calcAvgSample(currentInterval.getRawSamples(), currentInterval.isDifferential(), lastInterval);
+                    currentInterval.getResult().setValue(getScaledValue(listMultipliers, currentInterval.getDate(), valueAsDouble, offset).doubleValue());
+                }
 
                 try {
                     note += currentInterval.getResult().getNote();
@@ -178,9 +199,22 @@ public class AggregationAlignmentStep implements ProcessStep {
                             }
                         }
                     } else {
-                        lastInterval = new CleanInterval(currentInterval.getInterval(), currentInterval.getDate());
-                        lastInterval.getRawSamples().add(currentInterval.getRawSamples().get(0));
-                        note += "ex-li-m";
+                        /* the reading before this interval (it may belong to an earlier batch or lie before the
+                           intervals); without one the interval starts at its own first reading */
+                        JEVisSample before = readingBefore(rawSamples, currentInterval);
+                        if (before != null) {
+                            /* an interval of its own time: CleanInterval.equals compares the date, an interval with
+                               the date of the current one was taken for the current one (one raw step lost at
+                               every batch start, 2026-11-27) */
+                            DateTime beforeTs = before.getTimestamp();
+                            lastInterval = new CleanInterval(new org.joda.time.Interval(beforeTs.minusMillis(1), beforeTs), beforeTs);
+                            lastInterval.getRawSamples().add(before);
+                            note += "ex-li-b";
+                        } else {
+                            lastInterval = new CleanInterval(currentInterval.getInterval(), currentInterval.getDate());
+                            lastInterval.getRawSamples().add(currentInterval.getRawSamples().get(0));
+                            note += "ex-li-m";
+                        }
                     }
                 }
 
@@ -258,9 +292,14 @@ public class AggregationAlignmentStep implements ProcessStep {
 
                     if (nextValue != null) {
                         value = nextValue;
+                        /* the raw value stands for its own period only: intervals further back (before the first raw
+                           value or in a gap) stay empty */
+                        DateTime nextTs = j + nextAdd - 1 < intervalsSize ? intervals.get(j + nextAdd - 1).getResult().getTimestamp() : null;
+                        DateTime validFrom = nextTs != null ? PeriodHelper.getPreviousPeriod(nextTs, inputPeriod, 1, false, timeZone) : null;
                         for (int i = j; i < j + nextAdd; i++) {
                             if (i < intervalsSize) {
                                 JEVisSample sample1 = intervals.get(i).getResult();
+                                if (validFrom != null && !sample1.getTimestamp().isAfter(validFrom)) continue;
                                 sample1.setValue(value);
                                 sample1.setNote(note);
                             }
@@ -289,10 +328,22 @@ public class AggregationAlignmentStep implements ProcessStep {
                         DateTime rawStart = raw.getTimestamp();
                         JEVisSample userValue = userDataMap.get(rawStart);
                         Double rawValue = userValue != null ? userValue.getValueAsDouble() : raw.getValueAsDouble();
-                        DateTime maxDate = PeriodHelper.getNextPeriod(rawStart, inputPeriod, 1, true, timeZone);
-                        long diffInput = maxDate.getMillis() - rawStart.getMillis();
-                        long diffOutput = PeriodHelper.addPeriodToDate(rawStart, outputPeriod).getMillis() - rawStart.getMillis();
-                        long periodCount = diffOutput > 0 ? diffInput / diffOutput : 0;
+                        if (countedIndex != rawIndex) {
+                            /* the number of clean periods in the raw period, counted in local time: a month with the
+                               change to summer time has 31 days but 30.96 days of 24 hours (2026-11-27) */
+                            countedIndex = rawIndex;
+                            countedEnd = PeriodHelper.getNextPeriod(rawStart, inputPeriod, 1, true, timeZone);
+                            countedPeriods = 0;
+                            DateTime step = rawStart.withZone(timeZone);
+                            while (step.isBefore(countedEnd) && countedPeriods < 10_000_000L) {
+                                DateTime next = PeriodHelper.addPeriodToDate(step, outputPeriod);
+                                if (!next.isAfter(step)) break;
+                                step = next;
+                                countedPeriods++;
+                            }
+                        }
+                        DateTime maxDate = countedEnd;
+                        long periodCount = countedPeriods;
                         if (rawValue != null && periodCount > 0 && timestamp.isBefore(maxDate)) {
                             value = getScaledValue(listMultipliers, rawStart, rawValue, offset).doubleValue() / periodCount;
                             String agg = "agg(yes,up," + periodCount + ",sum)";
@@ -304,120 +355,128 @@ public class AggregationAlignmentStep implements ProcessStep {
                 }
                 currentInterval.getResult().setValue(value);
                 currentInterval.getResult().setNote(note);
-            } else {
-                Double nextValue = null;
-                int nextAdd = 0;
-                Double value = null;
-
-                if (((currentInterval.getRawSamples() == null || currentInterval.getRawSamples().isEmpty()) && j > 0) && currentInterval.isDifferential()) {
-                    String note = "";
-                    if (j < intervals.size() - 1) {
-                        for (int i = j; i < intervals.size(); i++) {
-                            if (intervals.get(i).getRawSamples() != null && !intervals.get(i).getRawSamples().isEmpty()) {
-                                nextValue = intervals.get(i).getResult().getValueAsDouble();
-                                note = intervals.get(i).getResult().getNote();
-                                nextAdd++;
-                                break;
-                            }
-                            nextAdd++;
-                        }
-
-                    } else needToBeRemoved.add(currentInterval);
-
-                    if (note == null || note.isEmpty()) {
-                        note = "agg(yes,up," + nextAdd + ",sum)";
-                    } else {
-                        note += ",agg(yes,up," + nextAdd + ",sum)";
-                    }
-                    if (!notesMap.isEmpty()) {
-                        JEVisSample noteSample = notesMap.get(currentInterval.getResult().getTimestamp());
-                        if (noteSample != null) {
-                            note += ",userNotes";
-                        }
-                    }
-
-                    if (nextValue != null) {
-                        value = nextValue / nextAdd;
-                        for (int i = j; i < j + nextAdd; i++) {
-                            JEVisSample sample1 = intervals.get(i).getResult();
-                            sample1.setValue(value);
-                            sample1.setNote(note);
-                        }
-                    }
-                } else if (j == 0 && currentInterval.isDifferential()) {
-                    try {
-                        DateTime timestamp = currentInterval.getResult().getTimestamp();
-                        DateTime inputTS = PeriodHelper.addPeriodToDate(timestamp, inputPeriod);
-                        long diffInput = inputTS.getMillis() - timestamp.getMillis();
-                        DateTime outputTS = PeriodHelper.addPeriodToDate(timestamp, outputPeriod);
-                        long diffOutput = outputTS.getMillis() - timestamp.getMillis();
-                        long periodCount = diffInput / diffOutput;
-                        value = currentInterval.getResult().getValueAsDouble() / periodCount;
-                        String note = currentInterval.getResult().getNote();
-                        if (note == null || note.isEmpty()) {
-                            note = "agg(yes,up," + periodCount + ",sum)";
-                        } else {
-                            note = note + ",agg(yes,up," + periodCount + ",sum)";
-                        }
-                        currentInterval.getResult().setValue(value);
-                        currentInterval.getResult().setNote(note);
-                    } catch (Exception e) {
-                        logger.error("Could not get period count, object {}:{}", cleanDataObject.getCleanObject().getName(), cleanDataObject.getCleanObject().getID(), e);
-                    }
-                } else {
-                    try {
-                        DateTime timestamp = currentInterval.getResult().getTimestamp();
-
-                        boolean matchesUpscaleTimestamp = false;
-                        for (JEVisSample rawSample : rawSamples) {
-                            if (timestamp.equals(rawSample.getTimestamp())) {
-                                matchesUpscaleTimestamp = true;
-                                break;
-                            }
-                        }
-
-                        if (matchesUpscaleTimestamp) {
-
-                            DateTime maxDate = PeriodHelper.getNextPeriod(timestamp, inputPeriod, 1, true, timeZone);
-
-                            long diffInput = maxDate.getMillis() - timestamp.getMillis();
-                            DateTime outputTS = PeriodHelper.addPeriodToDate(timestamp, outputPeriod);
-                            long diffOutput = outputTS.getMillis() - timestamp.getMillis();
-                            long periodCount = diffInput / diffOutput;
-                            value = currentInterval.getResult().getValueAsDouble() / periodCount;
-                            String note = currentInterval.getResult().getNote();
-                            if (note == null || note.isEmpty()) {
-                                note = "agg(yes,up," + periodCount + ",sum)";
-                            } else {
-                                note = note + ",agg(yes,up," + periodCount + ",sum)";
-                            }
-                            currentInterval.getResult().setValue(value);
-                            currentInterval.getResult().setNote(note);
-
-                            for (int i = j; i < intervals.size(); i++) {
-                                if (intervals.get(i).getResult().getTimestamp().isBefore(maxDate)) {
-                                    intervals.get(i).getResult().setValue(value);
-                                    intervals.get(i).getResult().setNote(note);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        logger.error("Could not get period count, object {}:{}", cleanDataObject.getCleanObject().getName(), cleanDataObject.getCleanObject().getID(), e);
-                    }
-                }
-
-                if (nextAdd > 1) {
-                    j += nextAdd - 1;
-                }
-
             }
+            /* counter readings split into shorter periods: see splitCounterReadings after the loop */
         }
+
+        splitCounterReadings(intervals, rawSamples, timeZone);
 
         intervals.removeAll(needToBeRemoved);
 
+        /* intervals that end before the first raw value of the row have no data: no value instead of 0 (2026-11-27) */
+        DateTime firstRaw = null;
+        try {
+            firstRaw = cleanDataObject.getRawAttribute().getTimestampOfFirstSample();
+        } catch (Exception e) {
+            logger.warn("Could not read the first raw time stamp of {}", cleanDataObject.getCleanObject().getID(), e);
+        }
+        if (firstRaw != null) {
+            for (CleanInterval interval : intervals) {
+                if (interval.getRawSamples().isEmpty() && !interval.getInterval().getEnd().isAfter(firstRaw)
+                        && !interval.getResult().getTimestamp().isAfter(firstRaw)) {
+                    interval.getResult().setValue(null);
+                }
+            }
+        }
+        /* intervals of the same or a longer period that start after the last raw value have no data yet */
+        if (!rawSamples.isEmpty()) {
+            try {
+                DateTime lastRaw = rawSamples.get(rawSamples.size() - 1).getTimestamp();
+                for (CleanInterval interval : intervals) {
+                    if (interval.getCompare() >= 0 && interval.getRawSamples().isEmpty() && !interval.getInterval().getStart().isBefore(lastRaw)) {
+                        interval.getResult().setValue(null);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Could not read the last raw time stamp", e);
+            }
+        }
+
         logger.debug("{} finished in {}", this.getClass().getSimpleName(), new Period(benchStart, new DateTime()).toString(PeriodFormat.wordBased(I18n.getInstance().getLocale())));
+    }
+
+    /**
+     * Counter readings split into shorter clean periods (e.g. 15-minute readings -> 5 minutes, day readings -> hours):
+     * the consumption of a reading (the result of its interval) is spread evenly over the clean periods since the
+     * reading before it, which is taken from the raw samples, so a batch starting inside a raw period or a gap in the
+     * readings get the right share (before 2026-11-27 the share was the number of empty intervals found in the batch).
+     * Clean periods shorter than a day are stamped at their end and get the readings in (previous, reading]; days,
+     * weeks and months are stamped at their start and get [previous, reading).
+     */
+    private static void splitCounterReadings(List<CleanInterval> intervals, List<JEVisSample> rawSamples, DateTimeZone timeZone) {
+        List<Integer> readingIndex = new ArrayList<>();
+        List<Double> readingDiff = new ArrayList<>();
+        List<DateTime> readingTs = new ArrayList<>();
+        for (int k = 0; k < intervals.size(); k++) {
+            CleanInterval ci = intervals.get(k);
+            if (ci.getCompare() < 0 && ci.isDifferential() && !ci.getRawSamples().isEmpty()) {
+                try {
+                    readingIndex.add(k);
+                    readingDiff.add(ci.getResult().getValueAsDouble());
+                    readingTs.add(ci.getRawSamples().get(ci.getRawSamples().size() - 1).getTimestamp());
+                } catch (Exception e) {
+                    logger.warn("Could not read the counter reading of {}", ci.getDate(), e);
+                }
+            }
+        }
+        for (CleanInterval ci : intervals) {
+            if (ci.getCompare() < 0 && ci.isDifferential()) ci.getResult().setValue(null);
+        }
+        for (int r = 0; r < readingIndex.size(); r++) {
+            Double diff = readingDiff.get(r);
+            DateTime reading = readingTs.get(r);
+            if (diff == null || reading == null) continue;
+            DateTime previous = null;
+            for (JEVisSample sample : rawSamples) {
+                try {
+                    if (!sample.getTimestamp().isBefore(reading)) break;
+                    previous = sample.getTimestamp();
+                } catch (Exception e) {
+                    break;
+                }
+            }
+            /* the first reading has no consumption */
+            if (previous == null) continue;
+            CleanInterval readingInterval = intervals.get(readingIndex.get(r));
+            Period output = readingInterval.getOutputPeriod();
+            boolean startStamped = output.getDays() > 0 || output.getWeeks() > 0 || output.getMonths() > 0 || output.getYears() > 0;
+            long count = 0;
+            DateTime step = previous.withZone(timeZone);
+            while (step.isBefore(reading) && count < 10_000_000L) {
+                DateTime next = PeriodHelper.addPeriodToDate(step, output);
+                if (!next.isAfter(step)) break;
+                step = next;
+                count++;
+            }
+            if (count <= 0) continue;
+            double value = diff / count;
+            String agg = "agg(yes,up," + count + ",sum)";
+            for (int i = readingIndex.get(r); i >= 0; i--) {
+                CleanInterval ci = intervals.get(i);
+                DateTime ts = ci.getResult().getTimestamp();
+                boolean inside = startStamped ? (!ts.isBefore(previous) && ts.isBefore(reading)) : (ts.isAfter(previous) && !ts.isAfter(reading));
+                if (startStamped ? ts.isBefore(previous) : !ts.isAfter(previous)) break;
+                if (!inside || ci.getCompare() >= 0 || !ci.isDifferential()) continue;
+                ci.getResult().setValue(value);
+                String note = ci.getResult().getNote();
+                ci.getResult().setNote(note == null || note.isEmpty() ? agg : note + "," + agg);
+            }
+        }
+    }
+
+    /** the last raw sample at or before the start of the interval, null if there is none */
+    private static JEVisSample readingBefore(List<JEVisSample> rawSamples, CleanInterval interval) {
+        DateTime start = interval.getInterval().getStart();
+        JEVisSample found = null;
+        for (JEVisSample sample : rawSamples) {
+            try {
+                if (sample.getTimestamp().isAfter(start)) break;
+                found = sample;
+            } catch (Exception e) {
+                return found;
+            }
+        }
+        return found;
     }
 
     private BigDecimal getScaledValue(List<JEVisSample> listMultipliers, DateTime date, Double currentValue, BigDecimal offset) {

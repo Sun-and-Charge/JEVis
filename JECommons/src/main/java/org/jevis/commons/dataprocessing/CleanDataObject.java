@@ -351,7 +351,8 @@ public class CleanDataObject {
             int compare = periodComparator.compare(outputPeriod, inputPeriod);
 
             if (timestampLatestCleanSample != null && timestampLatestRawSample != null && compare < 1) {
-                if (!hasNewSamples(timestampLatestCleanSample, timestampLatestRawSample, inputPeriod, outputPeriod, dateTimeZone)) {
+                boolean differential = isDifferentialForDate(getDifferentialRules(), timestampLatestRawSample);
+                if (!hasNewSamples(timestampLatestCleanSample, timestampLatestRawSample, inputPeriod, outputPeriod, differential, dateTimeZone)) {
                     errors.add(("No new Samples for cleaning"));
                 }
             } else if (timestampLatestCleanSample != null && compare < 1) {
@@ -383,8 +384,10 @@ public class CleanDataObject {
      * the raw period is longer than the clean period (e.g. month values cleaned to 15 minutes), the clean values do
      * not yet reach the end of the period of the last raw value (a run that stopped inside the last month)
      */
-    static boolean hasNewSamples(DateTime latestClean, DateTime latestRaw, Period inputPeriod, Period outputPeriod, DateTimeZone zone) {
+    static boolean hasNewSamples(DateTime latestClean, DateTime latestRaw, Period inputPeriod, Period outputPeriod, boolean differential, DateTimeZone zone) {
         if (!latestRaw.isBefore(latestClean)) return true;
+        /* a counter reading closes its period: nothing to split after it */
+        if (differential) return false;
         if (inputPeriod == null || outputPeriod == null || inputPeriod.equals(Period.ZERO) || outputPeriod.equals(Period.ZERO)) {
             return false;
         }
@@ -727,7 +730,10 @@ public class CleanDataObject {
             } else {
                 DateTime firstTimestampRaw = sampleHandler.getTimestampOfFirstSample(rawDataObject, VALUE_ATTRIBUTE_NAME);
                 if (firstTimestampRaw != null) {
-                    firstDate = new DateTime(firstTimestampRaw.getYear(), firstTimestampRaw.getMonthOfYear(), firstTimestampRaw.getDayOfMonth(), 0, 0);
+                    /* the day of the first raw value in local time (in UTC it was the day before for a value at
+                       00:00, and the first run started a day early, 2026-11-27) */
+                    DateTime local = dateTimeZone != null ? firstTimestampRaw.withZone(dateTimeZone) : firstTimestampRaw;
+                    firstDate = new DateTime(local.getYear(), local.getMonthOfYear(), local.getDayOfMonth(), 0, 0, local.getZone());
                 } else {
                     firstDate = null;
                     logger.error("Could not get first date for: {}:{}", getCleanObject().getName(), getCleanObject().getID());
@@ -868,7 +874,9 @@ public class CleanDataObject {
 
                     Period lastPeriod = getPeriodForDate(getCleanDataPeriodAlignment(), rawSamplesDown.get(indexLastRawSample).getTimestamp());
 
-                    lastDate = this.rawSamplesDown.get(indexLastRawSample).getTimestamp().plus(lastPeriod);
+                    /* in local time: in UTC, 1 Dec 00:00 (local) plus one month was 31 Dec and December was missing */
+                    DateTime lastRaw = this.rawSamplesDown.get(indexLastRawSample).getTimestamp();
+                    lastDate = (dateTimeZone != null ? lastRaw.withZone(dateTimeZone) : lastRaw).plus(lastPeriod);
                 }
                 //lastDate = sampleHandler.getTimeStampFromLastSample(rawDataObject, VALUE_ATTRIBUTE_NAME).plus(getCleanDataPeriodAlignment());
             } catch (Exception e) {

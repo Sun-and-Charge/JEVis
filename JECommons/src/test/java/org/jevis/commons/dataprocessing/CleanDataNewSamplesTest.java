@@ -35,17 +35,17 @@ public class CleanDataNewSamplesTest {
     @Test
     public void monthValueToQuarterHoursContinuesInsideTheLastMonth() {
         /* the run stopped on 4 Dec 12:30, the last raw value (1 Dec) covers the month up to 31 Dec 23:45 */
-        assertTrue(CleanDataObject.hasNewSamples(new DateTime(2025, 12, 4, 12, 30, Z), DEC_1, Period.months(1), Period.minutes(15), Z));
-        assertTrue(CleanDataObject.hasNewSamples(new DateTime(2025, 12, 31, 23, 30, Z), DEC_1, Period.months(1), Period.minutes(15), Z));
-        assertFalse(CleanDataObject.hasNewSamples(new DateTime(2025, 12, 31, 23, 45, Z), DEC_1, Period.months(1), Period.minutes(15), Z));
+        assertTrue(CleanDataObject.hasNewSamples(new DateTime(2025, 12, 4, 12, 30, Z), DEC_1, Period.months(1), Period.minutes(15), false, Z));
+        assertTrue(CleanDataObject.hasNewSamples(new DateTime(2025, 12, 31, 23, 30, Z), DEC_1, Period.months(1), Period.minutes(15), false, Z));
+        assertFalse(CleanDataObject.hasNewSamples(new DateTime(2025, 12, 31, 23, 45, Z), DEC_1, Period.months(1), Period.minutes(15), false, Z));
     }
 
     @Test
     public void samePeriodOrShorterRawPeriodNeedsANewerRawValue() {
         DateTime raw = new DateTime(2025, 12, 1, 12, 0, Z);
-        assertTrue(CleanDataObject.hasNewSamples(raw, raw, Period.minutes(15), Period.minutes(15), Z));
-        assertTrue(CleanDataObject.hasNewSamples(raw.minusMinutes(15), raw, Period.minutes(15), Period.minutes(15), Z));
-        assertFalse(CleanDataObject.hasNewSamples(raw.plusMinutes(15), raw, Period.minutes(15), Period.minutes(15), Z));
-        assertFalse(CleanDataObject.hasNewSamples(raw.plusDays(1), raw, Period.minutes(15), Period.days(1), Z));
+        assertTrue(CleanDataObject.hasNewSamples(raw, raw, Period.minutes(15), Period.minutes(15), false, Z));
+        assertTrue(CleanDataObject.hasNewSamples(raw.minusMinutes(15), raw, Period.minutes(15), Period.minutes(15), false, Z));
+        assertFalse(CleanDataObject.hasNewSamples(raw.plusMinutes(15), raw, Period.minutes(15), Period.minutes(15), false, Z));
+        assertFalse(CleanDataObject.hasNewSamples(raw.plusDays(1), raw, Period.minutes(15), Period.days(1), false, Z));
     }
 }

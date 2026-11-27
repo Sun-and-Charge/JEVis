@@ -32,7 +32,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.*;
@@ -96,9 +95,6 @@ public class MonthlyToQuarterHourTest {
         check(raw, false, total, 10000);
     }
 
-    /* open (2026-11-27): monthly counter readings to 15 minutes give zeros for two months before the first reading
-       and lose one value per month (17.5 of 51600 here); part of the DataProcessor test matrix in the plan */
-    @Ignore("monthly counter readings: zeros before the first reading, one value per month lost")
     @Test
     public void monthlyCounterReadingsKeepTheirSum() throws Exception {
         List<JEVisSample> raw = new ArrayList<>();

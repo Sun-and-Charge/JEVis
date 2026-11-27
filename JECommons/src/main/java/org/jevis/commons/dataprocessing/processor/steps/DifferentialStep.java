@@ -60,6 +60,7 @@ public class DifferentialStep implements ProcessStep {
         DateTimeZone timeZone = workDays.getDateTimeZone();
 
         int rawPointer = 0;
+        boolean valueIsQuantityRow = cleanDataObject.getValueIsQuantity();
         for (CleanInterval interval : intervals) {
             int compare = interval.getCompare();
             Boolean isDifferential = interval.isDifferential();
@@ -84,8 +85,27 @@ public class DifferentialStep implements ProcessStep {
                     rawPointer++;
                 } else if (compare > 0
                         && (interval.getOutputPeriod().getDays() == 1 || interval.getOutputPeriod().getWeeks() == 1 || interval.getOutputPeriod().getMonths() == 1 || interval.getOutputPeriod().getYears() == 1)
-                        && (timeStamp.equals(start.minusSeconds(1)) || (timeStamp.isAfter(start) && timeStamp.isBefore(end)))) {
+                        && (isDifferential
+                        /* counter readings: the reading at the end of the period closes it, the one at its start
+                           belongs to the period before (value = reading at the end - reading at the start) */
+                        ? (timeStamp.isAfter(start) && !timeStamp.isAfter(end))
+                        : (timeStamp.equals(start.minusSeconds(1)) || (timeStamp.isAfter(start) && timeStamp.isBefore(end))))) {
                     //raw data  period is smaller than clean data period, e.g. 15-minute values -> month/year values
+                    interval.getRawSamples().add(jeVisSample);
+                    rawPointer++;
+                } else if (compare < 0 && isDifferential && interval.getOutputPeriod().equals(Period.minutes(5))) {
+                    /* counter readings into 5 minutes: like other periods, a reading belongs to the interval that ends
+                       with it (the interpolation below turned 1713 kWh into 0.5, 2026-11-27) */
+                    if (timeStamp.equals(interval.getDate())) {
+                        interval.getRawSamples().add(jeVisSample);
+                        rawPointer++;
+                    } else if (timeStamp.isBefore(interval.getDate())) {
+                        rawPointer++;
+                    } else samplesInInterval = false;
+                } else if (compare < 0 && !isDifferential && !valueIsQuantityRow && timeStamp.equals(interval.getDate())
+                        && (interval.getOutputPeriod().getDays() > 0 || interval.getOutputPeriod().getWeeks() > 0 || interval.getOutputPeriod().getMonths() > 0)) {
+                    /* mean values into days, weeks or months: the clean value of a day is stamped at its start, as
+                       the raw value (a month mean was never assigned and every day got 0, 2026-11-27) */
                     interval.getRawSamples().add(jeVisSample);
                     rawPointer++;
                 } else if (compare < 0
@@ -243,15 +263,19 @@ public class DifferentialStep implements ProcessStep {
 
                         if (interval.getInputPeriod().equals(Period.months(1))) {
 
-                            int dayOfMonth = curSample.getTimestamp().getDayOfMonth();
+                            /* days in local time: a reading on the 1st 00:00 is the last day of the month before in
+                               UTC and was split as a reading in the middle of a month (2026-11-27) */
+                            DateTime localTs = curSample.getTimestamp().withZone(timeZone);
+                            DateTime localLast = lastDiffTS != null ? lastDiffTS.withZone(timeZone) : null;
+                            int dayOfMonth = localTs.getDayOfMonth();
 
-                            int maxDaysLastMonth = curSample.getTimestamp().minusMonths(1).dayOfMonth().getMaximumValue();
+                            int maxDaysLastMonth = localTs.minusMonths(1).dayOfMonth().getMaximumValue();
 
                             int daysOfLastMonth = 0;
-                            if (lastDiffTS != null && lastDiffTS.getDayOfMonth() == 1) {
-                                daysOfLastMonth = maxDaysLastMonth - (lastDiffTS.getDayOfMonth() - 1);
-                            } else if (lastDiffTS != null && lastDiffTS.getDayOfMonth() > 1) {
-                                daysOfLastMonth = maxDaysLastMonth - lastDiffTS.getDayOfMonth();
+                            if (localLast != null && localLast.getDayOfMonth() == 1) {
+                                daysOfLastMonth = maxDaysLastMonth - (localLast.getDayOfMonth() - 1);
+                            } else if (localLast != null && localLast.getDayOfMonth() > 1) {
+                                daysOfLastMonth = maxDaysLastMonth - localLast.getDayOfMonth();
                             } else {
                                 daysOfLastMonth = maxDaysLastMonth;
                             }
@@ -263,7 +287,7 @@ public class DifferentialStep implements ProcessStep {
                             }
 
                             double dayValue = cleanedVal / divisor;
-                            tmpTimeStamp = tmpTimeStamp.withDayOfMonth(1).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
+                            tmpTimeStamp = tmpTimeStamp.withZone(timeZone).withDayOfMonth(1).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
 
                             if (dayOfMonth > 1 && index == 0 && lastInterval != null && lastInterval.getResult().getValueAsDouble() == null) {
 
@@ -436,7 +460,7 @@ public class DifferentialStep implements ProcessStep {
                 }
             }
             return value / currentRawSamples.size();
-        } else return 0d;
+        } else return null; /* a mean of no values is no value */
     }
 
     private Double calcSumSample(List<JEVisSample> currentRawSamples) {

@@ -200,30 +200,36 @@ public class PrepareStep implements ProcessStep {
         // landing up to N periods before the last-written sample get regenerated automatically.
         int reprocessingPeriods = cleanDataObject.getReprocessingPeriods();
         Period lookbackPeriod = lastPeriod.multipliedBy(reprocessingPeriods);
+        /* calendar periods are subtracted in local time: in UTC, 1 Dec 00:00 (local) minus one month was 30 Oct and the
+           last month of monthly clean data was never calculated (2026-11-27) */
         if (dtEnd.isBefore(dtStart) && IntStream.of(lastPeriod.getYears(), lastPeriod.getMonths(), lastPeriod.getWeeks()).anyMatch(i -> i > 0)) {
-            currentDate = currentDate.minus(lookbackPeriod);
-            maxEndDate = maxEndDate.minus(lookbackPeriod);
+            currentDate = currentDate.withZone(timeZone).minus(lookbackPeriod);
+            maxEndDate = maxEndDate.withZone(timeZone).minus(lookbackPeriod);
         } else if (IntStream.of(lastPeriod.getYears(), lastPeriod.getMonths()).anyMatch(i -> i > 0) && firstIsDifferential) {
-            maxEndDate = maxEndDate.minus(lookbackPeriod);
+            maxEndDate = maxEndDate.withZone(timeZone).minus(lookbackPeriod);
         } else if (reprocessingPeriods > 1) {
-            currentDate = currentDate.minus(lookbackPeriod.minus(lastPeriod));
+            currentDate = currentDate.withZone(timeZone).minus(lookbackPeriod.minus(lastPeriod));
+        }
+
+        /* values split into shorter clean periods (e.g. hour values -> 15 minutes, month values -> days): the last raw
+           value covers its whole period, so the intervals run to its end, also when a batch stopped inside it */
+        boolean extendedToRawEnd = false;
+        if (maxEndDate != null) {
+            DateTime lastRawTs = cleanDataObject.getRawSamplesDown().get(indexLastRawSample).getTimestamp();
+            Period rawAtLast = CleanDataObject.getPeriodForDate(periodRawData, lastRawTs);
+            Period cleanAtLast = CleanDataObject.getPeriodForDate(periodCleanData, lastRawTs);
+            boolean lastDifferential = CleanDataObject.isDifferentialForDate(differentialRules, lastRawTs);
+            if (!lastDifferential && cleanDataObject.getValueIsQuantity() && !rawAtLast.equals(Period.ZERO) && !cleanAtLast.equals(Period.ZERO)
+                    && new PeriodComparator().compare(cleanAtLast, rawAtLast) < 0) {
+                DateTime rawEnd = PeriodHelper.getNextPeriod(lastRawTs, rawAtLast, 1, true, timeZone);
+                if (rawEnd.isAfter(maxEndDate)) maxEndDate = rawEnd;
+                extendedToRawEnd = true;
+            }
         }
 
         logger.info("[{}] getIntervals: currentDate: {}  MaxEndDate: {} ", cleanDataObject.getCleanObject().getID(), currentDate, maxEndDate);
 
-        /* month values split into shorter clean periods: the last raw month runs to its end (extended below as well),
-           so a batch that stopped inside that month must still find the rest of it */
-        DateTime effectiveEnd = maxEndDate;
-        if (maxEndDate != null && currentDate != null) {
-            Period rawAtEnd = CleanDataObject.getPeriodForDate(periodRawData, maxEndDate);
-            Period cleanAtEnd = CleanDataObject.getPeriodForDate(periodCleanData, maxEndDate);
-            if (rawAtEnd.equals(Period.months(1)) && new PeriodComparator().compare(cleanAtEnd, rawAtEnd) < 0) {
-                DateTime local = maxEndDate.withZone(timeZone);
-                effectiveEnd = local.withDayOfMonth(local.dayOfMonth().getMaximumValue()).withTime(23, 59, 59, 999);
-            }
-        }
-
-        if (currentDate == null || maxEndDate == null || !currentDate.isBefore(effectiveEnd)) {
+        if (currentDate == null || maxEndDate == null || !currentDate.isBefore(maxEndDate)) {
             logger.warn("Nothing to do with only one interval");
             return cleanIntervals;
         } else {
@@ -254,8 +260,10 @@ public class PrepareStep implements ProcessStep {
                     maxEndDateLocal = maxEndDateLocal.plusYears(1);
                 }
             }
+            /* raw period longer than the clean period: a batch starts at the start of a raw period (date and time of
+               day), else the intervals between the batch start and the next raw value got a wrong share (2026-11-27) */
             if (compare < 0 && firstRawPeriod.getYears() > 0) {
-                currentDateLocal = currentDateLocal.withMonthOfYear(1).withDayOfMonth(1);
+                currentDateLocal = currentDateLocal.withMonthOfYear(1).withDayOfMonth(1).withTime(dtStart.getHour(), dtStart.getMinute(), dtStart.getSecond(), 0);
             }
 
             if (firstCleanPeriod.getMonths() > 0) {
@@ -269,10 +277,10 @@ public class PrepareStep implements ProcessStep {
                 }
             }
             if (compare < 0 && firstRawPeriod.getMonths() > 0) {
-                currentDateLocal = currentDateLocal.minusMonths(1).withDayOfMonth(1);
+                currentDateLocal = currentDateLocal.minusMonths(1).withDayOfMonth(1).withTime(dtStart.getHour(), dtStart.getMinute(), dtStart.getSecond(), 0);
             }
 
-            if (compare < 0 && CleanDataObject.getPeriodForDate(cleanDataObject.getRawDataObject(), maxEndDateLocal).equals(Period.months(1))) {
+            if (!extendedToRawEnd && compare < 0 && CleanDataObject.getPeriodForDate(cleanDataObject.getRawDataObject(), maxEndDateLocal).equals(Period.months(1))) {
                 maxEndDateLocal = maxEndDateLocal.withDayOfMonth(maxEndDateLocal.dayOfMonth().getMaximumValue()).withHourOfDay(23).withMinuteOfHour(59).withSecondOfMinute(59).withMillisOfSecond(999);
             }
 
@@ -283,7 +291,7 @@ public class PrepareStep implements ProcessStep {
                 maxEndDateLocal = maxEndDateLocal.withDayOfWeek(1).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
             }
             if (compare < 0 && firstRawPeriod.getWeeks() > 0) {
-                currentDateLocal = currentDateLocal.minusWeeks(1).withDayOfWeek(1);
+                currentDateLocal = currentDateLocal.minusWeeks(1).withDayOfWeek(1).withTime(dtStart.getHour(), dtStart.getMinute(), dtStart.getSecond(), 0);
             }
 
             if (firstCleanPeriod.getDays() > 0) {
@@ -293,7 +301,7 @@ public class PrepareStep implements ProcessStep {
                 maxEndDateLocal = maxEndDateLocal.withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
             }
             if (compare < 0 && firstRawPeriod.getDays() > 0) {
-                currentDateLocal = currentDateLocal.minusDays(1);
+                currentDateLocal = currentDateLocal.minusDays(1).withTime(dtStart.getHour(), dtStart.getMinute(), dtStart.getSecond(), 0);
             }
 
             if (firstCleanPeriod.getHours() > 0) {
@@ -303,7 +311,12 @@ public class PrepareStep implements ProcessStep {
                 maxEndDateLocal = maxEndDateLocal.plusMinutes(30).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
             }
             if (compare < 0 && firstRawPeriod.getHours() > 0) {
-                currentDateLocal = currentDateLocal.minusHours(1).withMinuteOfHour(0);
+                currentDateLocal = currentDateLocal.minusHours(1).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
+            }
+            if (compare < 0 && firstRawPeriod.getMinutes() > 0 && firstRawPeriod.getHours() == 0 && firstRawPeriod.getDays() == 0) {
+                int rawMinutes = firstRawPeriod.getMinutes();
+                currentDateLocal = currentDateLocal.withSecondOfMinute(0).withMillisOfSecond(0);
+                currentDateLocal = currentDateLocal.minusMinutes(currentDateLocal.getMinuteOfHour() % rawMinutes).minusMinutes(rawMinutes);
             }
 
             if (firstCleanPeriod.getMinutes() > 0 && firstRawPeriod.getHours() == 1 && firstRawPeriod.getMinutes() == 0) {
@@ -321,6 +334,19 @@ public class PrepareStep implements ProcessStep {
             currentDate = currentDateLocal.withZone(DateTimeZone.UTC);
             maxEndDate = maxEndDateLocal.withZone(DateTimeZone.UTC);
             Period lastCleanPeriod = firstCleanPeriod;
+
+            /* intervals that end long before the first raw value of the row (more than one clean period before it)
+               are not created: they have no data, and a batch made only of them would write nothing and be
+               repeated (2026-11-27) */
+            DateTime skipBefore = null;
+            try {
+                DateTime firstRaw = cleanDataObject.getRawAttribute().getTimestampOfFirstSample();
+                if (firstRaw != null && !firstCleanPeriod.equals(Period.ZERO)) {
+                    skipBefore = PeriodHelper.getPreviousPeriod(firstRaw, firstCleanPeriod, 1, false, timeZone);
+                }
+            } catch (Exception e) {
+                logger.warn("Could not read the first raw time stamp of {}", cleanDataObject.getCleanObject().getID(), e);
+            }
 
             while (currentDate.isBefore(maxEndDate) && !periodCleanData.isEmpty() && !currentDate.equals(lastDate)) {
                 DateTime startDateTime = null;
@@ -416,12 +442,9 @@ public class PrepareStep implements ProcessStep {
                 CleanInterval currentInterval;
 
                 if (!greaterThenDays) {
-                    Interval interval = null;
-                    if (rawPeriod.equals(Period.minutes(15)) && cleanPeriod.equals(Period.minutes(5))) {
-                        interval = new Interval(startDateTime.minusMinutes(5).plusSeconds(1), endDateTime.plusMinutes(5));
-                    } else {
-                        interval = new Interval(startDateTime.plusSeconds(1), endDateTime);
-                    }
+                    /* no widened intervals for 15 -> 5 minutes any more: the splitting assigns the raw values itself,
+                       and a widened interval at a batch start deleted a value it did not recalculate (2026-11-27) */
+                    Interval interval = new Interval(startDateTime.plusSeconds(1), endDateTime);
 
                     currentInterval = new CleanInterval(interval, endDateTime);
                     currentInterval.getResult().setTimeStamp(endDateTime);
@@ -449,7 +472,9 @@ public class PrepareStep implements ProcessStep {
                 currentInterval.setOutputPeriod(cleanPeriod);
                 currentInterval.setDifferential(isDifferential);
                 currentInterval.setCompare(periodComparator.compare(cleanPeriod, rawPeriod));
-                cleanIntervals.add(currentInterval);
+                if (skipBefore == null || !currentInterval.getInterval().getEnd().isBefore(skipBefore)) {
+                    cleanIntervals.add(currentInterval);
+                }
 
                 lastDate = currentDate;
                 currentDateLocal = PeriodHelper.addPeriodToDate(currentDateLocal, cleanPeriod);
