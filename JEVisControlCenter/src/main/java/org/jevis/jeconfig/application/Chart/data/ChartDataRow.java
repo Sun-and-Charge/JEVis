@@ -445,24 +445,20 @@ public class ChartDataRow extends ChartData {
                                         aggregationPeriod.toString());
                                 calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
                                         selectedStart, selectedEnd, aggregationPeriod);
-                            } else if (perPeriodManipulation) {
-                                /* value widgets: the absolute calculation is the total of the time frame and knows no
-                                   manipulation; for mean/min/max/median the calculation runs per aggregation period and
-                                   the manipulation is applied to these values, as for rows without calculation */
+                            } else {
+                                /* value widgets: for mean/min/max/median the calculation runs per aggregation period and
+                                   the manipulation is applied to these values, as for rows without calculation. The
+                                   total runs at the resolution of the inputs and adds the results up: the calculation
+                                   "absolute" over the whole time frame reduced every input to one value, a non-periodic
+                                   input to its value at the start, so a value changed inside the time frame was ignored */
+                                AggregationPeriod per = perPeriodManipulation ? aggregationPeriod : AggregationPeriod.NONE;
                                 calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
-                                        selectedStart, selectedEnd, aggregationPeriod);
+                                        selectedStart, selectedEnd, per);
                                 List<JEVisSample> perPeriod = applyDayFilter(factorizeSamples(calcJob.getResults()));
                                 perPeriodSamples = new ArrayList<>();
                                 if (!perPeriod.isEmpty()) {
                                     perPeriodSamples.add(new VirtualSample(perPeriod.get(0).getTimestamp(), getManipulatedData(perPeriod), getUnit()));
                                 }
-                            } else {
-                                logger.debug("Getting calc job absolute for object {}:{} from {} to {} with period {}",
-                                        getCalculationObject().getName(), getCalculationObject().getID(),
-                                        selectedStart.toString("yyyy-MM-dd HH:mm:ss"), selectedEnd.toString("yyyy-MM-dd HH:mm:ss"),
-                                        aggregationPeriod.toString());
-                                calcJob = calcJobCreator.getCalcJobForTimeFrame(new SampleHandler(), dataSource, getCalculationObject(),
-                                        selectedStart, selectedEnd, true);
                             }
 
                             samples = perPeriodSamples != null ? perPeriodSamples : calcJob.getResults();

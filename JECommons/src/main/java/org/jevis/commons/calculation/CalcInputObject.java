@@ -129,6 +129,30 @@ public class CalcInputObject {
         }
     }
 
+    /**
+     * The sample of this input that applies at {@code date}, for showing the inputs of a calculation: for a
+     * non-periodic or static input the last value at or before the date (the first one if all are later), otherwise
+     * the first sample (e.g. the total of the time frame).
+     *
+     * @return null without samples
+     */
+    public JEVisSample sampleValidAt(DateTime date) {
+        if (samples == null || samples.isEmpty()) return null;
+        if (inputType != CalcInputType.NON_PERIODIC && inputType != CalcInputType.STATIC) return samples.get(0);
+        JEVisSample valid = null;
+        JEVisSample earliest = null;
+        for (JEVisSample sample : samples) {
+            try {
+                DateTime ts = sample.getTimestamp();
+                if (earliest == null || ts.isBefore(earliest.getTimestamp())) earliest = sample;
+                if (!ts.isAfter(date) && (valid == null || ts.isAfter(valid.getTimestamp()))) valid = sample;
+            } catch (Exception e) {
+                logger.warn("Could not read sample of input {}", identifier, e);
+            }
+        }
+        return valid != null ? valid : earliest;
+    }
+
     public CalcInputType getInputType() {
         return inputType;
     }
