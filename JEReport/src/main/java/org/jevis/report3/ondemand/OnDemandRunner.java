@@ -122,12 +122,16 @@ public final class OnDemandRunner {
         try {
             JEVisClass reportClass = ds.getJEVisClass(ReportAttributes.NAME);
             for (JEVisObject report : ds.getObjects(reportClass, true)) {
-                JEVisAttribute requests = report.getAttribute(REQUEST);
-                JEVisAttribute statuses = report.getAttribute(STATUS);
+                /* an attribute without samples is not sent by the server; the client then gives the object a
+                   placeholder that is not in its attribute cache and keeps it in the object's name map. After the
+                   first request the reload puts a new attribute into the cache, but report.getAttribute() still
+                   returns the placeholder without samples (2026-11-27: requests were never seen). So the attributes
+                   are taken from the data source's cache after the reload. */
+                ds.reloadAttribute(report);
+                JEVisAttribute requests = attribute(report, REQUEST);
+                JEVisAttribute statuses = attribute(report, STATUS);
                 if (requests == null || statuses == null) continue;
-                ds.reloadAttribute(requests);
                 if (!requests.hasSample()) continue;
-                ds.reloadAttribute(statuses);
                 DateTime now = new DateTime();
                 List<Request> list = new ArrayList<>();
                 for (JEVisSample s : requests.getSamples(now.minusDays(MAX_AGE_DAYS), now.plusMinutes(1))) {
@@ -149,6 +153,14 @@ public final class OnDemandRunner {
         } catch (Exception e) {
             logger.error("Polling the on-demand report requests failed", e);
         }
+    }
+
+    /** the attribute as the data source has it now, falling back to the object's own (e.g. a placeholder) */
+    private JEVisAttribute attribute(JEVisObject report, String name) throws JEVisException {
+        for (JEVisAttribute attribute : ds.getAttributes(report.getID())) {
+            if (name.equals(attribute.getName())) return attribute;
+        }
+        return report.getAttribute(name);
     }
 
     private void run(JEVisObject report, JEVisAttribute statuses, Request request) {
